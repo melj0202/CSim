@@ -1,0 +1,7 @@
+﻿  main.cpp
+C:\Users\gravi\Source\Repos\glfw_app\glfw_app\main.cpp(354,10): warning C4244: 'argument': conversion from 'float' to 'DWORD', possible loss of data
+C:\Users\gravi\Source\Repos\glfw_app\glfw_app\main.cpp(364,65): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\gravi\Source\Repos\glfw_app\glfw_app\main.cpp(364,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\gravi\Source\Repos\glfw_app\glfw_app\main.cpp(367,67): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\gravi\Source\Repos\glfw_app\glfw_app\main.cpp(367,41): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  glfw_app.vcxproj -> C:\Users\gravi\Source\Repos\glfw_app\glfw_app\x64\Debug\glfw_app.exe
