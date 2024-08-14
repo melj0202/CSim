@@ -1,14 +1,15 @@
 #include <Windows.h>
-#include <wingdi.h>
-#include <glew.h>
-#include <gl/GL.h>
-#include <glfw3.h>
+#include <GL/glew.h>
+//#include <gl/GL.h>
+//#include <glfw3.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <stdlib.h>
 #include <thread>
+#include <array>
+#include "RenderWindow.h"
 using namespace std;
 /*
 Two triangles to cover the screen so I can cover it with a texture
@@ -24,8 +25,8 @@ enum application_mode {
 const int canvasX = 80;
 const int canvasY = 60;
 float speedFactor = 50.0f;
-int windowX = 1280;
-int windowY = 720;
+const int windowX = 1280;
+const int windowY = 720;
 const float speedFactorMin = 1.0f;
 const float speedFactorMax = 250.0f;
 bool isPaused = false;
@@ -34,44 +35,48 @@ bool start_sim = false;
 application_mode currentMode = application_mode::NORMAL;
 double mousePosX;
 double mousePosY;
+auto scaledPixelX = (windowX / canvasX);
+auto scaledPixelY = (windowY / canvasY);
 
-float vertices[] = {
+const std::array<float, 32> vertices = {
 	// positions          // colors           // texture coords
 	 1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
 	 1.0f, -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
 	-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
 	-1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
 };
-unsigned int indices[] = {
-	0, 1, 3, // first triangle
-	1, 2, 3  // second triangle
+const std::array<unsigned char, 32> indices = {
+	0, 1, 3,
+	1, 2, 3
+
 };
 
-void setCanvasCell(vector<GLubyte> &canvas, int x, int y, int val) {
-	if (x > canvasX - 1 || y > canvasY - 1) {
-		cerr << "out of canvas!" << endl;
-		return;
-	}
-	y = (canvasY-1) - y; //invert the y axis
-	canvas[(canvasX*3*y) + (3 * x) + 0] = 255*val;
-	canvas[(canvasX*3*y) + (3 * x) + 1] = 255*val;
-	canvas[(canvasX*3*y) + (3 * x) + 2] = 255*val;
+inline void setCanvasCell(vector<GLubyte> &canvas, const  int x, const int y, bool val) {
+	if (x > canvasX - 1 || y > canvasY - 1) return;
+	memset(&canvas[(canvasX * 3 * ((canvasY - 1) - y)) + (3 * x)], 255 * val, 3);
 }
 
-int getCanvasCell(vector<GLubyte> &canvas, int x, int y) {
-	if (x > canvasX - 1 || y > canvasY - 1) {
-		cerr << "out of canvas!" << endl;
-		return -1;
-	}
-	y = (canvasY - 1) - y; //invert the y axis
 
-	return canvas[(canvasX * 3 * y) + (3 * x) + 1] == 0;
+inline void updateCanvas(GLFWwindow* window, const unsigned int shaderProgram, const vector<GLubyte>& canvas) {
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, canvasX, canvasY, 0, GL_RGB, GL_UNSIGNED_BYTE, &canvas[0]);
+	glUseProgram(shaderProgram);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+	/* Swap front and back buffers */
+	glfwSwapBuffers(window);
 }
 
-int count_neighbor(int r, const int c, const int w, const int h, vector<GLubyte>& canvas) {
-	int i, j, i2, j2 = 0;
-	int count = 0;
-	//r = canvasY - r;
+inline int getCanvasCell(const vector<GLubyte> &canvas, const int x, const int y) {
+	if (x > canvasX - 1 || y > canvasY - 1) return -1;
+	const int index = (canvasX * 3 * ((canvasY - 1) - y)) + (3 * x);
+	return canvas[index] == 0;
+}
+
+int count_neighbor(const int r, const int c, const int w, const int h, const vector<GLubyte>& canvas) {
+	short i = 0;
+	short j = 0;
+	short i2 = 0;
+	short j2 = 0;
+	short count = 0;
 	for (i = r - 1; i <= r + 1; i++) {
 		for (j = c - 1; j <= c + 1; j++) {
 			i2 = i;
@@ -101,8 +106,8 @@ int count_neighbor(int r, const int c, const int w, const int h, vector<GLubyte>
 
 void calc_generation(const int x_start, const int y_start, const int x_end, const int y_end, vector<GLubyte> &canvas) {
 
-	int canvasVectorWidth = x_end - x_start;
-	int canvasVectorHeight = y_end - y_start;
+	static int canvasVectorWidth = x_end - x_start;
+	static int canvasVectorHeight = y_end - y_start;
 
 	vector<vector<int>> ne(canvasVectorWidth, vector<int>(canvasVectorHeight));
 	for (int i = 0; i < ne.size(); i++) {
@@ -131,28 +136,21 @@ void calc_generation(const int x_start, const int y_start, const int x_end, cons
 	
 }
 
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && currentMode == application_mode::EDIT) {
-
-	}
-}
-
-
-bool getShaderCompileStatus(int shaderProgram, string name) {
+bool getShaderCompileStatus(const int shaderProgram) {
 	int success;
-	char infoLog[512];
+	std::string infoLog;
 	glGetShaderiv(shaderProgram, GL_COMPILE_STATUS, &success);
 
 	if (!success)
 	{
-		glGetShaderInfoLog(shaderProgram, 512, nullptr, infoLog);
-		cerr << "Error:" << name << " shader compilation failed!\n\n" << infoLog << endl;
+		glGetShaderInfoLog(shaderProgram, 512, nullptr, &infoLog[0]);
+		cerr << "Error: shader compilation failed!\n\n" << infoLog << endl;
 		return false;
 	}
 	else return true;
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+static void key_callback(GLFWwindow* window, const int key, int, const int action, const int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -183,18 +181,20 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, 1280, 720, 144);
 		}
 		else {
-			glfwSetWindowMonitor(window, nullptr, 1280/2, 720/2, 1280, 720, 144);
+			glfwSetWindowMonitor(window, nullptr, windowX/2, windowY/2, 1280, 720, 144);
 		}
 		isFullScreen = !isFullScreen;
 	}
-	if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+	if (key == GLFW_KEY_E && action == GLFW_PRESS && start_sim) {
 		if (currentMode == application_mode::NORMAL)
 		{
 			currentMode = application_mode::EDIT;
+			glfwSwapInterval(0); // Vsync is for bitches
 			cout << "EDIT" << endl;
 		}
 		else {
 			currentMode = application_mode::NORMAL;
+			glfwSwapInterval(0); // Vsync is for bitches
 			cout << "NORMAL" << endl;
 		}
 	}
@@ -209,10 +209,8 @@ int main(void)
     if (!glfwInit())
         return -1;
 
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     /* Create a windowed mode window and its OpenGL context */
@@ -223,7 +221,8 @@ int main(void)
         glfwTerminate();
         return -1;
     }
-   
+	glfwSetWindowPos(window, windowX / 2, windowY / 2);
+
 	glfwSetKeyCallback(window, key_callback);
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
@@ -237,15 +236,13 @@ int main(void)
     const GLubyte* versionGL = glGetString(GL_VERSION);
 
     cout << versionGL << endl;
-
+	
 	//Load in shader files
 	ifstream fragShaderFile;
-	fragShaderFile.open("triangle_frag.glsl");
+	fragShaderFile.open("Source/Shader/triangle_frag.glsl");
 
 	ifstream vertexShaderFile;
-	vertexShaderFile.open("triangle_vertex.glsl");
-
-
+	vertexShaderFile.open("Source/Shader/triangle_vertex.glsl");
 
 	string fragShaderSource;
 	string vertShaderSource;
@@ -266,6 +263,9 @@ int main(void)
 		}
 	}
 
+	fragShaderFile.close();
+	vertexShaderFile.close();
+
 	unsigned int vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
@@ -273,7 +273,7 @@ int main(void)
 	glShaderSource(vertexShader, 1, &vptr, nullptr);
 	glCompileShader(vertexShader);
 
-	if (!getShaderCompileStatus(vertexShader, "vertex")) return 1;
+	if (!getShaderCompileStatus(vertexShader)) return 1;
 
 	unsigned int fragShader;
 	fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -281,7 +281,7 @@ int main(void)
 	glShaderSource(fragShader, 1, &fptr, nullptr);
 	glCompileShader(fragShader);
 
-	if (!getShaderCompileStatus(fragShader, "fragment")) return 1;
+	if (!getShaderCompileStatus(fragShader)) return 1;
 
 	unsigned int shaderProgram;
 	shaderProgram = glCreateProgram();
@@ -300,9 +300,9 @@ int main(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	unsigned int vert_VBO;
-	unsigned int ebo;
-	unsigned int vao;
+	static unsigned int vert_VBO;
+	static unsigned int ebo;
+	static unsigned int vao;
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vert_VBO);
 	glGenBuffers(1, &ebo);
@@ -310,14 +310,14 @@ int main(void)
 	glBindVertexArray(vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vert_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
 
 	GLint posAttrib = glGetAttribLocation(shaderProgram, "aPos");
 
-	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(posAttrib);
 
 	GLint texAttrib = glGetAttribLocation(shaderProgram, "aTexCoord");
@@ -332,47 +332,44 @@ int main(void)
 	setCanvasCell(lifeCanvas, 52, 39, 0);
 	setCanvasCell(lifeCanvas, 51, 38, 0);
 	
-	float time =  (float) glfwGetTime();
-	float delta = 0.0f;
-
-	float printTimeTarget = 2.0f;
-	float printTime = 0.0f;
 	glfwSwapInterval(0); // Vsync is for bitches
 
-	
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+
+	updateCanvas(window, shaderProgram, lifeCanvas);
 
     while (!glfwWindowShouldClose(window))
     {
 		/* Poll for and process events */
 		glfwPollEvents();
-
 		if (!isPaused && start_sim && currentMode == application_mode::NORMAL)
 		{ 
 			/* Render here */
 			//calc simulation generations
 			calc_generation(0, 0, canvasX, canvasY, lifeCanvas);
-			Sleep(speedFactor);
+			updateCanvas(window, shaderProgram, lifeCanvas);
+			Sleep(static_cast<DWORD>(speedFactor));
 		}
-		else if (!isPaused && start_sim && currentMode == application_mode::EDIT) {
+		else if (currentMode == application_mode::EDIT) {
 			//allow the user to paint cells onto the screen
 			glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
-			int scaledPixelX = (int)(windowX / canvasX);
-			int scaledPixelY = (int)(windowY / canvasY);
-
 			if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-				setCanvasCell(lifeCanvas, mousePosX/scaledPixelX, mousePosY / scaledPixelY, 0);	
+				setCanvasCell(lifeCanvas, static_cast<int>(mousePosX/scaledPixelX), static_cast<int>(mousePosY / scaledPixelY), 0);
+				updateCanvas(window, shaderProgram, lifeCanvas);
 			}
-			if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) {
-				setCanvasCell(lifeCanvas, mousePosX / scaledPixelX, mousePosY / scaledPixelY, 1);
+			else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) {
+				setCanvasCell(lifeCanvas, static_cast<int>(mousePosX / scaledPixelX), static_cast<int>(mousePosY / scaledPixelY), 1);
+				updateCanvas(window, shaderProgram, lifeCanvas);
 			}
-			if (glfwGetKey(window, GLFW_KEY_C)) fill(lifeCanvas.begin(), lifeCanvas.end(), 255);
+			else if (glfwGetKey(window, GLFW_KEY_C))
+			{
+				fill(lifeCanvas.begin(), lifeCanvas.end(), 255);
+				updateCanvas(window, shaderProgram, lifeCanvas);
+			}
 		}
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, canvasX, canvasY, 0, GL_RGB, GL_UNSIGNED_BYTE, &lifeCanvas[0]);
-		glUseProgram(shaderProgram);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		/* Swap front and back buffers */
-		glfwSwapBuffers(window);
+		
+		
     }
 
     glfwTerminate();
