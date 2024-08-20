@@ -1,6 +1,7 @@
+#include <Windows.h>
 #include <GL/glew.h>
-//#include <gl/GL.h>
-//#include <glfw3.h>
+#include <gl/GL.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -8,10 +9,7 @@
 #include <stdlib.h>
 #include <thread>
 #include <array>
-#include "Renderer/RenderWindow.h"
 #include "MacroDefs.h"
-#include <omp.h>
-#include "OS/UI/OSMessageBox.h"
 
 #define BLOCK_X 2
 #define BLOCK_Y 2
@@ -256,10 +254,10 @@ int main(void)
 	
 	//Load in shader files
 	ifstream fragShaderFile;
-	fragShaderFile.open("Source/Shader/triangle_frag.glsl");
+	fragShaderFile.open("Shader/triangle_frag.glsl");
 
 	ifstream vertexShaderFile;
-	vertexShaderFile.open("Source/Shader/triangle_vertex.glsl");
+	vertexShaderFile.open("Shader/triangle_vertex.glsl");
 
 	string fragShaderSource;
 	string vertShaderSource;
