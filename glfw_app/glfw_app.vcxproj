@@ -72,6 +72,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Clean</CustomBuildBeforeTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -121,6 +125,9 @@ copy $(MSBuildProjectDirectory)\glew32.dll $(MSBuildProjectDirectory)\..\x64\Deb
 mkdir $(MSBuildProjectDirectory)\..\x64\Debug\Shader
 copy /y $(MSBuildProjectDirectory)\Shader $(MSBuildProjectDirectory)\..\x64\Debug\Shader\</Command>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>rmdir $(MSBuildProjectDirectory)\..\x64\Debug</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -149,14 +156,14 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\..\glut_window\glut_window\triangle_frag.glsl" />
     <None Include="..\..\glut_window\glut_window\triangle_vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MacroDefs.h" />
+    <ClCompile Include="Source\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\MacroDefs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
