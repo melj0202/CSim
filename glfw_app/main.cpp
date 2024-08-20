@@ -1,4 +1,3 @@
-#include <Windows.h>
 #include <GL/glew.h>
 //#include <gl/GL.h>
 //#include <glfw3.h>
@@ -9,7 +8,14 @@
 #include <stdlib.h>
 #include <thread>
 #include <array>
-#include "RenderWindow.h"
+#include "Renderer/RenderWindow.h"
+#include "MacroDefs.h"
+#include <omp.h>
+#include "OS/UI/OSMessageBox.h"
+
+#define BLOCK_X 2
+#define BLOCK_Y 2
+
 using namespace std;
 /*
 Two triangles to cover the screen so I can cover it with a texture
@@ -35,8 +41,9 @@ bool start_sim = false;
 application_mode currentMode = application_mode::NORMAL;
 double mousePosX;
 double mousePosY;
-auto scaledPixelX = (windowX / canvasX);
-auto scaledPixelY = (windowY / canvasY);
+const int scaledPixelX = (windowX / canvasX);
+const int scaledPixelY = (windowY / canvasY);
+bool wireframe = false;
 
 const std::array<float, 32> vertices = {
 	// positions          // colors           // texture coords
@@ -51,34 +58,33 @@ const std::array<unsigned char, 32> indices = {
 
 };
 
-inline void setCanvasCell(vector<GLubyte> &canvas, const  int x, const int y, bool val) {
-	if (x > canvasX - 1 || y > canvasY - 1) return;
-	memset(&canvas[(canvasX * 3 * ((canvasY - 1) - y)) + (3 * x)], 255 * val, 3);
+__COBALT_FORCE_INLINE__ void setCanvasCell(vector<GLubyte> &canvas, const  int x, const int y, const bool val) {
+	//if (x > canvasX - 1 || y > canvasY - 1) return;
+	memset(&canvas[canvasX * 3 * (canvasY - 1 - y) + 3 * x], 255 * val, 3);
 }
 
 
-inline void updateCanvas(GLFWwindow* window, const unsigned int shaderProgram, const vector<GLubyte>& canvas) {
+__COBALT_FORCE_INLINE__ void updateCanvas(GLFWwindow* window, const unsigned int shaderProgram, const vector<GLubyte>& canvas) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, canvasX, canvasY, 0, GL_RGB, GL_UNSIGNED_BYTE, &canvas[0]);
 	glUseProgram(shaderProgram);
+	if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
 	/* Swap front and back buffers */
 	glfwSwapBuffers(window);
 }
 
-inline int getCanvasCell(const vector<GLubyte> &canvas, const int x, const int y) {
-	if (x > canvasX - 1 || y > canvasY - 1) return -1;
-	const int index = (canvasX * 3 * ((canvasY - 1) - y)) + (3 * x);
-	return canvas[index] == 0;
+__COBALT_FORCE_INLINE__ int getCanvasCell(const vector<GLubyte> &canvas, const int x, const int y) {
+	//if (x > canvasX - 1 || y > canvasY - 1) return -1;
+	return canvas[canvasX * 3 * (canvasY - 1 - y) + 3 * x] == 0;
 }
 
-int count_neighbor(const int r, const int c, const int w, const int h, const vector<GLubyte>& canvas) {
-	short i = 0;
-	short j = 0;
-	short i2 = 0;
-	short j2 = 0;
-	short count = 0;
-	for (i = r - 1; i <= r + 1; i++) {
-		for (j = c - 1; j <= c + 1; j++) {
+constexpr int count_neighbor(const int r, const int c, const int w, const int h, const vector<GLubyte>& canvas) {
+	int i2 = 0;
+	int j2 = 0;
+	int count = 0;
+	for (int i = r - 1; i <= r + 1; i++) {
+		for (int j = c - 1; j <= c + 1; j++) {
 			i2 = i;
 			j2 = j;
 			if (i == r && j == c) continue;
@@ -106,31 +112,40 @@ int count_neighbor(const int r, const int c, const int w, const int h, const vec
 
 void calc_generation(const int x_start, const int y_start, const int x_end, const int y_end, vector<GLubyte> &canvas) {
 
-	static int canvasVectorWidth = x_end - x_start;
-	static int canvasVectorHeight = y_end - y_start;
+	const int canvasVectorWidth = x_end - x_start;
+	const int canvasVectorHeight = y_end - y_start;
 
 	vector<vector<int>> ne(canvasVectorWidth, vector<int>(canvasVectorHeight));
 	for (int i = 0; i < ne.size(); i++) {
 		fill(ne[i].begin(), ne[i].end(), 0);
 	}
 	
-	for (int i = 0; i < canvasVectorWidth; i++) {
-		for (int j = 0; j < canvasVectorHeight; j++) {
-			ne[i][j] = count_neighbor(i, j, canvasVectorWidth, canvasVectorHeight, canvas);
+	for (int j = 0; j < canvasVectorHeight; j += BLOCK_Y) {
+		for (int i = 0; i < canvasVectorWidth; i += BLOCK_X) {
+			for (int by = 0; by < BLOCK_Y; by++) {
+				for (int bx = 0; bx < BLOCK_X; bx++) {
+					ne[i + bx][j + by] = count_neighbor(i + bx, j + by, canvasVectorWidth, canvasVectorHeight, canvas);
+				}
+			}
 		}
 	}
 
-	for (int i = 0; i < canvasVectorWidth; i++) {
-		for (int j = 0; j < canvasVectorHeight; j++) {
-			if (getCanvasCell(canvas, i, j) && (ne[i][j] == 2 || ne[i][j] == 3)) {
-				setCanvasCell(canvas, i, j, 0);
+	for (int i = 0; i < canvasVectorWidth; i+=BLOCK_X) {
+		for (int j = 0; j < canvasVectorHeight; j+=BLOCK_Y) {
+			for (int by = 0; by < BLOCK_Y; by++) {
+				for (int bx = 0; bx < BLOCK_X; bx++) {
+					if (getCanvasCell(canvas, i+bx, j+by) && (ne[i + bx][j + by] == 2 || ne[i + bx][j + by] == 3)) {
+						setCanvasCell(canvas, i + bx, j + by, 0);
+					}
+					else if (!getCanvasCell(canvas, i + bx, j + by) && ne[i + bx][j + by] == 3) {
+						setCanvasCell(canvas, i + bx, j + by, 0);
+					}
+					else {
+						setCanvasCell(canvas, i + bx, j + by, 1);
+					}
+				}
 			}
-			else if (!getCanvasCell(canvas, i, j) && ne[i][j] == 3) {
-				setCanvasCell(canvas, i, j, 0);
-			}
-			else {
-				setCanvasCell(canvas, i, j, 1);
-			}
+			
 		}
 	}
 	
@@ -138,7 +153,7 @@ void calc_generation(const int x_start, const int y_start, const int x_end, cons
 
 bool getShaderCompileStatus(const int shaderProgram) {
 	int success;
-	std::string infoLog;
+	std::string infoLog(512, ' ');
 	glGetShaderiv(shaderProgram, GL_COMPILE_STATUS, &success);
 
 	if (!success)
@@ -198,8 +213,10 @@ static void key_callback(GLFWwindow* window, const int key, int, const int actio
 			cout << "NORMAL" << endl;
 		}
 	}
+	if (key == GLFW_KEY_F8 && action == GLFW_PRESS) {
+		wireframe = !wireframe;
+	}
 }
-
 
 int main(void)
 {
@@ -348,7 +365,7 @@ int main(void)
 			//calc simulation generations
 			calc_generation(0, 0, canvasX, canvasY, lifeCanvas);
 			updateCanvas(window, shaderProgram, lifeCanvas);
-			Sleep(static_cast<DWORD>(speedFactor));
+			__SLEEP(static_cast<DWORD>(speedFactor));
 		}
 		else if (currentMode == application_mode::EDIT) {
 			//allow the user to paint cells onto the screen
