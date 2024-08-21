@@ -160,10 +160,18 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <None Include="..\..\glut_window\glut_window\triangle_vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\CellCanvas.cpp" />
+    <ClCompile Include="Source\CellRuleSet.cpp" />
+    <ClCompile Include="Source\GameOfLifeRuleSet.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\RenderWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\CellCanvas.h" />
+    <ClInclude Include="Source\CellRuleSet.h" />
+    <ClInclude Include="Source\GameOfLifeRuleSet.h" />
     <ClInclude Include="Source\MacroDefs.h" />
+    <ClInclude Include="Source\RenderWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
