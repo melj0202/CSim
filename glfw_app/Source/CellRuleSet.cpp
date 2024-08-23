@@ -24,7 +24,9 @@ constexpr int CellRuleSet::countNeighbors(const int r, const int c, const int w,
 			if (j >= h) {
 				j2 = 0;
 			}
-			if (canvas.getCanvasPixel(i2, j2) == ruleSetStates.CELL_DEAD) {
+			std::array<unsigned char, 3> temp;
+			canvas.getCanvasPixel(i2, j2, temp);
+			if (temp == std::array<unsigned char, 3>{0, 0, 0}) {
 				count++;
 			}
 		}

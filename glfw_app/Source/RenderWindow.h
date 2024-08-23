@@ -8,27 +8,34 @@
 #include <iostream>
 #include "CellCanvas.h"
 #include <functional>
+#include <array>
+#include "RenderContext.h"
 
 class RenderWindow {
 public:
 
-	RenderWindow(const int width, const int height, const std::string &title, const CellCanvas &canvas) : windowWidth(width), windowHeight(height), windowTitle(title) {};
+	RenderWindow(const int width, const int height, const std::string &title, const CellCanvas &canvas);
 	void toggleFullscreen() { isFullScreen = !isFullScreen; };
+	GLFWwindow* getWindowInstance() { return window; };
+	void bindKeyCallback(static std::function<void(GLFWwindow*, const int, int, const int, const int)> func);
+	void updateWindow(const CellCanvas& canvas);
+	std::array<double, 2> getMouseCoords();
+	std::array <int, 2> getWindowDimensions() { return std::array<int, 2> {windowWidth, windowHeight}; };
 private:
-
-	enum class application_mode {
-		NORMAL, EDIT
-	};
+	std::array<double, 2> mouseCoords{ 0.0, 0.0 };
 	GLFWwindow* window;
+	unsigned int cellShaderProgram;
 	int windowWidth;
 	int windowHeight;
 	std::string windowTitle;
 	bool isPaused = false;
 	bool isFullScreen = false;
 	bool start_sim = false;
-	application_mode currentMode = application_mode::NORMAL;
-	bool getShaderCompileStatus(const int shaderProgram);
-	void bindKeyCallback(static std::function<void(GLFWwindow*, const int, int, const int, const int)> func);
+	RenderContext context;
+	
+
+
+	bool getShaderCompileStatus(const int shaderProgram) const;
 
 
 	/*

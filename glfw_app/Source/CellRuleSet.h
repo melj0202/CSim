@@ -6,14 +6,10 @@ constexpr auto BLOCK_Y = 2;
 
 class CellRuleSet {
 public:
-	struct CellStates {
-		const std::vector<unsigned char> CELL_DEAD = { 0, 0, 0 };
-		const std::vector<unsigned char> CELL_ALIVE = { 255, 255, 255 };
-	};
+	
 	CellRuleSet() = default;
 	virtual ~CellRuleSet() = default;
-	virtual void calcGeneration() const { /*nothing*/ };
-	static CellStates ruleSetStates;
+	virtual void calcGeneration(const int x_start, const int y_start, const int x_end, const int y_end, CellCanvas& canvas) const { /*nothing*/ };
 protected:
 	constexpr int countNeighbors(const int r, const int c, const int w, const int h, CellCanvas& canvas) const;
 };

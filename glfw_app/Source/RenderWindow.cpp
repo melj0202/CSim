@@ -1,7 +1,7 @@
 #include "RenderWindow.h"
 
 
-RenderWindow::RenderWindow(const int width, const int height, const std::string& title, const CellCanvas &canvas) {
+RenderWindow::RenderWindow(const int width, const int height, const std::string& title, const CellCanvas &canvas) : windowWidth(width), windowHeight(height), windowTitle(title) {
 	/* Initialize the library */
 	if (!glfwInit())
 		std::exit(-1);
@@ -22,6 +22,7 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 	glewExperimental = true;
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
 	/* Loop until the user closes the window */
 	GLenum err = glewInit();
 	if (GLEW_OK != err) {
@@ -61,67 +62,62 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 	fragShaderFile.close();
 	vertexShaderFile.close();
 
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	context.vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
 	const char* vptr = vertShaderSource.data();
-	glShaderSource(vertexShader, 1, &vptr, nullptr);
-	glCompileShader(vertexShader);
+	glShaderSource(context.vertexShader, 1, &vptr, nullptr);
+	glCompileShader(context.vertexShader);
 
-	if (!getShaderCompileStatus(vertexShader)) std::exit(-1);
+	if (!getShaderCompileStatus(context.vertexShader)) std::exit(-1);
 
-	unsigned int fragShader;
-	fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+	context.fragmaneShader = glCreateShader(GL_FRAGMENT_SHADER);
 	const char* fptr = fragShaderSource.data();
-	glShaderSource(fragShader, 1, &fptr, nullptr);
-	glCompileShader(fragShader);
+	glShaderSource(context.fragmaneShader, 1, &fptr, nullptr);
+	glCompileShader(context.fragmaneShader);
 
-	if (!getShaderCompileStatus(fragShader)) std::exit(-1);
+	if (!getShaderCompileStatus(context.fragmaneShader)) std::exit(-1);
 
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
+	context.shaderProgram = glCreateProgram();
 
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragShader);
-	glLinkProgram(shaderProgram);
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragShader);
+	glAttachShader(context.shaderProgram, context.vertexShader);
+	glAttachShader(context.shaderProgram, context.fragmaneShader);
+	glLinkProgram(context.shaderProgram);
+	glDeleteShader(context.vertexShader);
+	glDeleteShader(context.fragmaneShader);
 
 	//Setup life canvas texture
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, canvas.getDimensions()[0], canvas.getDimensions()[1], 0, GL_RGB, GL_UNSIGNED_BYTE, &lifeCanvas[0]);
+	glGenTextures(1, &context.canvasTextureID);
+	glBindTexture(GL_TEXTURE_2D, context.canvasTextureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, canvas.getDimensions()[0], canvas.getDimensions()[1], 0, GL_RGB, GL_UNSIGNED_BYTE, &canvas.getCanvasState()[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	static unsigned int vert_VBO;
-	static unsigned int ebo;
-	static unsigned int vao;
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vert_VBO);
-	glGenBuffers(1, &ebo);
+	glGenVertexArrays(1, &context.vao);
+	glGenBuffers(1, &context.vbo);
+	glGenBuffers(1, &context.ebo);
 
-	glBindVertexArray(vao);
+	glBindVertexArray(context.vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vert_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, context.vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, context.ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
 
-	GLint posAttrib = glGetAttribLocation(shaderProgram, "aPos");
+	GLint posAttrib = glGetAttribLocation(context.shaderProgram, "aPos");
 
 	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(posAttrib);
 
-	GLint texAttrib = glGetAttribLocation(shaderProgram, "aTexCoord");
+	GLint texAttrib = glGetAttribLocation(context.shaderProgram, "aTexCoord");
 
 	glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(texAttrib);
+
+	glfwSwapInterval(0);
 }
 
-bool RenderWindow::getShaderCompileStatus(const int shaderProgram)
+bool RenderWindow::getShaderCompileStatus(const int shaderProgram) const
 {
 	int success;
 	std::string infoLog(512, ' ');
@@ -129,7 +125,7 @@ bool RenderWindow::getShaderCompileStatus(const int shaderProgram)
 
 	if (!success)
 	{
-		glGetShaderInfoLog(shaderProgram, 512, nullptr, &infoLog[0]);
+		glGetShaderInfoLog(context.shaderProgram, 512, nullptr, &infoLog[0]);
 		std::cerr << "Error: shader compilation failed!\n\n" << infoLog << std::endl;
 		return false;
 	}
@@ -139,4 +135,18 @@ bool RenderWindow::getShaderCompileStatus(const int shaderProgram)
 void RenderWindow::bindKeyCallback(static std::function<void(GLFWwindow*, const int, int, const int, const int)> func)
 {
 	glfwSetKeyCallback(window, func.target<void(GLFWwindow*, const int, int, const int, const int)>()); //pain...
+}
+
+void RenderWindow::updateWindow(const CellCanvas& canvas) {
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, canvas.getDimensions()[0], canvas.getDimensions()[1], 0, GL_RGB, GL_UNSIGNED_BYTE, &canvas.getCanvasState()[0]);
+	glUseProgram(context.shaderProgram);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+	/* Swap front and back buffers */
+	glfwSwapBuffers(window);
+}
+
+std::array<double, 2> RenderWindow::getMouseCoords()
+{
+	glfwGetCursorPos(window, &mouseCoords[0], &mouseCoords[1]);
+	return mouseCoords;
 }
