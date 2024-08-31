@@ -67,9 +67,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\MacroDefs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\CellCanvas.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -110,6 +107,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\SeedsRuleSet.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MacroDefs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
