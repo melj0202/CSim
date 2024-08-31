@@ -168,8 +168,11 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClCompile Include="Source\CellState.cpp" />
     <ClCompile Include="Source\DayAndNightRuleSet.cpp" />
     <ClCompile Include="Source\GameOfLifeRuleSet.cpp" />
+    <ClCompile Include="Source\HighlifeRuleSet.cpp" />
+    <ClCompile Include="Source\LifeWithoutDeathRuleSet.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\RenderWindow.cpp" />
+    <ClCompile Include="Source\SeedsRuleSet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\AllSets.h" />
@@ -181,9 +184,12 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClInclude Include="Source\CellState.h" />
     <ClInclude Include="Source\DayAndNightRuleSet.h" />
     <ClInclude Include="Source\GameOfLifeRuleSet.h" />
+    <ClInclude Include="Source\HighlifeRuleSet.h" />
+    <ClInclude Include="Source\LifeWithoutDeathRuleSet.h" />
     <ClInclude Include="Source\MacroDefs.h" />
     <ClInclude Include="Source\RenderContext.h" />
     <ClInclude Include="Source\RenderWindow.h" />
+    <ClInclude Include="Source\SeedsRuleSet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

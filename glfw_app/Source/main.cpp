@@ -73,6 +73,9 @@ void CellMain(const std::string &ModeString) {
 	if (ModeString == "GAME_OF_LIFE") ruleSet = new GameOfLifeRuleSet();
 	else if (ModeString == "BRAINS_BRAIN") ruleSet = new BrainsBrainRuleSet();
 	else if (ModeString == "DAY_AND_NIGHT") ruleSet = new DayAndNightRuleSet();
+	else if (ModeString == "HIGHLIFE") ruleSet = new HighlifeRuleSet();
+	else if (ModeString == "LIFE_WITHOUT_DEATH") ruleSet = new LifeWithoutDeathRuleSet();
+	else if (ModeString == "SEEDS") ruleSet = new SeedsRuleSet();
 	assert(ruleSet != nullptr);
 
 	RenderWindow window(1280, 720, "Game of Life", lifeCanvas);
@@ -98,9 +101,13 @@ void CellMain(const std::string &ModeString) {
 		if (currentMode == application_mode::NORMAL) Sleep(static_cast<DWORD>(speedFactor));
 	}
 }
-int main(void) {
+int main(int argc, char** argv) {
     
-	std::string mode = "DAY_AND_NIGHT";
+	std::string mode;
+
+	if (argc < 2) mode = "SEEDS";
+	else { mode = argv[1]; }
+
     CellMain(mode);
     return 0;
 }

@@ -1,3 +1,6 @@
 #include "BrainsBrainRuleSet.h"
 #include "DayAndNightRuleSet.h"
 #include "GameOfLifeRuleSet.h"
+#include "HighlifeRuleSet.h"
+#include "LifeWithoutDeathRuleSet.h"
+#include "SeedsRuleSet.h"
