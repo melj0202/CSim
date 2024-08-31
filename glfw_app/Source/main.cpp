@@ -12,7 +12,7 @@ enum class application_mode {
 //A dirty bit to only set mode when it has changed
 bool dirty = false;
 
-application_mode currentMode = application_mode::NORMAL;
+application_mode currentMode = application_mode::EDIT;
 float speedFactor = 50.0f;
 const float speedFactorMin = 1.0f;
 const float speedFactorMax = 250.0f;
@@ -67,19 +67,22 @@ void CellMain(const std::string &ModeString) {
 	CellState* normalState = new CellNormalState();
 	CellState* editState = new CellEditState();
 
-	CellState* currentState = normalState;
+	CellState* currentState = editState;
 
 
 	if (ModeString == "GAME_OF_LIFE") ruleSet = new GameOfLifeRuleSet();
-	else if (ModeString == "BRAINS_BRAIN") ruleSet = new BrainsBrainRuleSet();
+	else if (ModeString == "BRIANS_BRAIN") ruleSet = new BrainsBrainRuleSet();
 	else if (ModeString == "DAY_AND_NIGHT") ruleSet = new DayAndNightRuleSet();
 	else if (ModeString == "HIGHLIFE") ruleSet = new HighlifeRuleSet();
 	else if (ModeString == "LIFE_WITHOUT_DEATH") ruleSet = new LifeWithoutDeathRuleSet();
 	else if (ModeString == "SEEDS") ruleSet = new SeedsRuleSet();
-	assert(ruleSet != nullptr);
+	if (ruleSet == nullptr) {
+		std::cerr << "error: UNKNOWN RULESET" << std::endl;
+		exit(1);
+	}
 
 	RenderWindow window(1280, 720, "Game of Life", lifeCanvas);
-
+	window.updateWindow(lifeCanvas);
 	glfwSetKeyCallback(window.getWindowInstance(), normalKeyCallback);
 
 	while (!glfwWindowShouldClose(window.getWindowInstance())) {
@@ -100,12 +103,14 @@ void CellMain(const std::string &ModeString) {
 
 		if (currentMode == application_mode::NORMAL) Sleep(static_cast<DWORD>(speedFactor));
 	}
+
+	free(ruleSet);
 }
 int main(int argc, char** argv) {
     
 	std::string mode;
 
-	if (argc < 2) mode = "SEEDS";
+	if (argc < 2) mode = "GAME_OF_LIFE";
 	else { mode = argv[1]; }
 
     CellMain(mode);

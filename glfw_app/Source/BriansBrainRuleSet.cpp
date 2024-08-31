@@ -2,7 +2,7 @@
 
 struct CellStates {
 	const std::array<unsigned char, 3> CELL_DEAD = { 255, 255, 255 };
-	const std::array<unsigned char, 3> CELL_DYING = { 0, 0, 255 };
+	const std::array<unsigned char, 3> CELL_DYING = { 0, 128, 255 };
 	const std::array<unsigned char, 3> CELL_ALIVE = { 0, 0, 0 };
 };
 
