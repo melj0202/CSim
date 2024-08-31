@@ -1,6 +1,6 @@
 #include <string>
 #include "RenderWindow.h"
-#include "GameOfLifeRuleSet.h"
+#include "AllSets.h"
 #include <cassert>
 #include "CellEditState.h"
 #include "CellNormalState.h"
@@ -9,7 +9,10 @@ enum class application_mode {
 	NORMAL, EDIT
 };
 
-application_mode currentMode = application_mode::EDIT;
+//A dirty bit to only set mode when it has changed
+bool dirty = false;
+
+application_mode currentMode = application_mode::NORMAL;
 float speedFactor = 50.0f;
 const float speedFactorMin = 1.0f;
 const float speedFactorMax = 250.0f;
@@ -35,17 +38,18 @@ static void normalKeyCallback(GLFWwindow* window, const int key, int, const int 
 		if (currentMode == application_mode::NORMAL)
 		{
 			currentMode = application_mode::EDIT;
-			glfwSwapInterval(0); // Vsync is for bitches
+			glfwSwapInterval(0); 
 			std::cout << "EDIT" << std::endl;
+			dirty = true;
 		}
 		else {
 			currentMode = application_mode::NORMAL;
-			glfwSwapInterval(0); // Vsync is for bitches
+			glfwSwapInterval(0); 
 			std::cout << "NORMAL" << std::endl;
+			dirty = true;
 		}
 	}
 }
-
 
 void CellMain(const std::string &ModeString) {
 
@@ -60,8 +64,15 @@ void CellMain(const std::string &ModeString) {
 
 	CellRuleSet* ruleSet = nullptr;
 
-	if (ModeString == "GAME_OF_LIFE") ruleSet = new GameOfLifeRuleSet();
+	CellState* normalState = new CellNormalState();
+	CellState* editState = new CellEditState();
 
+	CellState* currentState = normalState;
+
+
+	if (ModeString == "GAME_OF_LIFE") ruleSet = new GameOfLifeRuleSet();
+	else if (ModeString == "BRAINS_BRAIN") ruleSet = new BrainsBrainRuleSet();
+	else if (ModeString == "DAY_AND_NIGHT") ruleSet = new DayAndNightRuleSet();
 	assert(ruleSet != nullptr);
 
 	RenderWindow window(1280, 720, "Game of Life", lifeCanvas);
@@ -73,19 +84,23 @@ void CellMain(const std::string &ModeString) {
 		//Input
 		glfwPollEvents();
 
-		//update (calculate generation)
-		ruleSet->calcGeneration(0, 0, 80, 60, lifeCanvas);
+		if (dirty && currentMode == application_mode::NORMAL) {
+			currentState = normalState;
+			dirty = !dirty;
+		}
+		else if (dirty && currentMode == application_mode::EDIT) {
+			currentState = editState;
+			dirty = !dirty;
+		}
 
-		//render
-		window.updateWindow(lifeCanvas);
+		currentState->iterate(lifeCanvas, *ruleSet, window);
 
-		Sleep(static_cast<DWORD>(speedFactor));
+		if (currentMode == application_mode::NORMAL) Sleep(static_cast<DWORD>(speedFactor));
 	}
 }
 int main(void) {
     
-	std::string mode = "GAME_OF_LIFE";
+	std::string mode = "DAY_AND_NIGHT";
     CellMain(mode);
-	glfwTerminate();
     return 0;
 }

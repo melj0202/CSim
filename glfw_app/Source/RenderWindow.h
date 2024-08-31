@@ -15,6 +15,7 @@ class RenderWindow {
 public:
 
 	RenderWindow(const int width, const int height, const std::string &title, const CellCanvas &canvas);
+	~RenderWindow() { glfwTerminate(); };
 	void toggleFullscreen() { isFullScreen = !isFullScreen; };
 	GLFWwindow* getWindowInstance() { return window; };
 	void bindKeyCallback(static std::function<void(GLFWwindow*, const int, int, const int, const int)> func);

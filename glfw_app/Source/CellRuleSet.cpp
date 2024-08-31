@@ -1,10 +1,11 @@
 #include "CellRuleSet.h"
 
-constexpr int CellRuleSet::countNeighbors(const int r, const int c, const int w, const int h, CellCanvas& canvas) const
+int CellRuleSet::countNeighbors(const int r, const int c, const int w, const int h, CellCanvas& canvas) const
 {
 	int i2 = 0;
 	int j2 = 0;
 	int count = 0;
+	std::array<unsigned char, 3> temp;
 	for (int i = r - 1; i <= r + 1; i++) {
 		for (int j = c - 1; j <= c + 1; j++) {
 			i2 = i;
@@ -24,7 +25,6 @@ constexpr int CellRuleSet::countNeighbors(const int r, const int c, const int w,
 			if (j >= h) {
 				j2 = 0;
 			}
-			std::array<unsigned char, 3> temp;
 			canvas.getCanvasPixel(i2, j2, temp);
 			if (temp == std::array<unsigned char, 3>{0, 0, 0}) {
 				count++;

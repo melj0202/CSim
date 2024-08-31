@@ -160,22 +160,26 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <None Include="..\..\glut_window\glut_window\triangle_vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\BriansBrainRuleSet.cpp" />
     <ClCompile Include="Source\CellCanvas.cpp" />
     <ClCompile Include="Source\CellEditState.cpp" />
     <ClCompile Include="Source\CellNormalState.cpp" />
     <ClCompile Include="Source\CellRuleSet.cpp" />
     <ClCompile Include="Source\CellState.cpp" />
+    <ClCompile Include="Source\DayAndNightRuleSet.cpp" />
     <ClCompile Include="Source\GameOfLifeRuleSet.cpp" />
     <ClCompile Include="Source\main.cpp" />
-    <ClCompile Include="Source\RenderContext.cpp" />
     <ClCompile Include="Source\RenderWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\AllSets.h" />
+    <ClInclude Include="Source\BrainsBrainRuleSet.h" />
     <ClInclude Include="Source\CellCanvas.h" />
     <ClInclude Include="Source\CellEditState.h" />
     <ClInclude Include="Source\CellNormalState.h" />
     <ClInclude Include="Source\CellRuleSet.h" />
     <ClInclude Include="Source\CellState.h" />
+    <ClInclude Include="Source\DayAndNightRuleSet.h" />
     <ClInclude Include="Source\GameOfLifeRuleSet.h" />
     <ClInclude Include="Source\MacroDefs.h" />
     <ClInclude Include="Source\RenderContext.h" />

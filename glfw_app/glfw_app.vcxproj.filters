@@ -50,7 +50,10 @@
     <ClCompile Include="Source\CellState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\RenderContext.cpp">
+    <ClCompile Include="Source\BriansBrainRuleSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\DayAndNightRuleSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,6 +83,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\RenderContext.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BrainsBrainRuleSet.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\DayAndNightRuleSet.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\AllSets.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
