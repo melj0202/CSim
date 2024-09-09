@@ -24,6 +24,7 @@
     <ProjectGuid>{7c456f08-2d42-48fe-8d37-8b0ad1102890}</ProjectGuid>
     <RootNamespace>glfwapp</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>csim</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
