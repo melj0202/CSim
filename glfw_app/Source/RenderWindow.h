@@ -18,7 +18,7 @@ public:
 	~RenderWindow() { glfwTerminate(); };
 	void toggleFullscreen() { isFullScreen = !isFullScreen; };
 	GLFWwindow* getWindowInstance() { return window; };
-	void bindKeyCallback(static std::function<void(GLFWwindow*, const int, int, const int, const int)> func);
+	//void bindKeyCallback(static std::function<void(GLFWwindow*, const int, int, const int, const int)> func);
 	void updateWindow(const CellCanvas& canvas);
 	std::array<double, 2> getMouseCoords();
 	std::array <int, 2> getWindowDimensions() { return std::array<int, 2> {windowWidth, windowHeight}; };

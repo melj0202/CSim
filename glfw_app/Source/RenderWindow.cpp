@@ -130,12 +130,12 @@ bool RenderWindow::getShaderCompileStatus(const int shaderProgram) const
 	}
 	else return true;
 }
-
+/*
 void RenderWindow::bindKeyCallback(static std::function<void(GLFWwindow*, const int, int, const int, const int)> func)
 {
 	glfwSetKeyCallback(window, func.target<void(GLFWwindow*, const int, int, const int, const int)>()); //pain...
 }
-
+*/
 void RenderWindow::updateWindow(const CellCanvas& canvas) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, canvas.getDimensions()[0], canvas.getDimensions()[1], 0, GL_RGB, GL_UNSIGNED_BYTE, &canvas.getCanvasState()[0]);
 	glUseProgram(context.shaderProgram);

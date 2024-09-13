@@ -178,6 +178,7 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
   <ItemGroup>
     <ClInclude Include="Source\AllSets.h" />
     <ClInclude Include="Source\BrainsBrainRuleSet.h" />
+    <ClInclude Include="Source\BuildInfo.h" />
     <ClInclude Include="Source\CellCanvas.h" />
     <ClInclude Include="Source\CellEditState.h" />
     <ClInclude Include="Source\CellNormalState.h" />
