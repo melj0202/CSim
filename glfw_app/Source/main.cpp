@@ -174,10 +174,12 @@ void parseCommandLineArgs(int argc, wchar_t** argv) {
 				"SEEDS\t\t\t Seeds\n" <<
 				"DAY_AND_NIGHT\t\t Day and Night\n";
 			std::exit(0);
+			return;
 		}
 		if (!lstrcmpW(argv[i], L"-v") || !lstrcmpW(argv[i], L"--version")) {
 			std::cout << "CSim Cell Automata Simulator\nVersion: " << VERSION_NUMBER <<"\nBuild Date: " << BUILD_DATE_SHORT << " " << BUILD_TIMESTAMP << std::endl;
 			std::exit(0);
+			return;
 		}
 		if (!lstrcmpW(argv[i], L"-ww")) {
 			if (!StringIsDigit(argv[i + 1])) {
@@ -186,8 +188,10 @@ void parseCommandLineArgs(int argc, wchar_t** argv) {
 			}
 			else {
 				WinX = _wtoi(argv[i + 1]);
-				i+=2;
+				std::wcout << "This is a test\n";
+				i += 2;
 			}
+			
 		}
 		if (!lstrcmpW(argv[i], L"-wh")) {
 			if (!StringIsDigit(argv[i + 1])) {
@@ -196,8 +200,10 @@ void parseCommandLineArgs(int argc, wchar_t** argv) {
 			}
 			else {
 				WinY = _wtoi(argv[i + 1]);
+				std::wcout << "This is a test\n";
 				i += 2;
 			}
+			
 		}
 		if (!lstrcmpW(argv[i], L"-cw")) {
 			if (!StringIsDigit(argv[i + 1])) {
@@ -208,6 +214,7 @@ void parseCommandLineArgs(int argc, wchar_t** argv) {
 				CanvasX = _wtoi(argv[i + 1]);
 				i += 2;
 			}
+			
 		}
 		if (!lstrcmpW(argv[i], L"-ch")) {
 			if (!StringIsDigit(argv[i + 1])) {
@@ -218,6 +225,7 @@ void parseCommandLineArgs(int argc, wchar_t** argv) {
 				CanvasY = _wtoi(argv[i + 1]);
 				i += 2;
 			}
+			
 		}
 	}
 }

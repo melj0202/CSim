@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "csim", "glfw_app\glfw_app.vcxproj", "{7C456F08-2D42-48FE-8D37-8B0AD1102890}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "csim-windows-launcher", "csim-windows-launcher\csim-windows-launcher.vcxproj", "{FC6E276F-E870-4404-A763-870147C0A83D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7C456F08-2D42-48FE-8D37-8B0AD1102890} = {7C456F08-2D42-48FE-8D37-8B0AD1102890}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

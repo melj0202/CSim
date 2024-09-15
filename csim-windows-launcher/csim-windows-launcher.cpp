@@ -261,7 +261,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                     GetWindowText(findChildByName("WindowResX"), (LPWSTR)WinX.c_str(), 256);
                     GetWindowText(findChildByName("WindowResY"), (LPWSTR)WinY.c_str(), 256);
-                    GetWindowText(findChildByName("CanvasResY"), (LPWSTR)CanvasX.c_str(), 256);
+                    GetWindowText(findChildByName("CanvasResX"), (LPWSTR)CanvasX.c_str(), 256);
                     GetWindowText(findChildByName("CanvasResY"), (LPWSTR)CanvasY.c_str(), 256);
 
                     if (!lstrcmpW(SelectedItem, ModeOptions[0])) {
@@ -304,6 +304,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                     //Wait for the csim instance to finish...
                     PostQuitMessage(0);
+                    CloseHandle(pinfo.hProcess);
+                    CloseHandle(pinfo.hThread);
                 }
                 else if ((HWND)lParam == findChildByName("CanvasFileOpen")) {
                     //Open a open file dialog, and populate the edit box with the returning file path.
@@ -371,11 +373,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
         //Populate the child window list with the ui elements.
-        appendChildWindow(CreateWindowExA(0, "Static", "CSim Launcher", WS_CHILD | WS_VISIBLE, WINWIDTH / 2 - 55, 10, 100, 20, hWnd, nullptr, nullptr, nullptr), "MainTitle");
+        appendChildWindow(CreateWindowExA(0, "Static", "CSim Launcher", WS_CHILD | WS_VISIBLE, WINWIDTH / 2 - 65, 10, 100, 20, hWnd, nullptr, nullptr, nullptr), "MainTitle");
         appendChildWindow(CreateWindowExA(0, "Static", "Rule Set", WS_CHILD | WS_VISIBLE, 305, 30, 100, 20, hWnd, nullptr, nullptr, nullptr), "ModeSelectLabel");
         appendChildWindow(CreateWindowExA(0, "ComboBox", "", WS_BORDER | WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS, 305, 50, 150, 180, hWnd, nullptr, nullptr, nullptr), "ModeSelect");
         appendChildWindow(CreateWindowExA(0, "Button", "Launch!", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | BS_CENTER, WINWIDTH / 2 - 55, WINHEIGHT - 80, 75, 25, hWnd, nullptr, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), nullptr), "LaunchButton");
-        appendChildWindow(CreateWindowExA(0, "Static", "Window Resolution", WS_CHILD | WS_VISIBLE, 20, 30, 100, 20, hWnd, nullptr, nullptr, nullptr), "ResolutionLabel");
+        appendChildWindow(CreateWindowExA(0, "Static", "Window Resolution", WS_CHILD | WS_VISIBLE, 20, 30, 120, 20, hWnd, nullptr, nullptr, nullptr), "ResolutionLabel");
         appendChildWindow(CreateWindowExA(0, "EDIT", "1280", WS_BORDER | WS_CHILD | WS_VISIBLE, 15, 50, 50, 20, hWnd, nullptr, nullptr, nullptr), "WindowResX");
         appendChildWindow(CreateWindowExA(0, "Static", "X", WS_CHILD | WS_VISIBLE, 70, 50, 20, 20, hWnd, nullptr, nullptr, nullptr), "x");
         appendChildWindow(CreateWindowExA(0, "EDIT", "720", WS_BORDER | WS_CHILD | WS_VISIBLE, 85, 50, 50, 20, hWnd, nullptr, nullptr, nullptr), "WindowResY");
