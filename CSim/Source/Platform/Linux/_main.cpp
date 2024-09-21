@@ -3,13 +3,14 @@
 */
 
 #include <string>
-#include "RenderWindow.h"
-#include "AllSets.h"
+#include "../../RenderWindow.h"
+#include "../../AllSets.h"
 #include <cassert>
-#include "CellEditState.h"
-#include "CellNormalState.h"
-#include "BuildInfo.h"
-#include "CellCanvas.h"
+#include "../../CellEditState.h"
+#include "../../CellNormalState.h"
+#include "../../BuildInfo.h"
+#include "../../CellCanvas.h"
+#include <unistd.h>
 
 static struct stateStruct {
 	CellState* normal = new CellNormalState();
@@ -102,7 +103,7 @@ void CellMain(const std::string &ModeString) {
 		
 		currentState->iterate(*ruleSet);
 
-		if (currentState == canvasState.normal) Sleep(static_cast<DWORD>(speedFactor));
+		if (currentState == canvasState.normal) (unsigned int)speedFactor;
 	}
 
 	free(ruleSet);
@@ -121,10 +122,10 @@ Command Line Arguements:
 */
 
 bool StringIsDigit(char* target) {
-	long size = strlen(wtarget);
+	long size = strlen(target);
 	for (int i = 0; i < size; i++) {
-		if (!isdigit((wint_t)wtarget[i])) {
-			std::wcout << wtarget[i]<< std::endl;
+		if (!isdigit(target[i])) {
+			std::cout << target[i]<< std::endl;
 			return false;
 		}
 	}
@@ -132,10 +133,10 @@ bool StringIsDigit(char* target) {
 }
 
 bool StringIsModeString(char* target) {
-	long size = strlen(wtarget);
+	long size = strlen(target);
 	for (int i = 0; i < size; i++) {
-		if (!isalpha((wint_t)wtarget[i])) {
-			if (wtarget[i] == (wint_t)'_') continue; //spare the '_' character
+		if (!isalpha(target[i])) {
+			if (target[i] == '_') continue; //spare the '_' character
 			return false;
 		}
 	}
@@ -165,7 +166,7 @@ void parseCommandLineArgs(int argc, char** argv) {
 			std::exit(0);
 			return;
 		}
-		if (!strcmp(argv[i], "-v") || !lstrcmpW(argv[i], L"--version")) {
+		if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version")) {
 			std::cout << "CSim Cell Automata Simulator\nVersion: " << VERSION_NUMBER <<"\nBuild Date: " << BUILD_DATE_SHORT << " " << BUILD_TIMESTAMP << std::endl;
 			std::exit(0);
 			return;
@@ -176,8 +177,8 @@ void parseCommandLineArgs(int argc, char** argv) {
 				std::exit(1);
 			}
 			else {
-				WinX = _wtoi(argv[i + 1]);
-				std::wcout << "This is a test\n";
+				WinX = atoi(argv[i + 1]);
+				std::cout << "This is a test\n";
 				i += 2;
 			}
 			
@@ -188,8 +189,7 @@ void parseCommandLineArgs(int argc, char** argv) {
 				std::exit(1);
 			}
 			else {
-				WinY = _wtoi(argv[i + 1]);
-				std::wcout << "This is a test\n";
+				WinY = atoi(argv[i + 1]);
 				i += 2;
 			}
 			
@@ -200,7 +200,7 @@ void parseCommandLineArgs(int argc, char** argv) {
 				std::exit(1);
 			}
 			else {
-				CanvasX = _wtoi(argv[i + 1]);
+				CanvasX = atoi(argv[i + 1]);
 				i += 2;
 			}
 			
@@ -211,7 +211,7 @@ void parseCommandLineArgs(int argc, char** argv) {
 				std::exit(1);
 			}
 			else {
-				CanvasY = _wtoi(argv[i + 1]);
+				CanvasY = atoi(argv[i + 1]);
 				i += 2;
 			}
 			
@@ -219,7 +219,7 @@ void parseCommandLineArgs(int argc, char** argv) {
 	}
 }
 
-int main(int argc, wchar_t** argv) {
+int main(int argc, char** argv) {
     
 	std::string mode;
 
