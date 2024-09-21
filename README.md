@@ -11,8 +11,10 @@ An improve version of my previous game of life program (now rendered with opengl
 
 # Controls
 ~~- S (Normal Mode): Start the simuation~~
+
   (The Simulation now starts in edit mode, which is the same as pause)
 ~~- P (Normal Mode): Toggle pause~~
+
 (Go into edit mode to pause the sim)
 - E (Normal Mode): Toggle Edit mode
 - Left Mouse (Edit Mode): Place living cells
