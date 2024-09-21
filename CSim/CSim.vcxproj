@@ -189,7 +189,7 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClCompile Include="Source\GameOfLifeRuleSet.cpp" />
     <ClCompile Include="Source\HighlifeRuleSet.cpp" />
     <ClCompile Include="Source\LifeWithoutDeathRuleSet.cpp" />
-    <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\Platform\Windows\WinMain.cpp" />
     <ClCompile Include="Source\RenderWindow.cpp" />
     <ClCompile Include="Source\SeedsRuleSet.cpp" />
   </ItemGroup>
