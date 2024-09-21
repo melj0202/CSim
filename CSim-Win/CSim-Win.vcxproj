@@ -130,26 +130,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="csim-windows-launcher.h" />
+    <ClInclude Include="CSim-Win.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="csim-windows-launcher.cpp" />
+    <ClCompile Include="CSim-Win.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="csim-windows-launcher.rc" />
+    <ResourceCompile Include="CSim-Win.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="csim-windows-launcher.ico" />
+    <Image Include="CSim-Win.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="csim-windows-launcher.manifest" />
+    <Manifest Include="CSim-Win.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -24,12 +24,12 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="csim-windows-launcher.h">
+    <ClInclude Include="CSim-Win.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="csim-windows-launcher.cpp">
+    <ClCompile Include="CSim-Win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,6 +50,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="csim-windows-launcher.manifest" />
+    <Manifest Include="CSim-Win.manifest" />
   </ItemGroup>
 </Project>

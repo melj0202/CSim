@@ -21,6 +21,13 @@ const std::array<unsigned char, 32> RenderWindow::indices = {
 	0, 1, 3
 };
 
+unsigned int RenderContext::vertexShader = 0;
+unsigned int RenderContext::fragmaneShader = 0;
+unsigned int RenderContext::shaderProgram = 0;
+unsigned int RenderContext::canvasTextureID = 0;
+unsigned int RenderContext::vbo = 0;
+unsigned int RenderContext::ebo = 0;
+unsigned int RenderContext::vao = 0;
 
 RenderWindow::RenderWindow(const int width, const int height, const std::string& title){
 	/* Initialize the library */

@@ -2,7 +2,7 @@
 //
 
 #include "framework.h"
-#include "csim-windows-launcher.h"
+#include "CSim-Win.h"
 #include <iostream>
 #include <sstream>
 

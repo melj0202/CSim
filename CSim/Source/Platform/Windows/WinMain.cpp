@@ -6,6 +6,7 @@
 #include "../../CellNormalState.h"
 #include "../../BuildInfo.h"
 #include "../../CellCanvas.h"
+#include <thread>
 
 static struct stateStruct {
 	CellState* normal = new CellNormalState();
@@ -13,9 +14,9 @@ static struct stateStruct {
 } canvasState;
 
 //GLOBAL VARIABLES
-static float speedFactor = 50.0f;
-static const float speedFactorMin = 1.0f;
-static const float speedFactorMax = 250.0f;
+static float speedFactor = 64;
+static const int speedFactorMin = 1;
+static const int speedFactorMax = 128;
 static unsigned int WinX = 1280;
 static unsigned int WinY = 720;
 static unsigned int CanvasX = 80;
@@ -32,12 +33,12 @@ static void normalKeyCallback(GLFWwindow* window, const int key, int, const int 
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS && mods == GLFW_MOD_SHIFT) {
-		if (speedFactor >= speedFactorMin) speedFactor /= 1.5f;
+		if (speedFactor > speedFactorMin) speedFactor /= 2.0f;
 		else speedFactor = speedFactorMin;
 		std::cout << "changed delay to: " << speedFactor << std::endl;
 	}
 	if (key == GLFW_KEY_MINUS && action == GLFW_PRESS && mods == GLFW_MOD_SHIFT) {
-		if (speedFactor <= speedFactorMax)speedFactor *= 1.5f;
+		if (speedFactor < speedFactorMax) speedFactor *= 2.0f;
 		else speedFactor = speedFactorMax;
 
 		std::cout << "changed delay to: " << speedFactor << std::endl;
@@ -58,6 +59,7 @@ static void normalKeyCallback(GLFWwindow* window, const int key, int, const int 
 		}
 	}
 }
+
 
 void CellMain(const std::wstring &ModeString) {
 
@@ -90,12 +92,11 @@ void CellMain(const std::wstring &ModeString) {
 	
 	GLFWwindow* win = window.getWindowInstance();
 	glfwSetKeyCallback(win, normalKeyCallback);
-
 	while (!glfwWindowShouldClose(win)) {
 
 		//Input
 		glfwPollEvents();
-		
+
 		currentState->iterate(*ruleSet);
 
 		if (currentState == canvasState.normal) Sleep(static_cast<DWORD>(speedFactor));

@@ -7,6 +7,6 @@ public:
 	SeedsRuleSet() = default;
 	~SeedsRuleSet() override = default;
 
-	void calcGeneration(const int x_start, const int y_start, const int x_end, const int y_end) const override;
+	void evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const override;
 	void evalCell(const unsigned char& target, unsigned char dest[3]) const override;
 };
