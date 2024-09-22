@@ -7,6 +7,10 @@
 #include "BuildInfo.h"
 #include "CellCanvas.h"
 
+/*
+	This is the default main file. If you want to make a source port, go make a new main file in the Platform folder.
+*/
+
 static struct stateStruct {
 	CellState* normal = new CellNormalState();
 	CellState* edit = new CellEditState();
