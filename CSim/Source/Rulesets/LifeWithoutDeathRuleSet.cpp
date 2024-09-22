@@ -1,5 +1,5 @@
 #include "LifeWithoutDeathRuleSet.h"
-#include "CellCanvas.h"
+#include "../CellCanvas.h"
 
 enum CellStates {
 	CELL_DEAD = 1,

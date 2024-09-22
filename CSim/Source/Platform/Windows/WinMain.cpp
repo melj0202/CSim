@@ -92,6 +92,8 @@ void CellMain(const std::wstring &ModeString) {
 	
 	GLFWwindow* win = window.getWindowInstance();
 	glfwSetKeyCallback(win, normalKeyCallback);
+
+	//Main program loop
 	while (!glfwWindowShouldClose(win)) {
 
 		//Input

@@ -4,7 +4,6 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <functional>
 #include <array>
 
 
@@ -27,8 +26,6 @@ private:
 	static int windowHeight;
 	static std::string windowTitle;
 	static bool isFullScreen;
-	
-
 
 	static bool getShaderCompileStatus(const int shaderProgram);
 

@@ -14,4 +14,5 @@ public:
 	virtual void evalCell(const unsigned char& target, unsigned char dest[3]) const {/*NOthing*/ };
 protected:
 	int countNeighbors(const int r, const int c, const int w, const int h) const;
+
 };

@@ -179,37 +179,39 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <None Include="..\..\glut_window\glut_window\triangle_vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\BriansBrainRuleSet.cpp" />
     <ClCompile Include="Source\CellCanvas.cpp" />
     <ClCompile Include="Source\CellEditState.cpp" />
     <ClCompile Include="Source\CellNormalState.cpp" />
-    <ClCompile Include="Source\CellRuleSet.cpp" />
     <ClCompile Include="Source\CellState.cpp" />
-    <ClCompile Include="Source\DayAndNightRuleSet.cpp" />
-    <ClCompile Include="Source\GameOfLifeRuleSet.cpp" />
-    <ClCompile Include="Source\HighlifeRuleSet.cpp" />
-    <ClCompile Include="Source\LifeWithoutDeathRuleSet.cpp" />
     <ClCompile Include="Source\Platform\Windows\WinMain.cpp" />
+    <ClCompile Include="Source\RenderFont.cpp" />
     <ClCompile Include="Source\RenderWindow.cpp" />
-    <ClCompile Include="Source\SeedsRuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\BriansBrainRuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\CellRuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\DayAndNightRuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\GameOfLifeRuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\HighlifeRuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\LifeWithoutDeathRuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\SeedsRuleSet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\AllSets.h" />
-    <ClInclude Include="Source\BrainsBrainRuleSet.h" />
     <ClInclude Include="Source\BuildInfo.h" />
     <ClInclude Include="Source\CellCanvas.h" />
     <ClInclude Include="Source\CellEditState.h" />
     <ClInclude Include="Source\CellNormalState.h" />
-    <ClInclude Include="Source\CellRuleSet.h" />
     <ClInclude Include="Source\CellState.h" />
-    <ClInclude Include="Source\DayAndNightRuleSet.h" />
-    <ClInclude Include="Source\GameOfLifeRuleSet.h" />
-    <ClInclude Include="Source\HighlifeRuleSet.h" />
-    <ClInclude Include="Source\LifeWithoutDeathRuleSet.h" />
     <ClInclude Include="Source\MacroDefs.h" />
     <ClInclude Include="Source\RenderContext.h" />
+    <ClInclude Include="Source\RenderFont.h" />
     <ClInclude Include="Source\RenderWindow.h" />
-    <ClInclude Include="Source\SeedsRuleSet.h" />
+    <ClInclude Include="Source\Rulesets\BrainsBrainRuleSet.h" />
+    <ClInclude Include="Source\Rulesets\CellRuleSet.h" />
+    <ClInclude Include="Source\Rulesets\DayAndNightRuleSet.h" />
+    <ClInclude Include="Source\Rulesets\GameOfLifeRuleSet.h" />
+    <ClInclude Include="Source\Rulesets\HighlifeRuleSet.h" />
+    <ClInclude Include="Source\Rulesets\LifeWithoutDeathRuleSet.h" />
+    <ClInclude Include="Source\Rulesets\SeedsRuleSet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

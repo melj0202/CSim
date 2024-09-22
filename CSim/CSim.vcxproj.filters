@@ -16,6 +16,9 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{4cda66f7-c934-470f-8e77-c91e9e5999b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Rulesets">
+      <UniqueIdentifier>{ddf69c71-6153-485e-a88a-0d1bd2cb292d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\glut_window\glut_window\triangle_vertex.glsl">
@@ -29,13 +32,7 @@
     <ClCompile Include="Source\CellCanvas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\CellRuleSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\RenderWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\GameOfLifeRuleSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\CellEditState.cpp">
@@ -47,22 +44,31 @@
     <ClCompile Include="Source\CellState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\BriansBrainRuleSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\DayAndNightRuleSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\HighlifeRuleSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LifeWithoutDeathRuleSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\SeedsRuleSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Platform\Windows\WinMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\BriansBrainRuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\DayAndNightRuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\GameOfLifeRuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\HighlifeRuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\LifeWithoutDeathRuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\SeedsRuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\CellRuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RenderFont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -70,13 +76,7 @@
     <ClInclude Include="Source\CellCanvas.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\CellRuleSet.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\RenderWindow.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\GameOfLifeRuleSet.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\CellEditState.h">
@@ -91,28 +91,37 @@
     <ClInclude Include="Source\RenderContext.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\BrainsBrainRuleSet.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\DayAndNightRuleSet.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\AllSets.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\HighlifeRuleSet.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LifeWithoutDeathRuleSet.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\SeedsRuleSet.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\MacroDefs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\BuildInfo.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\BrainsBrainRuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\DayAndNightRuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\GameOfLifeRuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\HighlifeRuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\LifeWithoutDeathRuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\SeedsRuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\CellRuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RenderFont.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

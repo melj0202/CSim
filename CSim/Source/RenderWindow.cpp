@@ -1,7 +1,7 @@
 #include "RenderWindow.h"
 #include "CellCanvas.h"
 #include "RenderContext.h"
-
+#include "../thirdparty/stb/stb_easy_font.h"
 
 int RenderWindow::windowWidth = 1280;
 int RenderWindow::windowHeight = 720;
@@ -165,9 +165,11 @@ void RenderWindow::bindKeyCallback(static std::function<void(GLFWwindow*, const 
 }
 */
 void RenderWindow::updateWindow() {
+	//Draw the canvas
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getDimensions()[0], getDimensions()[1], 0, GL_RGB, GL_UNSIGNED_BYTE, &CellCanvas::texCanvasBuffer[0]);
 	glUseProgram(pipeline.shaderProgram);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+
 	/* Swap front and back buffers */
 	glfwSwapBuffers(window);
 }

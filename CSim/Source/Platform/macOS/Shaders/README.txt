@@ -1,0 +1,1 @@
+Apparently you can define vertex and fragment shader functions in one file, so the shader will be written in one file

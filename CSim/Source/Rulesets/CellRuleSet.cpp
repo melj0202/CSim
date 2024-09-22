@@ -1,5 +1,5 @@
 #include "CellRuleSet.h"
-#include "CellCanvas.h"
+#include "../CellCanvas.h"
 
 #define CELL_DEAD 0
 
