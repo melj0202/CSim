@@ -71,6 +71,15 @@
     <ClCompile Include="Source\RenderFont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\CellLoadState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CellSaveState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CellLogger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\CellCanvas.h">
@@ -122,6 +131,15 @@
       <Filter>Source Files\Rulesets</Filter>
     </ClInclude>
     <ClInclude Include="Source\RenderFont.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CellLoadState.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CellSaveState.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CellLogger.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

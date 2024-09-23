@@ -1,7 +1,7 @@
 #include "CellEditState.h"
 #include "CellCanvas.h"
 #include "RenderWindow.h"
-void CellEditState::iterate(CellRuleSet& ruleSet)
+CellState* CellEditState::iterate(CellRuleSet* ruleSet, const char* filename, CellState* prevState)
 {
 	std::array<double, 2> mouseCoords = RenderWindow::getMouseCoords();
 
@@ -14,7 +14,8 @@ void CellEditState::iterate(CellRuleSet& ruleSet)
 		clearCanvas();
 
 	for (int i = 0; i < CellCanvas::canvasWidth * CellCanvas::canvasHeight; i++) {
-		ruleSet.evalCell(CellCanvas::lifeCanvas[i], &CellCanvas::texCanvasBuffer[i * 3]);
+		ruleSet->evalCell(CellCanvas::lifeCanvas[i], &CellCanvas::texCanvasBuffer[i * 3]);
 	}
 	RenderWindow::updateWindow();
+	return prevState;
 }

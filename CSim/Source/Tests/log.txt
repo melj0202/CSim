@@ -1,0 +1,9 @@
+ERROR: This is a test
+WARNING: This is a test
+INFO: This is a test
+ERROR: This is a test
+WARNING: This is a test
+INFO: This is a test
+ERROR: This is a test
+WARNING: This is a test
+INFO: This is a test

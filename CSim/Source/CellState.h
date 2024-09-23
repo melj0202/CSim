@@ -12,8 +12,9 @@
 
     		This would allow for the load/save states to go back into edit mode when done.
 */
+
 class CellState {
 public: 
 	virtual ~CellState() = default;
-	virtual void iterate(CellRuleSet& ruleSet) {/*Baseclass does nothing...*/ };
+	virtual CellState* iterate(CellRuleSet* ruleSet, const char* filename, CellState* prevState) { return prevState; };
 };

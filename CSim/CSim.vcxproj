@@ -181,7 +181,10 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
   <ItemGroup>
     <ClCompile Include="Source\CellCanvas.cpp" />
     <ClCompile Include="Source\CellEditState.cpp" />
+    <ClCompile Include="Source\CellLoadState.cpp" />
+    <ClCompile Include="Source\CellLogger.cpp" />
     <ClCompile Include="Source\CellNormalState.cpp" />
+    <ClCompile Include="Source\CellSaveState.cpp" />
     <ClCompile Include="Source\CellState.cpp" />
     <ClCompile Include="Source\Platform\Windows\WinMain.cpp" />
     <ClCompile Include="Source\RenderFont.cpp" />
@@ -199,7 +202,10 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClInclude Include="Source\BuildInfo.h" />
     <ClInclude Include="Source\CellCanvas.h" />
     <ClInclude Include="Source\CellEditState.h" />
+    <ClInclude Include="Source\CellLoadState.h" />
+    <ClInclude Include="Source\CellLogger.h" />
     <ClInclude Include="Source\CellNormalState.h" />
+    <ClInclude Include="Source\CellSaveState.h" />
     <ClInclude Include="Source\CellState.h" />
     <ClInclude Include="Source\MacroDefs.h" />
     <ClInclude Include="Source\RenderContext.h" />

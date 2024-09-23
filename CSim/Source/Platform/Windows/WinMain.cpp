@@ -4,13 +4,18 @@
 #include <cassert>
 #include "../../CellEditState.h"
 #include "../../CellNormalState.h"
+#include "../../CellSaveState.h"
+#include "../../CellLoadState.h"
 #include "../../BuildInfo.h"
 #include "../../CellCanvas.h"
-#include <thread>
+#include <windows.h>
 
+//Main loop states
 static struct stateStruct {
 	CellState* normal = new CellNormalState();
 	CellState* edit = new CellEditState();
+	CellState* save = new CellSaveState();
+	CellState* load = new CellLoadState();
 } canvasState;
 
 //GLOBAL VARIABLES
@@ -22,6 +27,7 @@ static unsigned int WinY = 720;
 static unsigned int CanvasX = 80;
 static unsigned int CanvasY = 60;
 static std::string ModeString = "GAME_OF_LIFE";
+CellRuleSet* ruleSet = nullptr;
 
 static CellState* currentState = canvasState.edit;
 
@@ -58,6 +64,58 @@ static void normalKeyCallback(GLFWwindow* window, const int key, int, const int 
 			//dirty = true;
 		}
 	}
+	else if (key == GLFW_KEY_S && mods == GLFW_MOD_CONTROL && action == GLFW_PRESS && currentState == canvasState.edit) {
+		//Go into save State
+		std::cout << "SAVE" << std::endl;
+
+		OPENFILENAMEA ofn;
+
+		char szFile[256] = "MyCanvas.csim\0";
+
+		ZeroMemory(&ofn, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = NULL;
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = "CSim File Format (.csim)\0*.CSIM";
+		ofn.nFilterIndex = 1;
+		ofn.lpstrFileTitle = NULL;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+		if (!GetSaveFileNameA(&ofn)) return;
+
+
+		CellState* prev = currentState;
+		currentState = canvasState.save;
+		currentState = currentState->iterate(ruleSet, szFile, prev);
+	}
+	else if (key == GLFW_KEY_O && mods == GLFW_MOD_CONTROL && action == GLFW_PRESS && currentState == canvasState.edit) {
+		std::cout << "LOAD" << std::endl;
+
+		OPENFILENAMEA ofn;
+
+		char szFile[256] = "myCanvas.csim\0";
+
+		ZeroMemory(&ofn, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = NULL;
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = "CSim File Format (.csim)\0*.CSIM\0";
+		ofn.nFilterIndex = 1;
+		ofn.lpstrFileTitle = NULL;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+		if (!GetOpenFileNameA(&ofn)) return;
+
+		CellState* prev = currentState;
+		currentState = canvasState.load;
+		currentState = currentState->iterate(ruleSet, szFile, prev);
+	}
 }
 
 
@@ -74,7 +132,7 @@ void CellMain(const std::wstring &ModeString) {
 	setCanvasPixel(51, 38, 0);
 
 	//Create the program states, and set the default mode to edit mode. Makes reimplementing pausing redundant. Go into edit mode to pause the sim.
-	CellRuleSet* ruleSet = nullptr;
+	
 
 	//Select a ruleset based on the command line arguements.  
 	if (ModeString == L"GAME_OF_LIFE") ruleSet = new GameOfLifeRuleSet();
@@ -99,7 +157,7 @@ void CellMain(const std::wstring &ModeString) {
 		//Input
 		glfwPollEvents();
 
-		currentState->iterate(*ruleSet);
+		currentState->iterate(ruleSet, nullptr, currentState);
 
 		if (currentState == canvasState.normal) Sleep(static_cast<DWORD>(speedFactor));
 	}

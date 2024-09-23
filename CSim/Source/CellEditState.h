@@ -8,6 +8,5 @@
 class CellEditState : public CellState {
 public:
 	~CellEditState() override = default;
-	void iterate(CellRuleSet& ruleSet) override;
-	bool first = true;
+	CellState* iterate(CellRuleSet* ruleSet, const char* filename, CellState* prevState) override;
 };

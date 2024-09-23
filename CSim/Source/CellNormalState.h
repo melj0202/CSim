@@ -7,6 +7,6 @@
 */
 class CellNormalState : public CellState {
 public:
-	void iterate(CellRuleSet& ruleSet) override;
+	CellState* iterate(CellRuleSet* ruleSet, const char* filename, CellState* prevState) override;
 	~CellNormalState() override = default;
 };
