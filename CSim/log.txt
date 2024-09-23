@@ -1,9 +1,0 @@
-INFO: Window Width: 1280
-INFO: Window Height: 720
-INFO: Canvas Width: 80
-INFO: Canvas Height: 60
-INFO: Selected Ruleset: GAME_OF_LIFE
-INFO: OpenGL Context: 3.3.0 NVIDIA 560.94
-INFO: Vertex shader compilation successful...
-INFO: Fragment shader compilation successful...
-INFO: Shader Program Linked Successfully...
