@@ -23,3 +23,5 @@ An improve version of my previous game of life program (now rendered with opengl
 - C (Edit Mode): Clear the cell colony
 - Q (Any): Quit the program
 - ESC (Any): Quit the program 
+- CTRL+S (Edit Mode) - Save the current state of the canvas to a file
+- CTRL+O (Edit Mode) - Load in a canvas state
