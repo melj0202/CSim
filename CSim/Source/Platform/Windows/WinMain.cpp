@@ -9,6 +9,7 @@
 #include "../../BuildInfo.h"
 #include "../../CellCanvas.h"
 #include <windows.h>
+#include "../../CellLogger.h"
 
 //Main loop states
 static struct stateStruct {
@@ -118,10 +119,43 @@ static void normalKeyCallback(GLFWwindow* window, const int key, int, const int 
 	}
 }
 
+void printDebugInfo() {
+	char bufString[256] = "Window Width: ";
+	char numbufString[32] = "";
+	_itoa_s(WinX, numbufString, 10);
+	strcat_s(bufString, numbufString);
+	CellLogger::LogInfo(bufString);
+
+	char bufString2[256] = "Window Height: ";
+	char numbufString2[32] = "";
+	_itoa_s(WinY, numbufString2, 10);
+	strcat_s(bufString2, numbufString2);
+	CellLogger::LogInfo(bufString2);
+
+	char bufString3[256] = "Canvas Width: ";
+	char numbufString3[32] = "";
+	_itoa_s(CanvasX, numbufString3, 10);
+	strcat_s(bufString3, numbufString3);
+	CellLogger::LogInfo(bufString3);
+
+	char bufString4[256] = "Canvas Height: ";
+	char numbufString4[32] = "";
+	_itoa_s(CanvasY, numbufString4, 10);
+	strcat_s(bufString4, numbufString4);
+	CellLogger::LogInfo(bufString4);
+
+	char bufString5[256+MAX_RULETAG_SIZE] = "Selected Ruleset: ";
+	char* modeChar5 = ModeString.data();
+	strcat_s(bufString5, modeChar5);
+	CellLogger::LogInfo(bufString5);
+}
 
 void CellMain(const std::wstring &ModeString) {
 
-	std::cout << WinX  << "\t" << WinY << std::endl;
+	CellLogger::initLogger();
+
+	printDebugInfo();
+
 	initCanvas(CanvasX, CanvasY); //Cell canvas
 
 	//Default config: Lay down a glider.

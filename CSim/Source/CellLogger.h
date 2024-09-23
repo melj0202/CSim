@@ -17,6 +17,11 @@ public:
     static bool LogInfo(const char* message);
     static bool Log(const char* message);
 
+    static bool LogError(char* message);
+    static bool LogWarning(char* message);
+    static bool LogInfo(char* message);
+    static bool Log(char* message);
+
     //Wide character logging functions
     static bool LogWError(const wchar_t* message) {/*DO NOTHING FOR NOW*/};
     static bool LogWWarning(const wchar_t* message) {/*DO NOTHING FOR NOW*/};

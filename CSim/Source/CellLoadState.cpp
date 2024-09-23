@@ -19,10 +19,10 @@ CellState* CellLoadState::iterate(CellRuleSet* ruleSet, const char* filename, Ce
     myfile.read(instring, MAX_RULETAG_SIZE);
     std::string ruleString = instring;
     if (std::strcmp(ruleString.c_str(), ruleSet->getRuleTag().data())) {
-        char err[33] = "This data is meant for ruleset: ";
-        CellLogger::LogError(std::strcat(err, instring));
-        std::cin.get();
-        std::exit(0);
+        char err[33+MAX_RULETAG_SIZE] = "This data is meant for ruleset: ";
+        strcat_s(err, instring);
+        CellLogger::LogError(err);
+        return prevState;
     }
     myfile.read(reinterpret_cast<char*>(&fWidth), sizeof(fWidth));
     myfile.read(reinterpret_cast<char*>(&fHeight), sizeof(fHeight));

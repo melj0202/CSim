@@ -2,6 +2,7 @@
 #include "CellCanvas.h"
 #include "RenderContext.h"
 #include "../thirdparty/stb/stb_easy_font.h"
+#include "CellLogger.h"
 
 int RenderWindow::windowWidth = 1280;
 int RenderWindow::windowHeight = 720;
@@ -56,9 +57,13 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 		std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
 		std::exit(-1);
 	}
-	const GLubyte* versionGL = glGetString(GL_VERSION);
+	char* versionGL = (char*)glGetString(GL_VERSION);
 
-	std::cout << versionGL << std::endl;
+	char fullGLString[256] = "OpenGL Context: ";
+
+	strcat_s(fullGLString, versionGL);
+
+	CellLogger::LogInfo(fullGLString);
 
 	//Load in shader files
 	std::ifstream fragShaderFile;
@@ -97,6 +102,8 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 
 	if (!getShaderCompileStatus(pipeline.vertexShader)) std::exit(-1);
 
+	CellLogger::LogInfo("Vertex shader compilation successful...");
+
 	pipeline.fragmaneShader = glCreateShader(GL_FRAGMENT_SHADER);
 	const char* fptr = fragShaderSource.data();
 	glShaderSource(pipeline.fragmaneShader, 1, &fptr, nullptr);
@@ -104,11 +111,14 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 
 	if (!getShaderCompileStatus(pipeline.fragmaneShader)) std::exit(-1);
 
+	CellLogger::LogInfo("Fragment shader compilation successful...");
+
 	pipeline.shaderProgram = glCreateProgram();
 
 	glAttachShader(pipeline.shaderProgram, pipeline.vertexShader);
 	glAttachShader(pipeline.shaderProgram, pipeline.fragmaneShader);
 	glLinkProgram(pipeline.shaderProgram);
+	CellLogger::LogInfo("Shader Program Linked Successfully...");
 	glDeleteShader(pipeline.vertexShader);
 	glDeleteShader(pipeline.fragmaneShader);
 
@@ -153,7 +163,8 @@ bool RenderWindow::getShaderCompileStatus(const int shaderProgram)
 	if (!success)
 	{
 		glGetShaderInfoLog(pipeline.shaderProgram, 512, nullptr, &infoLog[0]);
-		std::cerr << "Error: shader compilation failed!\n\n" << infoLog << std::endl;
+
+		CellLogger::LogError("shader compilation failed!\n");
 		return false;
 	}
 	else return true;
