@@ -40,3 +40,5 @@ x64/
 glfw_app/x64
 .vs/
 packages/
+
+log.*
