@@ -1,4 +1,4 @@
-This folder contains platform independent code
+This folder contains platform dependent code
 
 	Linux/
 		Linux Source Port
