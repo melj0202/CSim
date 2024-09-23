@@ -9,11 +9,11 @@ unsigned char* CellCanvas::texCanvasBuffer = new unsigned char[80 * 60 * 3];
 /*
 	The getter and setter translate the 2D coordinates specified to a 1D coordinate...
 */
-inline void setCanvasPixel(const int &x, const int &y, const unsigned char &colorVal) {
+__CSIM_FORCE_INLINE__ void setCanvasPixel(const int &x, const int &y, const unsigned char &colorVal) {
 	CellCanvas::lifeCanvas[CellCanvas::canvasWidth * (CellCanvas::canvasHeight - 1 - y) + x] = colorVal;
 };
 
-inline unsigned char getCanvasPixel(const int &x, const int &y) {
+__CSIM_FORCE_INLINE__ unsigned char getCanvasPixel(const int &x, const int &y) {
 	return CellCanvas::lifeCanvas[CellCanvas::canvasWidth * (CellCanvas::canvasHeight - 1 - y) + x];
 };
 

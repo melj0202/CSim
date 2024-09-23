@@ -1,3 +1,4 @@
+#include "../../MacroDefs.h"
 #include <string>
 #include "../../RenderWindow.h"
 #include "../../AllSets.h"
@@ -193,7 +194,7 @@ void CellMain(const std::wstring &ModeString) {
 
 		currentState->iterate(ruleSet, nullptr, currentState);
 
-		//if (currentState == canvasState.normal) Sleep(static_cast<DWORD>(speedFactor));
+		if (currentState == canvasState.normal) __SLEEP(speedFactor);
 	}
 
 	free(ruleSet);

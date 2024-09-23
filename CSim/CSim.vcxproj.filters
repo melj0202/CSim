@@ -98,6 +98,12 @@
     <ClCompile Include="Source\CellBrush.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\CellPencilBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CellRoundBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\CellCanvas.h">
@@ -176,6 +182,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\CellBrush.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CellPencilBrush.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CellRoundBrush.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

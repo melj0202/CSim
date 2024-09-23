@@ -7,29 +7,33 @@
 
 #ifdef __UNIX__
 #include <stdlib.h>
+#include <unistd.h>
 #endif
 
 #ifdef __APPLE__
 #include <stdlib.h>
+#include <unistd.h>
 #endif // __APPLE__
 
 
 #pragma once
 
-#ifndef __COBALT_FORCE_INLINE__
+#ifndef __CSIM_FORCE_INLINE__
 #if defined(_MSC_VER)
-#define __COBALT_FORCE_INLINE__ __forceinline
+#define __CSIM_FORCE_INLINE__ __forceinline
 #elif defined(__GNUC__) 
-#define __COBALT_FORCE_INLINE__ __attribute__((always_inline)) inline
+#define __CSIM_FORCE_INLINE__ __attribute__((always_inline)) inline
 #else
-#define __COBALT_FORCE_INLEIN__ inline
+#define __CSIM_FORCE_INLEIN__ inline
 #endif
-#endif // !__COBALT_FORCE_INLINE__
+#endif // !__CSIM_FORCE_INLINE__
 
 
 #ifndef __SLEEP
 #if defined(_WIN32)
-#define __SLEEP(n) Sleep(n)
+#define __SLEEP(n) Sleep(static_cast<DWORD>(n))
+#elif defined(__APPLE__)
+#define __SLEEP(n) sleep(static_cast<unsigned int>(n))
 #else
 #define __SLEEP(n) sleep(n);
 #endif

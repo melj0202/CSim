@@ -186,6 +186,8 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClCompile Include="Source\CellLoadState.cpp" />
     <ClCompile Include="Source\CellLogger.cpp" />
     <ClCompile Include="Source\CellNormalState.cpp" />
+    <ClCompile Include="Source\CellPencilBrush.cpp" />
+    <ClCompile Include="Source\CellRoundBrush.cpp" />
     <ClCompile Include="Source\CellSaveState.cpp" />
     <ClCompile Include="Source\CellState.cpp" />
     <ClCompile Include="Source\Platform\Windows\WinMain.cpp" />
@@ -213,6 +215,8 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClInclude Include="Source\CellLoadState.h" />
     <ClInclude Include="Source\CellLogger.h" />
     <ClInclude Include="Source\CellNormalState.h" />
+    <ClInclude Include="Source\CellPencilBrush.h" />
+    <ClInclude Include="Source\CellRoundBrush.h" />
     <ClInclude Include="Source\CellSaveState.h" />
     <ClInclude Include="Source\CellState.h" />
     <ClInclude Include="Source\MacroDefs.h" />
