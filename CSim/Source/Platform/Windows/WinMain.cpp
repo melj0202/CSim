@@ -193,7 +193,7 @@ void CellMain(const std::wstring &ModeString) {
 
 		currentState->iterate(ruleSet, nullptr, currentState);
 
-		if (currentState == canvasState.normal) Sleep(static_cast<DWORD>(speedFactor));
+		//if (currentState == canvasState.normal) Sleep(static_cast<DWORD>(speedFactor));
 	}
 
 	free(ruleSet);
@@ -257,7 +257,7 @@ void parseCommandLineArgs(int argc, wchar_t** argv) {
 			return;
 		}
 		if (!lstrcmpW(argv[i], L"-v") || !lstrcmpW(argv[i], L"--version")) {
-			std::cout << "CSim Cell Automata Simulator\nVersion: " << VERSION_NUMBER <<"\nBuild Date: " << BUILD_DATE_SHORT << " " << BUILD_TIMESTAMP << std::endl;
+			std::cout << "CSim Cell Automata Simulator\nVersion: " << VERSION_NUMBER << "\nBuild Date: " << BUILD_DATE_SHORT << " " << BUILD_TIMESTAMP << std::endl;
 			std::exit(0);
 			return;
 		}

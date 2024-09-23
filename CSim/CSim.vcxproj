@@ -179,7 +179,9 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <None Include="..\..\glut_window\glut_window\triangle_vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\CellBrush.cpp" />
     <ClCompile Include="Source\CellCanvas.cpp" />
+    <ClCompile Include="Source\CellCommandLine.cpp" />
     <ClCompile Include="Source\CellEditState.cpp" />
     <ClCompile Include="Source\CellLoadState.cpp" />
     <ClCompile Include="Source\CellLogger.cpp" />
@@ -195,12 +197,18 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClCompile Include="Source\Rulesets\GameOfLifeRuleSet.cpp" />
     <ClCompile Include="Source\Rulesets\HighlifeRuleSet.cpp" />
     <ClCompile Include="Source\Rulesets\LifeWithoutDeathRuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\Rule184RuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\Rule90RuleSet.cpp" />
     <ClCompile Include="Source\Rulesets\SeedsRuleSet.cpp" />
+    <ClCompile Include="Source\Rulesets\WireworldRuleSet.cpp" />
+    <ClCompile Include="Source\TTFLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\AllSets.h" />
     <ClInclude Include="Source\BuildInfo.h" />
+    <ClInclude Include="Source\CellBrush.h" />
     <ClInclude Include="Source\CellCanvas.h" />
+    <ClInclude Include="Source\CellCommandLine.h" />
     <ClInclude Include="Source\CellEditState.h" />
     <ClInclude Include="Source\CellLoadState.h" />
     <ClInclude Include="Source\CellLogger.h" />
@@ -217,7 +225,11 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClInclude Include="Source\Rulesets\GameOfLifeRuleSet.h" />
     <ClInclude Include="Source\Rulesets\HighlifeRuleSet.h" />
     <ClInclude Include="Source\Rulesets\LifeWithoutDeathRuleSet.h" />
+    <ClInclude Include="Source\Rulesets\Rule184RuleSet.h" />
+    <ClInclude Include="Source\Rulesets\Rule90RuleSet.h" />
     <ClInclude Include="Source\Rulesets\SeedsRuleSet.h" />
+    <ClInclude Include="Source\Rulesets\WireworldRuleSet.h" />
+    <ClInclude Include="Source\TTFLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -80,6 +80,24 @@
     <ClCompile Include="Source\CellLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\CellCommandLine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\Rule90RuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\Rule184RuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rulesets\WireworldRuleSet.cpp">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TTFLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CellBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\CellCanvas.h">
@@ -140,6 +158,24 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\CellLogger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CellCommandLine.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\Rule90RuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\Rule184RuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rulesets\WireworldRuleSet.h">
+      <Filter>Source Files\Rulesets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TTFLoader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CellBrush.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
