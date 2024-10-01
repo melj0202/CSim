@@ -8,6 +8,11 @@
 
 
 //There will only ever be one instance of this class so it is ok to make it static
+
+/*
+	Im slowly starting to realize that maybe making it a singleton was a better idea...
+	TODO: Make this class a singleton instead of a static class
+*/
 class RenderWindow {
 public:
 

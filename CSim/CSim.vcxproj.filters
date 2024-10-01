@@ -19,6 +19,15 @@
     <Filter Include="Source Files\Rulesets">
       <UniqueIdentifier>{ddf69c71-6153-485e-a88a-0d1bd2cb292d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AssetLoaders">
+      <UniqueIdentifier>{8b053f52-95a1-4732-a76d-83b44977b401}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Init">
+      <UniqueIdentifier>{371809aa-892d-4040-9510-5692676a1f44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{754a80d3-ffe5-470a-b6e9-689371a62130}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\glut_window\glut_window\triangle_vertex.glsl">
@@ -92,9 +101,6 @@
     <ClCompile Include="Source\Rulesets\WireworldRuleSet.cpp">
       <Filter>Source Files\Rulesets</Filter>
     </ClCompile>
-    <ClCompile Include="Source\TTFLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\CellBrush.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -102,6 +108,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\CellRoundBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\AssetLoaders\TTFLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -122,15 +131,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\RenderContext.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\AllSets.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\MacroDefs.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\BuildInfo.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Rulesets\BrainsBrainRuleSet.h">
@@ -178,9 +178,6 @@
     <ClInclude Include="Source\Rulesets\WireworldRuleSet.h">
       <Filter>Source Files\Rulesets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\TTFLoader.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\CellBrush.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -189,6 +186,30 @@
     </ClInclude>
     <ClInclude Include="Source\CellRoundBrush.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\AssetLoaders\TTFLoader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\AllSets.h">
+      <Filter>Source Files\Init</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BuildInfo.h">
+      <Filter>Source Files\Init</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MacroDefs.h">
+      <Filter>Source Files\Init</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Init\AllSets.h">
+      <Filter>Source Files\Init</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Init\BuildInfo.h">
+      <Filter>Source Files\Init</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Init\MacroDefs.h">
+      <Filter>Source Files\Init</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Init\AllState.h">
+      <Filter>Source Files\Init</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

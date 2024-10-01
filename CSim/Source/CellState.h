@@ -1,5 +1,5 @@
 #pragma once
-#include "MacroDefs.h"
+#include "Init/MacroDefs.h"
 #include "Rulesets/CellRuleSet.h"
 
 /*

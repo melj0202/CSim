@@ -1,5 +1,6 @@
 #include "CellCanvas.h"
 #include <iostream>
+#include <cstdint>
 
 int CellCanvas::canvasWidth = 80;
 int CellCanvas::canvasHeight = 60;

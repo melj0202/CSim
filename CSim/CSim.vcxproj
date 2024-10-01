@@ -111,7 +111,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\thirdparty\glfw-3.4.bin.WIN64\include;$(MSBuildProjectDirectory)\thirdparty\glew-2.1.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\thirdparty\freetype-2.13.3\include;$(MSBuildProjectDirectory)\thirdparty\glfw-3.4.bin.WIN64\include;$(MSBuildProjectDirectory)\thirdparty\glew-2.1.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
@@ -140,7 +140,7 @@ copy /y $(MSBuildProjectDirectory)\Shader $(MSBuildProjectDirectory)\..\x64\Debu
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\thirdparty\glfw-3.4.bin.WIN64\include;$(MSBuildProjectDirectory)\thirdparty\glew-2.1.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\thirdparty\freetype-2.13.3\include;$(MSBuildProjectDirectory)\thirdparty\glfw-3.4.bin.WIN64\include;$(MSBuildProjectDirectory)\thirdparty\glew-2.1.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -179,6 +179,7 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <None Include="..\..\glut_window\glut_window\triangle_vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\AssetLoaders\TTFLoader.cpp" />
     <ClCompile Include="Source\CellBrush.cpp" />
     <ClCompile Include="Source\CellCanvas.cpp" />
     <ClCompile Include="Source\CellCommandLine.cpp" />
@@ -203,10 +204,10 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClCompile Include="Source\Rulesets\Rule90RuleSet.cpp" />
     <ClCompile Include="Source\Rulesets\SeedsRuleSet.cpp" />
     <ClCompile Include="Source\Rulesets\WireworldRuleSet.cpp" />
-    <ClCompile Include="Source\TTFLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\AllSets.h" />
+    <ClInclude Include="Source\AssetLoaders\TTFLoader.h" />
     <ClInclude Include="Source\BuildInfo.h" />
     <ClInclude Include="Source\CellBrush.h" />
     <ClInclude Include="Source\CellCanvas.h" />
@@ -219,6 +220,10 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClInclude Include="Source\CellRoundBrush.h" />
     <ClInclude Include="Source\CellSaveState.h" />
     <ClInclude Include="Source\CellState.h" />
+    <ClInclude Include="Source\Init\AllSets.h" />
+    <ClInclude Include="Source\Init\AllState.h" />
+    <ClInclude Include="Source\Init\BuildInfo.h" />
+    <ClInclude Include="Source\Init\MacroDefs.h" />
     <ClInclude Include="Source\MacroDefs.h" />
     <ClInclude Include="Source\RenderContext.h" />
     <ClInclude Include="Source\RenderFont.h" />
@@ -233,7 +238,6 @@ copy /y $(MSBuildProjectDirectory)\Shader\* $(MSBuildProjectDirectory)\..\x64\Re
     <ClInclude Include="Source\Rulesets\Rule90RuleSet.h" />
     <ClInclude Include="Source\Rulesets\SeedsRuleSet.h" />
     <ClInclude Include="Source\Rulesets\WireworldRuleSet.h" />
-    <ClInclude Include="Source\TTFLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,18 +1,21 @@
-#include "../../MacroDefs.h"
+#include "../../Init/MacroDefs.h"
 #include <string>
 #include "../../RenderWindow.h"
-#include "../../AllSets.h"
+#include "../../Init/AllSets.h"
 #include <cassert>
-#include "../../CellEditState.h"
-#include "../../CellNormalState.h"
-#include "../../CellSaveState.h"
-#include "../../CellLoadState.h"
-#include "../../BuildInfo.h"
+#include "../../Init/AllState.h"
+#include "../../Init/BuildInfo.h"
 #include "../../CellCanvas.h"
 #include <windows.h>
 #include "../../CellLogger.h"
 
 //Main loop states
+
+/*
+	Yes, I am using raw pointers here...
+	I was only ever taught to use raw pointers, and since this is just a fun project,
+	It it not worth the hassle of rewriting the entire project to use smart pointers.
+*/
 static struct stateStruct {
 	CellState* normal = new CellNormalState();
 	CellState* edit = new CellEditState();
@@ -21,25 +24,32 @@ static struct stateStruct {
 } canvasState;
 
 //GLOBAL VARIABLES
-static float speedFactor = 64;
-static const int speedFactorMin = 1;
-static const int speedFactorMax = 128;
+static int speedFactor = 64;
+static const unsigned int speedFactorMin = 1;
+static const unsigned int speedFactorMax = 128;
 static unsigned int WinX = 1280;
 static unsigned int WinY = 720;
 static unsigned int CanvasX = 80;
 static unsigned int CanvasY = 60;
 static std::string ModeString = "GAME_OF_LIFE";
-CellRuleSet* ruleSet = nullptr;
+static CellRuleSet* ruleSet = nullptr;
 
-static CellState* currentState = canvasState.edit;
+static auto currentState = canvasState.edit;
 
 //Key callback function that is assigned to the window
 static void normalKeyCallback(GLFWwindow* window, const int key, int, const int action, const int mods)
 {
+	/*
+	*	Allow the user to quit the program
+	*/
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+	/*
+	*	Allow the user to adjust the speed of the cell simulation
+	*/
 	if (key == GLFW_KEY_EQUAL && action == GLFW_PRESS && mods == GLFW_MOD_SHIFT) {
 		if (speedFactor > speedFactorMin) speedFactor /= 2.0f;
 		else speedFactor = speedFactorMin;
@@ -51,6 +61,9 @@ static void normalKeyCallback(GLFWwindow* window, const int key, int, const int 
 
 		std::cout << "changed delay to: " << speedFactor << std::endl;
 	}
+	/*
+		Toggle between normal and edit modes.
+	*/
 	if (key == GLFW_KEY_E && action == GLFW_PRESS) {
 		if (currentState == canvasState.normal)
 		{
@@ -66,6 +79,10 @@ static void normalKeyCallback(GLFWwindow* window, const int key, int, const int 
 			//dirty = true;
 		}
 	}
+
+	/*
+		Go into save state and have the user pick a name for the file to save the data to
+	*/
 	else if (key == GLFW_KEY_S && mods == GLFW_MOD_CONTROL && action == GLFW_PRESS && currentState == canvasState.edit) {
 		//Go into save State
 		std::cout << "SAVE" << std::endl;
@@ -88,11 +105,12 @@ static void normalKeyCallback(GLFWwindow* window, const int key, int, const int 
 
 		if (!GetSaveFileNameA(&ofn)) return;
 
-
-		CellState* prev = currentState;
 		currentState = canvasState.save;
-		currentState = currentState->iterate(ruleSet, szFile, prev);
+		currentState = currentState->iterate(ruleSet, szFile, canvasState.edit);
 	}
+	/*
+		Go into load state and have the user pick a file to load in.
+	*/
 	else if (key == GLFW_KEY_O && mods == GLFW_MOD_CONTROL && action == GLFW_PRESS && currentState == canvasState.edit) {
 		std::cout << "LOAD" << std::endl;
 
@@ -114,9 +132,11 @@ static void normalKeyCallback(GLFWwindow* window, const int key, int, const int 
 
 		if (!GetOpenFileNameA(&ofn)) return;
 
-		CellState* prev = currentState;
 		currentState = canvasState.load;
-		currentState = currentState->iterate(ruleSet, szFile, prev);
+		currentState = currentState->iterate(ruleSet, szFile, canvasState.edit);
+	}
+	else if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
+		std::cout << "OPEN THE CONSOLE\n";
 	}
 }
 
@@ -181,8 +201,8 @@ void CellMain(const std::wstring &ModeString) {
 		exit(1);
 	}
 	
-	RenderWindow window(WinX, WinY, "Game of Life");
-	
+	RenderWindow window(WinX, WinY, "CSim");
+
 	GLFWwindow* win = window.getWindowInstance();
 	glfwSetKeyCallback(win, normalKeyCallback);
 
@@ -214,6 +234,7 @@ Command Line Arguements:
 
 bool StringIsDigit(wchar_t* wtarget) {
 	long wsize = wcslen(wtarget);
+
 	for (int i = 0; i < wsize; i++) {
 		if (!iswdigit((wint_t)wtarget[i])) {
 			std::wcout << wtarget[i]<< std::endl;

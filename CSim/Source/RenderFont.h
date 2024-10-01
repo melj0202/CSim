@@ -1,11 +1,39 @@
 #pragma once
-#include "../thirdparty/stb/stb_truetype.h"
+#include <string>
+#include <map>
+#include <ft2build.h>
+#include <freetype/freetype.h>
 
 /*
 	This class describes a font sheet to be used to render text to the screen
 
 	Use stb_truetype for now???
 */
-class RenderFont {
 
+class RenderFontLibrary {
+
+public:
+
+private:
+
+	/*
+		A font face table
+
+		std::string - name
+		FT_Face - Font face data
+
+		Search for the font face by name
+	*/
+	static FT_Library library;
+	static std::map<std::string, FT_Face> fontLibrary;
+
+
+	class RenderFont {
+	private:
+		RenderFont(std::string filename, std::string name);
+	public:
+		FT_Library lib;
+		FT_Face font;
+
+	};
 };

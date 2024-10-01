@@ -39,7 +39,7 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(width, height, "Game of Life", nullptr, nullptr);
+	window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
 	if (!window)
 	{
 		glfwTerminate();
