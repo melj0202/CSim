@@ -1,0 +1,27 @@
+"C:\Program Files\JetBrains\CLion 2024.2.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2024.2.2/bin/ninja/win/x64/ninja.exe" -DCMAKE_TOOLCHAIN_FILE=C:\Users\gravi\.vcpkg-clion\vcpkg\scripts\buildsystems\vcpkg.cmake -G Ninja -S C:\Users\gravi\Source\Projects\CSim\CSim -B C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio
+-- Including Win32 support
+-- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE) 
+CMake Warning at thirdparty/freetype-2.13.3/builds/cmake/FindHarfBuzz.cmake:99 (message):
+  Required version (2.0.0) is higher than found version ()
+Call Stack (most recent call first):
+  C:/Users/gravi/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake:859 (_find_package)
+  thirdparty/freetype-2.13.3/CMakeLists.txt:258 (find_package)
+
+
+CMake Deprecation Warning at thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt:7 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+-- Configuring done (0.8s)
+-- Generating done (0.1s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_TOOLCHAIN_FILE
+
+
+-- Build files have been written to: C:/Users/gravi/Source/Projects/CSim/CSim/cmake-build-debug-visual-studio

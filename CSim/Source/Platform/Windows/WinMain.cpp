@@ -165,10 +165,10 @@ void printDebugInfo() {
 	strcat_s(bufString4, numbufString4);
 	CellLogger::LogInfo(bufString4);
 
-	char bufString5[256+MAX_RULETAG_SIZE] = "Selected Ruleset: ";
-	char* modeChar5 = ModeString.data();
-	strcat_s(bufString5, modeChar5);
-	CellLogger::LogInfo(bufString5);
+	//char bufString5[256+MAX_RULETAG_SIZE] = "Selected Ruleset: ";
+	//char* modeChar5 = ModeString.data();
+	//strcat_s(bufString5, modeChar5);
+	//CellLogger::LogInfo(bufString5);
 }
 
 void CellMain(const std::wstring &ModeString) {

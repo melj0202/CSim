@@ -1,7 +1,7 @@
 #pragma once
-#include <string>
-#include <map>
 #include <ft2build.h>
+#include <map>
+#include <string>
 #include <freetype/freetype.h>
 
 /*
@@ -24,16 +24,16 @@ private:
 
 		Search for the font face by name
 	*/
-	static FT_Library library;
-	static std::map<std::string, FT_Face> fontLibrary;
+	//static FT_Library library;
+	//static std::map<std::string, FT_Face> fontLibrary;
 
 
 	class RenderFont {
 	private:
 		RenderFont(std::string filename, std::string name);
 	public:
-		FT_Library lib;
-		FT_Face font;
+
+		//FT_Face font;
 
 	};
 };

@@ -1,9 +1,6 @@
 #pragma once 
 #include "CellRuleSet.h"
 
-
-
-
 class BrainsBrainRuleSet: public CellRuleSet {
 public:
 
