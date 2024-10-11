@@ -6,7 +6,7 @@
 #include "Init/BuildInfo.h"
 #include "CellMain.h"
 
-static void ParseCommandLine(int argc, char **argv) {
+void SysCmdLine::ParseCommandLine(int argc, char **argv) {
     for (int i = 0; i < argc; i++) {
 
 		if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
@@ -82,7 +82,7 @@ static void ParseCommandLine(int argc, char **argv) {
 	}
 }
 
-static bool StringIsDigit(char* str) {
+bool SysCmdLine::StringIsDigit(char* str) {
     long size = strlen(str);
     for (int i = 0; i < size; i++) {
         if (!isdigit(str[i])) {
@@ -91,7 +91,7 @@ static bool StringIsDigit(char* str) {
     }
     return true;
 }
-static bool StringisModeString(char* str) {
+bool SysCmdLine::StringisModeString(char* str) {
     long size = strlen(str);
     for (int i = 0; i < size; i++) {
         if (!isalpha(str[i])) {

@@ -1,0 +1,7 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.29/Modules/FindOpenGL.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/GNUInstallDirs.cmake
+C:/Users/gravi/Source/Projects/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt
+C:/Users/gravi/Source/Projects/CSim/CSim/thirdparty/glew-2.1.0/glew.pc.in

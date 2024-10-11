@@ -13,15 +13,18 @@ Command Line Arguements:
  "--version": Displays extended version information and then kills the program.
 */
 
-#pragma once
-
+#ifndef _SYSCMDLINE_H_
+#define _SYSCMDLINE_H_
 
 /*
   These functions serve as the cross platform
  */
+class SysCmdLine {
+ public:
 
-extern void ParseCommandLine(int argc, char **argv);
+ static void ParseCommandLine(int argc, char **argv);
 
-extern bool StringIsDigit(char *str);
-extern bool StringisModeString(char *str);
-
+ static bool StringIsDigit(char *str);
+ static bool StringisModeString(char *str);
+};
+#endif

@@ -1,0 +1,20 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.29/Modules/BasicConfigVersion-SameMajorVersion.cmake.in
+C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDependentOption.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/CMakePackageConfigHelpers.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/CPack.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/CPackComponent.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/CheckIncludeFile.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/FindBZip2.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/FindPNG.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/FindPkgConfig.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/FindZLIB.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/GNUInstallDirs.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/SelectLibraryConfigurations.cmake
+C:/Program Files/CMake/share/cmake-3.29/Modules/WriteBasicConfigVersionFile.cmake
+C:/Program Files/CMake/share/cmake-3.29/Templates/CPackConfig.cmake.in
+C:/Users/gravi/Source/Projects/CSim/CSim/thirdparty/freetype-2.13.3/CMakeLists.txt
+C:/Users/gravi/Source/Projects/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindBrotliDec.cmake
+C:/Users/gravi/Source/Projects/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindHarfBuzz.cmake
