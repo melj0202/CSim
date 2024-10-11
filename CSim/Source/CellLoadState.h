@@ -1,3 +1,4 @@
+#pragma once
 #include "CellState.h"
 
 class CellLoadState : public CellState {

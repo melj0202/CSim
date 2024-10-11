@@ -51,7 +51,7 @@ build cmake_object_order_depends_target_CSim: phony || cmake_object_order_depend
 
 build CMakeFiles\CSim.dir\Source\Rulesets\BriansBrainRuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\BriansBrainRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -60,7 +60,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\BriansBrainRuleSet.cpp.obj: CXX_COMPIL
 
 build CMakeFiles\CSim.dir\Source\Rulesets\CellRuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\CellRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -69,7 +69,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\CellRuleSet.cpp.obj: CXX_COMPILER__CSi
 
 build CMakeFiles\CSim.dir\Source\Rulesets\DayAndNightRuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\DayAndNightRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -78,7 +78,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\DayAndNightRuleSet.cpp.obj: CXX_COMPIL
 
 build CMakeFiles\CSim.dir\Source\Rulesets\GameOfLifeRuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\GameOfLifeRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -87,7 +87,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\GameOfLifeRuleSet.cpp.obj: CXX_COMPILE
 
 build CMakeFiles\CSim.dir\Source\Rulesets\HighlifeRuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\HighlifeRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -96,7 +96,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\HighlifeRuleSet.cpp.obj: CXX_COMPILER_
 
 build CMakeFiles\CSim.dir\Source\Rulesets\LifeWithoutDeathRuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\LifeWithoutDeathRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -105,7 +105,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\LifeWithoutDeathRuleSet.cpp.obj: CXX_C
 
 build CMakeFiles\CSim.dir\Source\Rulesets\Rule90RuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\Rule90RuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -114,7 +114,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\Rule90RuleSet.cpp.obj: CXX_COMPILER__C
 
 build CMakeFiles\CSim.dir\Source\Rulesets\Rule184RuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\Rule184RuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -123,7 +123,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\Rule184RuleSet.cpp.obj: CXX_COMPILER__
 
 build CMakeFiles\CSim.dir\Source\Rulesets\SeedsRuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\SeedsRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -132,7 +132,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\SeedsRuleSet.cpp.obj: CXX_COMPILER__CS
 
 build CMakeFiles\CSim.dir\Source\Rulesets\WireworldRuleSet.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Rulesets\WireworldRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Rulesets
@@ -141,7 +141,7 @@ build CMakeFiles\CSim.dir\Source\Rulesets\WireworldRuleSet.cpp.obj: CXX_COMPILER
 
 build CMakeFiles\CSim.dir\Source\Platform\Windows\WinMain.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Platform\Windows\WinMain.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Platform\Windows
@@ -150,7 +150,7 @@ build CMakeFiles\CSim.dir\Source\Platform\Windows\WinMain.cpp.obj: CXX_COMPILER_
 
 build CMakeFiles\CSim.dir\Source\Init\SysInfo.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Init\SysInfo.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Init
@@ -159,7 +159,7 @@ build CMakeFiles\CSim.dir\Source\Init\SysInfo.cpp.obj: CXX_COMPILER__CSim_unscan
 
 build CMakeFiles\CSim.dir\Source\AssetLoaders\TTFLoader.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\AssetLoaders\TTFLoader.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\AssetLoaders
@@ -168,7 +168,7 @@ build CMakeFiles\CSim.dir\Source\AssetLoaders\TTFLoader.cpp.obj: CXX_COMPILER__C
 
 build CMakeFiles\CSim.dir\Source\CellBrush.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellBrush.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -177,7 +177,7 @@ build CMakeFiles\CSim.dir\Source\CellBrush.cpp.obj: CXX_COMPILER__CSim_unscanned
 
 build CMakeFiles\CSim.dir\Source\CellCanvas.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellCanvas.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -186,7 +186,7 @@ build CMakeFiles\CSim.dir\Source\CellCanvas.cpp.obj: CXX_COMPILER__CSim_unscanne
 
 build CMakeFiles\CSim.dir\Source\CellCommandLine.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellCommandLine.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -195,7 +195,7 @@ build CMakeFiles\CSim.dir\Source\CellCommandLine.cpp.obj: CXX_COMPILER__CSim_uns
 
 build CMakeFiles\CSim.dir\Source\CellEditState.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellEditState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -204,7 +204,7 @@ build CMakeFiles\CSim.dir\Source\CellEditState.cpp.obj: CXX_COMPILER__CSim_unsca
 
 build CMakeFiles\CSim.dir\Source\CellLoadState.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellLoadState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -213,7 +213,7 @@ build CMakeFiles\CSim.dir\Source\CellLoadState.cpp.obj: CXX_COMPILER__CSim_unsca
 
 build CMakeFiles\CSim.dir\Source\CellLogger.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellLogger.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -222,7 +222,7 @@ build CMakeFiles\CSim.dir\Source\CellLogger.cpp.obj: CXX_COMPILER__CSim_unscanne
 
 build CMakeFiles\CSim.dir\Source\CellNormalState.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellNormalState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -231,7 +231,7 @@ build CMakeFiles\CSim.dir\Source\CellNormalState.cpp.obj: CXX_COMPILER__CSim_uns
 
 build CMakeFiles\CSim.dir\Source\CellPencilBrush.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellPencilBrush.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -240,7 +240,7 @@ build CMakeFiles\CSim.dir\Source\CellPencilBrush.cpp.obj: CXX_COMPILER__CSim_uns
 
 build CMakeFiles\CSim.dir\Source\CellRoundBrush.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellRoundBrush.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -249,7 +249,7 @@ build CMakeFiles\CSim.dir\Source\CellRoundBrush.cpp.obj: CXX_COMPILER__CSim_unsc
 
 build CMakeFiles\CSim.dir\Source\CellSaveState.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellSaveState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -258,7 +258,7 @@ build CMakeFiles\CSim.dir\Source\CellSaveState.cpp.obj: CXX_COMPILER__CSim_unsca
 
 build CMakeFiles\CSim.dir\Source\CellState.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -267,7 +267,7 @@ build CMakeFiles\CSim.dir\Source\CellState.cpp.obj: CXX_COMPILER__CSim_unscanned
 
 build CMakeFiles\CSim.dir\Source\RenderFont.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\RenderFont.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
@@ -276,10 +276,37 @@ build CMakeFiles\CSim.dir\Source\RenderFont.cpp.obj: CXX_COMPILER__CSim_unscanne
 
 build CMakeFiles\CSim.dir\Source\RenderWindow.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\RenderWindow.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
   OBJECT_DIR = CMakeFiles\CSim.dir
   OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
+  TARGET_COMPILE_PDB = CMakeFiles\CSim.dir\
+  TARGET_PDB = CSim.pdb
+
+build CMakeFiles\CSim.dir\Source\SysCmdLine.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\SysCmdLine.cpp || cmake_object_order_depends_target_CSim
+  DEFINES = -DGLEW_STATIC
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
+  OBJECT_DIR = CMakeFiles\CSim.dir
+  OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
+  TARGET_COMPILE_PDB = CMakeFiles\CSim.dir\
+  TARGET_PDB = CSim.pdb
+
+build CMakeFiles\CSim.dir\Source\CellMain.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\CellMain.cpp || cmake_object_order_depends_target_CSim
+  DEFINES = -DGLEW_STATIC
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
+  OBJECT_DIR = CMakeFiles\CSim.dir
+  OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source
+  TARGET_COMPILE_PDB = CMakeFiles\CSim.dir\
+  TARGET_PDB = CSim.pdb
+
+build CMakeFiles\CSim.dir\Source\Platform\Windows\WinSaveLoad.cpp.obj: CXX_COMPILER__CSim_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\Source\Platform\Windows\WinSaveLoad.cpp || cmake_object_order_depends_target_CSim
+  DEFINES = -DGLEW_STATIC
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include
+  OBJECT_DIR = CMakeFiles\CSim.dir
+  OBJECT_FILE_DIR = CMakeFiles\CSim.dir\Source\Platform\Windows
   TARGET_COMPILE_PDB = CMakeFiles\CSim.dir\
   TARGET_PDB = CSim.pdb
 
@@ -291,12 +318,12 @@ build CMakeFiles\CSim.dir\Source\RenderWindow.cpp.obj: CXX_COMPILER__CSim_unscan
 #############################################
 # Link the executable CSim.exe
 
-build CSim.exe: CXX_EXECUTABLE_LINKER__CSim_Debug CMakeFiles\CSim.dir\Source\Rulesets\BriansBrainRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\CellRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\DayAndNightRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\GameOfLifeRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\HighlifeRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\LifeWithoutDeathRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\Rule90RuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\Rule184RuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\SeedsRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\WireworldRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Platform\Windows\WinMain.cpp.obj CMakeFiles\CSim.dir\Source\Init\SysInfo.cpp.obj CMakeFiles\CSim.dir\Source\AssetLoaders\TTFLoader.cpp.obj CMakeFiles\CSim.dir\Source\CellBrush.cpp.obj CMakeFiles\CSim.dir\Source\CellCanvas.cpp.obj CMakeFiles\CSim.dir\Source\CellCommandLine.cpp.obj CMakeFiles\CSim.dir\Source\CellEditState.cpp.obj CMakeFiles\CSim.dir\Source\CellLoadState.cpp.obj CMakeFiles\CSim.dir\Source\CellLogger.cpp.obj CMakeFiles\CSim.dir\Source\CellNormalState.cpp.obj CMakeFiles\CSim.dir\Source\CellPencilBrush.cpp.obj CMakeFiles\CSim.dir\Source\CellRoundBrush.cpp.obj CMakeFiles\CSim.dir\Source\CellSaveState.cpp.obj CMakeFiles\CSim.dir\Source\CellState.cpp.obj CMakeFiles\CSim.dir\Source\RenderFont.cpp.obj CMakeFiles\CSim.dir\Source\RenderWindow.cpp.obj | thirdparty\freetype-2.13.3\freetyped.lib lib\libglew32d.lib thirdparty\glfw-3.4\src\glfw3.lib C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\zlibd.lib C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\bz2d.lib C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\libpng16d.lib C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\zlibd.lib C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\bz2d.lib C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\libpng16d.lib C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\brotlidec.lib || lib\libglew32d.lib thirdparty\freetype-2.13.3\freetyped.lib thirdparty\glfw-3.4\src\glfw3.lib
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+build CSim.exe: CXX_EXECUTABLE_LINKER__CSim_Debug CMakeFiles\CSim.dir\Source\Rulesets\BriansBrainRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\CellRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\DayAndNightRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\GameOfLifeRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\HighlifeRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\LifeWithoutDeathRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\Rule90RuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\Rule184RuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\SeedsRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Rulesets\WireworldRuleSet.cpp.obj CMakeFiles\CSim.dir\Source\Platform\Windows\WinMain.cpp.obj CMakeFiles\CSim.dir\Source\Init\SysInfo.cpp.obj CMakeFiles\CSim.dir\Source\AssetLoaders\TTFLoader.cpp.obj CMakeFiles\CSim.dir\Source\CellBrush.cpp.obj CMakeFiles\CSim.dir\Source\CellCanvas.cpp.obj CMakeFiles\CSim.dir\Source\CellCommandLine.cpp.obj CMakeFiles\CSim.dir\Source\CellEditState.cpp.obj CMakeFiles\CSim.dir\Source\CellLoadState.cpp.obj CMakeFiles\CSim.dir\Source\CellLogger.cpp.obj CMakeFiles\CSim.dir\Source\CellNormalState.cpp.obj CMakeFiles\CSim.dir\Source\CellPencilBrush.cpp.obj CMakeFiles\CSim.dir\Source\CellRoundBrush.cpp.obj CMakeFiles\CSim.dir\Source\CellSaveState.cpp.obj CMakeFiles\CSim.dir\Source\CellState.cpp.obj CMakeFiles\CSim.dir\Source\RenderFont.cpp.obj CMakeFiles\CSim.dir\Source\RenderWindow.cpp.obj CMakeFiles\CSim.dir\Source\SysCmdLine.cpp.obj CMakeFiles\CSim.dir\Source\CellMain.cpp.obj CMakeFiles\CSim.dir\Source\Platform\Windows\WinSaveLoad.cpp.obj | thirdparty\freetype-2.13.3\freetyped.lib lib\libglew32d.lib thirdparty\glfw-3.4\src\glfw3.lib || lib\libglew32d.lib thirdparty\freetype-2.13.3\freetyped.lib thirdparty\glfw-3.4\src\glfw3.lib
+  FLAGS = /Wall /EHsc /MDd /Zi /Ob0 /Od /RTC1
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
-  LINK_LIBRARIES = thirdparty\freetype-2.13.3\freetyped.lib  lib\libglew32d.lib  thirdparty\glfw-3.4\src\glfw3.lib  opengl32.lib  C:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\zlibd.lib  C:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\bz2d.lib  C:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\libpng16d.lib  C:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\zlibd.lib  C:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\bz2d.lib  C:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\libpng16d.lib  C:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\debug\lib\brotlidec.lib  opengl32.lib  glu32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+  LINK_LIBRARIES = thirdparty\freetype-2.13.3\freetyped.lib  lib\libglew32d.lib  thirdparty\glfw-3.4\src\glfw3.lib  opengl32.lib  opengl32.lib  glu32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   OBJECT_DIR = CMakeFiles\CSim.dir
-  POST_BUILD = C:\Windows\system32\cmd.exe /C "cd /D C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio && C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/Users/gravi/.vcpkg-clion/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/Users/gravi/Source/Projects/CSim/CSim/cmake-build-debug-visual-studio/CSim.exe -installedDir C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/debug/bin -OutVariable out"
+  POST_BUILD = cd .
   PRE_LINK = cd .
   TARGET_COMPILE_PDB = CMakeFiles\CSim.dir\
   TARGET_FILE = CSim.exe
@@ -974,7 +1001,7 @@ build cmake_object_order_depends_target_freetype: phony || .
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\autofit\autofit.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\autofit\autofit.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\autofit
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -983,7 +1010,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\autofit\autofit.c.o
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftbase.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftbase.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -992,7 +1019,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftbase.c.obj: 
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftbbox.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftbbox.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1001,7 +1028,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftbbox.c.obj: 
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftbdf.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftbdf.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1010,7 +1037,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftbdf.c.obj: C
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftbitmap.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftbitmap.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1019,7 +1046,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftbitmap.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftcid.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftcid.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1028,7 +1055,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftcid.c.obj: C
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftfstype.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftfstype.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1037,7 +1064,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftfstype.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftgasp.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftgasp.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1046,7 +1073,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftgasp.c.obj: 
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftglyph.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftglyph.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1055,7 +1082,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftglyph.c.obj:
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftgxval.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftgxval.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1064,7 +1091,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftgxval.c.obj:
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftinit.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftinit.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1073,7 +1100,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftinit.c.obj: 
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftmm.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftmm.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1082,7 +1109,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftmm.c.obj: C_
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftotval.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftotval.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1091,7 +1118,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftotval.c.obj:
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftpatent.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftpatent.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1100,7 +1127,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftpatent.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftpfr.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftpfr.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1109,7 +1136,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftpfr.c.obj: C
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftstroke.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftstroke.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1118,7 +1145,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftstroke.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftsynth.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftsynth.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1127,7 +1154,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftsynth.c.obj:
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\fttype1.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\fttype1.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1136,7 +1163,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\fttype1.c.obj:
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftwinfnt.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\base\ftwinfnt.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1145,7 +1172,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftwinfnt.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\bdf\bdf.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\bdf\bdf.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\bdf
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1154,7 +1181,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\bdf\bdf.c.obj: C_CO
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\bzip2\ftbzip2.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\bzip2\ftbzip2.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\bzip2
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1163,7 +1190,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\bzip2\ftbzip2.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\cache\ftcache.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\cache\ftcache.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\cache
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1172,7 +1199,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\cache\ftcache.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\cff\cff.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\cff\cff.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\cff
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1181,7 +1208,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\cff\cff.c.obj: C_CO
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\cid\type1cid.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\cid\type1cid.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\cid
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1190,7 +1217,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\cid\type1cid.c.obj:
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\gzip\ftgzip.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\gzip\ftgzip.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\gzip
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1199,7 +1226,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\gzip\ftgzip.c.obj: 
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\lzw\ftlzw.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\lzw\ftlzw.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\lzw
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1208,7 +1235,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\lzw\ftlzw.c.obj: C_
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\pcf\pcf.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\pcf\pcf.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\pcf
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1217,7 +1244,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\pcf\pcf.c.obj: C_CO
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\pfr\pfr.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\pfr\pfr.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\pfr
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1226,7 +1253,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\pfr\pfr.c.obj: C_CO
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\psaux\psaux.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\psaux\psaux.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\psaux
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1235,7 +1262,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\psaux\psaux.c.obj: 
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\pshinter\pshinter.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\pshinter\pshinter.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\pshinter
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1244,7 +1271,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\pshinter\pshinter.c
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\psnames\psnames.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\psnames\psnames.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\psnames
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1253,7 +1280,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\psnames\psnames.c.o
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\raster\raster.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\raster\raster.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\raster
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1262,7 +1289,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\raster\raster.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\sdf\sdf.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\sdf\sdf.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\sdf
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1271,7 +1298,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\sdf\sdf.c.obj: C_CO
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\sfnt\sfnt.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\sfnt\sfnt.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\sfnt
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1280,7 +1307,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\sfnt\sfnt.c.obj: C_
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\smooth\smooth.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\smooth\smooth.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\smooth
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1289,7 +1316,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\smooth\smooth.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\svg\svg.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\svg\svg.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\svg
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1298,7 +1325,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\svg\svg.c.obj: C_CO
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\truetype\truetype.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\truetype\truetype.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\truetype
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1307,7 +1334,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\truetype\truetype.c
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\type1\type1.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\type1\type1.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\type1
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1316,7 +1343,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\type1\type1.c.obj: 
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\type42\type42.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\type42\type42.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\type42
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1325,7 +1352,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\type42\type42.c.obj
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\winfonts\winfnt.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\src\winfonts\winfnt.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\winfonts
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1334,7 +1361,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\winfonts\winfnt.c.o
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\builds\windows\ftsystem.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\windows\ftsystem.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\builds\windows
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1343,7 +1370,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\builds\windows\ftsystem
 build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\builds\windows\ftdebug.c.obj: C_COMPILER__freetype_unscanned_Debug C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\windows\ftdebug.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   FLAGS = /DWIN32 /D_WINDOWS /W3 /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -IC:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -IC:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\builds\windows
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1353,7 +1380,7 @@ build thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftver.rc.res: 
   DEFINES = -DFT2_BUILD_LIBRARY -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base\ftver.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -I C:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -I C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config -I C:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\include
+  INCLUDES = -I C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include -I C:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\include -I C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\freetype-2.13.3\include\freetype\config
   OBJECT_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir
   OBJECT_FILE_DIR = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\src\base
   TARGET_COMPILE_PDB = thirdparty\freetype-2.13.3\CMakeFiles\freetype.dir\freetype.pdb
@@ -1500,7 +1527,7 @@ build bin\glew32d.dll lib\glew32d.lib: C_SHARED_LIBRARY_LINKER__glew_Debug third
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL
   LINK_LIBRARIES = -BASE:0x62AA0000  -nodefaultlib  -noentry  opengl32.lib  glu32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   OBJECT_DIR = thirdparty\glew-2.1.0\build\cmake\CMakeFiles\glew.dir
-  POST_BUILD = C:\Windows\system32\cmd.exe /C "cd /D C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\glew-2.1.0\build\cmake && C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/Users/gravi/.vcpkg-clion/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/Users/gravi/Source/Projects/CSim/CSim/cmake-build-debug-visual-studio/bin/glew32d.dll -installedDir C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/debug/bin -OutVariable out"
+  POST_BUILD = cd .
   PRE_LINK = cd .
   RESTAT = 1
   TARGET_COMPILE_PDB = thirdparty\glew-2.1.0\build\cmake\CMakeFiles\glew.dir\
@@ -1595,7 +1622,7 @@ build bin\glewinfo.exe: C_EXECUTABLE_LINKER__glewinfo_Debug thirdparty\glew-2.1.
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
   LINK_LIBRARIES = lib\glew32d.lib  opengl32.lib  glu32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   OBJECT_DIR = thirdparty\glew-2.1.0\build\cmake\CMakeFiles\glewinfo.dir
-  POST_BUILD = C:\Windows\system32\cmd.exe /C "cd /D C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\glew-2.1.0\build\cmake && C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/Users/gravi/.vcpkg-clion/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/Users/gravi/Source/Projects/CSim/CSim/cmake-build-debug-visual-studio/bin/glewinfo.exe -installedDir C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/debug/bin -OutVariable out"
+  POST_BUILD = cd .
   PRE_LINK = cd .
   TARGET_COMPILE_PDB = thirdparty\glew-2.1.0\build\cmake\CMakeFiles\glewinfo.dir\
   TARGET_FILE = bin\glewinfo.exe
@@ -1643,7 +1670,7 @@ build bin\visualinfo.exe: C_EXECUTABLE_LINKER__visualinfo_Debug thirdparty\glew-
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
   LINK_LIBRARIES = lib\glew32d.lib  opengl32.lib  glu32.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   OBJECT_DIR = thirdparty\glew-2.1.0\build\cmake\CMakeFiles\visualinfo.dir
-  POST_BUILD = C:\Windows\system32\cmd.exe /C "cd /D C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug-visual-studio\thirdparty\glew-2.1.0\build\cmake && C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -executionpolicy Bypass -file C:/Users/gravi/.vcpkg-clion/vcpkg/scripts/buildsystems/msbuild/applocal.ps1 -targetBinary C:/Users/gravi/Source/Projects/CSim/CSim/cmake-build-debug-visual-studio/bin/visualinfo.exe -installedDir C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/debug/bin -OutVariable out"
+  POST_BUILD = cd .
   PRE_LINK = cd .
   TARGET_COMPILE_PDB = thirdparty\glew-2.1.0\build\cmake\CMakeFiles\visualinfo.dir\
   TARGET_FILE = bin\visualinfo.exe
@@ -1821,14 +1848,14 @@ build thirdparty\glm\all: phony
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\BasicConfigVersion-SameMajorVersion.cmake.in C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeDependentOption.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakePackageConfigHelpers.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakePushCheckState.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeRCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CPack.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CPackComponent.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckCSourceCompiles.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckIncludeFile.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckLibraryExists.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckSymbolExists.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindBZip2.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindDoxygen.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindOpenGL.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPNG.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPackageHandleStandardArgs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPackageMessage.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPkgConfig.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindThreads.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindZLIB.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\GNUInstallDirs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Internal\CheckSourceCompiles.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-Initialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\WindowsPaths.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\SelectLibraryConfigurations.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\WriteBasicConfigVersionFile.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Templates\CPackConfig.cmake.in C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\share\png\vcpkg-cmake-wrapper.cmake C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\share\zlib\vcpkg-cmake-wrapper.cmake C$:\Users\gravi\.vcpkg-clion\vcpkg\scripts\buildsystems\vcpkg.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\cmake\FindBrotliDec.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\cmake\FindHarfBuzz.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\build\cmake\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\glew.pc.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\cmake_uninstall.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\glfw3.pc.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\glfw3Config.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\docs\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\docs\Doxyfile.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\src\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glm\CMakeLists.txt CMakeCache.txt CMakeFiles\3.29.6\CMakeCCompiler.cmake CMakeFiles\3.29.6\CMakeCXXCompiler.cmake CMakeFiles\3.29.6\CMakeRCCompiler.cmake CMakeFiles\3.29.6\CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE | C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\BasicConfigVersion-SameMajorVersion.cmake.in C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeDependentOption.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakePackageConfigHelpers.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeRCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CPack.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CPackComponent.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckCSourceCompiles.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckIncludeFile.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckLibraryExists.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindBZip2.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindDoxygen.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindOpenGL.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPNG.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPackageHandleStandardArgs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPackageMessage.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPkgConfig.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindThreads.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindZLIB.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\GNUInstallDirs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Internal\CheckSourceCompiles.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-Initialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\WindowsPaths.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\SelectLibraryConfigurations.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\WriteBasicConfigVersionFile.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Templates\CPackConfig.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\cmake\FindBrotliDec.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\cmake\FindHarfBuzz.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\build\cmake\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\glew.pc.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\cmake_uninstall.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\glfw3.pc.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\glfw3Config.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\docs\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\docs\Doxyfile.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\src\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glm\CMakeLists.txt CMakeCache.txt CMakeFiles\3.29.6\CMakeCCompiler.cmake CMakeFiles\3.29.6\CMakeCXXCompiler.cmake CMakeFiles\3.29.6\CMakeRCCompiler.cmake CMakeFiles\3.29.6\CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\BasicConfigVersion-SameMajorVersion.cmake.in C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeDependentOption.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakePackageConfigHelpers.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakePushCheckState.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeRCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CPack.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CPackComponent.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckCSourceCompiles.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckIncludeFile.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckLibraryExists.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckSymbolExists.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindBZip2.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindDoxygen.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindOpenGL.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPNG.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPackageHandleStandardArgs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPackageMessage.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPkgConfig.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindThreads.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindZLIB.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\GNUInstallDirs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Internal\CheckSourceCompiles.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-Initialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\WindowsPaths.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\SelectLibraryConfigurations.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\WriteBasicConfigVersionFile.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Templates\CPackConfig.cmake.in C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\share\png\vcpkg-cmake-wrapper.cmake C$:\Users\gravi\.vcpkg-clion\vcpkg\installed\x64-windows\share\zlib\vcpkg-cmake-wrapper.cmake C$:\Users\gravi\.vcpkg-clion\vcpkg\scripts\buildsystems\vcpkg.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\cmake\FindBrotliDec.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\cmake\FindHarfBuzz.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\build\cmake\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\glew.pc.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\cmake_uninstall.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\glfw3.pc.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\glfw3Config.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\docs\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\docs\Doxyfile.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\src\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glm\CMakeLists.txt CMakeCache.txt CMakeFiles\3.29.6\CMakeCCompiler.cmake CMakeFiles\3.29.6\CMakeCXXCompiler.cmake CMakeFiles\3.29.6\CMakeRCCompiler.cmake CMakeFiles\3.29.6\CMakeSystem.cmake: phony
+build C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\BasicConfigVersion-SameMajorVersion.cmake.in C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeDependentOption.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakePackageConfigHelpers.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeRCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CPack.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CPackComponent.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckCSourceCompiles.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckIncludeFile.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\CheckLibraryExists.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Compiler\MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindBZip2.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindDoxygen.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindOpenGL.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPNG.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPackageHandleStandardArgs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPackageMessage.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindPkgConfig.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindThreads.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\FindZLIB.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\GNUInstallDirs.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Internal\CheckSourceCompiles.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-Initialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\Windows.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\Platform\WindowsPaths.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\SelectLibraryConfigurations.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Modules\WriteBasicConfigVersionFile.cmake C$:\Program$ Files\JetBrains\CLion$ 2024.2.2\bin\cmake\win\x64\share\cmake-3.29\Templates\CPackConfig.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\cmake\FindBrotliDec.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\freetype-2.13.3\builds\cmake\FindHarfBuzz.cmake C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\build\cmake\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glew-2.1.0\glew.pc.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\cmake_uninstall.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\glfw3.pc.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\CMake\glfw3Config.cmake.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\docs\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\docs\Doxyfile.in C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glfw-3.4\src\CMakeLists.txt C$:\Users\gravi\Source\Projects\CSim\CSim\thirdparty\glm\CMakeLists.txt CMakeCache.txt CMakeFiles\3.29.6\CMakeCCompiler.cmake CMakeFiles\3.29.6\CMakeCXXCompiler.cmake CMakeFiles\3.29.6\CMakeRCCompiler.cmake CMakeFiles\3.29.6\CMakeSystem.cmake: phony
 
 
 #############################################

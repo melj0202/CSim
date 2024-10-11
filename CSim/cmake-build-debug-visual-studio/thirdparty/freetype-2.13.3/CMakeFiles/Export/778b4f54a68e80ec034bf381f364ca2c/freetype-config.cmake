@@ -60,7 +60,6 @@ add_library(freetype STATIC IMPORTED)
 
 set_target_properties(freetype PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/freetype2"
-  INTERFACE_LINK_LIBRARIES "\$<\$<NOT:\$<CONFIG:DEBUG>>:C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/lib/zlib.lib>;\$<\$<CONFIG:DEBUG>:C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/debug/lib/zlibd.lib>;\$<\$<NOT:\$<CONFIG:DEBUG>>:C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/lib/bz2.lib>;\$<\$<CONFIG:DEBUG>:C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/debug/lib/bz2d.lib>;\$<\$<NOT:\$<CONFIG:DEBUG>>:C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/lib/libpng16.lib>;\$<\$<CONFIG:DEBUG>:C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/debug/lib/libpng16d.lib>;\$<\$<NOT:\$<CONFIG:DEBUG>>:C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/lib/zlib.lib>;\$<\$<CONFIG:DEBUG>:C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/debug/lib/zlibd.lib>;C:/Users/gravi/.vcpkg-clion/vcpkg/installed/x64-windows/debug/lib/brotlidec.lib"
 )
 
 # Create imported target Freetype::Freetype

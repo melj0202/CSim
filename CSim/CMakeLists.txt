@@ -2,44 +2,37 @@ cmake_minimum_required(VERSION 3.13)
 
 project(CSim)
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(CMAKE_CXX_FLAGS "/Wall /EHsc")
+else ()
+    set(CMAKE_CXX_FLAGS "-Wall")
+endif ()
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+
 if (WIN32)
-    add_executable(CSim Source/Rulesets/BrainsBrainRuleSet.h Source/Rulesets/BriansBrainRuleSet.cpp Source/Rulesets/CellRuleSet.cpp Source/Rulesets/CellRuleSet.h Source/Rulesets/DayAndNightRuleSet.cpp Source/Rulesets/DayAndNightRuleSet.h Source/Rulesets/GameOfLifeRuleSet.cpp Source/Rulesets/GameOfLifeRuleSet.h Source/Rulesets/HighlifeRuleSet.cpp Source/Rulesets/HighlifeRuleSet.h Source/Rulesets/LifeWithoutDeathRuleSet.cpp Source/Rulesets/LifeWithoutDeathRuleSet.h Source/Rulesets/Rule90RuleSet.cpp Source/Rulesets/Rule90RuleSet.h Source/Rulesets/Rule184RuleSet.cpp Source/Rulesets/Rule184RuleSet.h Source/Rulesets/SeedsRuleSet.cpp Source/Rulesets/SeedsRuleSet.h Source/Rulesets/WireworldRuleSet.cpp Source/Rulesets/WireworldRuleSet.h
+    add_executable(CSim  Source/Rulesets/BriansBrainRuleSet.cpp Source/Rulesets/CellRuleSet.cpp  Source/Rulesets/DayAndNightRuleSet.cpp  Source/Rulesets/GameOfLifeRuleSet.cpp  Source/Rulesets/HighlifeRuleSet.cpp  Source/Rulesets/LifeWithoutDeathRuleSet.cpp Source/Rulesets/Rule90RuleSet.cpp  Source/Rulesets/Rule184RuleSet.cpp  Source/Rulesets/SeedsRuleSet.cpp Source/Rulesets/WireworldRuleSet.cpp
             Source/Platform/Windows/WinMain.cpp
-            Source/Init/AllSets.h
-            Source/Init/AllState.h
-            Source/Init/BuildInfo.h
-            Source/Init/MacroDefs.h
             Source/Init/SysInfo.cpp
-            Source/Init/SysInfo.h
             Source/AssetLoaders/TTFLoader.cpp
-            Source/AssetLoaders/TTFLoader.h
             Source/CellBrush.cpp
-            Source/CellBrush.h
             Source/CellCanvas.cpp
-            Source/CellCanvas.h
             Source/CellCommandLine.cpp
-            Source/CellCommandLine.h
             Source/CellEditState.cpp
-            Source/CellEditState.h
             Source/CellLoadState.cpp
-            Source/CellLoadState.h
             Source/CellLogger.cpp
-            Source/CellLogger.h
             Source/CellNormalState.cpp
-            Source/CellNormalState.h
             Source/CellPencilBrush.cpp
-            Source/CellPencilBrush.h
             Source/CellRoundBrush.cpp
-            Source/CellRoundBrush.h
             Source/CellSaveState.cpp
-            Source/CellSaveState.h
             Source/CellState.cpp
-            Source/CellState.h
-            Source/RenderContext.h
             Source/RenderFont.cpp
             Source/RenderWindow.cpp
-            Source/RenderWindow.h
-            Source/RenderFont.h)
+            Source/SysCmdLine.cpp
+            Source/CellMain.cpp
+            Source/Platform/Windows/WinSaveLoad.cpp)
 endif ()
 
 if(UNIX)
@@ -79,7 +72,15 @@ if(UNIX)
             Source/RenderFont.cpp
             Source/RenderWindow.cpp
             Source/RenderWindow.h
-            Source/RenderFont.h)
+            Source/RenderFont.h
+            Source/CellMain.cpp
+            Source/CellMain.h
+            Source/CellMain.h
+            Source/Platform/Windows/WinSaveLoad.cpp
+            Source/SaveLoad.h
+            Source/SysCmdLine.h
+            Source/SysCmdLine.cpp
+            )
 endif ()
 
 if(APPLE)
