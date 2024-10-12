@@ -39,12 +39,6 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 103,
-				"parent" : 0
-			},
-			{
-				"command" : 1,
-				"file" : 0,
 				"line" : 104,
 				"parent" : 0
 			},
@@ -52,6 +46,12 @@
 				"command" : 1,
 				"file" : 0,
 				"line" : 105,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 106,
 				"parent" : 0
 			},
 			{
@@ -108,7 +108,7 @@
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 89,
+				"line" : 90,
 				"parent" : 0
 			},
 			{
@@ -130,19 +130,19 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 102,
-				"parent" : 0
-			},
-			{
-				"command" : 5,
-				"file" : 0,
-				"line" : 99,
+				"line" : 103,
 				"parent" : 0
 			},
 			{
 				"command" : 5,
 				"file" : 0,
 				"line" : 100,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 101,
 				"parent" : 0
 			}
 		]
@@ -153,7 +153,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-Wall -Wextra -O3 -fdiagnostics-color=always"
+					"fragment" : "-Wall -Wextra -g -fdiagnostics-color=always"
 				}
 			],
 			"defines" : 
@@ -175,7 +175,7 @@
 				},
 				{
 					"backtrace" : 19,
-					"path" : "/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-release/thirdparty/freetype-2.13.3/include"
+					"path" : "/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include"
 				},
 				{
 					"backtrace" : 19,
@@ -213,7 +213,8 @@
 				53,
 				56,
 				60,
-				61
+				61,
+				62
 			]
 		}
 	],
@@ -238,7 +239,7 @@
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-Wall -Wextra -O3",
+				"fragment" : "-Wall -Wextra -g",
 				"role" : "flags"
 			},
 			{
@@ -247,12 +248,12 @@
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "thirdparty/freetype-2.13.3/libfreetype.a",
+				"fragment" : "thirdparty/freetype-2.13.3/libfreetyped.a",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "lib/libGLEW.a",
+				"fragment" : "lib/libGLEWd.a",
 				"role" : "libraries"
 			},
 			{
@@ -417,7 +418,8 @@
 				53,
 				56,
 				60,
-				61
+				61,
+				62
 			]
 		}
 	],
@@ -760,6 +762,12 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "Source/Platform/Linux/LinuxSaveLoad.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Init/MacroDefs.cpp",
 			"sourceGroupIndex" : 1
 		}
 	],

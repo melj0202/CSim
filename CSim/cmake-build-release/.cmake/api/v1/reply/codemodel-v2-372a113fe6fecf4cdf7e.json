@@ -14,7 +14,7 @@
 						6
 					],
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"jsonFile" : "directory-.-Release-f5ebdc15457944623624.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.13"
@@ -34,7 +34,7 @@
 						3
 					],
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-thirdparty.glfw-3.4-Debug-b12e056b89aef14f4bee.json",
+					"jsonFile" : "directory-thirdparty.glfw-3.4-Release-e6cc30438ac5b75ae951.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.4"
@@ -50,7 +50,7 @@
 				{
 					"build" : "thirdparty/glfw-3.4/src",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-thirdparty.glfw-3.4.src-Debug-f59517ba11d855715fcc.json",
+					"jsonFile" : "directory-thirdparty.glfw-3.4.src-Release-f59517ba11d855715fcc.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.4"
@@ -66,7 +66,7 @@
 				},
 				{
 					"build" : "thirdparty/glfw-3.4/docs",
-					"jsonFile" : "directory-thirdparty.glfw-3.4.docs-Debug-3180d37b829189bac4d1.json",
+					"jsonFile" : "directory-thirdparty.glfw-3.4.docs-Release-3180d37b829189bac4d1.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.4"
@@ -77,7 +77,7 @@
 				},
 				{
 					"build" : "thirdparty/glm",
-					"jsonFile" : "directory-thirdparty.glm-Debug-15b450b1ecfe2ebf14a6.json",
+					"jsonFile" : "directory-thirdparty.glm-Release-15b450b1ecfe2ebf14a6.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.13"
@@ -89,7 +89,7 @@
 				{
 					"build" : "thirdparty/freetype-2.13.3",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-thirdparty.freetype-2.13.3-Debug-df97a07af8c4221bd5ae.json",
+					"jsonFile" : "directory-thirdparty.freetype-2.13.3-Release-1415abde6c4f36c5691b.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.0"
@@ -105,7 +105,7 @@
 				{
 					"build" : "thirdparty/glew-2.1.0/build/cmake",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-thirdparty.glew-2.1.0.build.cmake-Debug-359484f6d3842c6ff97e.json",
+					"jsonFile" : "directory-thirdparty.glew-2.1.0.build.cmake-Release-d7c239d4c048f71a1b46.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "2.8.12"
@@ -122,7 +122,7 @@
 					]
 				}
 			],
-			"name" : "Debug",
+			"name" : "Release",
 			"projects" : 
 			[
 				{
@@ -192,63 +192,63 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "CSim::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-CSim-Debug-42653ddb9cd81a04bc80.json",
+					"jsonFile" : "target-CSim-Release-2604fe70fbd2da15192c.json",
 					"name" : "CSim",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 5,
 					"id" : "freetype::@f5c75f1e1d6676b9994e",
-					"jsonFile" : "target-freetype-Debug-ea87ed931a99b15f277e.json",
+					"jsonFile" : "target-freetype-Release-fb33276a52af2ee91ffd.json",
 					"name" : "freetype",
 					"projectIndex" : 2
 				},
 				{
 					"directoryIndex" : 6,
 					"id" : "glew::@46c2bdc15f2e61878d75",
-					"jsonFile" : "target-glew-Debug-479e9ed600f2489d30a2.json",
+					"jsonFile" : "target-glew-Release-68740901f3ba97b365b8.json",
 					"name" : "glew",
 					"projectIndex" : 3
 				},
 				{
 					"directoryIndex" : 6,
 					"id" : "glew_s::@46c2bdc15f2e61878d75",
-					"jsonFile" : "target-glew_s-Debug-5a525a2f03893be69c5b.json",
+					"jsonFile" : "target-glew_s-Release-39d173c77f97c68897f1.json",
 					"name" : "glew_s",
 					"projectIndex" : 3
 				},
 				{
 					"directoryIndex" : 6,
 					"id" : "glewinfo::@46c2bdc15f2e61878d75",
-					"jsonFile" : "target-glewinfo-Debug-510a7b28cce3cc87601c.json",
+					"jsonFile" : "target-glewinfo-Release-00316a7ffaf18450997c.json",
 					"name" : "glewinfo",
 					"projectIndex" : 3
 				},
 				{
 					"directoryIndex" : 2,
 					"id" : "glfw::@02548bf473dcef082bc0",
-					"jsonFile" : "target-glfw-Debug-5164ccfc8b786d16ba85.json",
+					"jsonFile" : "target-glfw-Release-54055bc169ec330ebbdb.json",
 					"name" : "glfw",
 					"projectIndex" : 1
 				},
 				{
 					"directoryIndex" : 1,
 					"id" : "uninstall::@df95c9783534155bab51",
-					"jsonFile" : "target-uninstall-Debug-ea1d1806a64f242ed90f.json",
+					"jsonFile" : "target-uninstall-Release-6ffd91e542bb91e0e093.json",
 					"name" : "uninstall",
 					"projectIndex" : 1
 				},
 				{
 					"directoryIndex" : 2,
 					"id" : "update_mappings::@02548bf473dcef082bc0",
-					"jsonFile" : "target-update_mappings-Debug-7d69f1ae20f0db60138a.json",
+					"jsonFile" : "target-update_mappings-Release-2795e7455afe95998d04.json",
 					"name" : "update_mappings",
 					"projectIndex" : 1
 				},
 				{
 					"directoryIndex" : 6,
 					"id" : "visualinfo::@46c2bdc15f2e61878d75",
-					"jsonFile" : "target-visualinfo-Debug-724bf0312c1c3ff8b7e8.json",
+					"jsonFile" : "target-visualinfo-Release-7d142e46a53e09502604.json",
 					"name" : "visualinfo",
 					"projectIndex" : 3
 				}
@@ -258,7 +258,7 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug",
+		"build" : "/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-release",
 		"source" : "/home/jaskulr/Source/Repos/CSim/CSim"
 	},
 	"version" : 

@@ -1,43 +1,6 @@
 /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -S /home/jaskulr/Source/Repos/CSim/CSim -B /home/jaskulr/Source/Repos/CSim/CSim/cmake-build-release
--- The C compiler identification is GNU 13.2.0
--- The CXX compiler identification is GNU 13.2.0
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: /usr/bin/cc - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: /usr/bin/c++ - skipped
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
--- Found Threads: TRUE
 -- Including Wayland support
 -- Including X11 support
--- Looking for memfd_create
--- Looking for memfd_create - found
--- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
--- Checking for modules 'wayland-client>=0.2.7;wayland-cursor>=0.2.7;wayland-egl>=0.2.7;xkbcommon>=0.5.0'
---   Found wayland-client, version 1.22.0
---   Found wayland-cursor, version 1.22.0
---   Found wayland-egl, version 18.1.0
---   Found xkbcommon, version 1.6.0
--- Found X11: /usr/include
--- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so
--- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so - found
--- Looking for gethostbyname
--- Looking for gethostbyname - found
--- Looking for connect
--- Looking for connect - found
--- Looking for remove
--- Looking for remove - found
--- Looking for shmat
--- Looking for shmat - found
--- Looking for IceConnectionNumber in ICE
--- Looking for IceConnectionNumber in ICE - found
 -- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
 -- Documentation generation requires Doxygen 1.9.8 or later
 CMake Warning at thirdparty/freetype-2.13.3/builds/cmake/FindHarfBuzz.cmake:99 (message):
@@ -46,18 +9,8 @@ Call Stack (most recent call first):
   thirdparty/freetype-2.13.3/CMakeLists.txt:258 (find_package)
 
 
--- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.3")
--- Found PNG: /usr/lib/x86_64-linux-gnu/libpng.so (found version "1.6.43")
--- Found BZip2: /usr/lib/x86_64-linux-gnu/libbz2.so (found version "1.0.8")
--- Looking for BZ2_bzCompressInit
--- Looking for BZ2_bzCompressInit - found
 -- Checking for module 'bzip2'
 --   Package 'bzip2', required by 'virtual:world', not found
--- Found BrotliDec: /usr/include (found version "1.1.0")
--- Looking for unistd.h
--- Looking for unistd.h - found
--- Looking for fcntl.h
--- Looking for fcntl.h - found
 CMake Deprecation Warning at thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt:7 (cmake_minimum_required):
   Compatibility with CMake < 3.5 will be removed from a future version of
   CMake.
@@ -66,6 +19,6 @@ CMake Deprecation Warning at thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt:7 
   CMake that the project does not need compatibility with older versions.
 
 
--- Configuring done (1.1s)
+-- Configuring done (0.2s)
 -- Generating done (0.0s)
 -- Build files have been written to: /home/jaskulr/Source/Repos/CSim/CSim/cmake-build-release

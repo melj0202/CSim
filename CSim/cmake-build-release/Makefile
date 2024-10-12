@@ -610,6 +610,30 @@ Source/CellState.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/CSim.dir/build.make CMakeFiles/CSim.dir/Source/CellState.cpp.s
 .PHONY : Source/CellState.cpp.s
 
+Source/Init/MacroDefs.o: Source/Init/MacroDefs.cpp.o
+.PHONY : Source/Init/MacroDefs.o
+
+# target to build an object file
+Source/Init/MacroDefs.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CSim.dir/build.make CMakeFiles/CSim.dir/Source/Init/MacroDefs.cpp.o
+.PHONY : Source/Init/MacroDefs.cpp.o
+
+Source/Init/MacroDefs.i: Source/Init/MacroDefs.cpp.i
+.PHONY : Source/Init/MacroDefs.i
+
+# target to preprocess a source file
+Source/Init/MacroDefs.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CSim.dir/build.make CMakeFiles/CSim.dir/Source/Init/MacroDefs.cpp.i
+.PHONY : Source/Init/MacroDefs.cpp.i
+
+Source/Init/MacroDefs.s: Source/Init/MacroDefs.cpp.s
+.PHONY : Source/Init/MacroDefs.s
+
+# target to generate assembly for a file
+Source/Init/MacroDefs.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CSim.dir/build.make CMakeFiles/CSim.dir/Source/Init/MacroDefs.cpp.s
+.PHONY : Source/Init/MacroDefs.cpp.s
+
 Source/Init/SysInfo.o: Source/Init/SysInfo.cpp.o
 .PHONY : Source/Init/SysInfo.o
 
@@ -1056,6 +1080,9 @@ help:
 	@echo "... Source/CellState.o"
 	@echo "... Source/CellState.i"
 	@echo "... Source/CellState.s"
+	@echo "... Source/Init/MacroDefs.o"
+	@echo "... Source/Init/MacroDefs.i"
+	@echo "... Source/Init/MacroDefs.s"
 	@echo "... Source/Init/SysInfo.o"
 	@echo "... Source/Init/SysInfo.i"
 	@echo "... Source/Init/SysInfo.s"

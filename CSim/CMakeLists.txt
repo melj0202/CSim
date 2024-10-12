@@ -79,6 +79,7 @@ if(UNIX)
             Source/SysCmdLine.h
             Source/SysCmdLine.cpp
             Source/Platform/Linux/LinuxSaveLoad.cpp
+            Source/Init/MacroDefs.cpp
     )
 endif ()
 

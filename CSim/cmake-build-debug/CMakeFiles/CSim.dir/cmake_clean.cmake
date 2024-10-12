@@ -25,6 +25,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/CSim.dir/Source/CellSaveState.cpp.o.d"
   "CMakeFiles/CSim.dir/Source/CellState.cpp.o"
   "CMakeFiles/CSim.dir/Source/CellState.cpp.o.d"
+  "CMakeFiles/CSim.dir/Source/Init/MacroDefs.cpp.o"
+  "CMakeFiles/CSim.dir/Source/Init/MacroDefs.cpp.o.d"
   "CMakeFiles/CSim.dir/Source/Init/SysInfo.cpp.o"
   "CMakeFiles/CSim.dir/Source/Init/SysInfo.cpp.o.d"
   "CMakeFiles/CSim.dir/Source/Platform/Linux/LinuxSaveLoad.cpp.o"

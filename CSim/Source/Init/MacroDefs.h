@@ -1,3 +1,5 @@
+#ifndef MACRODEFS_H
+#define MACRODEFS_H
 #include <stddef.h>
 #include <cstdint>
 
@@ -8,6 +10,8 @@
 #ifdef __linux__
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
+#include <errno.h>
 #endif
 
 #ifdef __APPLE__
@@ -16,7 +20,11 @@
 #endif // __APPLE__
 
 
-#pragma once
+
+
+
+
+int msleep(long msec);
 
 #ifndef __CSIM_FORCE_INLINE__
 #if defined(_MSC_VER)
@@ -35,7 +43,10 @@
 #elif defined(__APPLE__)
 #define __SLEEP(n) sleep(static_cast<unsigned int>(n))
 #else
-#define __SLEEP(n) sleep(n);
+
+/* TODO: Move this to an appropriate source file*/
+
+#define __SLEEP(n) msleep(n);
 #endif
 
 #endif // !__SLEEP
@@ -95,3 +106,4 @@ constexpr T _generic_pow2(T &x) {
 
 
 
+#endif
