@@ -5,7 +5,7 @@
 #include <Windows.h>
 #endif // _WIN32
 
-#ifdef __UNIX__
+#ifdef __linux__
 #include <stdlib.h>
 #include <unistd.h>
 #endif
@@ -22,7 +22,7 @@
 #if defined(_MSC_VER)
 #define __CSIM_FORCE_INLINE__ __forceinline
 #elif defined(__GNUC__) 
-#define __CSIM_FORCE_INLINE__ __attribute__((always_inline)) inline
+#define __CSIM_FORCE_INLINE__ __attribute__((always_inline))
 #else
 #define __CSIM_FORCE_INLEIN__ inline
 #endif
@@ -40,6 +40,13 @@
 
 #endif // !__SLEEP
 
+#ifndef __STRLEN
+#if defined(_WIN32) || defined(_WIN64)
+#define __STRLEN strlen_s
+#elif defined(__linux__) || defined(__APPLE__)
+#define __STRLEN strlen
+#endif
+#endif
 
 #ifdef _WIN32
 #undef min

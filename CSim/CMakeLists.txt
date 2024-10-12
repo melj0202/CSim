@@ -75,12 +75,11 @@ if(UNIX)
             Source/RenderFont.h
             Source/CellMain.cpp
             Source/CellMain.h
-            Source/CellMain.h
-            Source/Platform/Windows/WinSaveLoad.cpp
             Source/SaveLoad.h
             Source/SysCmdLine.h
             Source/SysCmdLine.cpp
-            )
+            Source/Platform/Linux/LinuxSaveLoad.cpp
+    )
 endif ()
 
 if(APPLE)

@@ -20,7 +20,7 @@ CellState* CellLoadState::iterate(CellRuleSet* ruleSet, const char* filename, Ce
     std::string ruleString = instring;
     if (std::strcmp(ruleString.c_str(), ruleSet->getRuleTag().data())) {
         char err[33+MAX_RULETAG_SIZE] = "This data is meant for ruleset: ";
-        strcat_s(err, instring);
+        strcat(err, instring);
         CellLogger::LogError(err);
         return prevState;
     }

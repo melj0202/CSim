@@ -52,7 +52,7 @@ void CellMain(const std::string &ModeString) {
     freeCanvas();
 }
 
-static void normalKeyCallback(GLFWwindow* window, const int key, int, const int action, const int mods)
+void normalKeyCallback(GLFWwindow* window, const int key, int, const int action, const int mods)
 {
 	/*
 	*	Allow the user to quit the program

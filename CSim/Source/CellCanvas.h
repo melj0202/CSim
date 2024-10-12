@@ -2,6 +2,7 @@
 #include "Init/MacroDefs.h"
 #include <vector>
 #include <array>
+#include <cstring>
 
 struct CellCanvas {
 	

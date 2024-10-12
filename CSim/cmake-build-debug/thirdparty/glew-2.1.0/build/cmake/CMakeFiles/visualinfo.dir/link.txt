@@ -1,0 +1,1 @@
+/usr/bin/cc -g -rdynamic CMakeFiles/visualinfo.dir/__/__/src/visualinfo.c.o -o ../../../../bin/visualinfo  -Wl,-rpath,/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/lib: ../../../../lib/libGLEWd.so.2.1.0 -lSM -lICE -lX11 -lXext -lOpenGL -lGLX -lGLU

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstring>
 
 /*
     This class describes a logger class that writes messages to a file, 

@@ -15,7 +15,7 @@ CellState* CellSaveState::iterate(CellRuleSet* ruleSet, const char* filename, Ce
     myfile.close();
 
     char info[288] = "Saved canvas to File : ";
-    strcat_s(info, filename);
+    strcat(info, filename);
     CellLogger::LogInfo(info);
     return prevState;
 }

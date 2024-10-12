@@ -61,7 +61,7 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 
 	char fullGLString[256] = "OpenGL Context: ";
 
-	strcat_s(fullGLString, versionGL);
+	strcat(fullGLString, versionGL);
 
 	CellLogger::LogInfo(fullGLString);
 

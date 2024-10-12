@@ -1,8 +1,9 @@
 #include "CellLogger.h"
+#include "Init/MacroDefs.h"
 std::ofstream CellLogger::logFileStream;
 
 bool CellLogger::LogInfo(const char* message) {
-    if (std::strlen(message) == 0) return true;
+    if (__STRLEN(message) == 0) return true;
 #ifndef NDEBUG
     printf("\x1B[34mINFO\033[0m: %s\n", message);
 #endif
@@ -11,7 +12,7 @@ bool CellLogger::LogInfo(const char* message) {
 }
 
 bool CellLogger::LogWarning(const char* message) {
-    if (std::strlen(message) == 0) return true;
+    if (__STRLEN(message) == 0) return true;
 #ifndef NDEBUG
     printf("\x1B[33mWARNING\033[0m: %s\n", message);
 #endif
@@ -20,7 +21,7 @@ bool CellLogger::LogWarning(const char* message) {
 }
 
 bool CellLogger::LogError(const char* message) {
-    if (std::strlen(message) == 0) return true;
+    if (__STRLEN(message) == 0) return true;
 #ifndef NDEBUG
     printf("\x1B[31mERROR\033[0m: %s\n", message);
 #endif
@@ -29,7 +30,7 @@ bool CellLogger::LogError(const char* message) {
 }
 
 bool CellLogger::Log(const char* message) {
-    if (std::strlen(message) == 0) return true;
+    if (__STRLEN(message) == 0) return true;
 #ifndef NDEBUG
     std::cout << message << std::endl;
 #endif
@@ -38,7 +39,7 @@ bool CellLogger::Log(const char* message) {
 }
 
 bool CellLogger::LogInfo(char* message) {
-    if (std::strlen(message) == 0) return true;
+    if (__STRLEN(message) == 0) return true;
 #ifndef NDEBUG
     printf("\x1B[34mINFO\033[0m: %s\n", message);
 #endif
@@ -47,7 +48,7 @@ bool CellLogger::LogInfo(char* message) {
 }
 
 bool CellLogger::LogWarning(char* message) {
-    if (std::strlen(message) == 0) return true;
+    if (__STRLEN(message) == 0) return true;
 #ifndef NDEBUG
     printf("\x1B[33mWARNING\033[0m: %s\n", message);
 #endif
@@ -56,7 +57,7 @@ bool CellLogger::LogWarning(char* message) {
 }
 
 bool CellLogger::LogError(char* message) {
-    if (std::strlen(message) == 0) return true;
+    if (__STRLEN(message) == 0) return true;
 #ifndef NDEBUG
     printf("\x1B[31mERROR\033[0m: %s\n", message);
 #endif
@@ -65,7 +66,7 @@ bool CellLogger::LogError(char* message) {
 }
 
 bool CellLogger::Log(char* message) {
-    if (std::strlen(message) == 0) return true;
+    if (__STRLEN(message) == 0) return true;
 #ifndef NDEBUG
     std::cout << message << std::endl;
 #endif
