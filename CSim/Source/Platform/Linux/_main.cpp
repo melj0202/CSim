@@ -10,8 +10,8 @@ int main(int argc, char** argv) {
 
 	if (argc < 2) mode = "GAME_OF_LIFE";
 	else {
-		ParseCommandLine(argc, argv);
-		if (!StringisModeString(argv[1])) {
+		SysCmdLine::ParseCommandLine(argc, argv);
+		if (!SysCmdLine::StringisModeString(argv[1])) {
 			std::cout << "ERROR: Missing Ruleset" << std::endl;
 			std::exit(0);
 		}
