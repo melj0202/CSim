@@ -190,3 +190,10 @@ std::array<double, 2> RenderWindow::getMouseCoords()
 	glfwGetCursorPos(window, &mouseCoords[0], &mouseCoords[1]);
 	return mouseCoords;
 }
+
+void RenderWindow::centerWindow() {
+  //Get monitor dimensions
+  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+}

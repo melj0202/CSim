@@ -60,7 +60,7 @@ add_library(freetype STATIC IMPORTED)
 
 set_target_properties(freetype PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/freetype2"
-  INTERFACE_LINK_LIBRARIES "/usr/lib/x86_64-linux-gnu/libz.so;/usr/lib/x86_64-linux-gnu/libbz2.so;/usr/lib/x86_64-linux-gnu/libpng.so;/usr/lib/x86_64-linux-gnu/libz.so;/usr/lib/x86_64-linux-gnu/libbrotlidec.so"
+  INTERFACE_LINK_LIBRARIES "/usr/lib/x86_64-linux-gnu/libz.so;/usr/lib/x86_64-linux-gnu/libbz2.so;/usr/lib/x86_64-linux-gnu/libpng.so;/usr/lib/x86_64-linux-gnu/libz.so;/usr/lib/x86_64-linux-gnu/libharfbuzz.so;/usr/lib/x86_64-linux-gnu/libbrotlidec.so"
 )
 
 # Create imported target Freetype::Freetype

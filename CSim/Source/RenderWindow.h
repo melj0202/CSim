@@ -31,7 +31,7 @@ private:
 	static int windowHeight;
 	static std::string windowTitle;
 	static bool isFullScreen;
-
+    static void centerWindow();
 	static bool getShaderCompileStatus(const int shaderProgram);
 
 

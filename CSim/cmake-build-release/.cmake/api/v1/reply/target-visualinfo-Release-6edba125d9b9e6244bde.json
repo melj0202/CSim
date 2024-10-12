@@ -1,0 +1,191 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "bin/visualinfo"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"install",
+			"target_link_libraries",
+			"add_definitions",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 179,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 185,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 180,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 57,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 86,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-O3 -DNDEBUG -fdiagnostics-color=always"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 4,
+					"define" : "GLEW_NO_GLU"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 5,
+					"path" : "/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/../../include"
+				}
+			],
+			"language" : "C",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 3,
+			"id" : "glew::@46c2bdc15f2e61878d75"
+		}
+	],
+	"id" : "visualinfo::@46c2bdc15f2e61878d75",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 2,
+				"path" : "bin"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "/usr/local"
+		}
+	},
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-O3 -DNDEBUG",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-rdynamic",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-Wl,-rpath,/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-release/lib:",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "lib/libGLEW.so.2.1.0",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lSM",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lICE",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lX11",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lXext",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lOpenGL",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lGLX",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lGLU",
+				"role" : "libraries"
+			}
+		],
+		"language" : "C"
+	},
+	"name" : "visualinfo",
+	"nameOnDisk" : "visualinfo",
+	"paths" : 
+	{
+		"build" : "thirdparty/glew-2.1.0/build/cmake",
+		"source" : "thirdparty/glew-2.1.0/build/cmake"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "thirdparty/glew-2.1.0/src/visualinfo.c",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "EXECUTABLE"
+}
