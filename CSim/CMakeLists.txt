@@ -84,6 +84,9 @@ if(UNIX)
 endif ()
 
 if(APPLE)
+
+    message(FATAL_ERROR "Apple computers are not supported at this time!!")
+
 endif ()
 
 

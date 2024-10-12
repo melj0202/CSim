@@ -105,6 +105,11 @@ void CellMain(const std::wstring &ModeString) {
 		if (currentState == canvasState.normal) Sleep(static_cast<DWORD>(speedFactor));
 	}
 
+
+
+    free(currentState);
+    free(canvasState.normal);
+    free(canvasState.edit);
 	free(ruleSet);
 	freeCanvas();
 }

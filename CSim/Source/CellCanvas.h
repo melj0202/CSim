@@ -17,7 +17,7 @@ static __CSIM_FORCE_INLINE__ void clearCanvas() { memset(CellCanvas::lifeCanvas,
 extern void setCanvasPixel(const int &x, const int &y, const unsigned char &colorVal);
 extern unsigned char getCanvasPixel(const int &x, const int &y);
 extern void initCanvas(const int &width, const int &height);
-static __CSIM_FORCE_INLINE__ void freeCanvas() {
+static void freeCanvas() {
 	delete[] CellCanvas::texCanvasBuffer;
 	delete[] CellCanvas::lifeCanvas; 
 };

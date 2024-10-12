@@ -24,10 +24,18 @@ public:
     static bool Log(char* message);
 
     //Wide character logging functions
-    static bool LogWError(const wchar_t* message) {/*DO NOTHING FOR NOW*/};
-    static bool LogWWarning(const wchar_t* message) {/*DO NOTHING FOR NOW*/};
-    static bool LogWInfo(const wchar_t* message) {/*DO NOTHING FOR NOW*/};
-    static bool LogW(const wchar_t* message) {/*DO NOTHING FOR NOW*/};
+    static bool LogWError(const wchar_t* message) {
+        return true;
+    };
+    static bool LogWWarning(const wchar_t* message) {
+        return true;
+    };
+    static bool LogWInfo(const wchar_t* message) {
+        return true;
+    };
+    static bool LogW(const wchar_t* message) {
+        return true;
+    };
     /*
         All logging functions return a integer which represents the number of bytes written.
         This allows for checking for any apparent errors. Just check if the returned value is 0.

@@ -48,8 +48,10 @@ void CellMain(const std::string &ModeString) {
         if (currentState == canvasState.normal) __SLEEP(speedFactor);
     }
 
-    free(ruleSet);
-    freeCanvas();
+	free(canvasState.normal);
+	free(canvasState.edit);
+	free(ruleSet);
+	freeCanvas();
 }
 
 void normalKeyCallback(GLFWwindow* window, const int key, int, const int action, const int mods)

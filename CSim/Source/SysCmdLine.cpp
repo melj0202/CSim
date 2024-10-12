@@ -41,8 +41,7 @@ void SysCmdLine::ParseCommandLine(int argc, char **argv) {
 			}
 			else {
 				WinX = atoi(argv[i + 1]);
-				std::cout << "This is a test\n";
-				i += 2;
+				if (i != argc-1) i += 2;
 			}
 
 		}
@@ -53,7 +52,7 @@ void SysCmdLine::ParseCommandLine(int argc, char **argv) {
 			}
 			else {
 				WinY = atoi(argv[i + 1]);
-				i += 2;
+				if (i != argc-1) i += 2;
 			}
 
 		}
@@ -64,7 +63,7 @@ void SysCmdLine::ParseCommandLine(int argc, char **argv) {
 			}
 			else {
 				CanvasX = atoi(argv[i + 1]);
-				i += 2;
+				if (i != argc-1) i += 2;
 			}
 
 		}
@@ -75,7 +74,7 @@ void SysCmdLine::ParseCommandLine(int argc, char **argv) {
 			}
 			else {
 				CanvasY = atoi(argv[i + 1]);
-				i += 2;
+				if (i != argc-1) i += 2;
 			}
 
 		}

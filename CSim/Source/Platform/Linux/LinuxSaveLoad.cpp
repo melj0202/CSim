@@ -6,10 +6,10 @@
 
 std::string SaveLoad::GetLoadLocation() {
     //TODO: Use GTK to get filepath
-    return "";
+    return "FIXME";
 }
 
 std::string SaveLoad::GetSaveLocation() {
     //TODO: Use GTK to get filepath
-    return "";
+    return "FIXME";
 }
