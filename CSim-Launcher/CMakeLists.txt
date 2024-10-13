@@ -11,7 +11,9 @@ add_subdirectory("ThirdParty/wxWidgets")
 if (WIN32)
 add_executable(CSim-Launcher WIN32
         Source/cApp.cpp
-        Source/cApp.h)
+        Source/cApp.h
+        Source/Main.cpp
+        Source/_GLOBALS.h)
 endif()
 if (UNIX)
     add_executable(CSim-Launcher

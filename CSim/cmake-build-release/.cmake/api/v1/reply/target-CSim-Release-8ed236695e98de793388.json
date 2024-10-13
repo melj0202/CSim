@@ -227,16 +227,16 @@
 	"dependencies" : 
 	[
 		{
+			"backtrace" : 3,
+			"id" : "glew_s::@46c2bdc15f2e61878d75"
+		},
+		{
 			"backtrace" : 4,
 			"id" : "glfw::@02548bf473dcef082bc0"
 		},
 		{
 			"backtrace" : 20,
 			"id" : "freetype::@f5c75f1e1d6676b9994e"
-		},
-		{
-			"backtrace" : 3,
-			"id" : "glew_s::@46c2bdc15f2e61878d75"
 		}
 	],
 	"id" : "CSim::@6890427a1f51a3e7e1df",

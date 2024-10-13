@@ -56,8 +56,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/BriansBrainRuleSet.cpp.o: CXX_COMPILER
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Rulesets/CellRuleSet.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Rulesets/CellRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -66,8 +64,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/CellRuleSet.cpp.o: CXX_COMPILER__CSim_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Rulesets/DayAndNightRuleSet.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Rulesets/DayAndNightRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -76,8 +72,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/DayAndNightRuleSet.cpp.o: CXX_COMPILER
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Rulesets/GameOfLifeRuleSet.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Rulesets/GameOfLifeRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -86,8 +80,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/GameOfLifeRuleSet.cpp.o: CXX_COMPILER_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Rulesets/HighlifeRuleSet.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Rulesets/HighlifeRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -96,8 +88,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/HighlifeRuleSet.cpp.o: CXX_COMPILER__C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Rulesets/LifeWithoutDeathRuleSet.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Rulesets/LifeWithoutDeathRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -106,8 +96,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/LifeWithoutDeathRuleSet.cpp.o: CXX_COM
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Rulesets/Rule90RuleSet.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Rulesets/Rule90RuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -116,8 +104,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/Rule90RuleSet.cpp.o: CXX_COMPILER__CSi
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Rulesets/Rule184RuleSet.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Rulesets/Rule184RuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -126,8 +112,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/Rule184RuleSet.cpp.o: CXX_COMPILER__CS
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Rulesets/SeedsRuleSet.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Rulesets/SeedsRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -136,8 +120,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/SeedsRuleSet.cpp.o: CXX_COMPILER__CSim
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Rulesets/WireworldRuleSet.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Rulesets/WireworldRuleSet.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -146,8 +128,6 @@ build CMakeFiles/CSim.dir/Source/Rulesets/WireworldRuleSet.cpp.o: CXX_COMPILER__
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Rulesets
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Platform/Linux/_main.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Platform/Linux/_main.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -156,8 +136,6 @@ build CMakeFiles/CSim.dir/Source/Platform/Linux/_main.cpp.o: CXX_COMPILER__CSim_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Platform/Linux
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Init/SysInfo.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Init/SysInfo.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -166,8 +144,6 @@ build CMakeFiles/CSim.dir/Source/Init/SysInfo.cpp.o: CXX_COMPILER__CSim_unscanne
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Init
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/AssetLoaders/TTFLoader.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/AssetLoaders/TTFLoader.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -176,8 +152,6 @@ build CMakeFiles/CSim.dir/Source/AssetLoaders/TTFLoader.cpp.o: CXX_COMPILER__CSi
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/AssetLoaders
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellBrush.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellBrush.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -186,8 +160,6 @@ build CMakeFiles/CSim.dir/Source/CellBrush.cpp.o: CXX_COMPILER__CSim_unscanned_D
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellCanvas.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellCanvas.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -196,8 +168,6 @@ build CMakeFiles/CSim.dir/Source/CellCanvas.cpp.o: CXX_COMPILER__CSim_unscanned_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellCommandLine.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellCommandLine.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -206,8 +176,6 @@ build CMakeFiles/CSim.dir/Source/CellCommandLine.cpp.o: CXX_COMPILER__CSim_unsca
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellEditState.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellEditState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -216,8 +184,6 @@ build CMakeFiles/CSim.dir/Source/CellEditState.cpp.o: CXX_COMPILER__CSim_unscann
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellLoadState.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellLoadState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -226,8 +192,6 @@ build CMakeFiles/CSim.dir/Source/CellLoadState.cpp.o: CXX_COMPILER__CSim_unscann
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellLogger.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellLogger.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -236,8 +200,6 @@ build CMakeFiles/CSim.dir/Source/CellLogger.cpp.o: CXX_COMPILER__CSim_unscanned_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellNormalState.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellNormalState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -246,8 +208,6 @@ build CMakeFiles/CSim.dir/Source/CellNormalState.cpp.o: CXX_COMPILER__CSim_unsca
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellPencilBrush.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellPencilBrush.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -256,8 +216,6 @@ build CMakeFiles/CSim.dir/Source/CellPencilBrush.cpp.o: CXX_COMPILER__CSim_unsca
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellRoundBrush.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellRoundBrush.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -266,8 +224,6 @@ build CMakeFiles/CSim.dir/Source/CellRoundBrush.cpp.o: CXX_COMPILER__CSim_unscan
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellSaveState.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellSaveState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -276,8 +232,6 @@ build CMakeFiles/CSim.dir/Source/CellSaveState.cpp.o: CXX_COMPILER__CSim_unscann
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellState.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellState.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -286,8 +240,6 @@ build CMakeFiles/CSim.dir/Source/CellState.cpp.o: CXX_COMPILER__CSim_unscanned_D
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/RenderFont.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/RenderFont.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -296,8 +248,6 @@ build CMakeFiles/CSim.dir/Source/RenderFont.cpp.o: CXX_COMPILER__CSim_unscanned_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/RenderWindow.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/RenderWindow.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -306,8 +256,6 @@ build CMakeFiles/CSim.dir/Source/RenderWindow.cpp.o: CXX_COMPILER__CSim_unscanne
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/CellMain.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/CellMain.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -316,8 +264,6 @@ build CMakeFiles/CSim.dir/Source/CellMain.cpp.o: CXX_COMPILER__CSim_unscanned_De
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/SysCmdLine.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/SysCmdLine.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -326,8 +272,6 @@ build CMakeFiles/CSim.dir/Source/SysCmdLine.cpp.o: CXX_COMPILER__CSim_unscanned_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Platform/Linux/LinuxSaveLoad.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -336,8 +280,6 @@ build CMakeFiles/CSim.dir/Source/Platform/Linux/LinuxSaveLoad.cpp.o: CXX_COMPILE
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Platform/Linux
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 build CMakeFiles/CSim.dir/Source/Init/MacroDefs.cpp.o: CXX_COMPILER__CSim_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/Source/Init/MacroDefs.cpp || cmake_object_order_depends_target_CSim
   DEFINES = -DGLEW_STATIC
@@ -346,8 +288,6 @@ build CMakeFiles/CSim.dir/Source/Init/MacroDefs.cpp.o: CXX_COMPILER__CSim_unscan
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include
   OBJECT_DIR = CMakeFiles/CSim.dir
   OBJECT_FILE_DIR = CMakeFiles/CSim.dir/Source/Init
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
-  TARGET_PDB = CSim.pdb
 
 
 # =============================================================================
@@ -363,9 +303,8 @@ build CSim: CXX_EXECUTABLE_LINKER__CSim_Debug CMakeFiles/CSim.dir/Source/Ruleset
   OBJECT_DIR = CMakeFiles/CSim.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = CMakeFiles/CSim.dir/
   TARGET_FILE = CSim
-  TARGET_PDB = CSim.pdb
+  TARGET_PDB = CSim.dbg
 
 
 #############################################
@@ -584,8 +523,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/context.c.o: C_COMPILER__glfw_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/init.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/init.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -594,8 +531,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/init.c.o: C_COMPILER__glfw_uns
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/input.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/input.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -604,8 +539,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/input.c.o: C_COMPILER__glfw_un
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/monitor.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/monitor.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -614,8 +547,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/monitor.c.o: C_COMPILER__glfw_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/platform.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/platform.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -624,8 +555,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/platform.c.o: C_COMPILER__glfw
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/vulkan.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/vulkan.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -634,8 +563,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/vulkan.c.o: C_COMPILER__glfw_u
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/window.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/window.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -644,8 +571,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/window.c.o: C_COMPILER__glfw_u
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/egl_context.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/egl_context.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -654,8 +579,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/egl_context.c.o: C_COMPILER__g
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/osmesa_context.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/osmesa_context.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -664,8 +587,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/osmesa_context.c.o: C_COMPILER
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/null_init.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/null_init.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -674,8 +595,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/null_init.c.o: C_COMPILER__glf
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/null_monitor.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/null_monitor.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -684,8 +603,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/null_monitor.c.o: C_COMPILER__
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/null_window.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/null_window.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -694,8 +611,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/null_window.c.o: C_COMPILER__g
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/null_joystick.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/null_joystick.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -704,8 +619,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/null_joystick.c.o: C_COMPILER_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/posix_module.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/posix_module.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -714,8 +627,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/posix_module.c.o: C_COMPILER__
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/posix_time.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/posix_time.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -724,8 +635,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/posix_time.c.o: C_COMPILER__gl
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/posix_thread.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/posix_thread.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -734,8 +643,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/posix_thread.c.o: C_COMPILER__
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/x11_init.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/x11_init.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -744,8 +651,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/x11_init.c.o: C_COMPILER__glfw
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/x11_monitor.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/x11_monitor.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -754,8 +659,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/x11_monitor.c.o: C_COMPILER__g
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/x11_window.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/x11_window.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -764,8 +667,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/x11_window.c.o: C_COMPILER__gl
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/xkb_unicode.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/xkb_unicode.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -774,8 +675,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/xkb_unicode.c.o: C_COMPILER__g
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glx_context.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/glx_context.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -784,8 +683,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glx_context.c.o: C_COMPILER__g
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/wl_init.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/wl_init.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -794,8 +691,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/wl_init.c.o: C_COMPILER__glfw_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/wl_monitor.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/wl_monitor.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -804,8 +699,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/wl_monitor.c.o: C_COMPILER__gl
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/wl_window.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/wl_window.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -814,8 +707,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/wl_window.c.o: C_COMPILER__glf
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/linux_joystick.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/linux_joystick.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -824,8 +715,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/linux_joystick.c.o: C_COMPILER
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/posix_poll.c.o: C_COMPILER__glfw_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/posix_poll.c || cmake_object_order_depends_target_glfw
   DEFINES = -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11
@@ -834,8 +723,6 @@ build thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/posix_poll.c.o: C_COMPILER__gl
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/glfw-3.4/src
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   OBJECT_FILE_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
 
 
 # =============================================================================
@@ -850,9 +737,8 @@ build thirdparty/glfw-3.4/src/libglfw3.a: C_STATIC_LIBRARY_LINKER__glfw_Debug th
   OBJECT_DIR = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = thirdparty/glfw-3.4/src/CMakeFiles/glfw.dir/glfw.pdb
   TARGET_FILE = thirdparty/glfw-3.4/src/libglfw3.a
-  TARGET_PDB = thirdparty/glfw-3.4/src/libglfw3.pdb
+  TARGET_PDB = glfw3.a.dbg
 
 
 #############################################
@@ -1328,8 +1214,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/autofit/autofit.c.o
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/autofit
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftbase.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftbase.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1338,8 +1222,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftbase.c.o: C_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftbbox.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftbbox.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1348,8 +1230,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftbbox.c.o: C_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftbdf.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftbdf.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1358,8 +1238,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftbdf.c.o: C_C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftbitmap.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftbitmap.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1368,8 +1246,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftbitmap.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftcid.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftcid.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1378,8 +1254,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftcid.c.o: C_C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftfstype.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftfstype.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1388,8 +1262,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftfstype.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftgasp.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftgasp.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1398,8 +1270,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftgasp.c.o: C_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftglyph.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftglyph.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1408,8 +1278,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftglyph.c.o: C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftgxval.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftgxval.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1418,8 +1286,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftgxval.c.o: C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftinit.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftinit.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1428,8 +1294,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftinit.c.o: C_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftmm.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftmm.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1438,8 +1302,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftmm.c.o: C_CO
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftotval.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftotval.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1448,8 +1310,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftotval.c.o: C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftpatent.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftpatent.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1458,8 +1318,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftpatent.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftpfr.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftpfr.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1468,8 +1326,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftpfr.c.o: C_C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftstroke.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftstroke.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1478,8 +1334,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftstroke.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftsynth.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftsynth.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1488,8 +1342,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftsynth.c.o: C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/fttype1.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/fttype1.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1498,8 +1350,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/fttype1.c.o: C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftwinfnt.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftwinfnt.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1508,8 +1358,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftwinfnt.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/bdf/bdf.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/bdf/bdf.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1518,8 +1366,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/bdf/bdf.c.o: C_COMP
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/bdf
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/bzip2/ftbzip2.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/bzip2/ftbzip2.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1528,8 +1374,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/bzip2/ftbzip2.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/bzip2
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/cache/ftcache.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/cache/ftcache.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1538,8 +1382,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/cache/ftcache.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/cache
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/cff/cff.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/cff/cff.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1548,8 +1390,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/cff/cff.c.o: C_COMP
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/cff
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/cid/type1cid.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/cid/type1cid.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1558,8 +1398,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/cid/type1cid.c.o: C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/cid
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/gzip/ftgzip.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/gzip/ftgzip.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1568,8 +1406,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/gzip/ftgzip.c.o: C_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/gzip
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/lzw/ftlzw.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/lzw/ftlzw.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1578,8 +1414,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/lzw/ftlzw.c.o: C_CO
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/lzw
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/pcf/pcf.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/pcf/pcf.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1588,8 +1422,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/pcf/pcf.c.o: C_COMP
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/pcf
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/pfr/pfr.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/pfr/pfr.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1598,8 +1430,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/pfr/pfr.c.o: C_COMP
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/pfr
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/psaux/psaux.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/psaux/psaux.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1608,8 +1438,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/psaux/psaux.c.o: C_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/psaux
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/pshinter/pshinter.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/pshinter/pshinter.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1618,8 +1446,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/pshinter/pshinter.c
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/pshinter
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/psnames/psnames.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/psnames/psnames.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1628,8 +1454,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/psnames/psnames.c.o
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/psnames
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/raster/raster.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/raster/raster.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1638,8 +1462,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/raster/raster.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/raster
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/sdf/sdf.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/sdf/sdf.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1648,8 +1470,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/sdf/sdf.c.o: C_COMP
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/sdf
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/sfnt/sfnt.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/sfnt/sfnt.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1658,8 +1478,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/sfnt/sfnt.c.o: C_CO
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/sfnt
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/smooth/smooth.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/smooth/smooth.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1668,8 +1486,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/smooth/smooth.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/smooth
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/svg/svg.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/svg/svg.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1678,8 +1494,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/svg/svg.c.o: C_COMP
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/svg
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/truetype/truetype.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/truetype/truetype.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1688,8 +1502,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/truetype/truetype.c
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/truetype
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/type1/type1.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/type1/type1.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1698,8 +1510,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/type1/type1.c.o: C_
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/type1
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/type42/type42.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/type42/type42.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1708,8 +1518,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/type42/type42.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/type42
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/winfonts/winfnt.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/winfonts/winfnt.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1718,8 +1526,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/winfonts/winfnt.c.o
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/winfonts
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/builds/unix/ftsystem.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/builds/unix/ftsystem.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1728,8 +1534,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/builds/unix/ftsystem.c.
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/builds/unix
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftdebug.c.o: C_COMPILER__freetype_unscanned_Debug /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/src/base/ftdebug.c || cmake_object_order_depends_target_freetype
   DEFINES = -DFT2_BUILD_LIBRARY
@@ -1738,8 +1542,6 @@ build thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base/ftdebug.c.o: C
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include -I/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include/freetype/config -I/usr/include/harfbuzz
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   OBJECT_FILE_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/src/base
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
 
 
 # =============================================================================
@@ -1754,9 +1556,8 @@ build thirdparty/freetype-2.13.3/libfreetyped.a: C_STATIC_LIBRARY_LINKER__freety
   OBJECT_DIR = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = thirdparty/freetype-2.13.3/CMakeFiles/freetype.dir/freetype.pdb
   TARGET_FILE = thirdparty/freetype-2.13.3/libfreetyped.a
-  TARGET_PDB = thirdparty/freetype-2.13.3/libfreetyped.pdb
+  TARGET_PDB = freetyped.a.dbg
 
 
 #############################################
@@ -1868,8 +1669,6 @@ build thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew.dir/__/__/src/glew.c.o: 
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/../../include
   OBJECT_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew.dir
   OBJECT_FILE_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew.dir/__/__/src
-  TARGET_COMPILE_PDB = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew.dir/
-  TARGET_PDB = lib/libGLEWd.pdb
 
 
 # =============================================================================
@@ -1887,10 +1686,9 @@ build lib/libGLEWd.so.2.1.0: C_SHARED_LIBRARY_LINKER__glew_Debug thirdparty/glew
   PRE_LINK = :
   SONAME = libGLEWd.so.2.1
   SONAME_FLAG = -Wl,-soname,
-  TARGET_COMPILE_PDB = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew.dir/
   TARGET_FILE = lib/libGLEWd.so.2.1.0
   TARGET_IMPLIB = lib/
-  TARGET_PDB = lib/libGLEWd.pdb
+  TARGET_PDB = GLEWd.so.dbg
 
 
 #############################################
@@ -1915,8 +1713,6 @@ build thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew_s.dir/__/__/src/glew.c.o
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/../../include
   OBJECT_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew_s.dir
   OBJECT_FILE_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew_s.dir/__/__/src
-  TARGET_COMPILE_PDB = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew_s.dir/glew_s.pdb
-  TARGET_PDB = lib/libGLEWd.pdb
 
 
 # =============================================================================
@@ -1931,9 +1727,8 @@ build lib/libGLEWd.a: C_STATIC_LIBRARY_LINKER__glew_s_Debug thirdparty/glew-2.1.
   OBJECT_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew_s.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glew_s.dir/glew_s.pdb
   TARGET_FILE = lib/libGLEWd.a
-  TARGET_PDB = lib/libGLEWd.pdb
+  TARGET_PDB = GLEWd.a.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target glewinfo
@@ -1951,8 +1746,6 @@ build thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glewinfo.dir/__/__/src/glewin
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/../../include
   OBJECT_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glewinfo.dir
   OBJECT_FILE_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glewinfo.dir/__/__/src
-  TARGET_COMPILE_PDB = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glewinfo.dir/
-  TARGET_PDB = bin/glewinfo.pdb
 
 
 # =============================================================================
@@ -1969,9 +1762,8 @@ build bin/glewinfo: C_EXECUTABLE_LINKER__glewinfo_Debug thirdparty/glew-2.1.0/bu
   OBJECT_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glewinfo.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/glewinfo.dir/
   TARGET_FILE = bin/glewinfo
-  TARGET_PDB = bin/glewinfo.pdb
+  TARGET_PDB = glewinfo.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target visualinfo
@@ -1989,8 +1781,6 @@ build thirdparty/glew-2.1.0/build/cmake/CMakeFiles/visualinfo.dir/__/__/src/visu
   INCLUDES = -I/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/../../include
   OBJECT_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/visualinfo.dir
   OBJECT_FILE_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/visualinfo.dir/__/__/src
-  TARGET_COMPILE_PDB = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/visualinfo.dir/
-  TARGET_PDB = bin/visualinfo.pdb
 
 
 # =============================================================================
@@ -2007,9 +1797,8 @@ build bin/visualinfo: C_EXECUTABLE_LINKER__visualinfo_Debug thirdparty/glew-2.1.
   OBJECT_DIR = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/visualinfo.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_COMPILE_PDB = thirdparty/glew-2.1.0/build/cmake/CMakeFiles/visualinfo.dir/
   TARGET_FILE = bin/visualinfo
-  TARGET_PDB = bin/visualinfo.pdb
+  TARGET_PDB = visualinfo.dbg
 
 
 #############################################
@@ -2186,14 +1975,14 @@ build thirdparty/glm/all: phony
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/BasicConfigVersion-SameMajorVersion.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCCompiler.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCCompilerABI.c /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCXXCompiler.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCXXCompilerABI.cpp /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCXXInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCompilerIdDetection.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDependentOption.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCXXCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCompileFeatures.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineSystem.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeFindBinUtils.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeGenericSystem.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakePackageConfigHelpers.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeParseImplicitIncludeInfo.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeParseImplicitLinkInfo.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeParseLibraryArchitecture.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakePushCheckState.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystem.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeTestCCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeTestCXXCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeTestCompilerCommon.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CPack.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CPackComponent.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckCSourceCompiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckFunctionExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckIncludeFile.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckIncludeFiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckLibraryExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckSymbolExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/ADSP-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/ARMCC-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/ARMClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/AppleClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Borland-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Bruce-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Clang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Clang-DetermineCompilerInternal.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Compaq-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Compaq-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Cray-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/CrayClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Embarcadero-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Fujitsu-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/FujitsuClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GHS-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-C.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-FindBinUtils.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/HP-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/HP-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IAR-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IBMClang-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IBMClang-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Intel-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IntelLLVM-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/LCC-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/LCC-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/MSVC-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/NVHPC-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/NVIDIA-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/OrangeC-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/PGI-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/PathScale-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/SCO-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/SDCC-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/SunPro-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/SunPro-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/TI-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/TIClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Tasking-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/TinyCC-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/VisualAge-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/VisualAge-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Watcom-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/XL-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/XL-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/XLClang-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/XLClang-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/zOS-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/zOS-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindBZip2.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindDoxygen.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindFontconfig.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindFreetype.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindOpenGL.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPNG.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPackageHandleStandardArgs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPackageMessage.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPkgConfig.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindThreads.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindX11.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindZLIB.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/GNUInstallDirs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Internal/CMakeDetermineLinkerId.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Internal/CheckSourceCompiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Internal/FeatureTesting.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-Determine-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU-C.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-Initialize.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/UnixPaths.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/SelectLibraryConfigurations.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/WriteBasicConfigVersionFile.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Templates/CPackConfig.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindBrotliDec.cmake /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindHarfBuzz.cmake /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/glew.pc.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/cmake_uninstall.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/glfw3.pc.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/glfw3Config.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/docs/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glm/CMakeLists.txt CMakeCache.txt CMakeFiles/3.29.6/CMakeCCompiler.cmake CMakeFiles/3.29.6/CMakeCXXCompiler.cmake CMakeFiles/3.29.6/CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE | /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/BasicConfigVersion-SameMajorVersion.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCXXInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDependentOption.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeGenericSystem.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakePackageConfigHelpers.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakePushCheckState.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CPack.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CPackComponent.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckCSourceCompiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckFunctionExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckIncludeFile.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckIncludeFiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckLibraryExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckSymbolExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-C.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindBZip2.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindDoxygen.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindFontconfig.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindFreetype.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindOpenGL.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPNG.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPackageHandleStandardArgs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPackageMessage.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPkgConfig.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindThreads.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindX11.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindZLIB.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/GNUInstallDirs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Internal/CheckSourceCompiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU-C.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-Initialize.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/UnixPaths.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/SelectLibraryConfigurations.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/WriteBasicConfigVersionFile.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Templates/CPackConfig.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindBrotliDec.cmake /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindHarfBuzz.cmake /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/glew.pc.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/cmake_uninstall.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/glfw3.pc.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/glfw3Config.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/docs/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glm/CMakeLists.txt CMakeCache.txt CMakeFiles/3.29.6/CMakeCCompiler.cmake CMakeFiles/3.29.6/CMakeCXXCompiler.cmake CMakeFiles/3.29.6/CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/BasicConfigVersion-SameMajorVersion.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCCompiler.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCCompilerABI.c /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCXXCompiler.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCXXCompilerABI.cpp /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCXXInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCompilerIdDetection.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDependentOption.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCXXCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCompileFeatures.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDetermineSystem.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeFindBinUtils.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeGenericSystem.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakePackageConfigHelpers.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeParseImplicitIncludeInfo.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeParseImplicitLinkInfo.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeParseLibraryArchitecture.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakePushCheckState.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystem.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeTestCCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeTestCXXCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeTestCompilerCommon.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CPack.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CPackComponent.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckCSourceCompiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckFunctionExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckIncludeFile.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckIncludeFiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckLibraryExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckSymbolExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/ADSP-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/ARMCC-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/ARMClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/AppleClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Borland-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Bruce-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Clang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Clang-DetermineCompilerInternal.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Compaq-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Compaq-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Cray-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/CrayClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Embarcadero-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Fujitsu-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/FujitsuClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GHS-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-C.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-FindBinUtils.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/HP-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/HP-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IAR-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IBMClang-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IBMClang-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Intel-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/IntelLLVM-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/LCC-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/LCC-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/MSVC-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/NVHPC-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/NVIDIA-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/OrangeC-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/PGI-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/PathScale-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/SCO-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/SDCC-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/SunPro-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/SunPro-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/TI-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/TIClang-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Tasking-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/TinyCC-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/VisualAge-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/VisualAge-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/Watcom-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/XL-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/XL-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/XLClang-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/XLClang-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/zOS-C-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/zOS-CXX-DetermineCompiler.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindBZip2.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindDoxygen.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindFontconfig.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindFreetype.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindOpenGL.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPNG.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPackageHandleStandardArgs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPackageMessage.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPkgConfig.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindThreads.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindX11.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindZLIB.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/GNUInstallDirs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Internal/CMakeDetermineLinkerId.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Internal/CheckSourceCompiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Internal/FeatureTesting.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-Determine-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU-C.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-Initialize.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/UnixPaths.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/SelectLibraryConfigurations.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/WriteBasicConfigVersionFile.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Templates/CPackConfig.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindBrotliDec.cmake /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindHarfBuzz.cmake /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/glew.pc.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/cmake_uninstall.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/glfw3.pc.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/glfw3Config.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/docs/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glm/CMakeLists.txt CMakeCache.txt CMakeFiles/3.29.6/CMakeCCompiler.cmake CMakeFiles/3.29.6/CMakeCXXCompiler.cmake CMakeFiles/3.29.6/CMakeSystem.cmake: phony
+build /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/BasicConfigVersion-SameMajorVersion.cmake.in /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCXXInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeDependentOption.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeGenericSystem.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakePackageConfigHelpers.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakePushCheckState.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CPack.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CPackComponent.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckCSourceCompiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckFunctionExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckIncludeFile.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckIncludeFiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckLibraryExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/CheckSymbolExists.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-C.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Compiler/GNU.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindBZip2.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindDoxygen.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindFontconfig.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindFreetype.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindOpenGL.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPNG.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPackageHandleStandardArgs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPackageMessage.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindPkgConfig.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindThreads.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindX11.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/FindZLIB.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/GNUInstallDirs.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Internal/CheckSourceCompiles.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU-C.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU-CXX.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-GNU.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux-Initialize.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/Linux.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/Platform/UnixPaths.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/SelectLibraryConfigurations.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Modules/WriteBasicConfigVersionFile.cmake /home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/share/cmake-3.29/Templates/CPackConfig.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindBrotliDec.cmake /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/builds/cmake/FindHarfBuzz.cmake /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/glew.pc.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/cmake_uninstall.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/glfw3.pc.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMake/glfw3Config.cmake.in /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/docs/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/src/CMakeLists.txt /home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glm/CMakeLists.txt CMakeCache.txt CMakeFiles/3.29.6/CMakeCCompiler.cmake CMakeFiles/3.29.6/CMakeCXXCompiler.cmake CMakeFiles/3.29.6/CMakeSystem.cmake: phony
 
 
 #############################################
