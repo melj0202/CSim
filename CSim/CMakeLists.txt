@@ -12,6 +12,21 @@ endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
+
+find_package(OpenGL REQUIRED)
+
+#Include GLFW source
+add_subdirectory("thirdparty/glfw-3.4")
+add_subdirectory("thirdparty/glm")
+
+#Add freetype
+add_subdirectory("thirdparty/freetype-2.13.3")
+add_subdirectory("thirdparty/glew-2.1.0/build/cmake")
+
+include_directories("thirdparty/glfw-3.4/include")
+include_directories("thirdparty/glew-2.1.0/include")
+
+
 if (WIN32)
     add_executable(CSim  Source/Rulesets/BriansBrainRuleSet.cpp Source/Rulesets/CellRuleSet.cpp  Source/Rulesets/DayAndNightRuleSet.cpp  Source/Rulesets/GameOfLifeRuleSet.cpp  Source/Rulesets/HighlifeRuleSet.cpp  Source/Rulesets/LifeWithoutDeathRuleSet.cpp Source/Rulesets/Rule90RuleSet.cpp  Source/Rulesets/Rule184RuleSet.cpp  Source/Rulesets/SeedsRuleSet.cpp Source/Rulesets/WireworldRuleSet.cpp
             Source/Platform/Windows/WinMain.cpp
@@ -36,6 +51,17 @@ if (WIN32)
 endif ()
 
 if(UNIX)
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTK REQUIRED gtkmm-3.0)
+
+    INCLUDE_DIRECTORIES(${GTK_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${GTK_LIBRARY_DIRS})
+
+    # Add other flags to the compiler
+    ADD_DEFINITIONS(${GTK_CFLAGS_OTHER})
+
+
     add_executable(CSim Source/Rulesets/BrainsBrainRuleSet.h Source/Rulesets/BriansBrainRuleSet.cpp Source/Rulesets/CellRuleSet.cpp Source/Rulesets/CellRuleSet.h Source/Rulesets/DayAndNightRuleSet.cpp Source/Rulesets/DayAndNightRuleSet.h Source/Rulesets/GameOfLifeRuleSet.cpp Source/Rulesets/GameOfLifeRuleSet.h Source/Rulesets/HighlifeRuleSet.cpp Source/Rulesets/HighlifeRuleSet.h Source/Rulesets/LifeWithoutDeathRuleSet.cpp Source/Rulesets/LifeWithoutDeathRuleSet.h Source/Rulesets/Rule90RuleSet.cpp Source/Rulesets/Rule90RuleSet.h Source/Rulesets/Rule184RuleSet.cpp Source/Rulesets/Rule184RuleSet.h Source/Rulesets/SeedsRuleSet.cpp Source/Rulesets/SeedsRuleSet.h Source/Rulesets/WireworldRuleSet.cpp Source/Rulesets/WireworldRuleSet.h
             Source/Platform/Linux/_main.cpp
             Source/Init/AllSets.h
@@ -81,6 +107,9 @@ if(UNIX)
             Source/Platform/Linux/LinuxSaveLoad.cpp
             Source/Init/MacroDefs.cpp
     )
+    TARGET_LINK_LIBRARIES(CSim ${GTK_LIBRARIES})
+
+
 endif ()
 
 if(APPLE)
@@ -89,19 +118,6 @@ if(APPLE)
 
 endif ()
 
-
-find_package(OpenGL REQUIRED)
-
-#Include GLFW source
-add_subdirectory("thirdparty/glfw-3.4")
-add_subdirectory("thirdparty/glm")
-
-#Add freetype
-add_subdirectory("thirdparty/freetype-2.13.3")
-add_subdirectory("thirdparty/glew-2.1.0/build/cmake")
-
-include_directories("thirdparty/glfw-3.4/include")
-include_directories("thirdparty/glew-2.1.0/include")
 
 target_link_libraries(CSim freetype-interface)
 target_link_libraries(CSim freetype)

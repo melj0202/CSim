@@ -50,7 +50,7 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 	glewExperimental = true;
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
 	/* Loop until the user closes the window */
 	GLenum err = glewInit();
 	if (GLEW_OK != err) {

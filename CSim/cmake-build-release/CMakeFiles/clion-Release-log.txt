@@ -15,6 +15,6 @@ CMake Deprecation Warning at thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt:7 
   CMake that the project does not need compatibility with older versions.
 
 
--- Configuring done (0.3s)
+-- Configuring done (0.2s)
 -- Generating done (0.0s)
 -- Build files have been written to: /home/jaskulr/Source/Repos/CSim/CSim/cmake-build-release

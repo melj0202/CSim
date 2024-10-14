@@ -11,11 +11,13 @@
 		"commands" : 
 		[
 			"add_executable",
+			"TARGET_LINK_LIBRARIES",
 			"target_link_libraries",
 			"set_property",
 			"find_package",
 			"set_target_properties",
-			"include_directories"
+			"include_directories",
+			"INCLUDE_DIRECTORIES"
 		],
 		"files" : 
 		[
@@ -33,122 +35,134 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 39,
+				"line" : 65,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 107,
+				"line" : 110,
 				"parent" : 0
 			},
 			{
-				"command" : 1,
+				"command" : 2,
 				"file" : 0,
-				"line" : 108,
+				"line" : 123,
 				"parent" : 0
 			},
 			{
-				"command" : 1,
+				"command" : 2,
 				"file" : 0,
-				"line" : 109,
+				"line" : 124,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 125,
 				"parent" : 0
 			},
 			{
 				"file" : 1
 			},
 			{
-				"command" : 1,
+				"command" : 2,
 				"file" : 1,
 				"line" : 527,
-				"parent" : 5
+				"parent" : 6
 			},
 			{
-				"command" : 1,
+				"command" : 2,
 				"file" : 1,
 				"line" : 532,
-				"parent" : 5
+				"parent" : 6
 			},
 			{
-				"command" : 1,
+				"command" : 2,
 				"file" : 1,
 				"line" : 541,
-				"parent" : 5
+				"parent" : 6
 			},
 			{
-				"command" : 1,
+				"command" : 2,
 				"file" : 1,
 				"line" : 547,
-				"parent" : 5
+				"parent" : 6
 			},
 			{
-				"command" : 1,
+				"command" : 2,
 				"file" : 1,
 				"line" : 552,
-				"parent" : 5
+				"parent" : 6
 			},
 			{
 				"file" : 2
 			},
 			{
-				"command" : 1,
+				"command" : 2,
 				"file" : 2,
 				"line" : 135,
-				"parent" : 11
+				"parent" : 12
 			},
 			{
 				"file" : 3
 			},
 			{
-				"command" : 1,
+				"command" : 2,
 				"file" : 3,
 				"line" : 225,
-				"parent" : 13
-			},
-			{
-				"command" : 1,
-				"file" : 3,
-				"line" : 237,
-				"parent" : 13
-			},
-			{
-				"command" : 3,
-				"file" : 0,
-				"line" : 93,
-				"parent" : 0
-			},
-			{
-				"file" : 4,
-				"parent" : 16
+				"parent" : 14
 			},
 			{
 				"command" : 2,
-				"file" : 4,
-				"line" : 712,
-				"parent" : 17
+				"file" : 3,
+				"line" : 237,
+				"parent" : 14
 			},
 			{
 				"command" : 4,
+				"file" : 0,
+				"line" : 16,
+				"parent" : 0
+			},
+			{
 				"file" : 4,
-				"line" : 710,
 				"parent" : 17
 			},
 			{
-				"command" : 1,
-				"file" : 0,
-				"line" : 106,
-				"parent" : 0
+				"command" : 3,
+				"file" : 4,
+				"line" : 712,
+				"parent" : 18
 			},
 			{
 				"command" : 5,
+				"file" : 4,
+				"line" : 710,
+				"parent" : 18
+			},
+			{
+				"command" : 2,
 				"file" : 0,
-				"line" : 103,
+				"line" : 122,
 				"parent" : 0
 			},
 			{
-				"command" : 5,
+				"command" : 6,
 				"file" : 0,
-				"line" : 104,
+				"line" : 26,
+				"parent" : 0
+			},
+			{
+				"command" : 6,
+				"file" : 0,
+				"line" : 27,
+				"parent" : 0
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 58,
 				"parent" : 0
 			}
 		]
@@ -159,32 +173,180 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-Wall -Wextra -g -fdiagnostics-color=always"
+					"fragment" : "-Wall -Wextra -O3 -fdiagnostics-color=always   -pthread"
 				}
 			],
 			"defines" : 
 			[
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"define" : "GLEW_STATIC"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 21,
+					"backtrace" : 22,
 					"path" : "/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glfw-3.4/include"
 				},
 				{
-					"backtrace" : 22,
+					"backtrace" : 23,
 					"path" : "/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/glew-2.1.0/include"
 				},
 				{
-					"backtrace" : 20,
-					"path" : "/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug/thirdparty/freetype-2.13.3/include"
+					"backtrace" : 24,
+					"path" : "/usr/include/gtkmm-3.0"
 				},
 				{
-					"backtrace" : 20,
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/gtkmm-3.0/include"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/giomm-2.4"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/giomm-2.4/include"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/glib-2.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/glib-2.0/include"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/libmount"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/blkid"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/glibmm-2.4"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/glibmm-2.4/include"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/sigc++-2.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/sigc++-2.0/include"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/gtk-3.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/pango-1.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/harfbuzz"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/freetype2"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/libpng16"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/fribidi"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/cairo"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/pixman-1"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/gdk-pixbuf-2.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/webp"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/gio-unix-2.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/atk-1.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/at-spi2-atk/2.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/at-spi-2.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/dbus-1.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/cairomm-1.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/cairomm-1.0/include"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/pangomm-1.4"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/pangomm-1.4/include"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/atkmm-1.6"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/atkmm-1.6/include"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/gtk-3.0/unix-print"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/include/gdkmm-3.0"
+				},
+				{
+					"backtrace" : 24,
+					"path" : "/usr/lib/x86_64-linux-gnu/gdkmm-3.0/include"
+				},
+				{
+					"backtrace" : 21,
+					"path" : "/home/jaskulr/Source/Repos/CSim/CSim/cmake-build-release/thirdparty/freetype-2.13.3/include"
+				},
+				{
+					"backtrace" : 21,
 					"path" : "/home/jaskulr/Source/Repos/CSim/CSim/thirdparty/freetype-2.13.3/include"
 				}
 			],
@@ -227,15 +389,15 @@
 	"dependencies" : 
 	[
 		{
-			"backtrace" : 4,
+			"backtrace" : 5,
 			"id" : "glfw::@02548bf473dcef082bc0"
 		},
 		{
-			"backtrace" : 20,
+			"backtrace" : 21,
 			"id" : "freetype::@f5c75f1e1d6676b9994e"
 		},
 		{
-			"backtrace" : 3,
+			"backtrace" : 4,
 			"id" : "glew_s::@46c2bdc15f2e61878d75"
 		}
 	],
@@ -245,7 +407,7 @@
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-Wall -Wextra -g",
+				"fragment" : "-Wall -Wextra -O3",
 				"role" : "flags"
 			},
 			{
@@ -254,76 +416,181 @@
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "thirdparty/freetype-2.13.3/libfreetyped.a",
+				"fragment" : "-lgtkmm-3.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-latkmm-1.6",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lgdkmm-3.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lgiomm-2.4",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lgtk-3",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lgdk-3",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lz",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-latk-1.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lcairo-gobject",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lgio-2.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lpangomm-1.4",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lglibmm-2.4",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lcairomm-1.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lsigc-2.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lpangocairo-1.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lpango-1.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lharfbuzz",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lcairo",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lgdk_pixbuf-2.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lgobject-2.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lglib-2.0",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "lib/libGLEWd.a",
+				"fragment" : "thirdparty/freetype-2.13.3/libfreetype.a",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 4,
+				"fragment" : "lib/libGLEW.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 5,
 				"fragment" : "thirdparty/glfw-3.4/src/libglfw3.a",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 6,
+				"backtrace" : 7,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libz.so",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 7,
-				"fragment" : "/usr/lib/x86_64-linux-gnu/libbz2.so",
-				"role" : "libraries"
-			},
-			{
 				"backtrace" : 8,
-				"fragment" : "/usr/lib/x86_64-linux-gnu/libpng.so",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 6,
-				"fragment" : "/usr/lib/x86_64-linux-gnu/libz.so",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 7,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libbz2.so",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 8,
-				"fragment" : "/usr/lib/x86_64-linux-gnu/libpng.so",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 9,
-				"fragment" : "/usr/lib/x86_64-linux-gnu/libharfbuzz.so",
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libpng.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 7,
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libz.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libbz2.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 9,
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libpng.so",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 10,
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libharfbuzz.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 11,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libbrotlidec.so",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 12,
+				"backtrace" : 13,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libOpenGL.so",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 12,
+				"backtrace" : 13,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libGLX.so",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 12,
+				"backtrace" : 13,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libGLU.so",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 14,
+				"backtrace" : 15,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/librt.a",
 				"role" : "libraries"
 			},
@@ -332,17 +599,17 @@
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 15,
+				"backtrace" : 16,
 				"fragment" : "-ldl",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 18,
+				"backtrace" : 19,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libGLX.so",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 19,
+				"backtrace" : 20,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libOpenGL.so",
 				"role" : "libraries"
 			}

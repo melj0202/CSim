@@ -1,9 +1,11 @@
 #include <string>
+#include <gtk/gtk.h>
 #include "../../CellMain.h"
 #include "../../SysCmdLine.h"
 
 int main(int argc, char** argv) {
 
+	gtk_init(&argc, &argv);
 	std::string mode;
 
 	//Parse command line args
