@@ -1,2 +1,0 @@
-C:\PROGRA~1\JETBRA~1\CLION2~1.2\bin\mingw\bin\ar.exe qc ..\..\..\..\lib\libglew32d.a CMakeFiles/glew_s.dir/__/__/src/glew.c.obj CMakeFiles/glew_s.dir/__/glew.rc.obj
-C:\PROGRA~1\JETBRA~1\CLION2~1.2\bin\mingw\bin\ranlib.exe ..\..\..\..\lib\libglew32d.a

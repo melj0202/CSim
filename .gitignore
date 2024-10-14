@@ -39,6 +39,13 @@
 x64/
 glfw_app/x64
 .vs/
+.idea/
+.vscode/
 packages/
+cmake-*/
+build/
+Build/
 
 log.*
+
+\#*\#
