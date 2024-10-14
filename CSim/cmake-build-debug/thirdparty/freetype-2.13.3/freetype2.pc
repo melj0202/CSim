@@ -1,4 +1,4 @@
-prefix=/usr/local
+prefix=C:/Program Files (x86)/CSim
 exec_prefix=${prefix}
 libdir=${prefix}/lib
 includedir=${prefix}/include
@@ -7,8 +7,8 @@ Name: FreeType 2
 URL: https://freetype.org
 Description: A free, high-quality, and portable font engine.
 Version: 26.2.20
-Requires:  zlib, libpng, harfbuzz >= 2.0.0, libbrotlidec
+Requires:  
 Requires.private: 
-Libs: -L${libdir} -lfreetype -lbz2
+Libs: -L${libdir} -lfreetype 
 Libs.private: 
 Cflags: -I${includedir}/freetype2

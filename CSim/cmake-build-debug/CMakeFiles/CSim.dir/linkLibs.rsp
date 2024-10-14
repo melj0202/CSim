@@ -1,0 +1,1 @@
+ "thirdparty/freetype-2.13.3/libfreetyped.a" lib/libglew32d.a "thirdparty/glfw-3.4/src/libglfw3.a" -lopengl32 -lopengl32 -lglu32 -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

@@ -8,7 +8,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 # Import target "freetype" for configuration "Debug"
 set_property(TARGET freetype APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(freetype PROPERTIES
-  IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "C"
+  IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "C;RC"
   IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/lib/libfreetyped.a"
   )
 

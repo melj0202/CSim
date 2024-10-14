@@ -26,6 +26,7 @@
 
 //int msleep(long msec);
 
+#ifdef __linux__
 inline int msleep(long msec) {
 	struct timespec ts;
 	int res;
@@ -45,7 +46,8 @@ inline int msleep(long msec) {
 	} while (res && errno == EINTR);
 
 	return res;
-}
+}
+#endif
 
 #ifndef __CSIM_FORCE_INLINE__
 #if defined(_MSC_VER)
@@ -74,7 +76,7 @@ inline int msleep(long msec) {
 
 #ifndef __STRLEN
 #if defined(_WIN32) || defined(_WIN64)
-#define __STRLEN strlen_s
+#define __STRLEN std::strlen
 #elif defined(__linux__) || defined(__APPLE__)
 #define __STRLEN strlen
 #endif

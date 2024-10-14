@@ -1,12 +1,38 @@
-/home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/jaskulr/.local/share/JetBrains/Toolbox/apps/clion/bin/ninja/linux/x64/ninja -G Ninja -S /home/jaskulr/Source/Repos/CSim/CSim -B /home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug
--- Including Wayland support
--- Including X11 support
--- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
--- Documentation generation requires Doxygen 1.9.8 or later
--- Found the following HarfBuzz libraries:
---  HarfBuzz (required): /usr/lib/x86_64-linux-gnu/libharfbuzz.so
--- Checking for module 'bzip2'
---   Package 'bzip2', required by 'virtual:world', not found
+"C:\Program Files\JetBrains\CLion 2024.2.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles" -S C:\Users\gravi\Source\Projects\CSim\CSim -B C:\Users\gravi\Source\Projects\CSim\CSim\cmake-build-debug
+-- The C compiler identification is GNU 13.1.0
+-- The CXX compiler identification is GNU 13.1.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/JetBrains/CLion 2024.2.2/bin/mingw/bin/gcc.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/JetBrains/CLion 2024.2.2/bin/mingw/bin/g++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found OpenGL: opengl32
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Including Win32 support
+-- Looking for dinput.h
+-- Looking for dinput.h - found
+-- Looking for xinput.h
+-- Looking for xinput.h - found
+-- Found Doxygen: C:/Program Files/doxygen/bin/doxygen.exe (found version "1.12.0") found components: doxygen
+-- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE) 
+CMake Warning at thirdparty/freetype-2.13.3/builds/cmake/FindHarfBuzz.cmake:99 (message):
+  Required version (2.0.0) is higher than found version ()
+Call Stack (most recent call first):
+  thirdparty/freetype-2.13.3/CMakeLists.txt:258 (find_package)
+
+
+-- Could NOT find ZLIB (missing: ZLIB_LIBRARY ZLIB_INCLUDE_DIR) 
+-- Could NOT find PNG (missing: PNG_LIBRARY PNG_PNG_INCLUDE_DIR) 
+-- Could NOT find ZLIB (missing: ZLIB_LIBRARY ZLIB_INCLUDE_DIR) 
+-- Could NOT find BZip2 (missing: BZIP2_LIBRARIES BZIP2_INCLUDE_DIR) 
+-- Could NOT find BrotliDec (missing: BROTLIDEC_INCLUDE_DIRS BROTLIDEC_LIBRARIES) 
 CMake Deprecation Warning at thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt:7 (cmake_minimum_required):
   Compatibility with CMake < 3.5 will be removed from a future version of
   CMake.
@@ -15,6 +41,6 @@ CMake Deprecation Warning at thirdparty/glew-2.1.0/build/cmake/CMakeLists.txt:7 
   CMake that the project does not need compatibility with older versions.
 
 
--- Configuring done (0.2s)
--- Generating done (0.0s)
--- Build files have been written to: /home/jaskulr/Source/Repos/CSim/CSim/cmake-build-debug
+-- Configuring done (10.0s)
+-- Generating done (0.2s)
+-- Build files have been written to: C:/Users/gravi/Source/Projects/CSim/CSim/cmake-build-debug
