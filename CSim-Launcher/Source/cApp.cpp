@@ -53,9 +53,34 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
     //Insert window resolution controls
     wxStaticText* window_res_label = new wxStaticText(panel, wxID_ANY, wxT("Window Resolution"));
-    window_res_label->SetPosition(wxPoint(100, 100));
-    //Insert canvas resolution controls
+    window_res_label->SetPosition(wxPoint(55, 100));
 
+    wxTextCtrl* window_x_entry = new wxTextCtrl(panel, wxID_ANY);
+    window_x_entry->SetPosition(wxPoint(50, 125));
+    window_x_entry->SetSize(wxSize(60, 25));
+
+    wxStaticText* x1 = new wxStaticText(panel, wxID_ANY, wxT("X"));
+    x1->SetPosition(wxPoint(118, 125));
+
+    wxTextCtrl* window_y_entry = new wxTextCtrl(panel, wxID_ANY);
+    window_y_entry->SetPosition(wxPoint(135, 125));
+    window_y_entry->SetSize(wxSize(60, 25));
+
+    //Insert canvas resolution controls
+    wxStaticText* canvas_res_label = new wxStaticText(panel, wxID_ANY, wxT("Canvas Resolution"));
+    canvas_res_label->SetPosition(wxPoint(55, 160));
+
+
+    wxTextCtrl* canvas_x_entry = new wxTextCtrl(panel, wxID_ANY);
+    canvas_x_entry->SetPosition(wxPoint(50, 185));
+    canvas_x_entry->SetSize(wxSize(60, 25));
+
+    wxStaticText* x2 = new wxStaticText(panel, wxID_ANY, wxT("X"));
+    x2->SetPosition(wxPoint(118, 185));
+
+    wxTextCtrl* canvas_y_entry = new wxTextCtrl(panel, wxID_ANY);
+    canvas_y_entry->SetPosition(wxPoint(135, 185));
+    canvas_y_entry->SetSize(wxSize(60, 25));
 
     wxStaticText* file_picker_label = new wxStaticText(panel, wxID_ANY, wxT("Canvas File"));
     file_picker_label->SetPosition(wxPoint(55, 255));
