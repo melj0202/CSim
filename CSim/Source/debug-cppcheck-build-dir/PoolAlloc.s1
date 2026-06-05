@@ -1,0 +1,9 @@
+getBlockSize
+getNumBlocks
+getNumChunks
+getBlocksFree call:[size] noreturn:[size]
+ChainedPoolAlloc call:[Chunk,push_back,sizeof] noreturn:[push_back]
+ChainedPoolAlloc
+Allocate call:[back,empty,pop_back,push_back] noreturn:[push_back]
+Deallocate call:[push_back] noreturn:[push_back]
+Clear call:[Chunk,clear]

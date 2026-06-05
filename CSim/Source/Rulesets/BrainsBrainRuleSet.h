@@ -1,10 +1,10 @@
 #pragma once 
-#include "CellRuleSet.h"
+#include "RuleSet.h"
 
-class BrainsBrainRuleSet: public CellRuleSet {
+class BrainsBrainRuleSet: public RuleSet {
 public:
 
-	BrainsBrainRuleSet() = default;
+	BrainsBrainRuleSet(Canvas* targetCanvas) : RuleSet(targetCanvas) {}
 	~BrainsBrainRuleSet() override = default;
 
 	void evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const override;

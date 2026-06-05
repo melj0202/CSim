@@ -1,13 +1,13 @@
 #pragma once 
-#include "CellRuleSet.h"
+#include "RuleSet.h"
 
 
 
 
-class GameOfLifeRuleSet : public CellRuleSet {
+class GameOfLifeRuleSet : public RuleSet {
 public:
 	
-	GameOfLifeRuleSet() = default;
+	GameOfLifeRuleSet(Canvas* targetCanvas) : RuleSet(targetCanvas) {}
 	~GameOfLifeRuleSet() override = default;
 	
 	void evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const override;

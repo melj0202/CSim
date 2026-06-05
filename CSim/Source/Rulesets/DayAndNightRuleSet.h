@@ -1,13 +1,13 @@
 #pragma once 
-#include "CellRuleSet.h"
+#include "RuleSet.h"
 
 
 
 
-class DayAndNightRuleSet : public CellRuleSet {
+class DayAndNightRuleSet : public RuleSet {
 public:
 
-	DayAndNightRuleSet() = default;
+	DayAndNightRuleSet(Canvas* targetCanvas) : RuleSet(targetCanvas) {}
 	~DayAndNightRuleSet() override = default;
 
 	void evaluateNeighbors(unsigned char& cell, const unsigned char &ne, const int& x, const int& y) const override;

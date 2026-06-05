@@ -1,0 +1,5 @@
+Some notes to help with implementation later...
+
+Currently there is no clean architecture to get the scene/game data to the renederer.
+
+

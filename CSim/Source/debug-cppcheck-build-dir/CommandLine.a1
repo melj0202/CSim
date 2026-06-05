@@ -1,0 +1,281 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="9439745092384533842">
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/IEnvVars.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/IEnvVars.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/IRenderWindow.h&quot; not found." verbose="Include file: &quot;Rendering/IRenderWindow.h&quot; not found.">
+            <location file="System/CommandLine.h" line="6" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;System/KeyCode.h&quot; not found." verbose="Include file: &quot;System/KeyCode.h&quot; not found.">
+            <location file="System/InputContext.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/InputContext.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/InputContext.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Drawable.h&quot; not found." verbose="Include file: &quot;Drawable.h&quot; not found.">
+            <location file="System/CommandLine.h" line="8" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Util/Math.h&quot; not found." verbose="Include file: &quot;Util/Math.h&quot; not found.">
+            <location file="System/CommandLine.h" line="9" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandRegistry.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandRegistry.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;functional&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;functional&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandRegistry.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandRegistry.h" line="5" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;SceneObject.h&quot; not found." verbose="Include file: &quot;SceneObject.h&quot; not found.">
+            <location file="System/CommandLine.h" line="11" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Init/MacroDefs.h&quot; not found." verbose="Include file: &quot;Init/MacroDefs.h&quot; not found.">
+            <location file="System/CellMain.h" line="6" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Init/BuildInfo.h&quot; not found." verbose="Include file: &quot;Init/BuildInfo.h&quot; not found.">
+            <location file="System/CellMain.h" line="7" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/Logger.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;fstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;fstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/Logger.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/Logger.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;cstring&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;cstring&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/Logger.h" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.cpp" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.cpp" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;thirdparty/stb/stb_easy_font.h&quot; not found." verbose="Include file: &quot;thirdparty/stb/stb_easy_font.h&quot; not found.">
+            <location file="System/CommandLine.cpp" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;sstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;sstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.cpp" line="6" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.cpp" line="7" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;cstdint&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;cstdint&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.cpp" line="8" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.cpp" line="9" column="2"/>
+        </error>
+        <error id="normalCheckLevelMaxBranches" severity="information" msg="Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches." verbose="Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches." file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="0" column="0"/>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;currentInput&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;currentInput&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="21" column="2"/>
+            <symbol>currentInput</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;tempInput&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;tempInput&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="22" column="2"/>
+            <symbol>tempInput</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;history&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;history&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="23" column="2"/>
+            <symbol>history</symbol>
+        </error>
+        <error id="cstyleCast" severity="style" msg="C-style pointer casting" verbose="C-style pointer casting detected. C++ offers four different kinds of casts as replacements: static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to any of those automatically, thus it is considered safer if the programmer explicitly states which kind of cast is expected." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="545" column="63"/>
+        </error>
+        <error id="cstyleCast" severity="style" msg="C-style pointer casting" verbose="C-style pointer casting detected. C++ offers four different kinds of casts as replacements: static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to any of those automatically, thus it is considered safer if the programmer explicitly states which kind of cast is expected." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="560" column="59"/>
+        </error>
+        <error id="intToPointerCast" severity="portability" msg="Casting non-zero decimal integer literal to pointer." verbose="Casting non-zero decimal integer literal to pointer." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="93" column="80"/>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;currentY&apos; can be reduced." verbose="The scope of the variable &apos;currentY&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="531" column="8"/>
+            <symbol>currentY</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;yOffsetStep&apos; can be reduced." verbose="The scope of the variable &apos;yOffsetStep&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="532" column="8"/>
+            <symbol>yOffsetStep</symbol>
+        </error>
+        <error id="passedByValue" severity="performance" msg="Function parameter &apos;command&apos; should be passed by const reference." verbose="Parameter &apos;command&apos; is passed by value. It could be passed as a const reference which is usually faster and recommended in C++." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="294" column="44" info="Function parameter &apos;command&apos; should be passed by const reference."/>
+            <symbol>command</symbol>
+        </error>
+        <error id="passedByValue" severity="performance" msg="Function parameter &apos;str&apos; should be passed by const reference." verbose="Parameter &apos;str&apos; is passed by value. It could be passed as a const reference which is usually faster and recommended in C++." cwe="398" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="372" column="114" info="Function parameter &apos;str&apos; should be passed by const reference."/>
+            <symbol>str</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;textColor&apos; is assigned a value that is never used." verbose="Variable &apos;textColor&apos; is assigned a value that is never used." cwe="563" file0="System/CommandLine.cpp">
+            <location file="System/CommandLine.cpp" line="528" column="29"/>
+            <symbol>textColor</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="System/CommandLine.h:43:10" call-funcname="AppendString" call-argnr="2" file="System/CommandLine.cpp" line="154" col="14" call-argexpr="0" call-argvaluetype="0" call-argvalue="0" call-argvalue-ufr="0"/>  </FileInfo>
+  <FileInfo check="Class">
+<class name="EnvVar" file="System/IEnvVars.h" configuration="" line="6" col="1" hash="2066791654013242197"/>
+<class name="InputContext" file="System/InputContext.h" configuration="" line="6" col="1" hash="8300220104999654618"/>
+<class name="CommandRegistry::QueuedCommand" file="System/CommandRegistry.h" configuration="" line="13" col="5" hash="17470308417744909643"/>
+<class name="CommandLine::historyBuffer" file="System/CommandLine.h" configuration="" line="21" col="5" hash="5859181093086691197"/>
+<class name="ConsoleVertex" file="System/CommandLine.cpp" configuration="" line="12" col="1" hash="9111992051837650617"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="System/CommandLine.h:37:10" my-argnr="1" my-argname="str" file="System/CommandLine.cpp" line="134" col="35" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="System/InputContext.h:18:14" my-argnr="1" my-argname="actionTag" file="System/InputContext.h" line="18" col="88" value="0"/>
+    <unsafe-usage my-id="System/CommandRegistry.h:25:14" my-argnr="1" my-argname="name" file="System/CommandRegistry.h" line="25" col="80" value="0"/>
+    <unsafe-usage my-id="System/Logger.h:44:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="44" col="86" value="0"/>
+    <unsafe-usage my-id="System/Logger.h:45:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="45" col="90" value="0"/>
+    <unsafe-usage my-id="System/Logger.h:46:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="46" col="84" value="0"/>
+    <unsafe-usage my-id="System/Logger.h:47:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="47" col="76" value="0"/>
+    <unsafe-usage my-id="System/Logger.h:48:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="48" col="86" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="System/InputContext.h" functionName="getActionTag" lineNumber="12" column="20"/>
+    <functiondecl file="System/InputContext.h" functionName="getActions" lineNumber="15" column="60"/>
+    <functiondecl file="System/InputContext.h" functionName="bindAction" lineNumber="18" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="RegisterCommand" lineNumber="25" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="UnregisterCommand" lineNumber="26" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="QueueCommand" lineNumber="27" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="ClearQueue" lineNumber="33" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="ExecuteQueue" lineNumber="34" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="HasCommand" lineNumber="40" column="14"/>
+    <functiondecl file="System/Logger.h" functionName="LogError" lineNumber="44" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="LogWarning" lineNumber="45" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="LogInfo" lineNumber="46" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="Log" lineNumber="47" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="LogTrace" lineNumber="48" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="LogWError" lineNumber="51" column="17"/>
+    <functiondecl file="System/Logger.h" functionName="LogWWarning" lineNumber="54" column="17"/>
+    <functiondecl file="System/Logger.h" functionName="LogWInfo" lineNumber="57" column="17"/>
+    <functiondecl file="System/Logger.h" functionName="LogW" lineNumber="60" column="17"/>
+    <functiondecl file="System/Logger.h" functionName="getCommandLine" lineNumber="70" column="25"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="initConsoleGL" lineNumber="37" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="Toggle" lineNumber="104" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="AddCharacter" lineNumber="113" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="HandleBackspace" lineNumber="124" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="logNormal" lineNumber="132" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="logError" lineNumber="136" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="logWarning" lineNumber="141" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="logSuccess" lineNumber="146" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="logTrace" lineNumber="152" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="ExecuteCommand" lineNumber="158" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="AddToHistory" lineNumber="294" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="HistoryDown" lineNumber="306" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="HistoryUp" lineNumber="323" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="ScrollUp" lineNumber="337" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="ScrollDown" lineNumber="356" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="AppendString" lineNumber="364" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="AppendStringLn" lineNumber="372" column="19"/>
+    <functiondecl file="System/CommandLine.cpp" functionName="DrawImpl" lineNumber="381" column="19"/>
+    <functioncall functionName="AddToHistory"/>
+    <functioncall functionName="AppendString"/>
+    <functioncall functionName="CommandLine"/>
+    <functioncall functionName="EBO"/>
+    <functioncall functionName="GL_ARRAY_BUFFER"/>
+    <functioncall functionName="GL_ARRAY_BUFFER_BINDING"/>
+    <functioncall functionName="GL_BLEND"/>
+    <functioncall functionName="GL_BLEND_DST_ALPHA"/>
+    <functioncall functionName="GL_BLEND_SRC_ALPHA"/>
+    <functioncall functionName="GL_CURRENT_PROGRAM"/>
+    <functioncall functionName="GL_DEPTH_TEST"/>
+    <functioncall functionName="GL_DYNAMIC_DRAW"/>
+    <functioncall functionName="GL_ELEMENT_ARRAY_BUFFER"/>
+    <functioncall functionName="GL_ELEMENT_ARRAY_BUFFER_BINDING"/>
+    <functioncall functionName="GL_FALSE"/>
+    <functioncall functionName="GL_FLOAT"/>
+    <functioncall functionName="GL_ONE_MINUS_SRC_ALPHA"/>
+    <functioncall functionName="GL_SRC_ALPHA"/>
+    <functioncall functionName="GL_STATIC_DRAW"/>
+    <functioncall functionName="GL_TRIANGLES"/>
+    <functioncall functionName="GL_TRUE"/>
+    <functioncall functionName="GL_UNSIGNED_BYTE"/>
+    <functioncall functionName="GL_UNSIGNED_INT"/>
+    <functioncall functionName="GL_VERTEX_ARRAY_BINDING"/>
+    <functioncall functionName="GLsizeiptr"/>
+    <functioncall functionName="GLuint"/>
+    <functioncall functionName="HasCommand"/>
+    <functioncall functionName="InputEvent"/>
+    <functioncall functionName="Log"/>
+    <functioncall functionName="LogError"/>
+    <functioncall functionName="LogInfo"/>
+    <functioncall functionName="LogTrace"/>
+    <functioncall functionName="LogWarning"/>
+    <functioncall functionName="Logger"/>
+    <functioncall functionName="QueueCommand"/>
+    <functioncall functionName="VAO"/>
+    <functioncall functionName="VBO"/>
+    <functioncall functionName="at"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="createShaderProgram"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="eof"/>
+    <functioncall functionName="erase"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="function"/>
+    <functioncall functionName="getVar"/>
+    <functioncall functionName="getVars"/>
+    <functioncall functionName="glBindBuffer"/>
+    <functioncall functionName="glBindVertexArray"/>
+    <functioncall functionName="glBlendFunc"/>
+    <functioncall functionName="glBufferData"/>
+    <functioncall functionName="glBufferSubData"/>
+    <functioncall functionName="glDisable"/>
+    <functioncall functionName="glDrawElements"/>
+    <functioncall functionName="glEnable"/>
+    <functioncall functionName="glEnableVertexAttribArray"/>
+    <functioncall functionName="glGenBuffers"/>
+    <functioncall functionName="glGenVertexArrays"/>
+    <functioncall functionName="glGetIntegerv"/>
+    <functioncall functionName="glGetUniformLocation"/>
+    <functioncall functionName="glIsEnabled"/>
+    <functioncall functionName="glUniform2f"/>
+    <functioncall functionName="glUseProgram"/>
+    <functioncall functionName="glVertexAttribPointer"/>
+    <functioncall functionName="glfwGetTime"/>
+    <functioncall functionName="initConsoleGL"/>
+    <functioncall functionName="lerp"/>
+    <functioncall functionName="logError"/>
+    <functioncall functionName="logNormal"/>
+    <functioncall functionName="logSuccess"/>
+    <functioncall functionName="logWarning"/>
+    <functioncall functionName="pop_back"/>
+    <functioncall functionName="push_back"/>
+    <functioncall functionName="requestClose"/>
+    <functioncall functionName="setVar"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="stb_easy_font_print"/>
+    <functioncall functionName="stoi"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="unordered_map"/>
+    <functioncall functionName="vector"/>
+  </FileInfo>
+</analyzerinfo>

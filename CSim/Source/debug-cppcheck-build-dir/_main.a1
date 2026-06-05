@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="3773886917475318514">
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/_main.cpp" line="1" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;CellMain.h&quot; not found." verbose="Include file: &quot;CellMain.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/_main.cpp" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;SysCmdLine.h&quot; not found." verbose="Include file: &quot;SysCmdLine.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/_main.cpp" line="3" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;EnvVars.h&quot; not found." verbose="Include file: &quot;EnvVars.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/_main.cpp" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;ServiceLocator.h&quot; not found." verbose="Include file: &quot;ServiceLocator.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/_main.cpp" line="5" column="2"/>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/_main.cpp" functionName="main" lineNumber="7" column="5"/>
+    <functioncall functionName="CellMain"/>
+    <functioncall functionName="EnvVars"/>
+    <functioncall functionName="ParseCommandLine"/>
+    <functioncall functionName="StringisModeString"/>
+    <functioncall functionName="exit"/>
+    <functioncall functionName="get"/>
+    <functioncall functionName="getVar"/>
+    <functioncall functionName="provide"/>
+    <functioncall functionName="setVar"/>
+    <functioncall functionName="value"/>
+  </FileInfo>
+</analyzerinfo>

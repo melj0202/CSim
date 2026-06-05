@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="14512242457056771174">
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/RenderWindow.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/RenderWindow.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/RenderWindow.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;array&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;array&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/RenderWindow.h" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/IRenderWIndow.h" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;array&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;array&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/IRenderWIndow.h" line="6" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/RenderQueue.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/RenderQueue.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.h" line="5" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Init/MacroDefs.h&quot; not found." verbose="Include file: &quot;Init/MacroDefs.h&quot; not found.">
+            <location file="Rendering/Drawable.h" line="6" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;System/IEnvVars.h&quot; not found." verbose="Include file: &quot;System/IEnvVars.h&quot; not found.">
+            <location file="Rendering/IRenderWIndow.h" line="8" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;System/IEnvVars.h&quot; not found." verbose="Include file: &quot;System/IEnvVars.h&quot; not found.">
+            <location file="Rendering/RenderWindow.h" line="8" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;thirdparty/stb/stb_easy_font.h&quot; not found." verbose="Include file: &quot;thirdparty/stb/stb_easy_font.h&quot; not found.">
+            <location file="Rendering/RenderWindow.cpp" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Logger.h&quot; not found." verbose="Include file: &quot;Logger.h&quot; not found.">
+            <location file="Rendering/RenderWindow.cpp" line="3" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;CommandLine.h&quot; not found." verbose="Include file: &quot;CommandLine.h&quot; not found.">
+            <location file="Rendering/RenderWindow.cpp" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;chrono&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;chrono&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/RenderWindow.cpp" line="5" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;System/IEnvVars.h&quot; not found." verbose="Include file: &quot;System/IEnvVars.h&quot; not found.">
+            <location file="Rendering/RenderWindow.cpp" line="6" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;System/InputManager.h&quot; not found." verbose="Include file: &quot;System/InputManager.h&quot; not found.">
+            <location file="Rendering/RenderWindow.cpp" line="7" column="2"/>
+        </error>
+        <error id="noCopyConstructor" severity="warning" msg="Class &apos;DrawableBase&apos; does not have a copy constructor which is recommended since it has dynamic memory/resource management." verbose="Class &apos;DrawableBase&apos; does not have a copy constructor which is recommended since it has dynamic memory/resource management." cwe="398" file0="Rendering/RenderWindow.cpp">
+            <location file="Rendering/Drawable.h" line="14" column="20"/>
+            <symbol>DrawableBase</symbol>
+        </error>
+        <error id="noOperatorEq" severity="warning" msg="Class &apos;DrawableBase&apos; does not have a operator= which is recommended since it has dynamic memory/resource management." verbose="Class &apos;DrawableBase&apos; does not have a operator= which is recommended since it has dynamic memory/resource management." cwe="398" file0="Rendering/RenderWindow.cpp">
+            <location file="Rendering/Drawable.h" line="14" column="20"/>
+            <symbol>DrawableBase</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The destructor &apos;~RenderWindow&apos; overrides a destructor in a base class but is not marked with a &apos;override&apos; specifier." verbose="The destructor &apos;~RenderWindow&apos; overrides a destructor in a base class but is not marked with a &apos;override&apos; specifier." file0="Rendering/RenderWindow.cpp">
+            <location file="Rendering/RenderWindow.h" line="24" column="3" info="Destructor in derived class"/>
+            <location file="Rendering/IRenderWIndow.h" line="16" column="14" info="Virtual destructor in base class"/>
+            <symbol>~RenderWindow</symbol>
+        </error>
+        <error id="constParameterPointer" severity="style" msg="Parameter &apos;envVars&apos; can be declared as pointer to const" verbose="Parameter &apos;envVars&apos; can be declared as pointer to const" cwe="398" file0="Rendering/RenderWindow.cpp">
+            <location file="Rendering/IRenderWIndow.h" line="15" column="90" info="Parameter &apos;envVars&apos; can be declared as pointer to const"/>
+            <symbol>envVars</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="Rendering/Drawable.h" functionName="isVisible" lineNumber="35" column="10"/>
+    <functiondecl file="Rendering/Drawable.h" functionName="setVisible" lineNumber="36" column="10"/>
+    <functiondecl file="Rendering/RenderWindow.cpp" functionName="windowSizeCallback" lineNumber="9" column="6"/>
+    <functiondecl file="Rendering/RenderWindow.cpp" functionName="centerWindow" lineNumber="117" column="20"/>
+    <functioncall functionName="Derived"/>
+    <functioncall functionName="DrawImpl"/>
+    <functioncall functionName="GLFW_CONTEXT_VERSION_MAJOR"/>
+    <functioncall functionName="GLFW_CONTEXT_VERSION_MINOR"/>
+    <functioncall functionName="GLFW_OPENGL_CORE_PROFILE"/>
+    <functioncall functionName="GLFW_OPENGL_PROFILE"/>
+    <functioncall functionName="GLFW_RESIZABLE"/>
+    <functioncall functionName="GLFW_TRUE"/>
+    <functioncall functionName="GL_DEPTH_BUFFER_BIT"/>
+    <functioncall functionName="GL_VERSION"/>
+    <functioncall functionName="IRenderWindow"/>
+    <functioncall functionName="LogError"/>
+    <functioncall functionName="LogInfo"/>
+    <functioncall functionName="LogTrace"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="RenderQueue"/>
+    <functioncall functionName="RenderWindow"/>
+    <functioncall functionName="array"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="centerWindow"/>
+    <functioncall functionName="draw"/>
+    <functioncall functionName="exit"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="getVar"/>
+    <functioncall functionName="glClear"/>
+    <functioncall functionName="glClearColor"/>
+    <functioncall functionName="glDeleteBuffers"/>
+    <functioncall functionName="glDeleteProgram"/>
+    <functioncall functionName="glDeleteShader"/>
+    <functioncall functionName="glDeleteVertexArrays"/>
+    <functioncall functionName="glGetString"/>
+    <functioncall functionName="glViewport"/>
+    <functioncall functionName="glewInit"/>
+    <functioncall functionName="glfwCreateWindow"/>
+    <functioncall functionName="glfwGetCursorPos"/>
+    <functioncall functionName="glfwGetFramebufferSize"/>
+    <functioncall functionName="glfwGetPrimaryMonitor"/>
+    <functioncall functionName="glfwGetVideoMode"/>
+    <functioncall functionName="glfwGetWindowSize"/>
+    <functioncall functionName="glfwGetWindowUserPointer"/>
+    <functioncall functionName="glfwInit"/>
+    <functioncall functionName="glfwMakeContextCurrent"/>
+    <functioncall functionName="glfwSetWindowMonitor"/>
+    <functioncall functionName="glfwSetWindowPos"/>
+    <functioncall functionName="glfwSetWindowShouldClose"/>
+    <functioncall functionName="glfwSetWindowSizeCallback"/>
+    <functioncall functionName="glfwSetWindowUserPointer"/>
+    <functioncall functionName="glfwSwapBuffers"/>
+    <functioncall functionName="glfwSwapInterval"/>
+    <functioncall functionName="glfwTerminate"/>
+    <functioncall functionName="glfwWindowHint"/>
+    <functioncall functionName="glfwWindowShouldClose"/>
+    <functioncall functionName="handleResize"/>
+    <functioncall functionName="isVisible"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="setVar"/>
+    <functioncall functionName="to_string"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="valueAsBool"/>
+    <functioncall functionName="windowSizeCallback"/>
+  </FileInfo>
+</analyzerinfo>

@@ -1,10 +1,10 @@
 #pragma once 
-#include "CellRuleSet.h"
+#include "RuleSet.h"
 
-class SeedsRuleSet : public CellRuleSet {
+class SeedsRuleSet : public RuleSet {
 public:
 
-	SeedsRuleSet() = default;
+	SeedsRuleSet(Canvas* targetCanvas) : RuleSet(targetCanvas) {}
 	~SeedsRuleSet() override = default;
 
 	void evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const override;

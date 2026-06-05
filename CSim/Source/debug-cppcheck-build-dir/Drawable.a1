@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="3752767691074531300">
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.h" line="5" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Init/MacroDefs.h&quot; not found." verbose="Include file: &quot;Init/MacroDefs.h&quot; not found.">
+            <location file="Rendering/Drawable.h" line="6" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.cpp" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;ostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;ostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.cpp" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.cpp" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rendering/Drawable.cpp" line="5" column="2"/>
+        </error>
+        <error id="functionStatic" severity="style" msg="The member function &apos;DrawableBase::compileShader&apos; can be static." verbose="The member function &apos;DrawableBase::compileShader&apos; can be static." cwe="398" file0="Rendering/Drawable.cpp">
+            <location file="Rendering/Drawable.cpp" line="7" column="28"/>
+            <location file="Rendering/Drawable.h" line="46" column="18"/>
+            <symbol>DrawableBase::compileShader</symbol>
+        </error>
+        <error id="noCopyConstructor" severity="warning" msg="Class &apos;DrawableBase&apos; does not have a copy constructor which is recommended since it has dynamic memory/resource management." verbose="Class &apos;DrawableBase&apos; does not have a copy constructor which is recommended since it has dynamic memory/resource management." cwe="398" file0="Rendering/Drawable.cpp">
+            <location file="Rendering/Drawable.h" line="14" column="20"/>
+            <symbol>DrawableBase</symbol>
+        </error>
+        <error id="noOperatorEq" severity="warning" msg="Class &apos;DrawableBase&apos; does not have a operator= which is recommended since it has dynamic memory/resource management." verbose="Class &apos;DrawableBase&apos; does not have a operator= which is recommended since it has dynamic memory/resource management." cwe="398" file0="Rendering/Drawable.cpp">
+            <location file="Rendering/Drawable.h" line="14" column="20"/>
+            <symbol>DrawableBase</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="Rendering/Drawable.h:46:18" call-funcname="compileShader" call-argnr="2" file="Rendering/Drawable.cpp" line="31" col="20" my-id="Rendering/Drawable.h:47:18" my-argnr="1"/>
+<function-call call-id="Rendering/Drawable.h:46:18" call-funcname="compileShader" call-argnr="2" file="Rendering/Drawable.cpp" line="32" col="20" my-id="Rendering/Drawable.h:47:18" my-argnr="2"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="Rendering/Drawable.h" functionName="isVisible" lineNumber="35" column="10"/>
+    <functiondecl file="Rendering/Drawable.h" functionName="setVisible" lineNumber="36" column="10"/>
+    <functiondecl file="Rendering/Drawable.cpp" functionName="compileShader" lineNumber="7" column="28"/>
+    <functiondecl file="Rendering/Drawable.cpp" functionName="createShaderProgram" lineNumber="28" column="28"/>
+    <functioncall functionName="Derived"/>
+    <functioncall functionName="DrawImpl"/>
+    <functioncall functionName="GL_COMPILE_STATUS"/>
+    <functioncall functionName="GL_FRAGMENT_SHADER"/>
+    <functioncall functionName="GL_INFO_LOG_LENGTH"/>
+    <functioncall functionName="GL_LINK_STATUS"/>
+    <functioncall functionName="GL_VERTEX_SHADER"/>
+    <functioncall functionName="compileShader"/>
+    <functioncall functionName="glAttachShader"/>
+    <functioncall functionName="glCompileShader"/>
+    <functioncall functionName="glCreateProgram"/>
+    <functioncall functionName="glCreateShader"/>
+    <functioncall functionName="glDeleteBuffers"/>
+    <functioncall functionName="glDeleteProgram"/>
+    <functioncall functionName="glDeleteShader"/>
+    <functioncall functionName="glDeleteVertexArrays"/>
+    <functioncall functionName="glGetProgramInfoLog"/>
+    <functioncall functionName="glGetProgramiv"/>
+    <functioncall functionName="glGetShaderInfoLog"/>
+    <functioncall functionName="glGetShaderiv"/>
+    <functioncall functionName="glLinkProgram"/>
+    <functioncall functionName="glShaderSource"/>
+    <functioncall functionName="glValidateProgram"/>
+    <functioncall functionName="isVisible"/>
+    <functioncall functionName="true"/>
+  </FileInfo>
+</analyzerinfo>

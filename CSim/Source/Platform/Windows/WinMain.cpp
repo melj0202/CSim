@@ -1,22 +1,30 @@
-#include <string>
-#include "../../CellMain.h"
-#include "../../SysCmdLine.h"
+#define _CRTDBG_MAP_ALLOC
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define _WINSOCKAPI_
 
-int main(int argc, char** argv) {
-    
-	std::string mode;
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
-	//Parse command line args
+#include <windows.h>
+#include <crtdbg.h>
+#endif
 
-	if (argc < 2) mode = "GAME_OF_LIFE";
-	else {
-		SysCmdLine::ParseCommandLine(argc, argv);
-		if (!SysCmdLine::StringisModeString(argv[1])) {
-			std::cout << "ERROR: Missing Ruleset" << std::endl;
-			std::exit(0);
-		}
-		mode = argv[1];
-	}
-    CellMain(mode);
-    return 0;
+#include "CellMain.h"
+
+int main(int argc, char** argv)
+{
+
+#ifdef _WIN32
+	_CrtSetDbgFlag(
+		_CRTDBG_ALLOC_MEM_DF |
+		_CRTDBG_LEAK_CHECK_DF
+	);
+
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+#endif
+
+	CellMain(argc, argv);
+	return 0;
 }

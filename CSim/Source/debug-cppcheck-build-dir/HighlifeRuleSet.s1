@@ -1,0 +1,8 @@
+RuleSet
+evalCell
+getRuleTag
+evaluateNeighbors
+HighlifeRuleSet
+getRuleTag
+evaluateNeighbors call:[setCanvasPixel] noreturn:[setCanvasPixel]
+evalCell call:[memset] noreturn:[memset]

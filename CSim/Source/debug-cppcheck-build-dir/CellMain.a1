@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="12334922814227341496">
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Init/MacroDefs.h&quot; not found." verbose="Include file: &quot;Init/MacroDefs.h&quot; not found.">
+            <location file="System/CellMain.h" line="6" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Init/BuildInfo.h&quot; not found." verbose="Include file: &quot;Init/BuildInfo.h&quot; not found.">
+            <location file="System/CellMain.h" line="7" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/Logger.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;fstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;fstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/Logger.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/Logger.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;cstring&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;cstring&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/Logger.h" line="5" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Scene.h&quot; not found." verbose="Include file: &quot;Scene.h&quot; not found.">
+            <location file="System/IllumoContext.h" line="3" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;IRenderWindow.h&quot; not found." verbose="Include file: &quot;IRenderWindow.h&quot; not found.">
+            <location file="System/IllumoContext.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;RenderWindow.h&quot; not found." verbose="Include file: &quot;RenderWindow.h&quot; not found.">
+            <location file="System/IllumoContext.h" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandLine.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/IEnvVars.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/IEnvVars.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/IRenderWindow.h&quot; not found." verbose="Include file: &quot;Rendering/IRenderWindow.h&quot; not found.">
+            <location file="System/CommandLine.h" line="6" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;System/KeyCode.h&quot; not found." verbose="Include file: &quot;System/KeyCode.h&quot; not found.">
+            <location file="System/InputContext.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/InputContext.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/InputContext.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Drawable.h&quot; not found." verbose="Include file: &quot;Drawable.h&quot; not found.">
+            <location file="System/CommandLine.h" line="8" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Util/Math.h&quot; not found." verbose="Include file: &quot;Util/Math.h&quot; not found.">
+            <location file="System/CommandLine.h" line="9" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;unordered_map&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandRegistry.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandRegistry.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;functional&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;functional&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandRegistry.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/CommandRegistry.h" line="5" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;SceneObject.h&quot; not found." verbose="Include file: &quot;SceneObject.h&quot; not found.">
+            <location file="System/CommandLine.h" line="11" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;System/InputManager.h&quot; not found." verbose="Include file: &quot;System/InputManager.h&quot; not found.">
+            <location file="System/IllumoContext.h" line="7" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/AssetManager.h&quot; not found." verbose="Include file: &quot;Rendering/AssetManager.h&quot; not found.">
+            <location file="System/IllumoContext.h" line="8" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/Renderer.h&quot; not found." verbose="Include file: &quot;Rendering/Renderer.h&quot; not found.">
+            <location file="System/IllumoContext.h" line="11" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Init/MacroDefs.h&quot; not found." verbose="Include file: &quot;Init/MacroDefs.h&quot; not found.">
+            <location file="System/IllumoContext.h" line="13" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/Illumo.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Scene.h&quot; not found." verbose="Include file: &quot;Scene.h&quot; not found.">
+            <location file="System/IModule.h" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Core/CellGameModule.h&quot; not found." verbose="Include file: &quot;Core/CellGameModule.h&quot; not found.">
+            <location file="System/Illumo.h" line="6" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/GLString.h&quot; not found." verbose="Include file: &quot;Rendering/GLString.h&quot; not found.">
+            <location file="System/DebugModule.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;tracy/Tracy.hpp&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;tracy/Tracy.hpp&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/DebugModule.h" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;cstddef&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;cstddef&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="System/DebugAlloc.h" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;GLFW/glfw3.h&quot; not found." verbose="Include file: &quot;GLFW/glfw3.h&quot; not found.">
+            <location file="System/CellMain.cpp" line="6" column="2"/>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function Logger::LogTrace() is not used." verbose="Return value of function Logger::LogTrace() is not used." cwe="252" file0="System/CellMain.cpp">
+            <location file="System/CellMain.cpp" line="36" column="10"/>
+            <symbol>Logger::LogTrace</symbol>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &apos;IModule::ic&apos; is not initialized in the constructor." verbose="Member variable &apos;IModule::ic&apos; is not initialized in the constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="System/CellMain.cpp">
+            <location file="System/IModule.h" line="7" column="5"/>
+            <symbol>IModule::ic</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;load&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;load&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="System/CellMain.cpp">
+            <location file="System/EnvVars.h" line="9" column="14" info="Function in derived class"/>
+            <location file="System/IEnvVars.h" line="18" column="22" info="Virtual function in base class"/>
+            <symbol>load</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;save&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;save&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="System/CellMain.cpp">
+            <location file="System/EnvVars.h" line="10" column="14" info="Function in derived class"/>
+            <location file="System/IEnvVars.h" line="19" column="22" info="Virtual function in base class"/>
+            <symbol>save</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The destructor &apos;~DebugModule&apos; overrides a destructor in a base class but is not marked with a &apos;override&apos; specifier." verbose="The destructor &apos;~DebugModule&apos; overrides a destructor in a base class but is not marked with a &apos;override&apos; specifier." file0="System/CellMain.cpp">
+            <location file="System/DebugModule.h" line="10" column="10" info="Destructor in derived class"/>
+            <location file="System/IModule.h" line="11" column="14" info="Virtual destructor in base class"/>
+            <symbol>~DebugModule</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="System/Illumo.h:12:5" call-funcname="Illumo" call-argnr="2" file="System/CellMain.cpp" line="15" col="23" my-id="System/CellMain.h:10:13" my-argnr="2"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="EnvVar" file="System/IEnvVars.h" configuration="" line="6" col="1" hash="2066791654013242197"/>
+<class name="InputContext" file="System/InputContext.h" configuration="" line="6" col="1" hash="8300220104999654618"/>
+<class name="CommandRegistry::QueuedCommand" file="System/CommandRegistry.h" configuration="" line="13" col="5" hash="17470308417744909643"/>
+<class name="CommandLine::historyBuffer" file="System/CommandLine.h" configuration="" line="21" col="5" hash="5859181093086691197"/>
+<class name="IllumoContext" file="System/IllumoContext.h" configuration="" line="15" col="1" hash="2822881405727763009"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="System/Logger.h:44:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="44" col="86" value="0"/>
+    <unsafe-usage my-id="System/Logger.h:45:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="45" col="90" value="0"/>
+    <unsafe-usage my-id="System/Logger.h:46:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="46" col="84" value="0"/>
+    <unsafe-usage my-id="System/Logger.h:47:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="47" col="76" value="0"/>
+    <unsafe-usage my-id="System/Logger.h:48:31" my-argnr="1" my-argname="message" file="System/Logger.h" line="48" col="86" value="0"/>
+    <unsafe-usage my-id="System/InputContext.h:18:14" my-argnr="1" my-argname="actionTag" file="System/InputContext.h" line="18" col="88" value="0"/>
+    <unsafe-usage my-id="System/CommandRegistry.h:25:14" my-argnr="1" my-argname="name" file="System/CommandRegistry.h" line="25" col="80" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="System/Logger.h" functionName="LogError" lineNumber="44" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="LogWarning" lineNumber="45" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="LogInfo" lineNumber="46" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="Log" lineNumber="47" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="LogTrace" lineNumber="48" column="31"/>
+    <functiondecl file="System/Logger.h" functionName="LogWError" lineNumber="51" column="17"/>
+    <functiondecl file="System/Logger.h" functionName="LogWWarning" lineNumber="54" column="17"/>
+    <functiondecl file="System/Logger.h" functionName="LogWInfo" lineNumber="57" column="17"/>
+    <functiondecl file="System/Logger.h" functionName="LogW" lineNumber="60" column="17"/>
+    <functiondecl file="System/Logger.h" functionName="getCommandLine" lineNumber="70" column="25"/>
+    <functiondecl file="System/InputContext.h" functionName="getActionTag" lineNumber="12" column="20"/>
+    <functiondecl file="System/InputContext.h" functionName="getActions" lineNumber="15" column="60"/>
+    <functiondecl file="System/InputContext.h" functionName="bindAction" lineNumber="18" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="RegisterCommand" lineNumber="25" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="UnregisterCommand" lineNumber="26" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="QueueCommand" lineNumber="27" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="ClearQueue" lineNumber="33" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="ExecuteQueue" lineNumber="34" column="14"/>
+    <functiondecl file="System/CommandRegistry.h" functionName="HasCommand" lineNumber="40" column="14"/>
+    <functiondecl file="System/Illumo.h" functionName="GetContext" lineNumber="21" column="20"/>
+    <functiondecl file="System/Illumo.h" functionName="GetScene" lineNumber="22" column="12"/>
+    <functiondecl file="System/Illumo.h" functionName="GetWindow" lineNumber="23" column="19"/>
+    <functiondecl file="System/Illumo.h" functionName="GetInputManager" lineNumber="24" column="19"/>
+    <functiondecl file="System/Illumo.h" functionName="GetRenderer" lineNumber="25" column="15"/>
+    <functiondecl file="System/Illumo.h" functionName="GetAssetManager" lineNumber="26" column="19"/>
+    <functiondecl file="System/Illumo.h" functionName="GetEnvVars" lineNumber="27" column="14"/>
+    <functiondecl file="System/Illumo.h" functionName="GetCamera" lineNumber="28" column="13"/>
+    <functiondecl file="System/Illumo.h" functionName="GetCommandRegistry" lineNumber="29" column="22"/>
+    <functiondecl file="System/Illumo.h" functionName="GetCommandLine" lineNumber="31" column="18"/>
+    <functiondecl file="System/Illumo.h" functionName="ShouldClose" lineNumber="32" column="10"/>
+    <functioncall functionName="AssetManager"/>
+    <functioncall functionName="Camera"/>
+    <functioncall functionName="CommandLine"/>
+    <functioncall functionName="Illumo"/>
+    <functioncall functionName="Init"/>
+    <functioncall functionName="InputEvent"/>
+    <functioncall functionName="InputManager"/>
+    <functioncall functionName="Log"/>
+    <functioncall functionName="LogError"/>
+    <functioncall functionName="LogInfo"/>
+    <functioncall functionName="LogTrace"/>
+    <functioncall functionName="LogWarning"/>
+    <functioncall functionName="Logger"/>
+    <functioncall functionName="Render"/>
+    <functioncall functionName="RenderWindow"/>
+    <functioncall functionName="Renderer"/>
+    <functioncall functionName="Scene"/>
+    <functioncall functionName="Shutdown"/>
+    <functioncall functionName="Update"/>
+    <functioncall functionName="at"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="erase"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="function"/>
+    <functioncall functionName="glfwGetTime"/>
+    <functioncall functionName="initLogger"/>
+    <functioncall functionName="load"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="push_back"/>
+    <functioncall functionName="save"/>
+    <functioncall functionName="shouldWindowClose"/>
+    <functioncall functionName="shutdownLogger"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="unique_ptr"/>
+    <functioncall functionName="unordered_map"/>
+    <functioncall functionName="vector"/>
+  </FileInfo>
+</analyzerinfo>

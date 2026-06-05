@@ -1,0 +1,19 @@
+SceneObject
+AddChild call:[push_back] noreturn:[push_back]
+RemoveChild call:[begin,end,erase]
+ClearChildren call:[clear] noreturn:[clear]
+SetParent call:[AddChild,RemoveChild] noreturn:[AddChild,RemoveChild]
+RemoveParent call:[RemoveChild]
+GetID
+operator[]
+SetPosition
+GetPosition
+SetZoom
+GetZoom
+SetSmoothingSpeed
+GetSmoothingSpeed
+DrawableBase call:[glDeleteBuffers,glDeleteProgram,glDeleteShader,glDeleteVertexArrays]
+isVisible
+setVisible
+Draw call:[DrawImpl,isVisible] noreturn:[DrawImpl]
+IRenderWindow
