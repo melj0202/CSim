@@ -1,0 +1,296 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="4538783321191717349">
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/IBackend.h&quot; not found." verbose="Include file: &quot;Rendering/IBackend.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" line="3" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Util/ArrayQueue.h&quot; not found." verbose="Include file: &quot;Util/ArrayQueue.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;RenderCommand.h&quot; not found." verbose="Include file: &quot;RenderCommand.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" line="5" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;GL/glew.h&quot; not found." verbose="Include file: &quot;GL/glew.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/PipelineState.h&quot; not found." verbose="Include file: &quot;Rendering/PipelineState.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="3" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/CommandQueue.h&quot; not found." verbose="Include file: &quot;Rendering/CommandQueue.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/HWInfo.h&quot; not found." verbose="Include file: &quot;Rendering/HWInfo.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="5" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/IRenderWindow.h&quot; not found." verbose="Include file: &quot;Rendering/IRenderWindow.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" line="7" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;fstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;fstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;sstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;sstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="6" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="7" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/IShaderProgram.h&quot; not found." verbose="Include file: &quot;Rendering/IShaderProgram.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="8" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;ITexture.h&quot; not found." verbose="Include file: &quot;ITexture.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="3" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;GL/glew.h&quot; not found." verbose="Include file: &quot;GL/glew.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;thirdparty/stb/stb_image.h&quot; not found." verbose="Include file: &quot;thirdparty/stb/stb_image.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBuffer.h" line="1" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;IBuffer.h&quot; not found." verbose="Include file: &quot;IBuffer.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBuffer.h" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Logger.h&quot; not found." verbose="Include file: &quot;Logger.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;cstdlib&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;cstdlib&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="6" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;CommandQueue.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;CommandQueue.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="7" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;IRenderWIndow.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;IRenderWIndow.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="8" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;IShaderProgram.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;IShaderProgram.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="9" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="13" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GLFW/glfw3.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="14" column="2"/>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;m_path&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;m_path&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="10" column="9"/>
+            <symbol>m_path</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;m_size&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;m_size&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="12" column="9"/>
+            <symbol>m_size</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;m_path&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;m_path&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="16" column="9"/>
+            <symbol>m_path</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;m_size&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;m_size&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="18" column="9"/>
+            <symbol>m_size</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;m_path&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;m_path&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="30" column="9"/>
+            <symbol>m_path</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;m_size&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;m_size&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="32" column="9"/>
+            <symbol>m_size</symbol>
+        </error>
+        <error id="functionStatic" severity="style" msg="The member function &apos;GLDevice::mapBlendFactor&apos; can be static." verbose="The member function &apos;GLDevice::mapBlendFactor&apos; can be static." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="11" column="12"/>
+            <symbol>GLDevice::mapBlendFactor</symbol>
+        </error>
+        <error id="functionStatic" severity="style" msg="The member function &apos;GLDevice::mapCullMode&apos; can be static." verbose="The member function &apos;GLDevice::mapCullMode&apos; can be static." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="23" column="12"/>
+            <symbol>GLDevice::mapCullMode</symbol>
+        </error>
+        <error id="functionStatic" severity="style" msg="The member function &apos;GLDevice::mapWindingOrder&apos; can be static." verbose="The member function &apos;GLDevice::mapWindingOrder&apos; can be static." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="32" column="12"/>
+            <symbol>GLDevice::mapWindingOrder</symbol>
+        </error>
+        <error id="virtualCallInConstructor" severity="style" msg="Virtual function &apos;CompileAndLink&apos; is called from constructor &apos;GLShaderProgram(const ShaderPaths&amp;paths)&apos; at line 20. Dynamic binding is not used." verbose="Virtual function &apos;CompileAndLink&apos; is called from constructor &apos;GLShaderProgram(const ShaderPaths&amp;paths)&apos; at line 20. Dynamic binding is not used." file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="47" column="10" info="CompileAndLink is a virtual function"/>
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="20" column="13" info="Calling CompileAndLink"/>
+        </error>
+        <error id="virtualCallInConstructor" severity="style" msg="Virtual function &apos;Initialize&apos; is called from constructor &apos;GLBackend(IRenderWindow*window)&apos; at line 21. Dynamic binding is not used." verbose="Virtual function &apos;Initialize&apos; is called from constructor &apos;GLBackend(IRenderWindow*window)&apos; at line 21. Dynamic binding is not used." file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" line="21" column="10" info="Initialize is a virtual function"/>
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="21" column="2" info="Calling Initialize"/>
+        </error>
+        <error id="virtualCallInConstructor" severity="style" msg="Virtual function &apos;Shutdown&apos; is called from destructor &apos;~GLBackend()&apos; at line 25. Dynamic binding is not used." verbose="Virtual function &apos;Shutdown&apos; is called from destructor &apos;~GLBackend()&apos; at line 25. Dynamic binding is not used." file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" line="22" column="10" info="Shutdown is a virtual function"/>
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="25" column="2" info="Calling Shutdown"/>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;GLShaderProgram&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;GLShaderProgram&apos; has a constructor with 1 argument that is not explicit. Such, so called &quot;Converting constructors&quot;, should in general be explicit for type safety reasons as that prevents unintended implicit conversions." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="15" column="5"/>
+            <symbol>GLShaderProgram</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;GLTexture&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;GLTexture&apos; has a constructor with 1 argument that is not explicit. Such, so called &quot;Converting constructors&quot;, should in general be explicit for type safety reasons as that prevents unintended implicit conversions." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="29" column="5"/>
+            <symbol>GLTexture</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;GLBackend&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;GLBackend&apos; has a constructor with 1 argument that is not explicit. Such, so called &quot;Converting constructors&quot;, should in general be explicit for type safety reasons as that prevents unintended implicit conversions." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" line="18" column="5"/>
+            <symbol>GLBackend</symbol>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &apos;fps&apos; shadows outer variable" verbose="Local variable &apos;fps&apos; shadows outer variable" cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="56" column="10" info="Shadow variable"/>
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" line="16" column="9" info="Shadowed declaration"/>
+            <symbol>fps</symbol>
+        </error>
+        <error id="constVariablePointer" severity="style" msg="Variable &apos;buffer&apos; can be declared as pointer to const" verbose="Variable &apos;buffer&apos; can be declared as pointer to const" cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="72" column="12" info="Variable &apos;buffer&apos; can be declared as pointer to const"/>
+            <symbol>buffer</symbol>
+        </error>
+        <error id="constVariablePointer" severity="style" msg="Variable &apos;shader&apos; can be declared as pointer to const" verbose="Variable &apos;shader&apos; can be declared as pointer to const" cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="81" column="19" info="Variable &apos;shader&apos; can be declared as pointer to const"/>
+            <symbol>shader</symbol>
+        </error>
+        <error id="constVariablePointer" severity="style" msg="Variable &apos;texture&apos; can be declared as pointer to const" verbose="Variable &apos;texture&apos; can be declared as pointer to const" cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="87" column="13" info="Variable &apos;texture&apos; can be declared as pointer to const"/>
+            <symbol>texture</symbol>
+        </error>
+        <error id="constVariablePointer" severity="style" msg="Variable &apos;texture&apos; can be declared as pointer to const" verbose="Variable &apos;texture&apos; can be declared as pointer to const" cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="93" column="13" info="Variable &apos;texture&apos; can be declared as pointer to const"/>
+            <symbol>texture</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;fps&apos; is assigned a value that is never used." verbose="Variable &apos;fps&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="56" column="14"/>
+            <symbol>fps</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBuffer.h:14:5" call-funcname="GLBuffer" call-argnr="1" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="72" col="25" my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h:32:19" my-argnr="1"/>
+<function-call call-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBuffer.h:14:5" call-funcname="GLBuffer" call-argnr="3" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="72" col="25" my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h:32:19" my-argnr="3"/>
+<function-call call-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h:15:5" call-funcname="GLTexture" call-argnr="1" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="87" col="27" my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h:34:19" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="GLShaderProgram" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" configuration="" line="10" col="1" hash="9342836152964556694"/>
+<class name="GLTexture" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" configuration="" line="7" col="1" hash="3085719653360568678"/>
+<class name="GLBackend" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h" configuration="" line="11" col="1" hash="6612670374422698701"/>
+<class name="GLBuffer" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBuffer.h" configuration="" line="4" col="1" hash="7740870776867844098"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h:47:10" my-argnr="1" my-argname="vertexSource" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="48" col="59" value="0"/>
+    <unsafe-usage my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h:47:10" my-argnr="2" my-argname="fragmentSource" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="49" col="61" value="0"/>
+    <unsafe-usage my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h:29:5" my-argnr="1" my-argname="path" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLTexture.h" line="30" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.h:35:19" my-argnr="1" my-argname="filePath" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBackend.cpp" line="93" col="37" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h:72:18" my-argnr="2" my-argname="source" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" line="74" col="27" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" functionName="mapBlendFactor" lineNumber="11" column="12"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" functionName="mapCullMode" lineNumber="23" column="12"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" functionName="mapWindingOrder" lineNumber="32" column="12"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" functionName="ReadFile" lineNumber="36" column="17"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLShaderProgram.h" functionName="CompileShader" lineNumber="72" column="18"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBuffer.h" functionName="GetVAOID" lineNumber="55" column="18"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBuffer.h" functionName="GetIndexCount" lineNumber="56" column="12"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLBuffer.h" functionName="HasIndices" lineNumber="57" column="10"/>
+    <functioncall functionName="CommandQueue"/>
+    <functioncall functionName="CompileAndLink"/>
+    <functioncall functionName="CompileShader"/>
+    <functioncall functionName="ExecuteCommandQueue"/>
+    <functioncall functionName="GLBackend"/>
+    <functioncall functionName="GLBuffer"/>
+    <functioncall functionName="GLShaderProgram"/>
+    <functioncall functionName="GLTexture"/>
+    <functioncall functionName="GL_ARRAY_BUFFER"/>
+    <functioncall functionName="GL_BACK"/>
+    <functioncall functionName="GL_CCW"/>
+    <functioncall functionName="GL_CLAMP_TO_EDGE"/>
+    <functioncall functionName="GL_COMPILE_STATUS"/>
+    <functioncall functionName="GL_CW"/>
+    <functioncall functionName="GL_DYNAMIC_DRAW"/>
+    <functioncall functionName="GL_ELEMENT_ARRAY_BUFFER"/>
+    <functioncall functionName="GL_FRAGMENT_SHADER"/>
+    <functioncall functionName="GL_FRONT"/>
+    <functioncall functionName="GL_FRONT_AND_BACK"/>
+    <functioncall functionName="GL_INFO_LOG_LENGTH"/>
+    <functioncall functionName="GL_LINK_STATUS"/>
+    <functioncall functionName="GL_NEAREST"/>
+    <functioncall functionName="GL_ONE"/>
+    <functioncall functionName="GL_ONE_MINUS_SRC_ALPHA"/>
+    <functioncall functionName="GL_ONE_MINUS_SRC_COLOR"/>
+    <functioncall functionName="GL_RGBA"/>
+    <functioncall functionName="GL_SRC_ALPHA"/>
+    <functioncall functionName="GL_SRC_COLOR"/>
+    <functioncall functionName="GL_STATIC_DRAW"/>
+    <functioncall functionName="GL_TEXTURE_2D"/>
+    <functioncall functionName="GL_TEXTURE_MAG_FILTER"/>
+    <functioncall functionName="GL_TEXTURE_MIN_FILTER"/>
+    <functioncall functionName="GL_TEXTURE_WRAP_S"/>
+    <functioncall functionName="GL_TEXTURE_WRAP_T"/>
+    <functioncall functionName="GL_UNSIGNED_BYTE"/>
+    <functioncall functionName="GL_VERSION"/>
+    <functioncall functionName="GL_VERTEX_SHADER"/>
+    <functioncall functionName="GL_ZERO"/>
+    <functioncall functionName="GetID"/>
+    <functioncall functionName="GetVAOID"/>
+    <functioncall functionName="ITexture"/>
+    <functioncall functionName="Initialize"/>
+    <functioncall functionName="LogError"/>
+    <functioncall functionName="LogInfo"/>
+    <functioncall functionName="LogTrace"/>
+    <functioncall functionName="ReadFile"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="Shutdown"/>
+    <functioncall functionName="Submit"/>
+    <functioncall functionName="array"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="data"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="exit"/>
+    <functioncall functionName="getID"/>
+    <functioncall functionName="glActiveTexture"/>
+    <functioncall functionName="glAttachShader"/>
+    <functioncall functionName="glBindBuffer"/>
+    <functioncall functionName="glBindTexture"/>
+    <functioncall functionName="glBindVertexArray"/>
+    <functioncall functionName="glBufferData"/>
+    <functioncall functionName="glCompileShader"/>
+    <functioncall functionName="glCreateProgram"/>
+    <functioncall functionName="glCreateShader"/>
+    <functioncall functionName="glDeleteBuffers"/>
+    <functioncall functionName="glDeleteProgram"/>
+    <functioncall functionName="glDeleteShader"/>
+    <functioncall functionName="glDeleteTextures"/>
+    <functioncall functionName="glDeleteVertexArrays"/>
+    <functioncall functionName="glGenBuffers"/>
+    <functioncall functionName="glGenTextures"/>
+    <functioncall functionName="glGenVertexArrays"/>
+    <functioncall functionName="glGetProgramInfoLog"/>
+    <functioncall functionName="glGetProgramiv"/>
+    <functioncall functionName="glGetShaderInfoLog"/>
+    <functioncall functionName="glGetShaderiv"/>
+    <functioncall functionName="glGetString"/>
+    <functioncall functionName="glLinkProgram"/>
+    <functioncall functionName="glShaderSource"/>
+    <functioncall functionName="glTexImage2D"/>
+    <functioncall functionName="glTexParameteri"/>
+    <functioncall functionName="glewInit"/>
+    <functioncall functionName="glfwGetTime"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="rdbuf"/>
+    <functioncall functionName="stbi_image_free"/>
+    <functioncall functionName="stbi_load"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="swapBuffers"/>
+    <functioncall functionName="vector"/>
+  </FileInfo>
+</analyzerinfo>

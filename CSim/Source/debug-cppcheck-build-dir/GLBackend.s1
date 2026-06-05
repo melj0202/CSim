@@ -1,0 +1,37 @@
+mapBlendFactor
+mapCullMode
+mapWindingOrder
+GLShaderProgram call:[CompileAndLink,ReadFile,empty] noreturn:[CompileAndLink]
+GLShaderProgram call:[glDeleteProgram] noreturn:[glDeleteProgram]
+GetID
+ReadFile call:[file,is_open,rdbuf,str] noreturn:[str]
+CompileAndLink call:[CompileShader,data,glAttachShader,glCreateProgram,glDeleteShader,glGetProgramInfoLog,glGetProgramiv,glLinkProgram,message] noreturn:[glDeleteShader]
+CompileShader call:[c_str,data,glCompileShader,glCreateShader,glDeleteShader,glGetShaderInfoLog,glGetShaderiv,glShaderSource,message]
+GLTexture
+GLTexture call:[glBindTexture,glGenTextures,glTexImage2D,glTexParameteri] noreturn:[glTexParameteri]
+GLTexture call:[c_str,glBindTexture,glGenTextures,glTexImage2D,glTexParameteri,stbi_image_free,stbi_load] noreturn:[stbi_image_free]
+GLTexture call:[glDeleteTextures] noreturn:[glDeleteTextures]
+Bind call:[glActiveTexture,glBindTexture] noreturn:[glBindTexture]
+getPath
+getID
+getSize
+SubmitCommandQueue call:[ExecuteCommandQueue] noreturn:[ExecuteCommandQueue]
+PushToCommandQueue call:[Submit] noreturn:[Submit]
+getFPS
+CreateDescriptorSet
+GLBuffer call:[glBindBuffer,glBindVertexArray,glBufferData,glGenBuffers,glGenVertexArrays,sizeof] noreturn:[glBindVertexArray,glBufferData]
+GLBuffer call:[glDeleteBuffers,glDeleteVertexArrays] noreturn:[glDeleteBuffers,glDeleteVertexArrays]
+SetData call:[glBindBuffer,glBufferData] noreturn:[glBufferData]
+GetVAOID
+GetIndexCount
+HasIndices
+GLBackend call:[CommandQueue,GLDevice,Initialize] noreturn:[Initialize]
+GLBackend call:[Shutdown] noreturn:[Shutdown]
+Initialize call:[LogError,LogInfo,LogTrace,c_str,exit,glGetString,glewInit] noreturn:[LogInfo,exit]
+BeginFrame call:[Reset] noreturn:[Reset]
+EndFrame call:[glfwGetTime,swapBuffers]
+Shutdown
+CreateBuffer call:[GLBuffer,GetVAOID] noreturn:[GetVAOID]
+CreateShaderProgram call:[GLShaderProgram,GetID] noreturn:[GetID]
+CreateTexture call:[GLTexture,getID] noreturn:[getID]
+CreateTexture call:[GLTexture,getID] noreturn:[getID]

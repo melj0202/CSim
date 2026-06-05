@@ -1,0 +1,59 @@
+MSBuild version 17.14.40+3e7442088 for .NET Framework
+
+  freetype.vcxproj -> C:\Users\gravi\Source\Projects\CSim\CSim\build\thirdparty\freetype-2.13.3\Debug\freetyped.lib
+  glew_s.vcxproj -> C:\Users\gravi\Source\Projects\CSim\CSim\build\lib\Debug\libglew32d.lib
+  glfw.vcxproj -> C:\Users\gravi\Source\Projects\CSim\CSim\build\thirdparty\glfw-3.4\src\Debug\glfw3.lib
+  Drawable.cpp
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.h(12,14): warning C4820: 'Drawable': '3' bytes padding added after data member 'Drawable::visible' [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+  (compiling source file '../Source/Rendering/Drawable.cpp')
+  
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.h(7,10): warning C5204: 'Drawable': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+  (compiling source file '../Source/Rendering/Drawable.cpp')
+  
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.h(10,38): warning C4458: declaration of 'visible' hides class member [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+  (compiling source file '../Source/Rendering/Drawable.cpp')
+      C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.h(12,14):
+      see declaration of 'Drawable::visible'
+  
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(4,23): error C3861: 'glCreateShader': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(5,5): error C3861: 'glShaderSource': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(6,5): error C3861: 'glCompileShader': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(9,23): error C2065: 'GL_COMPILE_STATUS': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(9,5): error C3861: 'glGetShaderiv': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(10,19): error C2065: 'GL_FALSE': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(12,27): error C2065: 'GL_INFO_LOG_LENGTH': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(12,9): error C3861: 'glGetShaderiv': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(13,14): error C2039: 'string': is not a member of 'std' [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+      C:\Users\gravi\Source\Projects\CSim\CSim\build\predefined C++ types (compiler internal)(357,11):
+      see declaration of 'std'
+  
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(13,14): error C2065: 'string': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(13,21): error C2146: syntax error: missing ';' before identifier 'message' [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(13,21): error C3861: 'message': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(14,50): error C2065: 'message': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(14,9): error C3861: 'glGetShaderInfoLog': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(15,14): error C2039: 'cerr': is not a member of 'std' [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+      C:\Users\gravi\Source\Projects\CSim\CSim\build\predefined C++ types (compiler internal)(357,11):
+      see declaration of 'std'
+  
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(15,14): error C2065: 'cerr': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(15,63): error C2065: 'GL_VERTEX_SHADER': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(15,117): error C2065: 'message': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(15,133): error C2039: 'endl': is not a member of 'std' [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+      C:\Users\gravi\Source\Projects\CSim\CSim\build\predefined C++ types (compiler internal)(357,11):
+      see declaration of 'std'
+  
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(15,133): error C2065: 'endl': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(16,9): error C3861: 'glDeleteShader': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(23,28): error C3861: 'glCreateProgram': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(24,37): error C2065: 'GL_VERTEX_SHADER': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(25,37): error C2065: 'GL_FRAGMENT_SHADER': undeclared identifier [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(27,5): error C3861: 'glAttachShader': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(28,5): error C3861: 'glAttachShader': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(29,5): error C3861: 'glLinkProgram': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(30,5): error C3861: 'glValidateProgram': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(32,5): error C3861: 'glDeleteShader': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+C:\Users\gravi\Source\Projects\CSim\CSim\Source\Rendering\Drawable.cpp(33,5): error C3861: 'glDeleteShader': identifier not found [C:\Users\gravi\Source\Projects\CSim\CSim\build\CSim.vcxproj]
+  glew.vcxproj -> C:\Users\gravi\Source\Projects\CSim\CSim\build\bin\Debug\glew32d.dll
+  glewinfo.vcxproj -> C:\Users\gravi\Source\Projects\CSim\CSim\build\bin\Debug\glewinfo.exe
+  visualinfo.vcxproj -> C:\Users\gravi\Source\Projects\CSim\CSim\build\bin\Debug\visualinfo.exe

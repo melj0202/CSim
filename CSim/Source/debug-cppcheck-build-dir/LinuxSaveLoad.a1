@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="16934191279210374933">
+        <error id="missingInclude" severity="information" msg="Include file: &quot;SaveLoad.h&quot; not found." verbose="Include file: &quot;SaveLoad.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;gtkmm-3.0/gtkmm.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;gtkmm-3.0/gtkmm.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp" line="6" column="2"/>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;chosenFile&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;chosenFile&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp" line="30" column="9"/>
+            <symbol>chosenFile</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;FileChooser&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;FileChooser&apos; has a constructor with 1 argument that is not explicit. Such, so called &quot;Converting constructors&quot;, should in general be explicit for type safety reasons as that prevents unintended implicit conversions." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp" line="28" column="5"/>
+            <symbol>FileChooser</symbol>
+        </error>
+  <FileInfo check="Class">
+<class name="FileChooser" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp" configuration="" line="9" col="1" hash="3301975219378928817"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp" functionName="getOpenFileName" lineNumber="12" column="24"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp" functionName="getSaveFileName" lineNumber="18" column="24"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Linux/LinuxSaveLoad.cpp" functionName="on_my_response" lineNumber="37" column="10"/>
+    <functioncall functionName="CANCEL"/>
+    <functioncall functionName="FILE_CHOOSER_ACTION_OPEN"/>
+    <functioncall functionName="FILE_CHOOSER_ACTION_SAVE"/>
+    <functioncall functionName="FileChooser"/>
+    <functioncall functionName="FileChooserDialog"/>
+    <functioncall functionName="OPEN"/>
+    <functioncall functionName="RESPONSE_CANCEL"/>
+    <functioncall functionName="RESPONSE_OK"/>
+    <functioncall functionName="add_button"/>
+    <functioncall functionName="connect"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="getOpenFileName"/>
+    <functioncall functionName="getSaveFileName"/>
+    <functioncall functionName="get_filename"/>
+    <functioncall functionName="hide"/>
+    <functioncall functionName="mem_fun"/>
+    <functioncall functionName="on_my_response"/>
+    <functioncall functionName="run"/>
+    <functioncall functionName="signal_response"/>
+    <functioncall functionName="string"/>
+  </FileInfo>
+</analyzerinfo>

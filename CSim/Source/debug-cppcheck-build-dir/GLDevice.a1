@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="14316378286255702397">
+        <error id="missingInclude" severity="information" msg="Include file: &quot;GL/glew.h&quot; not found." verbose="Include file: &quot;GL/glew.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/PipelineState.h&quot; not found." verbose="Include file: &quot;Rendering/PipelineState.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="3" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/CommandQueue.h&quot; not found." verbose="Include file: &quot;Rendering/CommandQueue.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="4" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/HWInfo.h&quot; not found." verbose="Include file: &quot;Rendering/HWInfo.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="5" column="2"/>
+        </error>
+        <error id="functionStatic" severity="style" msg="The member function &apos;GLDevice::mapBlendFactor&apos; can be static." verbose="The member function &apos;GLDevice::mapBlendFactor&apos; can be static." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="11" column="12"/>
+            <symbol>GLDevice::mapBlendFactor</symbol>
+        </error>
+        <error id="functionStatic" severity="style" msg="The member function &apos;GLDevice::mapCullMode&apos; can be static." verbose="The member function &apos;GLDevice::mapCullMode&apos; can be static." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="23" column="12"/>
+            <symbol>GLDevice::mapCullMode</symbol>
+        </error>
+        <error id="functionStatic" severity="style" msg="The member function &apos;GLDevice::mapWindingOrder&apos; can be static." verbose="The member function &apos;GLDevice::mapWindingOrder&apos; can be static." cwe="398" file0="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.cpp">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" line="32" column="12"/>
+            <symbol>GLDevice::mapWindingOrder</symbol>
+        </error>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h:41:10" my-argnr="1" my-argname="pipelineState" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.cpp" line="7" col="6" value="0"/>
+    <unsafe-usage my-id="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h:42:10" my-argnr="1" my-argname="commandQueue" file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.cpp" line="60" col="25" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" functionName="mapBlendFactor" lineNumber="11" column="12"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" functionName="mapCullMode" lineNumber="23" column="12"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.h" functionName="mapWindingOrder" lineNumber="32" column="12"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.cpp" functionName="ApplyPipelineState" lineNumber="3" column="16"/>
+    <functiondecl file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Rendering/OpenGL/GLDevice.cpp" functionName="ExecuteCommandQueue" lineNumber="58" column="16"/>
+    <functioncall functionName="ApplyPipelineState"/>
+    <functioncall functionName="GL_ARRAY_BUFFER"/>
+    <functioncall functionName="GL_BACK"/>
+    <functioncall functionName="GL_BLEND"/>
+    <functioncall functionName="GL_CCW"/>
+    <functioncall functionName="GL_COLOR_BUFFER_BIT"/>
+    <functioncall functionName="GL_CULL_FACE"/>
+    <functioncall functionName="GL_CW"/>
+    <functioncall functionName="GL_DEPTH_BUFFER_BIT"/>
+    <functioncall functionName="GL_DEPTH_TEST"/>
+    <functioncall functionName="GL_ELEMENT_ARRAY_BUFFER"/>
+    <functioncall functionName="GL_FILL"/>
+    <functioncall functionName="GL_FRONT"/>
+    <functioncall functionName="GL_FRONT_AND_BACK"/>
+    <functioncall functionName="GL_LINE"/>
+    <functioncall functionName="GL_ONE"/>
+    <functioncall functionName="GL_ONE_MINUS_SRC_ALPHA"/>
+    <functioncall functionName="GL_ONE_MINUS_SRC_COLOR"/>
+    <functioncall functionName="GL_SRC_ALPHA"/>
+    <functioncall functionName="GL_SRC_COLOR"/>
+    <functioncall functionName="GL_STENCIL_BUFFER_BIT"/>
+    <functioncall functionName="GL_TEXTURE_2D"/>
+    <functioncall functionName="GL_TRIANGLES"/>
+    <functioncall functionName="GL_UNSIGNED_INT"/>
+    <functioncall functionName="GL_ZERO"/>
+    <functioncall functionName="GetCommand"/>
+    <functioncall functionName="GetCommandCount"/>
+    <functioncall functionName="glActiveTexture"/>
+    <functioncall functionName="glBindBuffer"/>
+    <functioncall functionName="glBindTexture"/>
+    <functioncall functionName="glBlendFunc"/>
+    <functioncall functionName="glClear"/>
+    <functioncall functionName="glCullFace"/>
+    <functioncall functionName="glDisable"/>
+    <functioncall functionName="glDrawArrays"/>
+    <functioncall functionName="glDrawArraysInstanced"/>
+    <functioncall functionName="glDrawElements"/>
+    <functioncall functionName="glEnable"/>
+    <functioncall functionName="glFrontFace"/>
+    <functioncall functionName="glPolygonMode"/>
+    <functioncall functionName="glUseProgram"/>
+    <functioncall functionName="mapBlendFactor"/>
+    <functioncall functionName="mapCullMode"/>
+    <functioncall functionName="mapWindingOrder"/>
+  </FileInfo>
+</analyzerinfo>

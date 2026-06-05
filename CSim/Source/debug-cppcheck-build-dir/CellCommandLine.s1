@@ -1,0 +1,17 @@
+LogError call:[LogError,c_str] noreturn:[LogError]
+LogWarning call:[LogWarning,c_str] noreturn:[LogWarning]
+LogInfo call:[LogInfo,c_str] noreturn:[LogInfo]
+Log call:[Log,c_str] noreturn:[Log]
+LogTrace call:[LogTrace,c_str] noreturn:[LogTrace]
+LogWError
+LogWWarning
+LogWInfo
+LogW
+getCommandLine
+compileShader call:[glCompileShader,glCreateShader,glDeleteShader,glGetShaderInfoLog,glGetShaderiv,glShaderSource,message]
+createShaderProgram call:[compileShader,glAttachShader,glCreateProgram,glDeleteShader,glLinkProgram,glValidateProgram]
+initConsoleGL global:[consoleEBO,consoleInitialized,consoleProgram,consoleVAO,consoleVBO,fragmentShaderSource,vertexShaderSource] call:[createShaderProgram,glBindBuffer,glBindVertexArray,glBufferData,glEnableVertexAttribArray,glGenBuffers,glGenVertexArrays,glVertexAttribPointer,sizeof]
+logNormal call:[AppendString] noreturn:[AppendString]
+logError call:[AppendString] noreturn:[AppendString]
+logWarning call:[AppendString] noreturn:[AppendString]
+logSuccess call:[AppendString] noreturn:[AppendString]

@@ -1,129 +1,196 @@
 cmake_minimum_required(VERSION 3.13)
 
+if(NOT DEFINED CSIM_DIR)
+    set(CSIM_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+
 project(CSim)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CMAKE_CXX_FLAGS "/Wall /EHsc")
-else ()
-    set(CMAKE_CXX_FLAGS "-Wall")
-endif ()
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenGL REQUIRED)
 
-#Include GLFW source
-add_subdirectory("thirdparty/glfw-3.4")
-add_subdirectory("thirdparty/glm")
+# Include Third-Party Sources
+add_subdirectory("thirdparty/glfw-3.4" SYSTEM)
+add_subdirectory("thirdparty/glm" SYSTEM)
+add_subdirectory("thirdparty/freetype-2.13.3" SYSTEM)
+add_subdirectory("thirdparty/glew-2.1.0/build/cmake" SYSTEM)
 
-#Add freetype
-add_subdirectory("thirdparty/freetype-2.13.3")
-add_subdirectory("thirdparty/glew-2.1.0/build/cmake")
+add_subdirectory("Source/")
 
-include_directories("thirdparty/glfw-3.4/include")
-include_directories("thirdparty/glew-2.1.0/include")
-
-
+# --- Define Executable based on OS ---
 if (WIN32)
-    add_executable(CSim  Source/Rulesets/BriansBrainRuleSet.cpp Source/Rulesets/CellRuleSet.cpp  Source/Rulesets/DayAndNightRuleSet.cpp  Source/Rulesets/GameOfLifeRuleSet.cpp  Source/Rulesets/HighlifeRuleSet.cpp  Source/Rulesets/LifeWithoutDeathRuleSet.cpp Source/Rulesets/Rule90RuleSet.cpp  Source/Rulesets/Rule184RuleSet.cpp  Source/Rulesets/SeedsRuleSet.cpp Source/Rulesets/WireworldRuleSet.cpp
-            Source/Platform/Windows/WinMain.cpp
-            Source/Init/SysInfo.cpp
-            Source/AssetLoaders/TTFLoader.cpp
-            Source/CellBrush.cpp
-            Source/CellCanvas.cpp
-            Source/CellCommandLine.cpp
-            Source/CellEditState.cpp
-            Source/CellLoadState.cpp
-            Source/CellLogger.cpp
-            Source/CellNormalState.cpp
-            Source/CellPencilBrush.cpp
-            Source/CellRoundBrush.cpp
-            Source/CellSaveState.cpp
-            Source/CellState.cpp
-            Source/RenderFont.cpp
-            Source/RenderWindow.cpp
-            Source/SysCmdLine.cpp
-            Source/CellMain.cpp
-            Source/Platform/Windows/WinSaveLoad.cpp)
+    add_executable(CSim  
+        Source/Rulesets/BriansBrainRuleSet.cpp Source/Rulesets/RuleSet.cpp  Source/Rulesets/DayAndNightRuleSet.cpp  Source/Rulesets/GameOfLifeRuleSet.cpp  Source/Rulesets/HighlifeRuleSet.cpp  Source/Rulesets/LifeWithoutDeathRuleSet.cpp Source/Rulesets/Rule90RuleSet.cpp  Source/Rulesets/Rule184RuleSet.cpp  Source/Rulesets/SeedsRuleSet.cpp Source/Rulesets/WireworldRuleSet.cpp
+        Source/Platform/Windows/WinMain.cpp
+        Source/Init/SysInfo.cpp
+        Source/AssetLoaders/TTFLoader.cpp
+        Source/Core/Canvas.cpp
+        Source/System/CommandLine.cpp
+        Source/System/Logger.cpp
+        Source/Rendering/RenderWindow.cpp
+        Source/Rendering/GLString.cpp
+        Source/Rendering/Drawable.cpp
+        Source/Rendering/Camera.cpp
+        Source/System/SysCmdLine.cpp
+        Source/System/CellMain.cpp
+        Source/Platform/Windows/WinSaveLoad.cpp
+        Source/System/EnvVars.cpp
+        Source/Rendering/RenderQueue.cpp
+        Source/Rendering/SplashText.cpp
+        Source/Rendering/OpenGL/GLBackend.cpp
+        Source/Rendering/OpenGL/GLBuffer.cpp
+        Source/Rendering/OpenGL/GLDevice.cpp
+        Source/Core/CellGameModule.cpp
+        Source/System/Illumo.cpp
+        Source/System/DebugModule.cpp
+        Source/System/DebugAlloc.cpp
+        thirdparty/tracy-0.13.1/public/TracyClient.cpp
+    )
 endif ()
 
-if(UNIX)
-
+if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GTK REQUIRED gtkmm-3.0)
 
-    INCLUDE_DIRECTORIES(${GTK_INCLUDE_DIRS})
-    LINK_DIRECTORIES(${GTK_LIBRARY_DIRS})
-
     # Add other flags to the compiler
-    ADD_DEFINITIONS(${GTK_CFLAGS_OTHER})
+    add_definitions(${GTK_CFLAGS_OTHER})
 
-
-    add_executable(CSim Source/Rulesets/BrainsBrainRuleSet.h Source/Rulesets/BriansBrainRuleSet.cpp Source/Rulesets/CellRuleSet.cpp Source/Rulesets/CellRuleSet.h Source/Rulesets/DayAndNightRuleSet.cpp Source/Rulesets/DayAndNightRuleSet.h Source/Rulesets/GameOfLifeRuleSet.cpp Source/Rulesets/GameOfLifeRuleSet.h Source/Rulesets/HighlifeRuleSet.cpp Source/Rulesets/HighlifeRuleSet.h Source/Rulesets/LifeWithoutDeathRuleSet.cpp Source/Rulesets/LifeWithoutDeathRuleSet.h Source/Rulesets/Rule90RuleSet.cpp Source/Rulesets/Rule90RuleSet.h Source/Rulesets/Rule184RuleSet.cpp Source/Rulesets/Rule184RuleSet.h Source/Rulesets/SeedsRuleSet.cpp Source/Rulesets/SeedsRuleSet.h Source/Rulesets/WireworldRuleSet.cpp Source/Rulesets/WireworldRuleSet.h
-            Source/Platform/Linux/_main.cpp
-            Source/Init/AllSets.h
-            Source/Init/AllState.h
-            Source/Init/BuildInfo.h
-            Source/Init/MacroDefs.h
-            Source/Init/SysInfo.cpp
-            Source/Init/SysInfo.h
-            Source/AssetLoaders/TTFLoader.cpp
-            Source/AssetLoaders/TTFLoader.h
-            Source/CellBrush.cpp
-            Source/CellBrush.h
-            Source/CellCanvas.cpp
-            Source/CellCanvas.h
-            Source/CellCommandLine.cpp
-            Source/CellCommandLine.h
-            Source/CellEditState.cpp
-            Source/CellEditState.h
-            Source/CellLoadState.cpp
-            Source/CellLoadState.h
-            Source/CellLogger.cpp
-            Source/CellLogger.h
-            Source/CellNormalState.cpp
-            Source/CellNormalState.h
-            Source/CellPencilBrush.cpp
-            Source/CellPencilBrush.h
-            Source/CellRoundBrush.cpp
-            Source/CellRoundBrush.h
-            Source/CellSaveState.cpp
-            Source/CellSaveState.h
-            Source/CellState.cpp
-            Source/CellState.h
-            Source/RenderContext.h
-            Source/RenderFont.cpp
-            Source/RenderWindow.cpp
-            Source/RenderWindow.h
-            Source/RenderFont.h
-            Source/CellMain.cpp
-            Source/CellMain.h
-            Source/SaveLoad.h
-            Source/SysCmdLine.h
-            Source/SysCmdLine.cpp
-            Source/Platform/Linux/LinuxSaveLoad.cpp
-            Source/Init/MacroDefs.cpp
+    add_executable(CSim 
+        Source/Rulesets/BriansBrainRuleSet.cpp Source/Rulesets/RuleSet.cpp Source/Rulesets/DayAndNightRuleSet.cpp Source/Rulesets/GameOfLifeRuleSet.cpp Source/Rulesets/HighlifeRuleSet.cpp Source/Rulesets/LifeWithoutDeathRuleSet.cpp Source/Rulesets/Rule90RuleSet.cpp Source/Rulesets/Rule184RuleSet.cpp Source/Rulesets/SeedsRuleSet.cpp Source/Rulesets/WireworldRuleSet.cpp
+        Source/Platform/Linux/_main.cpp
+        Source/Init/SysInfo.cpp
+        Source/AssetLoaders/TTFLoader.cpp
+        Source/Core/Brush.cpp
+        Source/Core/Canvas.cpp
+        Source/System/CommandLine.cpp
+        Source/States/EditState.cpp
+        Source/States/LoadState.cpp
+        Source/System/Logger.cpp
+        Source/States/NormalState.cpp
+        Source/Core/PencilBrush.cpp
+        Source/Core/RoundBrush.cpp
+        Source/States/SaveState.cpp
+        Source/States/State.cpp
+        Source/Rendering/RenderFont.cpp
+        Source/Rendering/RenderWindow.cpp
+        Source/Rendering/Drawable.cpp
+        Source/Rendering/RenderQueue.cpp
+        Source/System/CellMain.cpp
+        Source/System/SysCmdLine.cpp
+        Source/Platform/Linux/LinuxSaveLoad.cpp
+        Source/System/EnvVars.cpp
+        Source/System/DebugAlloc.cpp
+        thirdparty/tracy-0.13.1/public/TracyClient.cpp
     )
-    TARGET_LINK_LIBRARIES(CSim ${GTK_LIBRARIES})
-
-
+    
+    # FIXED: Added PRIVATE keyword here to fix signature error
+    target_link_libraries(CSim PRIVATE ${GTK_LIBRARIES})
+    target_include_directories(CSim SYSTEM PRIVATE ${GTK_INCLUDE_DIRS})
+    target_include_directories(CSim PRIVATE
+    thirdparty/tracy-0.13.1
+)
+    target_link_directories(CSim PRIVATE ${GTK_LIBRARY_DIRS})
 endif ()
 
 if(APPLE)
+    find_package(OpenGL REQUIRED)
+    
+    add_executable(CSim  
+        Source/Rulesets/BriansBrainRuleSet.cpp Source/Rulesets/RuleSet.cpp Source/Rulesets/DayAndNightRuleSet.cpp Source/Rulesets/GameOfLifeRuleSet.cpp Source/Rulesets/HighlifeRuleSet.cpp Source/Rulesets/LifeWithoutDeathRuleSet.cpp Source/Rulesets/Rule90RuleSet.cpp Source/Rulesets/Rule184RuleSet.cpp Source/Rulesets/SeedsRuleSet.cpp Source/Rulesets/WireworldRuleSet.cpp
+        Source/Platform/macOS/Main.cpp
+        Source/Platform/macOS/MacSaveLoad.mm
+        Source/Init/SysInfo.cpp
+        Source/AssetLoaders/TTFLoader.cpp
+        Source/Core/Brush.cpp
+        Source/Core/Canvas.cpp
+        Source/System/CommandLine.cpp
+        Source/States/EditState.cpp
+        Source/States/LoadState.cpp
+        Source/System/Logger.cpp
+        Source/States/NormalState.cpp
+        Source/Core/PencilBrush.cpp
+        Source/Core/RoundBrush.cpp
+        Source/States/SaveState.cpp
+        Source/States/State.cpp
+        Source/Rendering/RenderWindow.cpp
+        Source/Rendering/GLString.cpp
+        Source/Rendering/Drawable.cpp
+        Source/System/SysCmdLine.cpp
+        Source/System/CellMain.cpp
+        Source/System/EnvVars.cpp
+        Source/System/DebugAlloc.cpp
+        thirdparty/tracy-0.13.1/public/TracyClient.cpp
+    )
+    
+    target_link_libraries(CSim PRIVATE "-framework Cocoa")
+    target_link_libraries(CSim PRIVATE "-framework OpenGL")
+    target_link_libraries(CSim PRIVATE "-framework IOKit")
+    target_link_libraries(CSim PRIVATE "-framework CoreVideo")
+endif()
 
-    message(FATAL_ERROR "Apple computers are not supported at this time!!")
+# --- Target Header Include Management ---
+# Using modern target_include_directories instead of global include_directories
+target_include_directories(CSim PRIVATE 
+    "Source" "Source/Core" "Source/States" "Source/Rendering" 
+    "Source/System" "Source/Rulesets" "Source/Init" "Source/AssetLoaders" "."
+    "thirdparty/tracy-0.13.1/public"
+)
 
-endif ()
+# FIXED: Forcing all Third-Party directories to be cleanly registered as SYSTEM headers 
+target_include_directories(CSim SYSTEM PRIVATE 
+    "thirdparty/glfw-3.4/include"
+    "thirdparty/glew-2.1.0/include"
+    "thirdparty/json/single_include"
+    "thirdparty"
+)
+
+# --- Target Linking ---
+# FIXED: Removed the invalid "SYSTEM" library names from link execution blocks
+target_link_libraries(CSim PRIVATE 
+    freetype-interface
+    freetype
+    glew_s 
+    glfw
+    OpenGL::GL
+    glm::glm
+)
+
+# --- Platform Compiler Flags Configuration ---
+# FIXED: Cleaned up MSVC flags to eliminate overlapping /EHs entries (Warning D9025)
+if(MSVC)
+
+    target_compile_options(CSim PRIVATE
+        /W4
+        /FS
+
+        $<$<CONFIG:Debug>:/Od>
+        $<$<CONFIG:Debug>:/fsanitize=address>
+
+        $<$<CONFIG:Release>:/O2>
+    )
+
+else()
+
+    target_compile_options(CSim PRIVATE
+        -Wall
+        -Wextra
+
+        $<$<CONFIG:Debug>:-O0>
+        $<$<CONFIG:Debug>:-g>
+        $<$<CONFIG:Debug>:-fsanitize=address>
+
+        $<$<CONFIG:Release>:-O3>
+    )
+
+endif()
 
 
-target_link_libraries(CSim freetype-interface)
-target_link_libraries(CSim freetype)
-target_link_libraries(CSim glew_s) # _s means static rather than dynamic
-target_link_libraries(CSim glfw)
-target_link_libraries(CSim OpenGL::GL)
+target_compile_definitions(CSim PRIVATE
+    $<$<CONFIG:Debug>:TRACY_ENABLE>
+)
 
-#Copy over the shader files
+
+# Copy over the shader files to build execution paths
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/Shader DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

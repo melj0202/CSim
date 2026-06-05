@@ -1,0 +1,9 @@
+DrawableBase call:[glDeleteBuffers,glDeleteProgram,glDeleteShader,glDeleteVertexArrays]
+isVisible
+setVisible
+Draw call:[DrawImpl,isVisible] noreturn:[DrawImpl]
+getDrawableCount call:[size]
+getDrawable
+add call:[push_back] noreturn:[push_back]
+remove call:[begin,end,erase]
+draw call:[Draw] noreturn:[Draw]

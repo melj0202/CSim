@@ -1,0 +1,14 @@
+{
+ "CanvasX": "80",
+ "CanvasY": "60",
+ "ModeString": "GAME_OF_LIFE",
+ "WinX": "1280",
+ "WinY": "720",
+ "enableInfCanvas": "0",
+ "fps": "60",
+ "fullscreen": "0",
+ "logLevel": "2",
+ "showFPS": "0",
+ "speedFactor": "1",
+ "tps": "30"
+}

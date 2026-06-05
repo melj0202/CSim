@@ -1,6 +1,6 @@
 #include <ft2build.h>
 #include <freetype/freetype.h>
-#include "../CellLogger.h"
+#include "Logger.h"
 
 
 FT_Library library;
@@ -9,7 +9,7 @@ FT_Face face;
 
 auto error = FT_Init_FreeType(&library);
 if (error) {
-	CellLogger::LogError("Failed to initialize freetype");
+	Logger::LogError("Failed to initialize freetype");
 	std::exit(1);
 }
 
@@ -20,10 +20,10 @@ error = FT_New_Face(library,
 	&face);
 
 if (error == FT_Err_Unknown_File_Format) {
-	CellLogger::LogError("Failed to load font: Unknown file type");
+	Logger::LogError("Failed to load font: Unknown file type");
 	std::exit(1);
 }
 else if (error) {
-	CellLogger::LogError("Failed to load font.");
+	Logger::LogError("Failed to load font.");
 	std::exit(1);
 }

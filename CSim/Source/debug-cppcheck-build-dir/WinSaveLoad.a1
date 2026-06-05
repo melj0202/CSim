@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="1964327084742571129">
+        <error id="missingInclude" severity="information" msg="Include file: &quot;SaveLoad.h&quot; not found." verbose="Include file: &quot;SaveLoad.h&quot; not found.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Windows/WinSaveLoad.cpp" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;windows.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;windows.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="C:/Users/gravi/Source/Projects/CSim/CSim/Source/Platform/Windows/WinSaveLoad.cpp" line="5" column="2"/>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functioncall functionName="GetOpenFileNameA"/>
+    <functioncall functionName="GetSaveFileNameA"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="OFN_FILEMUSTEXIST"/>
+    <functioncall functionName="ZeroMemory"/>
+  </FileInfo>
+</analyzerinfo>

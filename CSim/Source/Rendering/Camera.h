@@ -1,0 +1,58 @@
+#pragma once
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include "IEnvVars.h"
+#include "SceneObject.h"
+
+class IRenderWindow;
+
+enum class ProjectonType {
+    ORTOGRAPHIC,
+    PERSPECTIVE
+};
+
+class Camera : public SceneObject {
+public:
+    Camera(EntityID id, ProjectonType type, const glm::vec2& initialPos = glm::vec2(0.0f, 0.0f), float initialZoom = 1.0f, IEnvVars* vars = nullptr);
+    ~Camera() = default;
+
+    // Smooth update towards target pan and zoom
+    void Update(float deltaTime);
+
+    // Camera actions
+    void Pan(const glm::vec2& offset);
+    void ZoomAt(float zoomFactor, const glm::vec2& zoomCenter);
+    void Rotate(float angle);
+    void Reset();
+
+    // Getters and Setters
+    void SetPosition(const glm::vec2& pos) { targetPosition = pos; position = pos; }
+    glm::vec2 GetPosition() const { return position; }
+
+    void SetZoom(float z) { targetZoom = z; zoom = z; }
+    float GetZoom() const { return zoom; }
+
+    void SetSmoothingSpeed(float speed) { smoothingSpeed = speed; }
+    float GetSmoothingSpeed() const { return smoothingSpeed; }
+
+    // Coordinate conversion
+    // Converts screen space [0, windowSize] to world space [-1, 1] or grid coordinates
+    glm::vec2 ScreenToWorld(const glm::vec2& screenPos) const;
+
+    // Matrix calculations
+    glm::mat4 GetViewMatrix() const;
+    glm::mat4 GetProjectionMatrix(float aspectRatio) const;
+    glm::mat4 GetMVPMatrix(float aspectRatio) const;
+
+private:
+    ProjectonType projectionType;
+    glm::vec2 position;        // Current interpolated position
+    glm::vec2 targetPosition;  // Target position we pan towards
+    float zoom;                // Current interpolated zoom
+    float targetZoom;          // Target zoom we scale towards
+    float smoothingSpeed;      // Speed of interpolation (higher = faster, e.g. 10.0f)
+    float rotation;            // Current interpolated rotation
+    float targetRotation;      // Target rotation we rotate towards
+    IEnvVars* envVars;
+};

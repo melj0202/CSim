@@ -1,9 +1,9 @@
 #pragma once
-#include "CellRuleSet.h"
+#include "RuleSet.h"
 
-class HighlifeRuleSet : public CellRuleSet {
+class HighlifeRuleSet : public RuleSet {
 public :
-	HighlifeRuleSet() = default;
+	HighlifeRuleSet(Canvas* targetCanvas) : RuleSet(targetCanvas) {}
 	~HighlifeRuleSet() override = default;
 
 	void evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const override;
