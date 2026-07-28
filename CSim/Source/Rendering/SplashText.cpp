@@ -2,26 +2,43 @@
 
 void SplashText::Wake()
 {
-	this->setVisible(true);
-	this->setA(255);
+	setVisible(true);
+	setA(255);
 	startTime = std::chrono::high_resolution_clock::now();
 }
 
 void SplashText::Fade()
 {
-//lerp opacity until 0 then set IsVisible to false;
-	auto Now = std::chrono::high_resolution_clock::now();
-	auto durationElapsed = Now - startTime;
-	if (durationElapsed < wakeDuration)
+	if (!isVisible())
 	{
-		float elapsedSeconds = std::chrono::duration<float>(durationElapsed).count();
-		float opacity = 255.0f * (1.0f - elapsedSeconds / wakeDuration.count());
-		this->setA(static_cast<int>(opacity));
-		if (opacity <= 0.0f) this->setVisible(false);
+		return;
 	}
-	else
+
+	// Linear fade from opaque to transparent over wakeDuration, then hide.
+	std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<float> durationElapsed = now - startTime;
+	const float total = wakeDuration.count();
+	if (total <= 0.0f || durationElapsed.count() >= total)
 	{
-		this->setA(0);
-		this->setVisible(false);
+		setA(0);
+		setVisible(false);
+		return;
+	}
+
+	float t = durationElapsed.count() / total;
+	if (t < 0.0f)
+	{
+		t = 0.0f;
+	}
+	if (t > 1.0f)
+	{
+		t = 1.0f;
+	}
+	const float opacity = 255.0f * (1.0f - t);
+	setA(static_cast<int>(opacity + 0.5f));
+	if (opacity <= 1.0f)
+	{
+		setA(0);
+		setVisible(false);
 	}
 }

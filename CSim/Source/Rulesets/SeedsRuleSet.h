@@ -1,15 +1,12 @@
-#pragma once 
+#pragma once
 #include "RuleSet.h"
 
 class SeedsRuleSet : public RuleSet {
 public:
-
 	SeedsRuleSet(Canvas* targetCanvas) : RuleSet(targetCanvas) {}
 	~SeedsRuleSet() override = default;
 
-	void evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const override;
+	unsigned char nextState(unsigned char cell, unsigned char aliveNeighbors) const override;
 	void evalCell(const unsigned char& target, unsigned char dest[3]) const override;
-	std::string getRuleTag() override {
-		return "SEEDS";
-	}
+	std::string getRuleTag() override { return "SEEDS"; }
 };

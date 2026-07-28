@@ -1,30 +1,29 @@
 #include "HighlifeRuleSet.h"
-#include "Canvas.h"
+#include <cstring>
 
-enum CellStates
-{
-	CELL_DEAD = 1,
-	CELL_ALIVE = 0
-};
+namespace {
+const unsigned char CELL_DEAD = 1;
+const unsigned char CELL_ALIVE = 0;
+}
 
-void HighlifeRuleSet::evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const
+unsigned char HighlifeRuleSet::nextState(unsigned char cell, unsigned char aliveNeighbors) const
 {
-	if (cell == CellStates::CELL_ALIVE && (ne == 2 || ne == 3))
+	// B36/S23
+	if (cell == CELL_ALIVE)
 	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_ALIVE);
+		return (aliveNeighbors == 2 || aliveNeighbors == 3) ? CELL_ALIVE : CELL_DEAD;
 	}
-	else if (!(cell == CellStates::CELL_ALIVE) && (ne == 3 || ne == 6))
-	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_ALIVE);
-	}
-	else
-	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_DEAD);
-	}
+	return (aliveNeighbors == 3 || aliveNeighbors == 6) ? CELL_ALIVE : CELL_DEAD;
 }
 
 void HighlifeRuleSet::evalCell(const unsigned char& target, unsigned char dest[3]) const
 {
-	if (target == CellStates::CELL_DEAD) memset(dest, 255, 3);
-	else memset(dest, 0, 3);
+	if (target == CELL_DEAD)
+	{
+		std::memset(dest, 255, 3);
+	}
+	else
+	{
+		std::memset(dest, 0, 3);
+	}
 }

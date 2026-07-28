@@ -192,6 +192,8 @@ public:
 
 	void EndFrame()
 	{
+		// RenderScene usually already submitted; avoid a redundant empty walk.
+		// (Backend still may receive an empty queue if callers only push then EndFrame.)
 		_backend->SubmitCommandQueue();
 		_backend->EndFrame();
 	}
@@ -322,7 +324,15 @@ public:
 		_backend->PushToCommandQueue(cmd);
 	}
 
-	void pushUpdateTexture(unsigned long handle, int x, int y, int width, int height, int channels, const void* data)
+	void pushUpdateTexture(
+		unsigned long handle,
+		int x,
+		int y,
+		int width,
+		int height,
+		int channels,
+		const void* data,
+		int srcRowStride = 0)
 	{
 		RenderCommand cmd;
 		cmd.commandType = CommandType::UpdateTexture;
@@ -332,6 +342,7 @@ public:
 		cmd.updateTexture.width = width;
 		cmd.updateTexture.height = height;
 		cmd.updateTexture.channels = channels;
+		cmd.updateTexture.srcRowStride = srcRowStride;
 		cmd.updateTexture.data = data;
 		_backend->PushToCommandQueue(cmd);
 	}

@@ -26,7 +26,7 @@ public:
 	virtual unsigned long CreateShaderProgram(const ShaderPaths& paths, unsigned long tableID) = 0;
 	virtual unsigned long CreateShaderProgram(const ShaderSources& sources, unsigned long tableID) = 0;
 	virtual unsigned long CreateTexture(const unsigned char* data, const int width, const int height, unsigned long tableID) = 0;
-	// channels: 3 = RGB, 4 = RGBA
+	// channels: 1 = R8, 3 = RGB, 4 = RGBA
 	virtual unsigned long CreateTexture(const unsigned char* data, const int width, const int height, int channels, unsigned long tableID) = 0;
 	virtual unsigned long CreateTexture(const std::string& filePath, unsigned long tableID) = 0;
 	virtual unsigned long CreateDescriptorSet() = 0;

@@ -67,21 +67,36 @@ void CellGameModule::Start(IllumoContext* context)
 	cellContext->getCellCanvas()->setCanvasPixel(52, 39, 0);
 	cellContext->getCellCanvas()->setCanvasPixel(51, 38, 0);
 
-	// Seed visual targets from initial cells (fade in the glider on start).
+	// Initial palette from active ruleset; glider cells already mark R8 upload dirty.
+	cellContext->getCellCanvas()->rebuildPalette(cellContext->getRuleSet());
 	updateVisualTargets();
+
+	// Mode splash label (top-left corner). Shown briefly when toggling EDIT/NORMAL with E.
+	// GLString::setRenderWindow is already set in Illumo::Init before modules Start.
+	if (stateSplash == nullptr && ic->renderer != nullptr)
+	{
+		// Soft yellow, large enough to notice without covering the canvas.
+		stateSplash = new SplashText(
+			"EDIT",
+			255, 230, 120, 255,
+			32,
+			16, 48,
+			ic->renderer);
+		stateSplash->setVisible(false);
+	}
 }
 
 void CellGameModule::updateVisualTargets()
 {
+	ZoneScopedN("Visual.updateTargets");
 	Canvas* canvas = cellContext->getCellCanvas();
-	RuleSet* rules = cellContext->getRuleSet();
-	const int count = canvas->canvasWidth * canvas->canvasHeight;
-	for (int i = 0; i < count; ++i)
+	// R8 path: lifeCanvas *is* the GPU source. Paint/generation already expand the
+	// upload dirty rect; this just clears the logical dirty flag after a change.
+	if (!canvas->isCellsDirty())
 	{
-		unsigned char color[3];
-		rules->evalCell(canvas->lifeCanvas[i], color);
-		canvas->setTargetColor(i, color[0], color[1], color[2]);
+		return;
 	}
+	canvas->onTargetsRebuilt();
 }
 
 void CellGameModule::syncSimRateFromEnv()
@@ -110,7 +125,7 @@ void CellGameModule::syncSimRateFromEnv()
 	const double effectiveTps = static_cast<double>(tps) * speedFactor;
 	simStepSeconds = 1.0 / effectiveTps;
 
-	// Fade speed is also live so console tweaks apply immediately.
+	// cellFadeSpeed kept for env/console compatibility; R8 palette path snaps colors.
 	float fadeSpeed = 8.0f;
 	if (ic->envVars->getVar("cellFadeSpeed").value != "")
 	{
@@ -136,7 +151,8 @@ void CellGameModule::Update(double dt)
 			{
 				std::string msg = "Active ruleset: " + cellContext->getModeString();
 				Logger::LogInfo(msg.c_str());
-				updateVisualTargets();
+				// Same life values, new colors → rebuild palette only (no cell re-upload).
+				cellContext->getCellCanvas()->rebuildPalette(cellContext->getRuleSet());
 			}
 		}
 	}
@@ -200,14 +216,21 @@ void CellGameModule::Update(double dt)
 			break;
 	}
 
-	// Always ease displayed colors toward the current logical cell colors.
+	// R8: clear cellsDirty after paint/sim (upload rect already expanded).
 	updateVisualTargets();
+	// tickVisual is a no-op on the palette path (kept for API stability).
 	cellContext->getCellCanvas()->tickVisual(static_cast<float>(dt));
 }
 
 void CellGameModule::Exit()
 {
+	if (stateSplash != nullptr)
+	{
+		delete stateSplash;
+		stateSplash = nullptr;
+	}
 	delete cellContext;
+	cellContext = nullptr;
 }
 
 void CellGameModule::Normal(double dt)
@@ -442,4 +465,9 @@ void CellGameModule::CameraRotate()
 void CellGameModule::DispatchDrawables(Scene* scene)
 {
 	scene->AddDrawable(this->cellContext->getCellCanvas());
+	// Mode splash sits above the canvas (token UI path via SplashText::AppendCommands).
+	if (stateSplash != nullptr && stateSplash->isVisible())
+	{
+		scene->AddDrawable(stateSplash);
+	}
 }

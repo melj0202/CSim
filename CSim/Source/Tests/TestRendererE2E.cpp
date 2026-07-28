@@ -268,38 +268,45 @@ static void testRenderSceneCanvasTokens()
 	Canvas canvas(16, 12, &window, &camera, &renderer);
 	scene.AddDrawable(&canvas);
 
-	// Paint one cell so domain state is non-empty (tokens still full upload)
+	// Drain initial R8 + palette enroll uploads.
+	renderer.BeginFrame();
+	renderer.RenderScene(&scene, &camera);
+	renderer.EndFrame();
+	e2eTrue(mock.countNonEmptyOfType(CommandType::UpdateTexture) >= 1u, "initial enroll uploads");
+
+	// Paint one cell → sparse R8 dirty-rect upload.
 	canvas.setCanvasPixel(1, 1, 0);
-	canvas.snapVisualToTargets();
 
 	renderer.BeginFrame();
 	renderer.RenderScene(&scene, &camera);
 	renderer.EndFrame();
 
 	e2eTrue(mock.getLastNonEmptySubmittedCount() > 0, "canvas frame non-empty");
-	e2eEqSize(mock.countNonEmptyOfType(CommandType::UpdateTexture), 1u, "Canvas UpdateTexture once");
+	e2eEqSize(mock.countNonEmptyOfType(CommandType::UpdateTexture), 1u, "Canvas UpdateTexture once when dirty");
 	e2eEqSize(mock.countNonEmptyOfType(CommandType::DrawIndexed), 1u, "Canvas DrawIndexed once");
 	e2eEqSize(mock.countNonEmptyOfType(CommandType::SetUniformMat4), 1u, "Canvas MVP uniform once");
 	e2eEqSize(mock.countNonEmptyOfType(CommandType::ClearScreen), 1u, "frame clear once");
 
-	// Canvas enroll: mesh + shader + texture
-	e2eTrue(mock.getCreateCount() >= 3u, "Canvas enroll create records");
+	// Canvas enroll: mesh + shader + R8 cell + palette
+	e2eTrue(mock.getCreateCount() >= 4u, "Canvas enroll create records");
 
-	// Find UpdateTexture and check RGB full-frame size
-	bool foundRgbUpdate = false;
+	// Find UpdateTexture and check sparse R8 dirty-rect (1x1 at painted cell)
+	bool foundR8Update = false;
 	for (size_t i = 0; i < mock.getLastNonEmptySubmittedCount(); ++i)
 	{
 		const RenderCommand& cmd = mock.getLastNonEmptySubmitted(i);
 		if (cmd.commandType == CommandType::UpdateTexture)
 		{
-			e2eEqInt(cmd.updateTexture.width, 16, "UpdateTexture width");
-			e2eEqInt(cmd.updateTexture.height, 12, "UpdateTexture height");
-			e2eEqInt(cmd.updateTexture.channels, 3, "UpdateTexture RGB channels");
-			e2eTrue(cmd.updateTexture.data == canvas.texCanvasBuffer, "UpdateTexture data is canvas buffer");
-			foundRgbUpdate = true;
+			e2eEqInt(cmd.updateTexture.x, 1, "UpdateTexture dirty x");
+			e2eEqInt(cmd.updateTexture.y, 1, "UpdateTexture dirty y");
+			e2eEqInt(cmd.updateTexture.width, 1, "UpdateTexture dirty width");
+			e2eEqInt(cmd.updateTexture.height, 1, "UpdateTexture dirty height");
+			e2eEqInt(cmd.updateTexture.channels, 1, "UpdateTexture R8 channels");
+			e2eEqInt(cmd.updateTexture.srcRowStride, 16, "UpdateTexture src row stride = canvas width");
+			foundR8Update = true;
 		}
 	}
-	e2eTrue(foundRgbUpdate, "found UpdateTexture command");
+	e2eTrue(foundR8Update, "found UpdateTexture command");
 }
 
 static void testRenderProofQuadOnMock()

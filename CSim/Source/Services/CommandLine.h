@@ -36,6 +36,8 @@ public:
 	void DrawImpl();
 	bool AppendCommands(Renderer* renderer) override;
 	bool isOpen;
+	// True while open or still sliding (avoid dispatch when fully closed).
+	bool wantsDraw() const { return isVisible() && (isOpen || animationProgress > 0.0f); }
 	void logNormal(const std::string& str);
 	void logError(const std::string& str);
 	void logWarning(const std::string& str);
@@ -72,12 +74,10 @@ private:
 	float animationProgress;
 	std::chrono::high_resolution_clock::time_point lastAnimTime;
 
-	// CPU scratch for token payloads (valid until SubmitCommandQueue)
-	ConsoleVertex panelVertices[4];
-	ConsoleVertex sepVertices[4];
-	ConsoleVertex trackVertices[4];
-	ConsoleVertex thumbVertices[4];
-	ConsoleVertex textQuads[12000];
+	// Batched UI verts for one UpdateBuffer + DrawIndexed (valid until Submit).
+	// Capacity matches dynamic mesh enroll (2000 quads × 4 = 8000; room for safety).
+	static const unsigned int kUiVertCap = 12000;
+	ConsoleVertex uiVerts[kUiVertCap];
 
 	friend void CellMain(const std::string&);
 	void enrollGpuResources();

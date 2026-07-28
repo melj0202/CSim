@@ -112,8 +112,11 @@ struct CmdUpdateTexture {
 	int y;
 	int width;
 	int height;
-	// 0 = use texture's create format; otherwise channel count hint (3=RGB, 4=RGBA)
+	// 0 = use texture's create format; otherwise channel count hint (3=RGB, 4=RGBA, 1=R)
 	int channels;
+	// Source buffer row length in *pixels*. 0 = tightly packed rows of `width`.
+	// Use full texture width when `data` points into a larger staging buffer (dirty rects).
+	int srcRowStride;
 	const void* data;
 };
 

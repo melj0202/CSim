@@ -1,37 +1,44 @@
 #include "BrainsBrainRuleSet.h"
-#include "Canvas.h"
+#include <cstring>
 
-enum CellStates
-{
-	CELL_DEAD = 1,
-	CELL_DYING = 2,
-	CELL_ALIVE = 0
-};
+namespace {
+const unsigned char CELL_DEAD = 1;
+const unsigned char CELL_DYING = 2;
+const unsigned char CELL_ALIVE = 0;
+}
 
-void BrainsBrainRuleSet::evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const
+unsigned char BrainsBrainRuleSet::nextState(unsigned char cell, unsigned char aliveNeighbors) const
 {
-	if (cell == CellStates::CELL_DEAD && ne == 2)
+	// Dead + 2 live → alive; alive → dying; dying → dead
+	if (cell == CELL_DEAD && aliveNeighbors == 2)
 	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_ALIVE);
+		return CELL_ALIVE;
 	}
-	else if (cell == CellStates::CELL_ALIVE)
+	if (cell == CELL_ALIVE)
 	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_DYING);
+		return CELL_DYING;
 	}
-	else if (cell == CellStates::CELL_DYING)
+	if (cell == CELL_DYING)
 	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_DEAD);
+		return CELL_DEAD;
 	}
+	return CELL_DEAD;
 }
 
 void BrainsBrainRuleSet::evalCell(const unsigned char& target, unsigned char dest[3]) const
 {
-	if (target == CellStates::CELL_DEAD) memset(dest, 255, 3);
-	else if (target == CellStates::CELL_ALIVE) memset(dest, 0, 3);
+	if (target == CELL_DEAD)
+	{
+		std::memset(dest, 255, 3);
+	}
+	else if (target == CELL_ALIVE)
+	{
+		std::memset(dest, 0, 3);
+	}
 	else
 	{
 		dest[0] = 0;
-		dest[2] = 128;
 		dest[1] = 164;
+		dest[2] = 128;
 	}
 }

@@ -418,6 +418,71 @@ void CommandLine::DrawImpl()
 	// Migrated to tokens.
 }
 
+namespace {
+
+struct UiVert {
+	float x, y, z;
+	uint8_t color[4];
+};
+
+static unsigned int packSolidQuad(
+	UiVert* dest,
+	unsigned int destCap,
+	unsigned int writeAt,
+	float x0, float y0, float x1, float y1,
+	unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+	if (writeAt + 4 > destCap)
+	{
+		return writeAt;
+	}
+	dest[writeAt + 0] = { x0, y0, 0.0f, { r, g, b, a } };
+	dest[writeAt + 1] = { x1, y0, 0.0f, { r, g, b, a } };
+	dest[writeAt + 2] = { x1, y1, 0.0f, { r, g, b, a } };
+	dest[writeAt + 3] = { x0, y1, 0.0f, { r, g, b, a } };
+	return writeAt + 4;
+}
+
+// stb_easy_font half-scale coords; bake ×2 so shader uses u_scale=(1,1).
+static unsigned int packFontLine(
+	UiVert* dest,
+	unsigned int destCap,
+	unsigned int writeAt,
+	float x, float y,
+	const char* text,
+	unsigned char color[4])
+{
+	if (writeAt >= destCap || text == nullptr)
+	{
+		return writeAt;
+	}
+	const unsigned int remaining = destCap - writeAt;
+	int numQuads = stb_easy_font_print(
+		x * 0.5f,
+		y * 0.5f,
+		const_cast<char*>(text),
+		color,
+		&dest[writeAt],
+		static_cast<int>(remaining * sizeof(UiVert)));
+	if (numQuads <= 0)
+	{
+		return writeAt;
+	}
+	if (numQuads > static_cast<int>(remaining / 4))
+	{
+		numQuads = static_cast<int>(remaining / 4);
+	}
+	const unsigned int vCount = static_cast<unsigned int>(numQuads * 4);
+	for (unsigned int i = 0; i < vCount; ++i)
+	{
+		dest[writeAt + i].x *= 2.0f;
+		dest[writeAt + i].y *= 2.0f;
+	}
+	return writeAt + vCount;
+}
+
+} // namespace
+
 bool CommandLine::AppendCommands(Renderer* r)
 {
 	if (!isVisible())
@@ -458,43 +523,13 @@ bool CommandLine::AppendCommands(Renderer* r)
 	float width = static_cast<float>(winWidth);
 	float height = static_cast<float>(winHeight);
 
-	PipelineState ps;
-	ps.depthTestEnabled = false;
-	ps.blendEnabled = true;
-	ps.blendSrc = BlendFactor::SrcAlpha;
-	ps.blendDst = BlendFactor::OneMinusSrcAlpha;
-	ps.faceCullingEnabled = false;
-	ps.primitives = Primitives::Triangles;
-	r->pushPipelineState(ps);
-	r->pushSetShader(shaderHandle);
-	r->pushSetMesh(meshHandle);
-	r->pushUniformVec2("u_resolution", width, height);
-
 	float panelHeight = height * 0.45f;
 	if (panelHeight < 200.0f)
 	{
 		panelHeight = 200.0f;
 	}
 	float yOffset = -panelHeight * (1.0f - animationProgress);
-
-	// 1. Panel
-	panelVertices[0] = { 0.0f, yOffset, 0.0f, { 30, 30, 30, 200 } };
-	panelVertices[1] = { width, yOffset, 0.0f, { 30, 30, 30, 200 } };
-	panelVertices[2] = { width, yOffset + panelHeight, 0.0f, { 30, 30, 30, 200 } };
-	panelVertices[3] = { 0.0f, yOffset + panelHeight, 0.0f, { 30, 30, 30, 200 } };
-	r->pushUpdateBuffer(meshHandle, 0, static_cast<unsigned int>(4 * sizeof(ConsoleVertex)), panelVertices);
-	r->pushUniformVec2("u_scale", 1.0f, 1.0f);
-	r->pushDrawIndexed(6, 0);
-
-	// 2. Separator
 	float sepY = panelHeight - 12.0f;
-	sepVertices[0] = { 0.0f, yOffset + sepY, 0.0f, { 80, 80, 80, 255 } };
-	sepVertices[1] = { width, yOffset + sepY, 0.0f, { 80, 80, 80, 255 } };
-	sepVertices[2] = { width, yOffset + sepY + 2.0f, 0.0f, { 80, 80, 80, 255 } };
-	sepVertices[3] = { 0.0f, yOffset + sepY + 2.0f, 0.0f, { 80, 80, 80, 255 } };
-	r->pushUpdateBuffer(meshHandle, 0, static_cast<unsigned int>(4 * sizeof(ConsoleVertex)), sepVertices);
-	r->pushUniformVec2("u_scale", 1.0f, 1.0f);
-	r->pushDrawIndexed(6, 0);
 
 	float lineSpacing = 24.0f;
 	int maxHistoryLines = static_cast<int>((panelHeight - 30.0f) / lineSpacing);
@@ -502,6 +537,17 @@ bool CommandLine::AppendCommands(Renderer* r)
 	{
 		maxHistoryLines = 1;
 	}
+
+	// Pack entire console (chrome + text) into one vertex buffer for a single
+	// UpdateBuffer + DrawIndexed (P2). Index buffer is sequential quads.
+	const unsigned int kCap = kUiVertCap;
+	unsigned int packed = 0;
+	UiVert* batch = reinterpret_cast<UiVert*>(uiVerts);
+
+	// 1. Panel
+	packed = packSolidQuad(batch, kCap, packed, 0.0f, yOffset, width, yOffset + panelHeight, 30, 30, 30, 200);
+	// 2. Separator
+	packed = packSolidQuad(batch, kCap, packed, 0.0f, yOffset + sepY, width, yOffset + sepY + 2.0f, 80, 80, 80, 255);
 
 	// 2.5 Scroll bar
 	int totalLines = static_cast<int>(history.size());
@@ -515,12 +561,7 @@ bool CommandLine::AppendCommands(Renderer* r)
 		float barX1 = width - scrollbarWidth - scrollbarRightMargin;
 		float barX2 = width - scrollbarRightMargin;
 
-		trackVertices[0] = { barX1, trackTop, 0.0f, { 15, 15, 15, 150 } };
-		trackVertices[1] = { barX2, trackTop, 0.0f, { 15, 15, 15, 150 } };
-		trackVertices[2] = { barX2, trackBottom, 0.0f, { 15, 15, 15, 150 } };
-		trackVertices[3] = { barX1, trackBottom, 0.0f, { 15, 15, 15, 150 } };
-		r->pushUpdateBuffer(meshHandle, 0, static_cast<unsigned int>(4 * sizeof(ConsoleVertex)), trackVertices);
-		r->pushDrawIndexed(6, 0);
+		packed = packSolidQuad(batch, kCap, packed, barX1, trackTop, barX2, trackBottom, 15, 15, 15, 150);
 
 		float thumbHeight = trackHeight * (static_cast<float>(maxHistoryLines) / static_cast<float>(totalLines));
 		if (thumbHeight < 15.0f)
@@ -533,49 +574,11 @@ bool CommandLine::AppendCommands(Renderer* r)
 			: 0.0f;
 		float thumbTop = (trackBottom - thumbHeight) - scrollPercent * (trackHeight - thumbHeight);
 		float thumbBottom = thumbTop + thumbHeight;
-
-		thumbVertices[0] = { barX1, thumbTop, 0.0f, { 120, 120, 120, 230 } };
-		thumbVertices[1] = { barX2, thumbTop, 0.0f, { 120, 120, 120, 230 } };
-		thumbVertices[2] = { barX2, thumbBottom, 0.0f, { 120, 120, 120, 230 } };
-		thumbVertices[3] = { barX1, thumbBottom, 0.0f, { 120, 120, 120, 230 } };
-		r->pushUpdateBuffer(meshHandle, 0, static_cast<unsigned int>(4 * sizeof(ConsoleVertex)), thumbVertices);
-		r->pushDrawIndexed(6, 0);
+		packed = packSolidQuad(batch, kCap, packed, barX1, thumbTop, barX2, thumbBottom, 120, 120, 120, 230);
 	}
 
-	// 3. History text — one UpdateBuffer+Draw per line.
-	// Note: textQuads is reused; each push stores the pointer, so we must
-	// submit line-by-line only after execute, OR buffer each line separately.
-	// Pointers remain valid until SubmitCommandQueue; we overwrite textQuads
-	// between pushes, so all but the last line would be wrong if we only
-	// keep one buffer. Use sequential upload: execute path runs after all
-	// AppendCommands, so concurrent pointers to the same buffer break.
-	// Fix: push each line into queue with data that must still be correct at
-	// submit — allocate temporary stack is wrong. Use a growable staging area
-	// or draw one line with immediate... Best fix for multi-line: pack all
-	// history into one big buffer and draw as multiple regions, OR copy each
-	// line into a persistent ring of slots.
-	//
-	// Practical approach: store each line's quads into a staging vector of
-	// unique allocations is heavy. Simpler: rebuild all visible text into
-	// sequential regions of a large staging buffer (textStaging).
-	//
-	// textQuads holds 12000 verts; use contiguous packing.
-	unsigned char inputColor[4] = {100, 200, 255, 255};
-	float currentY = (yOffset + 6.0f) / 2.0f;
-	float yOffsetStep = 12.0f;
-
-	// Pack history lines into textQuads sequentially, record draw ranges.
-	// Max 32 visible lines * ~200 quads is safe within 12000 verts.
-	struct LineDraw {
-		unsigned int vertexOffset; // in vertices
-		unsigned int elementCount;
-	};
-	LineDraw lineDraws[64];
-	int lineDrawCount = 0;
-	unsigned int packedVertexCount = 0;
-
-	r->pushUniformVec2("u_scale", 2.0f, 2.0f);
-
+	// 3. History text (screen-space; scale baked into verts)
+	float currentY = yOffset + 6.0f;
 	int endIdx = static_cast<int>(history.size()) - 1 - scrollOffset;
 	if (endIdx >= 0)
 	{
@@ -586,95 +589,51 @@ bool CommandLine::AppendCommands(Renderer* r)
 		}
 		for (int i = startIdx; i <= endIdx; ++i)
 		{
-			if (lineDrawCount >= 64)
-			{
-				break;
-			}
 			const historyBuffer& item = history[static_cast<size_t>(i)];
 			unsigned char itemColor[4] = { item.r, item.g, item.b, item.a };
-			// Temporary into local area then copy into packed region
-			ConsoleVertex tempQuads[2000 * 4];
-			int numQuads = stb_easy_font_print(
-				10.0f / 2.0f,
-				currentY,
-				const_cast<char*>(item.content.c_str()),
-				itemColor,
-				tempQuads,
-				sizeof(tempQuads));
-			if (numQuads > 0)
-			{
-				if (numQuads > 1990)
-				{
-					numQuads = 1990;
-				}
-				const unsigned int vCount = static_cast<unsigned int>(numQuads * 4);
-				if (packedVertexCount + vCount > 12000)
-				{
-					break;
-				}
-				std::memcpy(
-					&textQuads[packedVertexCount],
-					tempQuads,
-					vCount * sizeof(ConsoleVertex));
-				lineDraws[lineDrawCount].vertexOffset = packedVertexCount;
-				lineDraws[lineDrawCount].elementCount = static_cast<unsigned int>(numQuads * 6);
-				++lineDrawCount;
-				packedVertexCount += vCount;
-			}
-			currentY += yOffsetStep;
+			packed = packFontLine(batch, kCap, packed, 10.0f, currentY, item.content.c_str(), itemColor);
+			currentY += lineSpacing;
 		}
 	}
 
-	// Input line packed after history
-	float inputY = (yOffset + panelHeight - 25.0f) / 2.0f;
+	// 4. Input line
+	unsigned char inputColor[4] = {100, 200, 255, 255};
+	float inputY = yOffset + panelHeight - 25.0f;
 	std::string inputStr = "> " + currentInput + "_";
+	packed = packFontLine(batch, kCap, packed, 10.0f, inputY, inputStr.c_str(), inputColor);
+
+	if (packed < 4)
 	{
-		ConsoleVertex tempQuads[2000 * 4];
-		int numQuads = stb_easy_font_print(
-			10.0f / 2.0f,
-			inputY,
-			const_cast<char*>(inputStr.c_str()),
-			inputColor,
-			tempQuads,
-			sizeof(tempQuads));
-		if (numQuads > 0)
-		{
-			if (numQuads > 1990)
-			{
-				numQuads = 1990;
-			}
-			const unsigned int vCount = static_cast<unsigned int>(numQuads * 4);
-			if (packedVertexCount + vCount <= 12000 && lineDrawCount < 64)
-			{
-				std::memcpy(
-					&textQuads[packedVertexCount],
-					tempQuads,
-					vCount * sizeof(ConsoleVertex));
-				lineDraws[lineDrawCount].vertexOffset = packedVertexCount;
-				lineDraws[lineDrawCount].elementCount = static_cast<unsigned int>(numQuads * 6);
-				++lineDrawCount;
-				packedVertexCount += vCount;
-			}
-		}
+		return true;
 	}
 
-	// One upload of all packed text, then draw each line with base-vertex offset.
-	// Our DrawIndexed only has firstIndex, not baseVertex — so we must upload
-	// each line separately with correct firstIndex=0 after rewriting indices
-	// OR re-upload one line at a time into VBO start.
-	// Re-upload one line at a time from packed buffer (pointer stays valid).
-	for (int li = 0; li < lineDrawCount; ++li)
+	const unsigned int totalQuads = packed / 4;
+	// Dynamic mesh index buffer covers 2000 quads; clamp draw if somehow larger.
+	unsigned int drawQuads = totalQuads;
+	if (drawQuads > 2000)
 	{
-		const unsigned int vOff = lineDraws[li].vertexOffset;
-		const unsigned int eCount = lineDraws[li].elementCount;
-		const unsigned int vCount = eCount / 6 * 4;
-		r->pushUpdateBuffer(
-			meshHandle,
-			0,
-			static_cast<unsigned int>(vCount * sizeof(ConsoleVertex)),
-			&textQuads[vOff]);
-		r->pushDrawIndexed(eCount, 0);
+		drawQuads = 2000;
 	}
+
+	PipelineState ps;
+	ps.depthTestEnabled = false;
+	ps.blendEnabled = true;
+	ps.blendSrc = BlendFactor::SrcAlpha;
+	ps.blendDst = BlendFactor::OneMinusSrcAlpha;
+	ps.faceCullingEnabled = false;
+	ps.primitives = Primitives::Triangles;
+	r->pushPipelineState(ps);
+	r->pushSetShader(shaderHandle);
+	r->pushSetMesh(meshHandle);
+	r->pushUniformVec2("u_resolution", width, height);
+	r->pushUniformVec2("u_scale", 1.0f, 1.0f);
+
+	r->pushUpdateBuffer(
+		meshHandle,
+		0,
+		static_cast<unsigned int>(drawQuads * 4 * sizeof(ConsoleVertex)),
+		uiVerts);
+	r->pushDrawIndexed(drawQuads * 6, 0);
 
 	return true;
 }

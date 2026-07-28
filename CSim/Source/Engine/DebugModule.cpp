@@ -164,7 +164,11 @@ void DebugModule::Exit()
 
 void DebugModule::DispatchDrawables(Scene* scene)
 {
-	scene->AddDrawable(ic->commandLine);
+	// Skip fully closed console (no anim) — avoids chrono/lerp + empty token work.
+	if (ic->commandLine && ic->commandLine->wantsDraw())
+	{
+		scene->AddDrawable(ic->commandLine);
+	}
 	if (fpsLabel && isShowFpsEnabled())
 	{
 		scene->AddDrawable(fpsLabel);

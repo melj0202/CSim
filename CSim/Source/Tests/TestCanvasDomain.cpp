@@ -2,8 +2,8 @@
 
 #include "Tests/TestHelpers.h"
 #include "Tests/TestHarness.h"
+#include "Rulesets/GameOfLifeRuleSet.h"
 #include <cstdio>
-#include <cmath>
 
 static TestCounters g;
 
@@ -29,65 +29,82 @@ static void testDimensions()
 	testEqInt(g, d[1], 10, "height");
 }
 
-static void testClearSnapsVisualWhite()
+static void testClearMarksUpload()
 {
-	testSection("Canvas: clear snaps visual buffers to white");
+	testSection("Canvas: clear marks full R8 upload");
 	HeadlessCanvasFixture f(4, 4);
-	// Dirty a target color then clear
-	f.canvas->setTargetColor(0, 0, 0, 0);
-	f.canvas->clearCanvas();
-	const int n = 4 * 4 * 3;
-	bool allWhite = true;
-	for (int i = 0; i < n; ++i)
-	{
-		if (f.canvas->texCanvasBuffer[i] != 255)
-		{
-			allWhite = false;
-			break;
-		}
-	}
-	testTrue(g, allWhite, "texCanvasBuffer all 255 after clear");
+	f.canvas->AppendCommands(&f.renderer);
+	testTrue(g, !f.canvas->isTextureUploadPending(), "enroll upload drained");
+	f.clearDead();
+	testTrue(g, f.canvas->isTextureUploadPending(), "clear needs texture upload");
+	const DirtyRect& ur = f.canvas->getUploadDirtyRegion();
+	testTrue(g, ur.valid(), "clear upload rect valid");
+	testEqInt(g, ur.width(), 4, "clear upload width");
+	testEqInt(g, ur.height(), 4, "clear upload height");
 }
 
-static void testSnapVisualToTargets()
+static void testDefaultPalette()
 {
-	testSection("Canvas: snapVisualToTargets");
+	testSection("Canvas: default palette alive/dead colors");
 	HeadlessCanvasFixture f(2, 2);
-	f.canvas->setTargetColor(0, 10, 20, 30);
-	f.canvas->setTargetColor(1, 255, 128, 0);
-	f.canvas->snapVisualToTargets();
-	testEqUChar(g, f.canvas->texCanvasBuffer[0], 10, "cell0 R");
-	testEqUChar(g, f.canvas->texCanvasBuffer[1], 20, "cell0 G");
-	testEqUChar(g, f.canvas->texCanvasBuffer[2], 30, "cell0 B");
-	testEqUChar(g, f.canvas->texCanvasBuffer[3], 255, "cell1 R");
-	testEqUChar(g, f.canvas->texCanvasBuffer[4], 128, "cell1 G");
-	testEqUChar(g, f.canvas->texCanvasBuffer[5], 0, "cell1 B");
+	const unsigned char* pal = f.canvas->getPaletteRgb();
+	// state 0 = alive = black
+	testEqUChar(g, pal[0], 0, "alive R");
+	testEqUChar(g, pal[1], 0, "alive G");
+	testEqUChar(g, pal[2], 0, "alive B");
+	// state 1 = dead = white
+	testEqUChar(g, pal[3], 255, "dead R");
+	testEqUChar(g, pal[4], 255, "dead G");
+	testEqUChar(g, pal[5], 255, "dead B");
 }
 
-static void testTickVisualMovesTowardTarget()
+static void testRebuildPaletteFromRules()
 {
-	testSection("Canvas: tickVisual lerps toward target");
-	HeadlessCanvasFixture f(2, 2);
-	// After clear, display is white (1.0). Target black for cell 0.
-	f.canvas->setTargetColor(0, 0, 0, 0);
-	f.canvas->setFadeSpeed(8.0f);
-	f.canvas->tickVisual(0.5f);
-	// Should have moved toward black (tex < 255)
-	testTrue(g, f.canvas->texCanvasBuffer[0] < 255, "R decreased toward black");
-	testTrue(g, f.canvas->texCanvasBuffer[1] < 255, "G decreased toward black");
-	// Instant fade
-	f.canvas->setFadeSpeed(0.0f);
-	f.canvas->setTargetColor(0, 0, 0, 0);
-	f.canvas->tickVisual(0.01f);
-	testEqUChar(g, f.canvas->texCanvasBuffer[0], 0, "fadeSpeed 0 snaps R");
+	testSection("Canvas: rebuildPalette from GameOfLife");
+	HeadlessCanvasFixture f(4, 4);
+	GameOfLifeRuleSet rules(f.canvas);
+	f.canvas->rebuildPalette(&rules);
+	testTrue(g, f.canvas->isPaletteUploadPending(), "palette upload pending after rebuild");
+	const unsigned char* pal = f.canvas->getPaletteRgb();
+	testEqUChar(g, pal[0], 0, "GoL alive black R");
+	testEqUChar(g, pal[3], 255, "GoL dead white R");
+	f.canvas->AppendCommands(&f.renderer);
+	testTrue(g, !f.canvas->isPaletteUploadPending(), "palette upload cleared");
 }
 
 static void testEnrollCreatesGpuHandles()
 {
-	testSection("Canvas: init enrolls mesh/shader/texture on mock");
+	testSection("Canvas: init enrolls mesh/shader/cell+palette textures");
 	HeadlessCanvasFixture f(4, 4);
-	// Construction already enrolled
-	testTrue(g, f.mock.getCreateCount() >= 3u, "at least 3 create records");
+	// mesh + shader + R8 cell + palette = at least 4 creates
+	testTrue(g, f.mock.getCreateCount() >= 4u, "at least 4 create records");
+}
+
+static void testDirtyFlagsAndSparseUpload()
+{
+	testSection("Canvas: dirty flags + sparse R8 upload");
+	HeadlessCanvasFixture f(4, 4);
+	f.canvas->AppendCommands(&f.renderer);
+	// Mirror CellGameModule::updateVisualTargets after the first frame.
+	f.canvas->onTargetsRebuilt();
+	testTrue(g, !f.canvas->isTextureUploadPending(), "upload clears pending");
+	testTrue(g, !f.canvas->isCellsDirty(), "logical dirty cleared after rebuild");
+
+	f.canvas->tickVisual(0.016f);
+	testTrue(g, !f.canvas->isTextureUploadPending(), "tickVisual no-op does not dirty texture");
+
+	f.setAlive(1, 1);
+	testTrue(g, f.canvas->isCellsDirty(), "paint sets cellsDirty");
+	testTrue(g, f.canvas->hasCellsDirtyRegion(), "paint sets sparse dirty region");
+	testTrue(g, f.canvas->isTextureUploadPending(), "paint sets upload pending");
+	const DirtyRect& r = f.canvas->getCellsDirtyRegion();
+	testEqInt(g, r.minX, 1, "dirty minX");
+	testEqInt(g, r.minY, 1, "dirty minY");
+	testEqInt(g, r.maxX, 1, "dirty maxX");
+	testEqInt(g, r.maxY, 1, "dirty maxY");
+	const DirtyRect& ur = f.canvas->getUploadDirtyRegion();
+	testEqInt(g, ur.minX, 1, "upload minX");
+	testEqInt(g, ur.minY, 1, "upload minY");
 }
 
 int runCanvasDomainTests()
@@ -96,10 +113,11 @@ int runCanvasDomainTests()
 	std::printf("\n======== Canvas domain tests ========\n");
 	testClearAndSetGet();
 	testDimensions();
-	testClearSnapsVisualWhite();
-	testSnapVisualToTargets();
-	testTickVisualMovesTowardTarget();
+	testClearMarksUpload();
+	testDefaultPalette();
+	testRebuildPaletteFromRules();
 	testEnrollCreatesGpuHandles();
+	testDirtyFlagsAndSparseUpload();
 	std::printf("======== Canvas domain done (%d failure(s)) ========\n", g.failures);
 	return g.failures;
 }

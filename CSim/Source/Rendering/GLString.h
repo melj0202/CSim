@@ -21,6 +21,9 @@ private:
 	float size_pt;
 	int x, y;
 	VertexData vertices[2000 * 4];
+	unsigned int cachedNumQuads;
+	bool geometryDirty;
+	bool gpuUploadPending;
 
 	Renderer* renderer;
 	unsigned long meshHandle;
@@ -28,6 +31,12 @@ private:
 	bool gpuReady;
 
 	void enrollGpuResources();
+	void rebuildGeometry();
+	void markGeometryDirty()
+	{
+		geometryDirty = true;
+		gpuUploadPending = true;
+	}
 
 public:
 	static inline IRenderWindow* s_window = nullptr;

@@ -1,29 +1,29 @@
 #include "LifeWithoutDeathRuleSet.h"
+#include <cstring>
 
-enum CellStates
-{
-	CELL_DEAD = 1,
-	CELL_ALIVE = 0
-};
+namespace {
+const unsigned char CELL_DEAD = 1;
+const unsigned char CELL_ALIVE = 0;
+}
 
-void LifeWithoutDeathRuleSet::evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const
+unsigned char LifeWithoutDeathRuleSet::nextState(unsigned char cell, unsigned char aliveNeighbors) const
 {
-	if (cell == CellStates::CELL_DEAD && ne == 3)
+	// B3/S012345678 — once alive, stay alive; birth on 3
+	if (cell == CELL_ALIVE)
 	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_ALIVE);
+		return CELL_ALIVE;
 	}
-	else if (cell == CellStates::CELL_ALIVE && ne >= 0)
-	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_ALIVE);
-	}
-	else
-	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_DEAD);
-	}
+	return (aliveNeighbors == 3) ? CELL_ALIVE : CELL_DEAD;
 }
 
 void LifeWithoutDeathRuleSet::evalCell(const unsigned char& target, unsigned char dest[3]) const
 {
-	if (target == CellStates::CELL_DEAD) memset(dest, 255, 3);
-	else memset(dest, 0, 3);
+	if (target == CELL_DEAD)
+	{
+		std::memset(dest, 255, 3);
+	}
+	else
+	{
+		std::memset(dest, 0, 3);
+	}
 }

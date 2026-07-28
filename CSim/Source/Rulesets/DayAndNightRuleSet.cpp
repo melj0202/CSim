@@ -1,30 +1,35 @@
 #include "DayAndNightRuleSet.h"
-#include "Canvas.h"
+#include <cstring>
 
-enum CellStates
-{
-	CELL_DEAD = 1,
-	CELL_ALIVE = 0
-};
+namespace {
+const unsigned char CELL_DEAD = 1;
+const unsigned char CELL_ALIVE = 0;
+}
 
-void DayAndNightRuleSet::evaluateNeighbors(unsigned char& cell, const unsigned char& ne, const int& x, const int& y) const
+unsigned char DayAndNightRuleSet::nextState(unsigned char cell, unsigned char aliveNeighbors) const
 {
-	if (cell == CellStates::CELL_DEAD && (ne == 3 || ne == 6 || ne == 7 || ne == 8))
+	// B3678/S34678
+	if (cell == CELL_DEAD)
 	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_ALIVE);
+		return (aliveNeighbors == 3 || aliveNeighbors == 6 || aliveNeighbors == 7 || aliveNeighbors == 8)
+			? CELL_ALIVE
+			: CELL_DEAD;
 	}
-	else if (cell == CellStates::CELL_ALIVE && (ne == 3 || ne == 4 || ne == 6 || ne == 7 || ne == 8))
-	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_ALIVE);
-	}
-	else
-	{
-		canvas->setCanvasPixel(x, y, CellStates::CELL_DEAD);
-	}
+	// alive
+	return (aliveNeighbors == 3 || aliveNeighbors == 4 || aliveNeighbors == 6
+		|| aliveNeighbors == 7 || aliveNeighbors == 8)
+		? CELL_ALIVE
+		: CELL_DEAD;
 }
 
 void DayAndNightRuleSet::evalCell(const unsigned char& target, unsigned char dest[3]) const
 {
-	if (target == CellStates::CELL_DEAD) memset(dest, 255, 3);
-	else memset(dest, 0, 3);
+	if (target == CELL_DEAD)
+	{
+		std::memset(dest, 255, 3);
+	}
+	else
+	{
+		std::memset(dest, 0, 3);
+	}
 }

@@ -46,6 +46,9 @@ GLString::GLString()
 	, size_pt(12.0f)
 	, x(0)
 	, y(0)
+	, cachedNumQuads(0)
+	, geometryDirty(true)
+	, gpuUploadPending(true)
 	, renderer(nullptr)
 	, meshHandle(0)
 	, shaderHandle(0)
@@ -62,6 +65,9 @@ GLString::GLString(std::string content, int r, int g, int b, int a, int size_pt,
 	, size_pt(static_cast<float>(size_pt))
 	, x(x)
 	, y(y)
+	, cachedNumQuads(0)
+	, geometryDirty(true)
+	, gpuUploadPending(true)
 	, renderer(renderer)
 	, meshHandle(0)
 	, shaderHandle(0)
@@ -72,7 +78,6 @@ GLString::GLString(std::string content, int r, int g, int b, int a, int size_pt,
 
 GLString::~GLString()
 {
-	// GPU resources destroyed at backend shutdown (v1).
 	gpuReady = false;
 }
 
@@ -121,19 +126,63 @@ void GLString::enrollGpuResources()
 	renderer->enrollShader(sources, shaderHandle);
 
 	gpuReady = true;
+	geometryDirty = true;
+	gpuUploadPending = true;
 	Logger::LogTrace("GLString enrolled (token path)");
 }
 
 void GLString::setContent(std::string newContent)
 {
-	this->content = newContent;
+	if (content != newContent)
+	{
+		content = newContent;
+		markGeometryDirty();
+	}
 }
 
-void GLString::setR(int newR) { this->r = newR; }
-void GLString::setG(int newG) { this->g = newG; }
-void GLString::setB(int newB) { this->b = newB; }
-void GLString::setA(int newA) { this->a = newA; }
-void GLString::setSize(int newSize) { this->size_pt = static_cast<float>(newSize); }
+void GLString::setR(int newR)
+{
+	if (r != newR)
+	{
+		r = newR;
+		markGeometryDirty();
+	}
+}
+void GLString::setG(int newG)
+{
+	if (g != newG)
+	{
+		g = newG;
+		markGeometryDirty();
+	}
+}
+void GLString::setB(int newB)
+{
+	if (b != newB)
+	{
+		b = newB;
+		markGeometryDirty();
+	}
+}
+void GLString::setA(int newA)
+{
+	if (a != newA)
+	{
+		a = newA;
+		// Alpha is baked into vertex colors — rebuild when it changes (splash fade).
+		markGeometryDirty();
+	}
+}
+void GLString::setSize(int newSize)
+{
+	const float s = static_cast<float>(newSize);
+	if (size_pt != s)
+	{
+		size_pt = s;
+		// Scale is a uniform; mesh stays the same for stb output at fixed unit size.
+		// size_pt only affects u_scale, not verts — no geometry dirty.
+	}
+}
 void GLString::setX(int newX) { this->x = newX; }
 void GLString::setY(int newY) { this->y = newY; }
 
@@ -146,9 +195,44 @@ int GLString::getSize() { return static_cast<int>(size_pt); }
 int GLString::getX() { return x; }
 int GLString::getY() { return y; }
 
+void GLString::rebuildGeometry()
+{
+	cachedNumQuads = 0;
+	if (content.empty())
+	{
+		geometryDirty = false;
+		gpuUploadPending = false;
+		return;
+	}
+
+	unsigned char color[4] = {
+		static_cast<unsigned char>(this->r),
+		static_cast<unsigned char>(this->g),
+		static_cast<unsigned char>(this->b),
+		static_cast<unsigned char>(this->a)
+	};
+	int numQuads = stb_easy_font_print(
+		0.0f,
+		0.0f,
+		const_cast<char*>(content.c_str()),
+		color,
+		vertices,
+		sizeof(vertices));
+	if (numQuads < 0)
+	{
+		numQuads = 0;
+	}
+	if (numQuads > 2000)
+	{
+		numQuads = 2000;
+	}
+	cachedNumQuads = static_cast<unsigned int>(numQuads);
+	geometryDirty = false;
+	gpuUploadPending = (cachedNumQuads > 0);
+}
+
 void GLString::DrawImpl()
 {
-	// Migrated to tokens.
 }
 
 bool GLString::AppendCommands(Renderer* rend)
@@ -170,26 +254,13 @@ bool GLString::AppendCommands(Renderer* rend)
 		return true;
 	}
 
-	unsigned char color[4] = {
-		static_cast<unsigned char>(this->r),
-		static_cast<unsigned char>(this->g),
-		static_cast<unsigned char>(this->b),
-		static_cast<unsigned char>(this->a)
-	};
-	int numQuads = stb_easy_font_print(
-		0.0f,
-		0.0f,
-		const_cast<char*>(content.c_str()),
-		color,
-		vertices,
-		sizeof(vertices));
-	if (numQuads <= 0)
+	if (geometryDirty)
+	{
+		rebuildGeometry();
+	}
+	if (cachedNumQuads == 0)
 	{
 		return true;
-	}
-	if (numQuads > 2000)
-	{
-		numQuads = 2000;
 	}
 
 	std::array<int, 2> dims = s_window->getWindowDimensions();
@@ -209,13 +280,17 @@ bool GLString::AppendCommands(Renderer* rend)
 	rend->pushSetShader(shaderHandle);
 	rend->pushSetMesh(meshHandle);
 
-	const unsigned int uploadBytes = static_cast<unsigned int>(numQuads * 4 * sizeof(VertexData));
-	rend->pushUpdateBuffer(meshHandle, 0, uploadBytes, vertices);
+	if (gpuUploadPending)
+	{
+		const unsigned int uploadBytes = static_cast<unsigned int>(cachedNumQuads * 4 * sizeof(VertexData));
+		rend->pushUpdateBuffer(meshHandle, 0, uploadBytes, vertices);
+		gpuUploadPending = false;
+	}
 
 	rend->pushUniformVec2("u_resolution", width, height);
 	rend->pushUniformVec2("u_position", static_cast<float>(x), static_cast<float>(y));
 	rend->pushUniformVec2("u_scale", scale, scale);
-	rend->pushDrawIndexed(static_cast<unsigned int>(numQuads * 6), 0);
+	rend->pushDrawIndexed(cachedNumQuads * 6, 0);
 
 	return true;
 }

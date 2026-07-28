@@ -25,7 +25,16 @@ private:
 	PipelineState _currentGLState;
 	GLuint _activeProgram = 0;
 
-	// Cache: (programId << 32 | hash) is overkill; key is "progId:name"
+	// Bind-state tracker (P4): skip redundant GL binds within a submit.
+	GLuint _boundProgram = 0;
+	GLuint _boundVao = 0;
+	GLuint _boundTexture[8] = {};
+	int _viewportX = -1;
+	int _viewportY = -1;
+	int _viewportW = -1;
+	int _viewportH = -1;
+
+	// Cache: key is "progId:name"
 	std::unordered_map<std::string, GLint> _uniformLocationCache;
 
 	GLenum mapBlendFactor(BlendFactor factor) {

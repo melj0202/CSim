@@ -87,10 +87,11 @@ static void testCommandLineOpenEmitsPanelTokens()
 	renderer.EndFrame();
 
 	testTrue(g, mock.getLastNonEmptySubmittedCount() > 0, "open frame non-empty");
-	testTrue(g, mock.countNonEmptyOfType(CommandType::UpdateBuffer) >= 2u,
-		"open: at least panel+separator UpdateBuffer");
-	testTrue(g, mock.countNonEmptyOfType(CommandType::DrawIndexed) >= 2u,
-		"open: at least two DrawIndexed (panel+sep)");
+	// P2: entire console is one UpdateBuffer + one DrawIndexed
+	testEqSize(g, mock.countNonEmptyOfType(CommandType::UpdateBuffer), 1u,
+		"open: single batched UpdateBuffer");
+	testEqSize(g, mock.countNonEmptyOfType(CommandType::DrawIndexed), 1u,
+		"open: single batched DrawIndexed");
 	testTrue(g, mock.countNonEmptyOfType(CommandType::SetShader) >= 1u,
 		"open: SetShader");
 	testTrue(g, mock.countNonEmptyOfType(CommandType::SetMesh) >= 1u,
@@ -181,11 +182,22 @@ static void testCommandLineHistoryScrollTokens()
 	renderer.RenderScene(&scene, &camera);
 	renderer.EndFrame();
 
-	// Panel + sep + scrollbar (if overflow) + multiple text lines + input
-	testTrue(g, mock.countNonEmptyOfType(CommandType::DrawIndexed) >= 4u,
-		"history: several DrawIndexed including text");
-	testTrue(g, mock.countNonEmptyOfType(CommandType::UpdateBuffer) >= 4u,
-		"history: several UpdateBuffer uploads");
+	// P2: still a single batch even with many history lines
+	testEqSize(g, mock.countNonEmptyOfType(CommandType::UpdateBuffer), 1u,
+		"history: one UpdateBuffer batch");
+	testEqSize(g, mock.countNonEmptyOfType(CommandType::DrawIndexed), 1u,
+		"history: one DrawIndexed batch");
+	// Batched draw should cover many quads (panel + sep + lines + input)
+	bool bigDraw = false;
+	for (size_t i = 0; i < mock.getLastNonEmptySubmittedCount(); ++i)
+	{
+		const RenderCommand& cmd = mock.getLastNonEmptySubmitted(i);
+		if (cmd.commandType == CommandType::DrawIndexed && cmd.drawIndexed.elementCount > 12)
+		{
+			bigDraw = true;
+		}
+	}
+	testTrue(g, bigDraw, "history: DrawIndexed covers more than chrome alone");
 }
 
 static void testGLStringEmptyAndInvisible()
@@ -312,13 +324,54 @@ static void testGLStringAndCommandLineTogether()
 	renderer.RenderScene(&scene, &camera);
 	renderer.EndFrame();
 
-	// Console (multi) + FPS (one) DrawIndexed
-	testTrue(g, mock.countNonEmptyOfType(CommandType::DrawIndexed) >= 3u,
-		"console+FPS: multiple draws");
-	testTrue(g, mock.countNonEmptyOfType(CommandType::UpdateBuffer) >= 3u,
-		"console+FPS: multiple buffer updates");
+	// Console batch (1 draw) + FPS (1 draw)
+	testTrue(g, mock.countNonEmptyOfType(CommandType::DrawIndexed) >= 2u,
+		"console+FPS: at least two DrawIndexed");
+	testTrue(g, mock.countNonEmptyOfType(CommandType::UpdateBuffer) >= 2u,
+		"console+FPS: at least two UpdateBuffer (console + FPS first frame)");
 	testEqSize(g, mock.countNonEmptyOfType(CommandType::ClearScreen), 1u,
 		"single frame clear");
+}
+
+static void testGLStringCachesGeometry()
+{
+	testSection("GLString: second frame skips UpdateBuffer if content unchanged");
+	NullRenderWindow window(640, 480);
+	EnvVars env;
+	env.setVar("WinX", 640);
+	env.setVar("WinY", 480);
+	Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+	MockBackend mock;
+	mock.Initialize();
+	Renderer renderer(&window, &env, &camera, &mock, false);
+	GLString::setRenderWindow(&window);
+
+	GLString label("FPS: 12", 80, 255, 120, 255, 18, 12, 12, &renderer);
+	Scene scene(&window, &camera);
+	scene.AddDrawable(&label);
+
+	renderer.BeginFrame();
+	renderer.RenderScene(&scene, &camera);
+	renderer.EndFrame();
+	testEqSize(g, mock.countNonEmptyOfType(CommandType::UpdateBuffer), 1u,
+		"first frame uploads geometry");
+
+	mock.resetCounters();
+	renderer.BeginFrame();
+	renderer.RenderScene(&scene, &camera);
+	renderer.EndFrame();
+	testEqSize(g, mock.countNonEmptyOfType(CommandType::UpdateBuffer), 0u,
+		"second frame reuses cached VBO");
+	testEqSize(g, mock.countNonEmptyOfType(CommandType::DrawIndexed), 1u,
+		"second frame still draws");
+
+	label.setContent("FPS: 99");
+	mock.resetCounters();
+	renderer.BeginFrame();
+	renderer.RenderScene(&scene, &camera);
+	renderer.EndFrame();
+	testEqSize(g, mock.countNonEmptyOfType(CommandType::UpdateBuffer), 1u,
+		"content change re-uploads");
 }
 
 int runUITokenTests()
@@ -331,6 +384,7 @@ int runUITokenTests()
 	testCommandLineHistoryScrollTokens();
 	testGLStringEmptyAndInvisible();
 	testGLStringEmitsTextTokens();
+	testGLStringCachesGeometry();
 	testGLStringAndCommandLineTogether();
 	std::printf("======== UI token done (%d failure(s)) ========\n", g.failures);
 	return g.failures;

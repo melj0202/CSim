@@ -265,7 +265,7 @@ static void testCanvasLikeUpdateTexture()
 	unsigned long texH = mock.CreateTexture(nullptr, 80, 60, 3, 5);
 
 	unsigned char fakePixels[12] = {0};
-	RenderCommand upd;
+	RenderCommand upd{};
 	upd.commandType = CommandType::UpdateTexture;
 	upd.updateTexture.handle = texH;
 	upd.updateTexture.x = 0;
@@ -273,6 +273,7 @@ static void testCanvasLikeUpdateTexture()
 	upd.updateTexture.width = 80;
 	upd.updateTexture.height = 60;
 	upd.updateTexture.channels = 3;
+	upd.updateTexture.srcRowStride = 0;
 	upd.updateTexture.data = fakePixels;
 	mock.PushToCommandQueue(upd);
 

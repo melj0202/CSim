@@ -82,6 +82,20 @@ void GLDevice::ApplyPipelineState(const PipelineState& pipelineState)
 
 void GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue, const GLResourceTables& tables)
 {
+	// Fresh submit: do not assume previous frame left valid binds (other code may touch GL).
+	// Still skip duplicates *within* this queue.
+	_boundProgram = 0;
+	_boundVao = 0;
+	for (int s = 0; s < 8; ++s)
+	{
+		_boundTexture[s] = 0;
+	}
+	_viewportX = -1;
+	_viewportY = -1;
+	_viewportW = -1;
+	_viewportH = -1;
+	_activeProgram = 0;
+
 	for (size_t i = 0; i < commandQueue.GetCommandCount(); ++i)
 	{
 		RenderCommand& cmd = commandQueue.GetCommand(i);
@@ -93,7 +107,15 @@ void GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue, const GLResourceT
 			break;
 
 		case CommandType::SetViewport:
-			glViewport(cmd.viewport.x, cmd.viewport.y, cmd.viewport.width, cmd.viewport.height);
+			if (cmd.viewport.x != _viewportX || cmd.viewport.y != _viewportY ||
+				cmd.viewport.width != _viewportW || cmd.viewport.height != _viewportH)
+			{
+				glViewport(cmd.viewport.x, cmd.viewport.y, cmd.viewport.width, cmd.viewport.height);
+				_viewportX = cmd.viewport.x;
+				_viewportY = cmd.viewport.y;
+				_viewportW = cmd.viewport.width;
+				_viewportH = cmd.viewport.height;
+			}
 			break;
 
 		case CommandType::SetScissor:
@@ -110,7 +132,11 @@ void GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue, const GLResourceT
 				break;
 			}
 			GLuint id = static_cast<GLuint>(program->GetID());
-			glUseProgram(id);
+			if (id != _boundProgram)
+			{
+				glUseProgram(id);
+				_boundProgram = id;
+			}
 			_activeProgram = id;
 			break;
 		}
@@ -123,7 +149,12 @@ void GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue, const GLResourceT
 				Logger::LogWarning("SetMesh: unknown mesh handle");
 				break;
 			}
-			mesh->Bind();
+			const GLuint vao = mesh->getVAOID();
+			if (vao != _boundVao)
+			{
+				mesh->Bind();
+				_boundVao = vao;
+			}
 			break;
 		}
 
@@ -158,7 +189,17 @@ void GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue, const GLResourceT
 				Logger::LogWarning("SetTexture: unknown texture handle");
 				break;
 			}
-			texture->Bind(cmd.bind.slot);
+			const unsigned int slot = cmd.bind.slot;
+			const GLuint texId = static_cast<GLuint>(texture->getID());
+			if (slot < 8 && _boundTexture[slot] == texId)
+			{
+				break;
+			}
+			texture->Bind(slot);
+			if (slot < 8)
+			{
+				_boundTexture[slot] = texId;
+			}
 			break;
 		}
 
@@ -210,26 +251,20 @@ void GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue, const GLResourceT
 				Logger::LogWarning("UpdateTexture: invalid handle or null data");
 				break;
 			}
-			texture->Bind(0);
-			GLenum format = GL_RGBA;
-			if (cmd.updateTexture.channels == 3)
-			{
-				format = GL_RGB;
-			}
-			else if (cmd.updateTexture.channels == 4 || cmd.updateTexture.channels == 0)
-			{
-				format = GL_RGBA;
-			}
-			glTexSubImage2D(
-				GL_TEXTURE_2D,
-				0,
+			// PBO ping-pong + dirty-rect copy lives on GLTexture (P4).
+			const int channels = (cmd.updateTexture.channels > 0)
+				? cmd.updateTexture.channels
+				: texture->getChannels();
+			texture->UpdateSubImage(
 				cmd.updateTexture.x,
 				cmd.updateTexture.y,
 				cmd.updateTexture.width,
 				cmd.updateTexture.height,
-				format,
-				GL_UNSIGNED_BYTE,
-				cmd.updateTexture.data);
+				channels,
+				cmd.updateTexture.data,
+				cmd.updateTexture.srcRowStride);
+			// Texture bind may have changed inside UpdateSubImage.
+			_boundTexture[0] = static_cast<GLuint>(texture->getID());
 			break;
 		}
 
