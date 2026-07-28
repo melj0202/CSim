@@ -1,8 +1,0 @@
-RuleSet
-evalCell
-getRuleTag
-evaluateNeighbors
-BrainsBrainRuleSet
-getRuleTag
-evaluateNeighbors call:[setCanvasPixel] noreturn:[setCanvasPixel]
-evalCell call:[memset] noreturn:[memset]

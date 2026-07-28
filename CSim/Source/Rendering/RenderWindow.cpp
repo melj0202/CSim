@@ -3,8 +3,8 @@
 #include "Logger.h"
 #include "CommandLine.h"
 #include <chrono>
-#include "System/IEnvVars.h"
-#include "System/InputManager.h"
+#include "Services/IEnvVars.h"
+#include "Services/InputManager.h"
 
 void windowSizeCallback(GLFWwindow* window, int width, int height) noexcept
 {

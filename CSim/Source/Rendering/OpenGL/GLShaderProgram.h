@@ -12,15 +12,12 @@ public:
     
 
     // Constructor keeps it simple and safe
-    GLShaderProgram(const ShaderPaths& paths) : _programID(0) {
-        std::string vertexCode = ReadFile(paths.vertexPath);
-        std::string fragmentCode = ReadFile(paths.fragmentPath);
-
-        if (!vertexCode.empty() && !fragmentCode.empty()) {
-            CompileAndLink(vertexCode, fragmentCode);
-        }
+    GLShaderProgram(const ShaderPaths& paths) {
+        _programID = 0;
+        CompileAndLink(paths);
     }
-    GLShaderProgram(const ShaderSources& sources) : _programID(0) {
+    GLShaderProgram(const ShaderSources& sources) {
+        _programID = 0;
         CompileAndLink(sources);
     }
 
@@ -34,7 +31,7 @@ public:
 private:
     
 
-    std::string ReadFile(const std::string& filePath) override {
+    std::string ReadFile(const std::string& filePath) {
         std::ifstream file(filePath);
         if (!file.is_open()) {
             std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ: " << filePath << std::endl;
@@ -43,6 +40,18 @@ private:
         std::stringstream stream;
         stream << file.rdbuf();
         return stream.str();
+    }
+
+    void CompileAndLink(const ShaderSources& sources) override {
+        CompileAndLink(sources.vertexSource, sources.fragmentSource);
+    }
+
+    void CompileAndLink(const ShaderPaths& paths) override {
+        std::string vertexCode = ReadFile(paths.vertexPath);
+        std::string fragmentCode = ReadFile(paths.fragmentPath);
+        if (!vertexCode.empty() && !fragmentCode.empty()) {
+            CompileAndLink(vertexCode, fragmentCode);
+        }
     }
 
     void CompileAndLink(const std::string& vertexSource, const std::string& fragmentSource) override {

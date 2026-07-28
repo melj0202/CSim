@@ -3,5 +3,5 @@
 class Transform {
     public:
 
-    private
+    private:
 };

@@ -1,5 +1,8 @@
 #pragma once
 #include "GL/glew.h"
+#ifndef GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX
+#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
+#endif
 #include "Rendering/PipelineState.h"
 #include "Rendering/CommandQueue.h"
 #include "Rendering/HWInfo.h"

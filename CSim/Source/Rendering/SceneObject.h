@@ -1,14 +1,16 @@
 #pragma once 
 #include <vector>
-#include "Util/Math.h"
-#include "System/EntityTable.h"
+#include "Foundation/MathTypes.h"
+#include "Engine/EntityTable.h"
 
 struct SceneObject {
     SceneObject* parent = nullptr;
     std::vector<SceneObject*> children;
-    
+    Matrix4 transform = Matrix4(1.0f);
     ObjectID id;
 
+    SceneObject() : id(0) {}
+    SceneObject(ObjectID id) : id(id) {}
     SceneObject(EntityTable* et) {
         //Initalize parent to idenity matrix
         id = et->CreateEntity();

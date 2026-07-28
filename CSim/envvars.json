@@ -7,8 +7,9 @@
  "enableInfCanvas": "0",
  "fps": "60",
  "fullscreen": "0",
- "logLevel": "2",
- "showFPS": "0",
+ "logLevel": "3",
+ "showFPS": "1",
  "speedFactor": "1",
- "tps": "30"
+ "tps": "12",
+ "cellFadeSpeed": "6"
 }

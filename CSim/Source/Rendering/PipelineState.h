@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 // 1. Define custom, clean enums instead of raw GLenums
 enum class BlendFactor : uint8_t {
     Zero, One, SrcAlpha, OneMinusSrcAlpha, SrcColor, OneMinusSrcColor

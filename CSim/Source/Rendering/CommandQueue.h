@@ -1,6 +1,6 @@
 #pragma once 
 #include "RenderCommand.h"
-#include "Util/ArrayQueue.h"
+#include "Foundation/ArrayQueue.h"
 
 class CommandQueue {
     private:

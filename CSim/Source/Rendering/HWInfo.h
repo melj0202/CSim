@@ -10,6 +10,7 @@ struct HWInfo {
     int maxTextureSize = 0;       // Max width/height of a 2D texture
     int maxTextureSlots = 0;      // How many textures can be bound at once (useful for batching!)
     int maxUniformBlockSize = 0;  // Max bytes for a Uniform Buffer Object (UBO)
+    int maxUniformBlocks = 0;
     int maxVertexAttributes = 0;  // Max vertex inputs allowed in a shader
     
     int maxGeometryInputComponents = 0;

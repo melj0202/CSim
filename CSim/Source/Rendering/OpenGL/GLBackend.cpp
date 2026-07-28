@@ -40,7 +40,7 @@ void GLBackend::Initialize()
 	std::string fullGLString = "OpenGL Context: " + versionStr;
 	Logger::LogInfo(fullGLString.c_str());
 }
-void GLBackend::BeginFrame(RenderPass renderPass)
+void GLBackend::BeginFrame()
 {
 	
 }
@@ -54,8 +54,7 @@ void GLBackend::EndFrame()
 	double currentFpsTime = glfwGetTime();
 	if (currentFpsTime - lastFpsTime >= 1.0)
 	{
-		double fps = frameCount / (currentFpsTime - lastFpsTime);
-
+		this->fps = static_cast<int>(frameCount / (currentFpsTime - lastFpsTime) + 0.5);
 		frameCount = 0;
 		lastFpsTime = currentFpsTime;
 	}
@@ -74,9 +73,8 @@ unsigned long GLBackend::CreateMesh(const void* vertices, size_t vertexSize, con
 	return tableID;
 }
 
-unsigned long GLBackend::CreateMesh(const void* vertices, size_t vertexSize, const void* indices, size_t indexSize, unsigned long tableID)
+unsigned long GLBackend::CreateMesh(std::string filePath, unsigned long tableID)
 {
-	_vaoRegistryLookup[tableID] = std::make_unique<GLMesh>(vertices, vertexSize, indices, indexSize);
 	return tableID;
 }
 

@@ -8,6 +8,18 @@
 #include "Camera.h"
 #include <vector>
 #include "Scene.h"
+#include "RenderPass.h"
+
+struct FrameBuffer {
+    unsigned int id = 0;
+    unsigned int width = 0;
+    unsigned int height = 0;
+};
+
+struct Uniform {
+    std::string name;
+    unsigned int location = 0;
+};
 
 class Renderer {
 private:
@@ -15,7 +27,7 @@ private:
     IRenderWindow* _window;
     Camera* _camera;
     EnvVars* envVars;
-    Scene* currentScene
+    Scene* currentScene;
     std::vector<PipelineState> pipelineStates;
     std::vector<RenderPass> renderPasses;
     std::vector<FrameBuffer> frameBuffers;
@@ -44,27 +56,27 @@ public:
     // =========================================================================
 
     unsigned long enrollShader(const ShaderPaths& paths, unsigned long tableID) {
-        _backend->CreateShaderProgram(paths, tableID);
+        return _backend->CreateShaderProgram(paths, tableID);
     }
 
     unsigned long enrollShader(const ShaderSources& sources, unsigned long tableID) {
-        _backend->CreateShaderProgram(sources, tableID);
+        return _backend->CreateShaderProgram(sources, tableID);
     }
 
     unsigned long enrollMesh(const void* vertices, const size_t verticesSize, const void* indices, const size_t indicesSize, unsigned long tableID) {
-        _backend->CreateMesh(vertices, verticesSize, indices, indicesSize, tableID);
+        return _backend->CreateMesh(vertices, verticesSize, indices, indicesSize, tableID);
     }
 
     unsigned long enrollMesh(std::string filePath, unsigned long tableID) {
-        _backend->CreateMesh(filePath, tableID);
+        return _backend->CreateMesh(filePath, tableID);
     }
 
     unsigned long enrollTexture(const std::string& filePath, unsigned long tableID) {
-        _backend->CreateTexture(filePath, tableID);
+        return _backend->CreateTexture(filePath, tableID);
     }
 
     unsigned long enrollTexture(const unsigned char* data, const int width, const int height, unsigned long tableID) {
-        _backend->CreateTexture(data, width, height, tableID);
+        return _backend->CreateTexture(data, width, height, tableID);
     }
 
     unsigned long enrollRenderPass(const RenderPass& renderPass) {

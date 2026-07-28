@@ -1,0 +1,29 @@
+\section{Build notes}
+\label{sec:build}
+
+\subsection{Configure \& build (Windows)}
+\begin{lstlisting}[language={}]
+cmake -S CSim -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release --target CSim
+cmake --build build --config Debug --target CSim
+\end{lstlisting}
+
+Artifacts:
+\begin{itemize}
+  \item \pathref{build/Release/CSim.exe}
+  \item \pathref{build/Debug/CSim.exe}
+\end{itemize}
+
+\subsection{Known setup issues}
+\begin{itemize}
+  \item GLEW is pulled via \pathref{thirdparty/glew-2.1.0/build/cmake}; that
+        subtree must exist (do not delete vendored CMake helpers).
+  \item Debug enables \texttt{/fsanitize=address}; requires a toolchain that
+        supports MSVC ASan.
+  \item FreeType may warn about missing optional system deps (HarfBuzz, zlib,
+        PNG); build can still succeed with bundled defaults.
+\end{itemize}
+
+\subsection{House style (CONTRIBUTING)}
+See \pathref{CSim/CONTRIBUTING.md}: limited \texttt{auto}, avoid namespaces,
+no recursion, third-party via PR.

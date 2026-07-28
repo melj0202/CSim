@@ -1,0 +1,28 @@
+\section{Glossary}
+\label{sec:glossary}
+
+\begin{description}[style=nextline, leftmargin=0pt]
+  \item[Backend]
+    Implementation of \symbolref{IBackend} for a graphics API.
+  \item[Canvas]
+    Cell grid (+ currently also its GPU presentation).
+  \item[Command / token]
+    One entry in the render command queue describing a GPU operation.
+  \item[CRTP]
+    Curiously Recurring Template Pattern; used by \symbolref{Drawable}.
+  \item[Drawable]
+    Object that can be presented; today immediate GL, tomorrow token emitter.
+  \item[Enrollment]
+    Creating GPU resources and receiving handles outside the tight frame loop.
+  \item[Illumo]
+    Engine/host object: owns services, modules, frame pumping.
+  \item[IllumoContext]
+    Non-owning pointers to services for modules.
+  \item[Module]
+    \symbolref{IModule} subsystem (game, debug, \ldots).
+  \item[RuleSet]
+    Cellular automaton transition rules for the canvas.
+  \item[Scene]
+    Currently a list of drawables + optional node graph; should become data
+    for the renderer, not an immediate GL executor.
+\end{description}

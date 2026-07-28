@@ -1,0 +1,46 @@
+\section{Key file map}
+\label{sec:file-map}
+
+Quick index for chats that need to open the right files. Not exhaustive.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{Path} & \textbf{Why it matters} \\
+\midrule
+\pathref{App/CellMain.*} & App loop \\
+\pathref{Engine/Illumo.*} & Composition root \\
+\pathref{Engine/IllumoContext.h} & Service pointer bag \\
+\pathref{Engine/IModule.h} & Module API \\
+\pathref{Engine/DebugModule.*} & Debug overlay module \\
+\pathref{Game/CellGameModule.*} & Modes, input, sim tick \\
+\pathref{Game/CellContext.h} & Canvas + ruleset factory \\
+\pathref{Game/Canvas.*} & Grid + (today) GL drawable \\
+\pathref{Rulesets/RuleSet.*} & Rule base + generation \\
+\pathref{Rendering/Scene.h} & Drawable list + immediate clear/draw \\
+\pathref{Rendering/Drawable.*} & CRTP drawable / GL resources \\
+\pathref{Rendering/RenderCommand.h} & Token enum + struct \\
+\pathref{Rendering/CommandQueue.*} & Token buffer \\
+\pathref{Rendering/IBackend.h} & Backend interface \\
+\pathref{Rendering/Renderer.h} & Enroll + (stub) RenderScene \\
+\pathref{Rendering/OpenGL/GLBackend.*} & OpenGL backend \\
+\pathref{Rendering/IRenderWindow.h} & Window abstraction \\
+\pathref{Services/InputManager.*} & Input contexts/actions \\
+\pathref{Services/EnvVars.*} & Runtime config \\
+\pathref{Services/Logger.*} & Logging \\
+\pathref{Services/SaveLoad.h} & Ported dialogs API \\
+\pathref{Platform/Windows/*} & Win main + file dialogs \\
+\pathref{Foundation/MathTypes.h} & GLM aliases (not Math.h!) \\
+\pathref{Foundation/MacroDefs.h} & Force-inline, sleep, Windows includes \\
+\pathref{CSim/CMakeLists.txt} & Sources + include roots \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Archive}
+\begin{itemize}
+  \item \pathref{archive/old-states/} --- previous State pattern experiments.
+  \item Analyzer/build junk may also live under \pathref{archive/}; ignore for design.
+\end{itemize}

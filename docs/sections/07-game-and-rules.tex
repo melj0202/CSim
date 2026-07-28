@@ -1,0 +1,50 @@
+\section{Game domain and rulesets}
+\label{sec:game}
+
+\subsection{CellGameModule}
+Primary gameplay module. Owns a \symbolref{CellContext} and an enum
+\symbolref{CellState}:
+\begin{center}
+\texttt{NORMAL} $\mid$ \texttt{EDIT} $\mid$ \texttt{SAVE} $\mid$ \texttt{LOAD} $\mid$ \texttt{EXIT}
+\end{center}
+
+\begin{statusbox}
+Mode handling is an \textbf{enum + switch} inside the module, not the older
+class-per-state hierarchy (archived under \pathref{archive/old-states/}).
+SAVE/LOAD cases may still be incomplete relative to method helpers.
+\end{statusbox}
+
+\begin{inferencebox}
+Earlier design used State classes so each mode had its own ``main loop'' body.
+The enum approach is simpler for a small mode set; reintroduce State objects
+only if modes grow heavy (UI stacks, async load, etc.).
+\end{inferencebox}
+
+\subsection{CellContext}
+Constructs \symbolref{Canvas} from env vars (\texttt{CanvasX}, \texttt{CanvasY})
+and selects a \symbolref{RuleSet} from a mode string
+(\texttt{GAME\_OF\_LIFE}, \texttt{BRIANS\_BRAIN}, \ldots).
+
+\subsection{Canvas}
+\begin{itemize}
+  \item CPU grid: \symbolref{lifeCanvas} (and RGB staging \symbolref{texCanvasBuffer}).
+  \item Currently also a \symbolref{Drawable} with GL texture id --- migration
+        target is to split this (\cref{sec:rendering-target}).
+\end{itemize}
+
+\subsection{Rulesets}
+Classic polymorphic hierarchy:
+\begin{lstlisting}
+class RuleSet {
+  virtual void evalCell(...) const;
+  virtual void evaluateNeighbors(...) const;
+  void calcGeneration(...); // shared sweeping
+};
+\end{lstlisting}
+Concrete rules live in \pathref{Rulesets/}. This package is relatively clean:
+depends on canvas/domain, not on windowing.
+
+\begin{decisionbox}[title={Keep rules pure}]
+Rulesets should stay free of rendering and input. They read/write cell buffers
+only. That keeps them testable and migration-safe.
+\end{decisionbox}

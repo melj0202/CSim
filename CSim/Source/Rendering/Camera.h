@@ -14,7 +14,7 @@ enum class ProjectonType {
 
 class Camera : public SceneObject {
 public:
-    Camera(EntityID id, ProjectonType type, const glm::vec2& initialPos = glm::vec2(0.0f, 0.0f), float initialZoom = 1.0f, IEnvVars* vars = nullptr);
+    Camera(const glm::vec2& initialPos = glm::vec2(0.0f, 0.0f), float initialZoom = 1.0f, IEnvVars* vars = nullptr);
     ~Camera() = default;
 
     // Smooth update towards target pan and zoom

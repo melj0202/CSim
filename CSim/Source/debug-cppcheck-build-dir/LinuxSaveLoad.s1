@@ -1,4 +1,0 @@
-getOpenFileName call:[dialog,run]
-getSaveFileName call:[dialog,run]
-FileChooser call:[add_button,connect,mem_fun,signal_response,string] noreturn:[connect]
-on_my_response call:[get_filename,hide] noreturn:[hide]

@@ -4,8 +4,8 @@
 #include <string>
 #include <array>
 
-#include "IRenderWIndow.h"
-#include "System/IEnvVars.h"
+#include "IRenderWindow.h"
+#include "Services/IEnvVars.h"
 
 //There will only ever be one instance of this class so it is ok to make it static
 

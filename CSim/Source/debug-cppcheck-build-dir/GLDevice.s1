@@ -1,5 +1,0 @@
-mapBlendFactor
-mapCullMode
-mapWindingOrder
-ApplyPipelineState call:[glBlendFunc,glCullFace,glDisable,glEnable,glFrontFace,glPolygonMode,mapBlendFactor,mapCullMode,mapWindingOrder]
-ExecuteCommandQueue call:[ApplyPipelineState,GetCommand,GetCommandCount,glActiveTexture,glBindBuffer,glBindTexture,glClear,glDrawArrays,glDrawArraysInstanced,glDrawElements,glUseProgram]

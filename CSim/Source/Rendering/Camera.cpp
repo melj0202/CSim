@@ -3,8 +3,8 @@
 #include <algorithm>
 
 
-Camera::Camera(EntityID id, const glm::vec2& initialPos, float initialZoom, IEnvVars* envVars)
-	: SceneObject(id)
+Camera::Camera(const glm::vec2& initialPos, float initialZoom, IEnvVars* envVars)
+	: SceneObject(0u)
 	, position(initialPos)
 	, targetPosition(initialPos)
 	, rotation(0.0f)
@@ -12,7 +12,7 @@ Camera::Camera(EntityID id, const glm::vec2& initialPos, float initialZoom, IEnv
 	, zoom(initialZoom)
 	, targetZoom(initialZoom)
 	, envVars(envVars)
-	, projectionType(type)
+	, projectionType(ProjectonType::ORTOGRAPHIC)
 	, smoothingSpeed(15.0f) // default interpolation speed
 {
 	if (initialPos == glm::vec2(0.0f, 0.0f))
@@ -123,7 +123,7 @@ glm::mat4 Camera::GetMVPMatrix(float aspectRatio) const
 	return GetProjectionMatrix(aspectRatio) * GetViewMatrix();
 }
 
-glm::vec2 Camera::CastRay2D(const glm::vec2& screenPos) const
+glm::vec2 Camera::ScreenToWorld(const glm::vec2& screenPos) const
 {
 	std::array<int, 2> winDims{
 		static_cast<int>(envVars->getVar("WinX").valueAsLong),

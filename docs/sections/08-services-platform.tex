@@ -1,0 +1,47 @@
+\section{Services, foundation, platform}
+\label{sec:services}
+
+\subsection{Services}
+Cross-cutting facilities used by Engine/Game/Rendering:
+\begin{itemize}
+  \item \textbf{Logging} --- \symbolref{Logger} (file + terminal; level from env).
+  \item \textbf{Config} --- \symbolref{EnvVars} / \symbolref{IEnvVars}
+        (defaults filled in \symbolref{Illumo::Init}: canvas size, fps/tps,
+        mode string, \ldots).
+  \item \textbf{Input} --- \symbolref{InputManager}, \symbolref{InputContext},
+        \symbolref{KeyCode}; action binding used by the game module.
+  \item \textbf{CLI} --- \symbolref{CommandLine}, \symbolref{CommandRegistry},
+        \symbolref{SysCmdLine}.
+  \item \textbf{Allocators} --- pool/arena/debug allocators (experimental /
+        learning surface; not all wired into the hot path).
+  \item \textbf{SaveLoad API} --- pure declarations; OS dialogs implemented
+        per platform.
+\end{itemize}
+
+\subsection{Foundation}
+Headers that should stay cheap to include:
+macros (\pathref{MacroDefs.h}), build info, sysinfo, \pathref{MathTypes.h},
+\pathref{ArrayQueue.h}.
+
+\begin{openbox}
+\pathref{MacroDefs.h} pulls Windows headers on \texttt{\_WIN32}. That is
+convenient for \texttt{Sleep} etc., but increases include toxicity. Consider
+splitting platform sleep helpers out of the ubiquitous macro header.
+\end{openbox}
+
+\subsection{Platform}
+Thin ports:
+\begin{itemize}
+  \item Windows: \pathref{WinMain.cpp}, \pathref{WinSaveLoad.cpp}
+  \item Linux: \pathref{\_main.cpp}, \pathref{LinuxSaveLoad.cpp}
+        (GTK pieces may be legacy relative to GLFW-centered shared code)
+  \item macOS: \pathref{Main.cpp}, \pathref{MacSaveLoad.mm}
+\end{itemize}
+
+Contract: bootstrap $\rightarrow$ call \symbolref{CellMain} $\rightarrow$ implement
+\symbolref{SaveLoad::GetLoadLocation} / \symbolref{GetSaveLocation}.
+
+\subsection{Third-party}
+Vendored under \pathref{CSim/thirdparty/}. Policy from \pathref{CONTRIBUTING.md}:
+new third-party deps require review/PR. Existing: GLFW, GLEW, GLM, FreeType,
+JSON, STB, Tracy, image libs, \ldots

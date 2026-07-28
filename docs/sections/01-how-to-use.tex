@@ -1,0 +1,55 @@
+\section{How to use this document}
+\label{sec:how-to-use}
+
+\subsection{Purpose}
+\begin{itemize}
+  \item Survive context resets (new chats, compacted histories).
+  \item Record \textbf{why}, not only \textbf{what}.
+  \item Host the render-token migration plan so implementation chats start from
+        a shared baseline.
+  \item Separate \emph{observed reality} from \emph{intended design}.
+\end{itemize}
+
+\subsection{Conventions}
+\begin{description}[style=nextline]
+  \item[Status boxes]
+    Snapshot of maturity (prototype, half-migrated, production-ish).
+  \item[Decision boxes]
+    Closed choices. Prefer adding a new decision over rewriting history silently;
+    note supersession dates.
+  \item[Open boxes]
+    Questions only the author can settle.
+  \item[Inference boxes]
+    Reverse-engineered claims. Treat as provisional.
+  \item[\texttt{\textbackslash todoauthor\{...\}}]
+    Explicit author TODO inline in the prose.
+\end{description}
+
+\subsection{Workflow for future sessions}
+\begin{enumerate}
+  \item Skim \cref{sec:overview}, \cref{sec:rendering-current},
+        \cref{sec:rendering-target}, and the decision log
+        (\cref{sec:decisions}).
+  \item Implement or discuss against those sections, not against chat memory alone.
+  \item When a decision is made, append a dated entry to the decision log.
+  \item When code lands, update the ``current state'' sections and the file map.
+\end{enumerate}
+
+\subsection{Building the PDF}
+From the repo root (requires a TeX distribution with \texttt{pdflatex} or
+\texttt{latexmk}):
+\begin{lstlisting}[language={}]
+cd docs
+pdflatex csim-design-notes.tex
+pdflatex csim-design-notes.tex   # second pass for refs/TOC
+# or: latexmk -pdf csim-design-notes.tex
+\end{lstlisting}
+
+\noindent Output: \pathref{docs/csim-design-notes.pdf}.
+
+\begin{statusbox}
+As of 2026-07-28: source tree reorganized into packages
+(\pathref{App}, \pathref{Engine}, \pathref{Game}, \ldots);
+Release and Debug builds succeed on Windows (MSVC).
+Render path is still dual-architecture (immediate GL + unfinished command backend).
+\end{statusbox}

@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <iostream>
-#include "Init/MacroDefs.h"
+#include "Foundation/MacroDefs.h"
 
 // 1. Thin non-templated base class for storing in RenderQueue
 class DrawableBase {

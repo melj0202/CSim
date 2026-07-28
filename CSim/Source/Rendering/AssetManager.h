@@ -9,82 +9,104 @@
 #include "IMesh.h"
 #include "ITexture.h"
 #include "BackendConfig.h"
-#include "System/EnvVars.h"
-
+#include "Services/EnvVars.h"
+#include <memory>
 
 class AssetManager {
     std::unordered_map<std::string, unsigned long> globalAssets;
     std::unordered_map<std::string, unsigned long> sceneAssets;
-    unsigned long meshCount;
-    unsigned long textureCount;
-    unsigned long shaderCount;
-    EnvVars* envVars;
+    unsigned long meshCount = 0;
+    unsigned long textureCount = 0;
+    unsigned long shaderCount = 0;
+    EnvVars* envVars = nullptr;
+    Renderer* renderer = nullptr;
 
+    std::unordered_map<unsigned long, std::shared_ptr<IMesh>> meshRegistry;
+    std::unordered_map<unsigned long, std::shared_ptr<ITexture>> textureRegistry;
+    std::unordered_map<unsigned long, std::shared_ptr<IShaderProgram>> shaderRegistry;
 
-    AssetManager(EnvVars* ev)  {
-        this->envVars = ev;
-    }
+public:
+    AssetManager(Renderer* r) : renderer(r), meshCount(0), textureCount(0), shaderCount(0) {}
 
-    public:
     unsigned long LoadMeshToGlobal(const std::string& filePath) {
         globalAssets[filePath] = meshCount++;
+        renderer->enrollMesh(filePath, meshCount-1);
         return meshCount-1;
     }
 
     unsigned long LoadMeshToScene(const std::string& filePath) {
         sceneAssets[filePath] = meshCount++;
+        renderer->enrollMesh(filePath, meshCount-1);
         return meshCount-1;
     }
 
-    unsigned long LoadMeshToGlobal(const std::vector<float> data&) {
-        globalAssets[meshCount] = meshCount++;
+    unsigned long LoadMeshToGlobal(const std::vector<float>& data) {
+        std::string key = "mesh_global_" + std::to_string(meshCount);
+        globalAssets[key] = meshCount++;
+        renderer->enrollMesh(data.data(), data.size() * sizeof(float), nullptr, 0, meshCount-1);
         return meshCount-1;
     }
 
-    unsigned long LoadMeshToScene(const std::vector<float> data&) {
-        sceneAssets[meshCount] = meshCount++;
+    unsigned long LoadMeshToScene(const std::vector<float>& data) {
+        std::string key = "mesh_scene_" + std::to_string(meshCount);
+        sceneAssets[key] = meshCount++;
+        renderer->enrollMesh(data.data(), data.size() * sizeof(float), nullptr, 0, meshCount-1);
         return meshCount-1;
     }
 
     unsigned long LoadTextureToGlobal(const std::string& filePath) {
         globalAssets[filePath] = textureCount++;
+        renderer->enrollTexture(filePath, textureCount-1);
         return textureCount-1;
     }
     unsigned long LoadTextureToScene(const std::string& filePath) {
         sceneAssets[filePath] = textureCount++;
+        renderer->enrollTexture(filePath, textureCount-1);
         return textureCount-1;
     }
-    unsigned long LoadTextureToGlobal(const char* data&, const int width, const int height) {
-        globalAssets[textureCount] = textureCount++;
+    unsigned long LoadTextureToGlobal(const unsigned char* data, const int width, const int height) {
+        std::string key = "tex_global_" + std::to_string(textureCount);
+        globalAssets[key] = textureCount++;
+        renderer->enrollTexture(data, width, height, textureCount-1);
         return textureCount-1;
     }
     
-    unsigned long LoadTextureToScene(const char* data&, const int width, const int height) {
-        sceneAssets[textureCount] = textureCount++;
+    unsigned long LoadTextureToScene(const unsigned char* data, const int width, const int height) {
+        std::string key = "tex_scene_" + std::to_string(textureCount);
+        sceneAssets[key] = textureCount++;
+        renderer->enrollTexture(data, width, height, textureCount-1);
         return textureCount-1;
     }
 
     unsigned long LoadShaderToGlobal(const ShaderPaths& paths) {
-        globalAssets[shaderCount] = shaderCount++;
+        std::string key = paths.vertexPath + ";" + paths.fragmentPath;
+        globalAssets[key] = shaderCount++;
+        renderer->enrollShader(paths, shaderCount-1);
         return shaderCount-1;
     }
     
     unsigned long LoadShaderToScene(const ShaderPaths& paths) {
-        sceneAssets[shaderCount] = shaderCount++;
+        std::string key = paths.vertexPath + ";" + paths.fragmentPath;
+        sceneAssets[key] = shaderCount++;
+        renderer->enrollShader(paths, shaderCount-1);
         return shaderCount-1;
     }
     
-    unsigned long LoadShaderToGlobal(const char* source&) {
-        globalAssets[shaderCount] =;
+    unsigned long LoadShaderToGlobal(const ShaderSources& sources) {
+        std::string key = "shader_sources_global_" + std::to_string(shaderCount);
+        globalAssets[key] = shaderCount++;
+        renderer->enrollShader(sources, shaderCount-1);
         return shaderCount-1;
     }
     
-    unsigned long LoadShaderToScene(const char* source&) {
-        sceneAssets[shaderCount] =;
+    unsigned long LoadShaderToScene(const ShaderSources& sources) {
+        std::string key = "shader_sources_scene_" + std::to_string(shaderCount);
+        sceneAssets[key] = shaderCount++;
+        renderer->enrollShader(sources, shaderCount-1);
         return shaderCount-1;
     }
 
-    std::shared_ptr<IShader> GetShader(unsigned long id) {
+    std::shared_ptr<IShaderProgram> GetShader(unsigned long id) {
         return shaderRegistry[id];
     }
 

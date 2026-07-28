@@ -1,0 +1,93 @@
+\section{Rendering --- current state}
+\label{sec:rendering-current}
+
+\begin{statusbox}
+\textbf{Half-migrated.} Interfaces for a command/token backend exist
+(\symbolref{IBackend}, \symbolref{RenderCommand}, \symbolref{CommandQueue},
+\symbolref{Renderer::enroll*}), but the live frame path still largely uses
+\textbf{immediate OpenGL} inside drawables and \symbolref{Scene::Update}.
+\end{statusbox}
+
+\subsection{What actually draws frames today}
+\begin{enumerate}
+  \item Modules call \symbolref{DispatchDrawables} and add \symbolref{DrawableBase*}
+        pointers to \symbolref{Scene}.
+  \item \symbolref{Scene::Update} clears color/depth with raw \texttt{glClear*},
+        then calls \symbolref{DrawableBase::Draw} on each entry.
+  \item Concrete drawables (e.g.\ \symbolref{Canvas} via CRTP
+        \symbolref{Drawable<Canvas>}) run \symbolref{DrawImpl}, which issues GL
+        calls and owns GL object handles (VAO/VBO/textures/programs) on the
+        drawable base.
+\end{enumerate}
+
+\subsection{Drawable design (observed)}
+\begin{itemize}
+  \item \symbolref{DrawableBase} --- type-erased base for storage; virtual
+        \symbolref{Draw}; destructor deletes GL objects.
+  \item \symbolref{Drawable<Derived>} --- CRTP: virtual \symbolref{Draw}
+        dispatches to \symbolref{Derived::DrawImpl} for static polymorphism
+        after the first virtual hop.
+\end{itemize}
+
+\begin{inferencebox}
+CRTP here is a micro-optimization / style choice: keep a homogeneous list of
+bases while avoiding a second virtual call into each concrete drawer. Resource
+ownership on the base tightly couples ``something that can be listed in a scene''
+to ``OpenGL object lifetime,'' which fights multi-API abstraction.
+\end{inferencebox}
+
+\subsection{Parallel / unfinished stacks still in tree}
+\begin{table}[h]
+\centering
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{Stack} & \textbf{Notes} \\
+\midrule
+\symbolref{RenderQueue} on window & Older ``queue of drawables'' idea; add paths often commented out. \\
+\symbolref{IBackend} + \symbolref{CommandQueue} & Target direction; \symbolref{Renderer::RenderScene} mostly clears the queue and returns. \\
+\symbolref{EntityTable} / \symbolref{ModuleObject} & Handle-ish objects with mesh/texture IDs; not the primary cell path. \\
+\symbolref{SceneObject} hierarchy & Parent/child transforms; lightly used relative to drawable list. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Backend surface (already sketched)}
+\symbolref{IBackend} exposes:
+\begin{itemize}
+  \item lifecycle: \symbolref{Initialize}, \symbolref{Shutdown},
+        \symbolref{BeginFrame}, \symbolref{EndFrame}
+  \item queue: \symbolref{PushToCommandQueue}, \symbolref{SubmitCommandQueue},
+        \symbolref{ClearCommandQueue}
+  \item resource creation returning \texttt{unsigned long} handles:
+        mesh / shader / texture / descriptor set
+\end{itemize}
+
+\symbolref{CommandType} already enumerates a useful token vocabulary:
+pipeline state, bindings, uniforms, render-pass ops, draw ops
+(\pathref{Rendering/RenderCommand.h}).
+
+\symbolref{Renderer} separates:
+\begin{itemize}
+  \item \textbf{Enrollment} --- create GPU resources up front (not mixed into
+        per-frame command spam).
+  \item \textbf{RenderScene} --- intended to translate a scene into tokens and
+        submit (stub today).
+\end{itemize}
+
+\begin{decisionbox}[title={Intent already visible in code}]
+Game/UI code should not call \texttt{gl*} directly long-term. It should either
+enroll resources or emit \symbolref{RenderCommand} tokens; only the backend
+implementation speaks the API.
+\end{decisionbox}
+
+\subsection{Pain points blocking the migration}
+\begin{enumerate}
+  \item \symbolref{Canvas} is both domain grid and GL texture/drawable.
+  \item \symbolref{DrawableBase} owns GL handles.
+  \item \symbolref{Scene::Update} is a mini immediate renderer.
+  \item \symbolref{RenderCommand} payload is a flat ``kitchen sink'' struct
+        (not a tagged union / \texttt{std::variant}); many fields unused per
+        command type.
+  \item Two drawable submission ideas (\symbolref{Scene} list vs
+        \symbolref{RenderQueue}) without a single winner.
+\end{enumerate}

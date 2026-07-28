@@ -1,0 +1,97 @@
+\section{Design decision log}
+\label{sec:decisions}
+
+Append-only log. Newest entries at the bottom. If a decision is reversed, add a
+new entry that supersedes the old id; do not silently delete history.
+
+%----------------------------------------------------------------------------
+\subsection*{D-001 --- Package rename (structure)}
+\begin{decisionbox}[title={D-001 \quad 2026-07-28}]
+\textbf{Decision:} Rename/split ambiguous folders to match responsibility:
+\texttt{Core$\rightarrow$Game}, \texttt{System$\rightarrow$\{App,Engine,Services\}},
+\texttt{Init+Util$\rightarrow$Foundation}, \texttt{AssetLoaders$\rightarrow$Assets}.\\
+\textbf{Why:} Names were lying; slowed reasoning and migrations.\\
+\textbf{Consequences:} Include/CMake paths updated; archive for old States.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-002 --- MathTypes header name}
+\begin{decisionbox}[title={D-002 \quad 2026-07-28}]
+\textbf{Decision:} Project math aliases live in \pathref{MathTypes.h}, not
+\pathref{Math.h}.\\
+\textbf{Why:} Windows case-insensitive include collision with CRT
+\texttt{math.h}.\\
+\textbf{Consequences:} All includes updated; Foundation README notes the trap.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-003 --- Render abstraction direction}
+\begin{decisionbox}[title={D-003 \quad 2026-07-28 (intent; implementation incomplete)}]
+\textbf{Decision:} Move toward command/token submission via \symbolref{IBackend}
++ \symbolref{RenderCommand} queue; game code must not permanently depend on
+raw GL.\\
+\textbf{Why:} Multi-API optionality; clearer frame boundary; testability.\\
+\textbf{Consequences:} Parallel stacks exist until migration phases complete
+(\cref{sec:migration-phases}).
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-004 --- Module frame hooks}
+\begin{decisionbox}[title={D-004 \quad inferred from IModule}]
+\textbf{Decision:} Modules expose \symbolref{Start}/\symbolref{Update}/
+\symbolref{DispatchDrawables}/\symbolref{Exit}.\\
+\textbf{Why:} Separate simulation tick from draw contribution.\\
+\textbf{Consequences:} Draw list is rebuilt or contributed each frame through
+dispatch (exact ownership policy still open).
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-005 --- Rules as polymorphic sets}
+\begin{decisionbox}[title={D-005 \quad inferred}]
+\textbf{Decision:} Each CA variant is a \symbolref{RuleSet} subclass.\\
+\textbf{Why:} Open for extension; shared generation sweep.\\
+\textbf{Consequences:} Factory logic currently in \symbolref{CellContext}
+string matching (could become a registry later).
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-006 --- Mode handling (enum vs State classes)}
+\begin{decisionbox}[title={D-006 \quad current code; author may supersede}]
+\textbf{Decision (current):} \symbolref{CellState} enum inside
+\symbolref{CellGameModule}.\\
+\textbf{Supersedes:} class hierarchy under \pathref{archive/old-states/}.\\
+\textbf{Why (inferred):} fewer types for a small mode set.\\
+\textbf{Open:} SAVE/LOAD completeness; whether splash/global state is acceptable.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-007 --- Enrollment vs per-frame commands}
+\begin{decisionbox}[title={D-007 \quad visible in Renderer comments}]
+\textbf{Decision:} Resource creation goes through enroll/Create* APIs; do not
+stuff mesh/shader creation into the per-frame token stream.\\
+\textbf{Why:} Keep the frame queue about \emph{binding and drawing}.\\
+\textbf{Consequences:} Need an explicit destroy/reload story for hot-reload
+later.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-008 --- CONTRIBUTING constraints}
+\begin{decisionbox}[title={D-008 \quad from CONTRIBUTING.md}]
+\textbf{Decision:} Avoid \texttt{auto}; avoid namespaces (prefer static
+classes/structs); no recursion; third-party via PR.\\
+\textbf{Why:} Author house style / learning constraints.\\
+\textbf{Consequences:} Documentation and new code should respect these unless
+explicitly waived in a later decision.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{Template for new entries}
+\begin{lstlisting}[language={}]
+\subsection*{D-0XX --- short title}
+\begin{decisionbox}[title={D-0XX \quad YYYY-MM-DD}]
+\textbf{Decision:} ...
+\textbf{Why:} ...
+\textbf{Consequences:} ...
+\textbf{Supersedes:} D-0YY (optional)
+\end{decisionbox}
+\end{lstlisting}

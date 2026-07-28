@@ -1,5 +1,5 @@
 #pragma once 
-#include "Util/Math.h"
+#include "Foundation/MathTypes.h"
 
 
 struct RenderableObject {

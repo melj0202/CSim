@@ -1,14 +1,13 @@
-This folder contains platform dependent code
+# Platform
 
-	Linux/
-		Linux Source Port
+OS-specific entry points and native implementations.
 
-	macOS/
-		macOS Source Port
+| Port | Entry | Notes |
+|------|--------|--------|
+| `Windows/` | `WinMain.cpp` | Save/load: `WinSaveLoad.cpp` |
+| `Linux/` | `_main.cpp` | Save/load: `LinuxSaveLoad.cpp` |
+| `macOS/` | `Main.cpp` | Save/load: `MacSaveLoad.mm` |
 
-	Windows
-		Windows Source Port
+Platform code should stay thin: bootstrap the process, implement `SaveLoad`, then call `App/CellMain`.
 
-These source ports may not be perfect as they are mainly for practice of my C++ programming skills.
-
-If you have a problem with the way things are done, just create an issue board on the GitHub repo.
+Shared game/engine code does not belong here.

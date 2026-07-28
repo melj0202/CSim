@@ -1,0 +1,35 @@
+\section{Open questions}
+\label{sec:open}
+
+Use this as a punch list when bouncing ideas. Strike through or move to the
+decision log when resolved.
+
+\begin{openbox}
+\begin{enumerate}
+  \item \textbf{Token payload:} flat struct vs variant vs byte stream?
+  \item \textbf{Handle type:} keep \texttt{unsigned long}, or introduce
+        typed IDs (\texttt{MeshId}, \texttt{TextureId}) as strong typedefs?
+  \item \textbf{Who emits tokens?} each drawable, or a single scene compiler
+        that reads components?
+  \item \textbf{Lifetime ownership:} refcounts, generational handles, or
+        ``destroy only at shutdown'' for v1?
+  \item \textbf{Canvas upload:} full texture rewrite each frame vs dirty rects?
+  \item \textbf{Illumo $\leftrightarrow$ Game dependency:} how should modules be
+        registered without Engine including Game headers?
+  \item \textbf{InputManager $\rightarrow$ CellContext include:} should Services
+        depend on Game at all?
+  \item \textbf{RenderQueue class:} delete, rename, or repurpose as the token
+        queue UI name?
+  \item \textbf{EntityTable:} first-class for cells, only for 3D-ish objects,
+        or experimental dead code?
+  \item \textbf{Linux/macOS:} invest now or freeze until token GL path is solid
+        on Windows?
+  \item \textbf{Tracy:} always-on in Debug only --- any CI policy?
+  \item \textbf{Tests:} what is the first meaningful automated test (ruleset?
+        mock backend submit?)?
+  \item \textbf{Author intent name ``Illumo'':} engine codename meaning /
+        permanence?
+\end{enumerate}
+\end{openbox}
+
+\todoauthor{Prioritize the top 3 questions you want settled before coding Phase 1.}

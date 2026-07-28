@@ -8,7 +8,7 @@ enum class BackendDef{
     DIRECTX11
 };
 
-BackendDef StringToToken(EnvVars* vars) {
+inline BackendDef StringToToken(EnvVars* vars) {
     std::string token = vars->getVar("GraphicsAPI").value;
     if (token == "OPENGL") {
         return BackendDef::OPENGL;
@@ -30,7 +30,7 @@ BackendDef StringToToken(EnvVars* vars) {
     }
 }
 
-std::string TokenToString(BackendDef def) {
+inline std::string TokenToString(BackendDef def) {
     switch(def) {
         case BackendDef::OPENGL:
             return "OPENGL";

@@ -1,0 +1,172 @@
+\section{Rendering --- target token architecture}
+\label{sec:rendering-target}
+
+This section is the \textbf{plan foundation} for finishing the migration.
+Treat it as the working design; amend via the decision log.
+
+\subsection{Goals}
+\begin{enumerate}
+  \item \textbf{API isolation:} only \pathref{Rendering/OpenGL/*} (and future
+        backends) include GL/Vulkan/Metal headers for draw submission.
+  \item \textbf{Stable front-end:} game modules describe \emph{what} to draw
+        (meshes, textures, transforms, passes), not \emph{how} in GL terms.
+  \item \textbf{Record then execute:} each frame builds a command stream
+        (``tokens''), then the backend walks it once.
+  \item \textbf{Resource handles:} CPU code holds opaque IDs; backend maps them
+        to API objects.
+  \item \textbf{Incremental:} keep the simulator playable after each step;
+        prefer strangler-fig migration over a big bang rewrite.
+\end{enumerate}
+
+\subsection{Vocabulary}
+\begin{description}[style=nextline]
+  \item[Token / RenderCommand]
+    A discrete instruction: bind X, set uniform Y, draw Z, begin pass, clear, \ldots
+  \item[Command queue]
+    Ordered buffer of tokens for the frame (or for a pass).
+  \item[Backend]
+    API-specific interpreter of tokens + owner of true GPU objects.
+  \item[Enrollment]
+    One-time (or rare) resource creation; returns a handle.
+  \item[Front-end renderer]
+    High-level helper that turns scene/draw requests into tokens
+    (\symbolref{Renderer} today).
+\end{description}
+
+\subsection{Target frame pipeline}
+
+\begin{center}
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners, align=center, inner sep=5pt, minimum width=2.4cm},
+  arr/.style={-{Latex}, thick}
+]
+  \node[box, fill=orange!12] (mod) {Modules\\Update};
+  \node[box, fill=orange!12, right=0.8cm of mod] (disp) {Dispatch /\\build draw list};
+  \node[box, fill=purple!10, right=0.8cm of disp] (ren) {Renderer\\emit tokens};
+  \node[box, fill=blue!10, right=0.8cm of ren] (q) {CommandQueue};
+  \node[box, fill=green!12, below=0.9cm of q] (be) {IBackend\\Submit};
+  \node[box, fill=gray!12, left=0.8cm of be] (gpu) {GPU API};
+
+  \draw[arr] (mod) -- (disp);
+  \draw[arr] (disp) -- (ren);
+  \draw[arr] (ren) -- (q);
+  \draw[arr] (q) -- (be);
+  \draw[arr] (be) -- (gpu);
+\end{tikzpicture}
+\end{center}
+
+\subsection{Recommended layering (target)}
+
+\begin{lstlisting}[language={}]
+Game / Rulesets / UI
+    |  (no gl* includes)
+    v
+High-level draw requests / scene data
+    |  (handles, CPU buffers, transforms)
+    v
+Renderer  ----enroll---->  IBackend::Create*
+    |  (push tokens)
+    v
+CommandQueue<RenderCommand>
+    |
+    v
+IBackend::SubmitCommandQueue
+    |
+    +-- GLBackend
+    +-- (future) other backends
+\end{lstlisting}
+
+\subsection{Token payload design (proposal)}
+\begin{openbox}
+Current \symbolref{RenderCommand} is a single struct with many fields. Options:
+\begin{enumerate}
+  \item \textbf{Keep flat struct} for simplicity and POD friendliness (array
+        queue, Tracy, no heap). Accept waste.
+  \item \textbf{Tagged union / \texttt{std::variant}} for type safety and
+        smaller conceptual surface.
+  \item \textbf{Byte stream + opcodes} (more engine-y; harder to debug).
+\end{enumerate}
+Default recommendation for CSim scale: \textbf{(1) or a simple tagged union},
+not a full GPU-driven byte compiler.
+\end{openbox}
+
+\subsection{What happens to Drawable?}
+\begin{inferencebox}
+Long-term, ``drawable'' should mean \emph{something that can append tokens}
+(or register a renderable descriptor), not \emph{something that calls GL}.
+CRTP can remain for CPU-side specialization, but GL handle fields should move
+into the backend's handle tables.
+\end{inferencebox}
+
+Proposed end state for \symbolref{Canvas}:
+\begin{itemize}
+  \item Domain: \texttt{lifeCanvas}, dimensions, cell get/set (no GL).
+  \item View/render: texture handle + mesh handle + material/pass ids;
+        upload dirty regions via enrollment or an \texttt{UpdateTexture} token.
+\end{itemize}
+
+\subsection{Migration phases (strangler)}
+\label{sec:migration-phases}
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Phase 0 --- Document \& freeze vocabulary} \\
+        This document; agree command enum + handle meaning; stop adding new
+        raw \texttt{gl*} call sites outside OpenGL backend / temporary
+        drawables.
+
+  \item \textbf{Phase 1 --- Make the queue real for one pass} \\
+        Implement \symbolref{GLBackend::SubmitCommandQueue} for a minimal set:
+        \symbolref{ClearColorBuffer}, \symbolref{SetViewport},
+        \symbolref{SetShader}, \symbolref{SetTexture}, \symbolref{SetUniformMat4},
+        \symbolref{DrawIndexed}.
+        Unit-test or visually verify a fullscreen clear + one textured quad
+        \emph{only} through tokens.
+
+  \item \textbf{Phase 2 --- Route Scene through Renderer} \\
+        \symbolref{Scene::Update} stops calling \texttt{glClear} / \symbolref{Draw}.
+        Instead: build tokens (or ask each renderable to append tokens), then
+        \symbolref{Renderer::RenderScene} $\rightarrow$ submit.
+        Drawables may still be immediate behind a feature flag temporarily.
+
+  \item \textbf{Phase 3 --- Migrate Canvas} \\
+        Split domain vs GPU resources; canvas upload becomes handle-based;
+        \symbolref{DrawImpl} becomes token emission.
+
+  \item \textbf{Phase 4 --- Migrate remaining drawables} \\
+        Splash text, GLString, command-line overlay, debug module, cursor, \ldots
+
+  \item \textbf{Phase 5 --- Delete dead paths} \\
+        Remove unused \symbolref{RenderQueue}-as-drawable-list if tokens won;
+        collapse duplicate transform types; ensure Engine does not include GL.
+
+  \item \textbf{Phase 6 --- Optional second backend} \\
+        Only after OpenGL path is token-clean; e.g.\ mock backend for tests or
+        a second real API.
+\end{enumerate}
+
+\begin{decisionbox}[title={Working order (proposed 2026-07-28)}]
+Prefer \textbf{Phase 1 before large refactors of Game}. Prove the token
+interpreter with a tiny known scene, then move Canvas. Do not invent Vulkan
+until OpenGL is fully behind \symbolref{IBackend}.
+\end{decisionbox}
+
+\subsection{Acceptance criteria for ``migration done''}
+\begin{itemize}
+  \item No \texttt{gl*} / GLEW includes outside \pathref{Rendering/OpenGL/}
+        (and maybe temporary test helpers).
+  \item Frame submission path is enroll + token queue + submit.
+  \item Cell sim still runs: edit, step/rules, camera, save/load hooks.
+  \item \symbolref{Renderer::RenderScene} is non-empty and used.
+  \item Decision log updated; dead stacks removed or quarantined under
+        \pathref{archive/}.
+\end{itemize}
+
+\subsection{Risks}
+\begin{itemize}
+  \item Scope creep into full RHI (descriptor sets, multi-pass graph) before
+        the sim needs them.
+  \item Handle lifetime / deletion protocol undefined today.
+  \item Performance paranoia too early (2048 command cap may be fine).
+  \item Platform divergence (Linux/macOS files still older in places).
+\end{itemize}
