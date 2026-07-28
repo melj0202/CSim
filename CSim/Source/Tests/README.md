@@ -1,29 +1,31 @@
-# Unit Tests
+# CSim headless tests
 
-## CSimRenderTests (Phase 6 + Renderer E2E)
+Executable target: **`CSimTests`** (alias: `CSimRenderTests`).
 
-Headless token/backend tests:
+| Suite | File | Covers |
+|-------|------|--------|
+| MockBackend | `TestMockBackend.cpp` | Token queue, create records, proof sequence |
+| Renderer E2E | `TestRendererE2E.cpp` | Inject mock into Renderer, Canvas tokens, hybrid draw |
+| RuleSets | `TestRuleSets.cpp` | GoL block/blinker, Seeds, Brian's Brain, tags |
+| CellContext | `TestCellContext.cpp` | Mode normalize, factory, env canvas size |
+| Canvas domain | `TestCanvasDomain.cpp` | set/get, clear, fade, enroll |
+| UI tokens | `TestUITokens.cpp` | CommandLine open/closed/invisible; GLString empty/FPS; combined scene |
 
-| File | Coverage |
-|------|----------|
-| `TestMockBackend.cpp` | MockBackend unit: lifecycle, creates, submit snapshots, proof sequence |
-| `TestRendererE2E.cpp` | **Inject** MockBackend into `Renderer`; `RenderScene` + token drawable; **Canvas** tokens; `RenderProofQuad` |
+Shared helpers: `TestHelpers.h`, `TestHarness.h` (`NullRenderWindow`, `HeadlessCanvasFixture`).
 
-Uses `NullRenderWindow` (no real GLFW window). Does not construct `GLBackend` in e2e paths.
-
-### Build & run
+## Build & run
 
 From the CMake build directory (repo `build/`):
 
 ```bat
-cmake --build . --config Debug --target CSimRenderTests
-ctest -C Debug -R MockBackend --output-on-failure
+cmake --build . --config Debug --target CSimTests
+ctest -C Debug -R CSimTests --output-on-failure
 ```
 
 Or:
 
 ```bat
-Debug\CSimRenderTests.exe
+Debug\CSimTests.exe
 ```
 
-Exit code `0` = all checks passed.
+Exit code `0` = all checks passed. No OpenGL context is required for these tests (MockBackend).

@@ -288,23 +288,15 @@ static void testCanvasLikeUpdateTexture()
 	expectTrue(mock.getLastSubmitted(0).updateTexture.data == fakePixels, "data pointer preserved until submit");
 }
 
-// Defined in TestRendererE2E.cpp
-int runRendererE2ETests();
-
-int main()
+int runMockBackendTests()
 {
-	std::printf("CSimRenderTests (MockBackend + Renderer E2E)\n");
+	g_failures = 0;
+	std::printf("\n======== MockBackend unit tests ========\n");
 	testLifecycle();
 	testCreateRecords();
 	testCommandSubmit();
 	testProofLikeSequence();
 	testCanvasLikeUpdateTexture();
-
-	const int e2eFails = runRendererE2ETests();
-	g_failures += e2eFails;
-
-	std::printf("\n==== %s (%d failure(s)) ====\n",
-		g_failures == 0 ? "ALL PASSED" : "FAILED",
-		g_failures);
-	return g_failures == 0 ? 0 : 1;
+	std::printf("======== MockBackend done (%d failure(s)) ========\n", g_failures);
+	return g_failures;
 }

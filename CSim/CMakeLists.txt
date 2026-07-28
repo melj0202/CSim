@@ -154,24 +154,37 @@ target_compile_definitions(CSim PRIVATE
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/Shader DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # ---------------------------------------------------------------------------
-# Phase 6: headless MockBackend tests (no OpenGL / no window)
+# Headless unit / e2e tests (no real window; MockBackend inject)
 # ---------------------------------------------------------------------------
 enable_testing()
 
-add_executable(CSimRenderTests
+add_executable(CSimTests
+	Source/Tests/TestMain.cpp
 	Source/Tests/TestMockBackend.cpp
 	Source/Tests/TestRendererE2E.cpp
-	# Production pieces needed for e2e (headless; no WinMain / no GLBackend objects if inject-only,
-	# but Renderer.h includes GLBackend types so we still link GLEW/GLFW for headers).
+	Source/Tests/TestRuleSets.cpp
+	Source/Tests/TestCellContext.cpp
+	Source/Tests/TestCanvasDomain.cpp
+	Source/Tests/TestUITokens.cpp
 	Source/Game/Canvas.cpp
 	Source/Rendering/Camera.cpp
+	Source/Rendering/GLString.cpp
 	Source/Services/EnvVars.cpp
 	Source/Services/Logger.cpp
-	# Logger forwards to CommandLine; only need object symbols (no console UI in tests).
 	Source/Services/CommandLine.cpp
+	Source/Rulesets/RuleSet.cpp
+	Source/Rulesets/GameOfLifeRuleSet.cpp
+	Source/Rulesets/SeedsRuleSet.cpp
+	Source/Rulesets/BriansBrainRuleSet.cpp
+	Source/Rulesets/HighlifeRuleSet.cpp
+	Source/Rulesets/DayAndNightRuleSet.cpp
+	Source/Rulesets/LifeWithoutDeathRuleSet.cpp
 )
 
-target_include_directories(CSimRenderTests PRIVATE
+# Keep old target name as an alias so existing scripts keep working.
+add_executable(CSimRenderTests ALIAS CSimTests)
+
+target_include_directories(CSimTests PRIVATE
 	"Source"
 	"Source/App"
 	"Source/Engine"
@@ -186,16 +199,16 @@ target_include_directories(CSimRenderTests PRIVATE
 	"thirdparty/tracy-0.13.1/public"
 )
 
-target_include_directories(CSimRenderTests SYSTEM PRIVATE
+target_include_directories(CSimTests SYSTEM PRIVATE
 	"thirdparty/glfw-3.4/include"
 	"thirdparty/glew-2.1.0/include"
 	"thirdparty/json/single_include"
 	"thirdparty"
 )
 
-target_compile_features(CSimRenderTests PRIVATE cxx_std_23)
+target_compile_features(CSimTests PRIVATE cxx_std_23)
 
-target_link_libraries(CSimRenderTests PRIVATE
+target_link_libraries(CSimTests PRIVATE
 	glew_s
 	glfw
 	OpenGL::GL
@@ -203,12 +216,14 @@ target_link_libraries(CSimRenderTests PRIVATE
 )
 
 if(MSVC)
-	target_compile_options(CSimRenderTests PRIVATE /W4 /FS)
+	target_compile_options(CSimTests PRIVATE /W4 /FS)
 else()
-	target_compile_options(CSimRenderTests PRIVATE -Wall -Wextra)
+	target_compile_options(CSimTests PRIVATE -Wall -Wextra)
 endif()
 
-add_test(NAME MockBackend COMMAND CSimRenderTests)
-set_tests_properties(MockBackend PROPERTIES
+add_test(NAME CSimTests COMMAND CSimTests)
+# Backward-compatible CTest name
+add_test(NAME MockBackend COMMAND CSimTests)
+set_tests_properties(CSimTests MockBackend PROPERTIES
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
