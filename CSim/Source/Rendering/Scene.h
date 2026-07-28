@@ -1,5 +1,4 @@
-#pragma once 
-#include <GL/glew.h>
+#pragma once
 #include <vector>
 #include "Rendering/Camera.h"
 #include "Rendering/Drawable.h"
@@ -12,41 +11,38 @@
 
 class IRenderWindow;
 
+// Scene holds the per-frame drawable contribution list and graph roots.
+// Frame clear + submission live in Renderer::RenderScene (token path + hybrid draw).
 class Scene {
 
-    public:
-        Scene(IRenderWindow* window, Camera* camera) : window(window), activeCamera(camera) {
-            root = new SceneObject(static_cast<ObjectID>(0));
-            root->transform = Matrix4(1.0f);
-            nodeLookup[0] = root;
-        };
-        ~Scene() = default;
-        
-        EntityTable* entityTable;
+	public:
+		Scene(IRenderWindow* window, Camera* camera) : window(window), activeCamera(camera) {
+			root = new SceneObject(static_cast<ObjectID>(0));
+			root->transform = Matrix4(1.0f);
+			nodeLookup[0] = root;
+		};
+		~Scene() = default;
 
-        void AddDrawable(DrawableBase* drawable) {
-            drawables.push_back(drawable);
-        }
+		EntityTable* entityTable;
 
-        void ClearDrawables() {
-            drawables.clear();
-        }
+		void AddDrawable(DrawableBase* drawable) {
+			drawables.push_back(drawable);
+		}
 
-        void Update() {
-            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            for (auto* drawable : drawables) {
-                if (drawable) {
-                    drawable->Draw();
-                }
-            }
-        }
+		void ClearDrawables() {
+			drawables.clear();
+		}
 
-        IRenderWindow* window;
-        std::unordered_map<ObjectID, SceneObject*> nodeLookup;
-        std::vector<DrawableBase*> drawables;
-        Camera* activeCamera;
-        SceneObject* root;
-        std::vector<RenderableObject> renderableObjects;
+		// Deprecated for frame submission — kept empty so old call sites are harmless.
+		// Prefer Renderer::RenderScene.
+		void Update() {
+		}
+
+		IRenderWindow* window;
+		std::unordered_map<ObjectID, SceneObject*> nodeLookup;
+		std::vector<DrawableBase*> drawables;
+		Camera* activeCamera;
+		SceneObject* root;
+		std::vector<RenderableObject> renderableObjects;
 
 };

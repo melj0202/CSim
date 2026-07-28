@@ -30,7 +30,7 @@ void CellGameModule::Start(IllumoContext* context)
 	{
 		startMode = "GAME_OF_LIFE";
 	}
-	this->cellContext = new CellContext(startMode, ic->envVars, ic->window, ic->camera);
+	this->cellContext = new CellContext(startMode, ic->envVars, ic->window, ic->camera, ic->renderer);
 
 	// Simulation step rate comes from env (tps * speedFactor). Re-read live in Normal().
 	simAccum = 0.0;

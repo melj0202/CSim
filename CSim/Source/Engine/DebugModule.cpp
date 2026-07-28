@@ -23,7 +23,7 @@ void DebugModule::Start(IllumoContext* context)
 	// Required for GLString / SplashText screen-space drawing
 	GLString::setRenderWindow(ic->window);
 
-	fpsLabel = new GLString("FPS: 0", 80, 255, 120, 255, 18, 12, 12);
+	fpsLabel = new GLString("FPS: 0", 80, 255, 120, 255, 18, 12, 12, ic->renderer);
 	fpsLabel->setVisible(isShowFpsEnabled());
 }
 

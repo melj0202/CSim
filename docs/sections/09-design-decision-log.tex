@@ -85,6 +85,102 @@ explicitly waived in a later decision.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-R1 --- RenderCommand payload shape}
+\begin{decisionbox}[title={D-R1 \quad 2026-07-28}]
+\textbf{Decision:} \symbolref{RenderCommand} uses a \textbf{simple tagged union}
+(\texttt{CommandType} + POD payload union), not a kitchen-sink flat struct and
+not a byte-stream compiler. Prefer C-style union over \texttt{std::variant}.\\
+\textbf{Why:} Type-safe uniforms/clear/update data while remaining
+copyable for \symbolref{ArrayQueue}; matches house style.\\
+\textbf{Consequences:} \pathref{Rendering/RenderCommand.h} redesigned; execute
+path switches on type and reads the matching payload.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R2 --- Who emits tokens}
+\begin{decisionbox}[title={D-R2 \quad 2026-07-28}]
+\textbf{Decision:} Each drawable emits its own tokens via
+\texttt{AppendCommands(Renderer*)} (or equivalent). \symbolref{Renderer}
+owns frame setup (clear/viewport) and submit.\\
+\textbf{Why:} Smallest strangler step from today's
+\symbolref{DispatchDrawables} list.\\
+\textbf{Consequences:} Hybrid phase may still call immediate \texttt{Draw}
+for unmigrated drawables after token submit.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R3 --- Handle typing for v1}
+\begin{decisionbox}[title={D-R3 \quad 2026-07-28}]
+\textbf{Decision:} Keep \texttt{unsigned long} opaque handles with backend
+registries (\texttt{tableID} $\rightarrow$ GL object). Strong typedefs deferred.\\
+\textbf{Why:} Minimal churn; critical fix is resolve-on-submit, not type names.\\
+\textbf{Consequences:} Execute must never treat handles as raw GLuints without
+registry lookup.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R4 --- Migration scope}
+\begin{decisionbox}[title={D-R4 \quad 2026-07-28}]
+\textbf{Decision:} Full migration Phases 1--5 (token proof $\rightarrow$ Scene
+routing $\rightarrow$ Canvas $\rightarrow$ UI drawables $\rightarrow$ cleanup).
+Phase 6 (mock/second API) optional later.\\
+\textbf{Why:} Playable strangler path to API isolation without big-bang rewrite.\\
+\textbf{Also freeze for v1:} destroy resources at shutdown only; full Canvas
+texture rewrite each frame; Windows GL is migration target.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R5 --- Blend state on first enable}
+\begin{decisionbox}[title={D-R5 \quad 2026-07-28}]
+\textbf{Decision:} When enabling blending in \symbolref{GLDevice::ApplyPipelineState},
+always call \texttt{glBlendFunc} (do not rely on CPU-side factor cache matching
+defaults).\\
+\textbf{Why:} OpenGL default is \texttt{ONE}/\texttt{ZERO}; cache defaults were
+SrcAlpha/OneMinusSrcAlpha so factors looked ``unchanged'' and console panel
+lost transparency after the token migration.\\
+\textbf{Consequences:} Semi-transparent UI (console panel alpha) works again.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R6 --- Dead stack cleanup (Phase 5)}
+\begin{decisionbox}[title={D-R6 \quad 2026-07-28}]
+\textbf{Decision:} Archive window \symbolref{RenderQueue}, legacy
+\texttt{Drawable.cpp} GL helpers, empty \texttt{Transform}/\texttt{RenderContext},
+and unused \texttt{CellCommandLine} under \pathref{archive/dead-render/}.
+\symbolref{DrawableBase} is a pure list/token interface (no GL handles).\\
+\textbf{Why:} Token path won; dual submission models confuse maintenance.\\
+\textbf{Consequences:} \texttt{IRenderWindow::getRenderQueue} removed; frame
+draw list is only \symbolref{Scene} + \symbolref{Renderer}.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R7 --- Mock backend for tests (Phase 6)}
+\begin{decisionbox}[title={D-R7 \quad 2026-07-28}]
+\textbf{Decision:} Add headless \texttt{MockBackend} implementing
+\symbolref{IBackend}: record \texttt{Create*} and snapshot the command queue
+on \texttt{SubmitCommandQueue}. Ship as CMake target
+\texttt{CSimRenderTests} / CTest \texttt{MockBackend}. Do \textbf{not}
+add Vulkan/Metal yet.\\
+\textbf{Why:} First meaningful automated render test without a GPU context;
+proves token vocabulary and handle plumbing independently of GL.\\
+\textbf{Consequences:} CI can run \texttt{ctest -R MockBackend}; second real
+API remains future work after more production needs appear.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R8 --- Inject IBackend into Renderer}
+\begin{decisionbox}[title={D-R8 \quad 2026-07-28}]
+\textbf{Decision:} \symbolref{Renderer} accepts an injected \symbolref{IBackend*}
+via constructor (\texttt{takeOwnership} flag). Production still owns a
+\symbolref{GLBackend}. Tests inject \texttt{MockBackend} with
+\texttt{takeOwnership=false}.\\
+\textbf{Why:} End-to-end drawable $\rightarrow$ enroll/token $\rightarrow$ submit
+without a GPU; keeps production construction unchanged.\\
+\textbf{Consequences:} \texttt{TestRendererE2E} covers \texttt{RenderScene},
+Canvas tokens, hybrid immediate drawables, and \texttt{RenderProofQuad}.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
 \subsection*{Template for new entries}
 \begin{lstlisting}[language={}]
 \subsection*{D-0XX --- short title}

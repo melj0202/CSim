@@ -1,4 +1,4 @@
-//This class represents a string that is drawn with opengl and stb_easy_font
+// Screen-space string drawn via stb_easy_font + token renderer.
 #pragma once
 
 #include <string>
@@ -6,11 +6,12 @@
 #include "Drawable.h"
 
 struct VertexData {
-    float x, y, z;
-    uint8_t color[4];
+	float x, y, z;
+	uint8_t color[4];
 };
 
 class IRenderWindow;
+class Renderer;
 
 class GLString : public Drawable<GLString> {
 
@@ -19,17 +20,24 @@ private:
 	int r, g, b, a;
 	float size_pt;
 	int x, y;
-    VertexData vertices[2000 * 6];
-	
-	void initGL();
+	VertexData vertices[2000 * 4];
+
+	Renderer* renderer;
+	unsigned long meshHandle;
+	unsigned long shaderHandle;
+	bool gpuReady;
+
+	void enrollGpuResources();
+
 public:
 	static inline IRenderWindow* s_window = nullptr;
 	static void setRenderWindow(IRenderWindow* window) { s_window = window; }
 
 	GLString();
-	GLString(std::string content, int r, int g, int b, int a, int size_pt, int x, int y);
+	GLString(std::string content, int r, int g, int b, int a, int size_pt, int x, int y, Renderer* renderer = nullptr);
 	~GLString();
-	
+
+	void setRenderer(Renderer* r);
 	void setContent(std::string newContent);
 	void setR(int newR);
 	void setG(int newG);
@@ -38,8 +46,9 @@ public:
 	void setSize(int newSize);
 	void setX(int newX);
 	void setY(int newY);
-	virtual void DrawImpl();
-	
+	void DrawImpl();
+	bool AppendCommands(Renderer* renderer) override;
+
 	std::string getContent();
 	int getR();
 	int getG();

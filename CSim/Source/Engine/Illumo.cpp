@@ -91,13 +91,19 @@ void Illumo::Init()
 	{
 		envVars->setVar("enableInfCanvas", false);
 	}
+	// Phase 1 token proof: when "1", skip normal Scene draw and render a
+	// textured quad entirely through IBackend / RenderCommand (see Renderer::RenderProofQuad).
+	if (envVars->getVar("UseTokenProof").value == "")
+	{
+		envVars->setVar("UseTokenProof", "0");
+	}
 
 	window = std::make_unique<RenderWindow>(1280, 720, "CSim", envVars.get());
 	camera = std::make_unique<Camera>(glm::vec2(0.0f, 0.0f), 1.0f, envVars.get());
 	renderer = std::make_unique<Renderer>(window.get(), envVars.get(), camera.get());
 	assetManager = std::make_unique<AssetManager>(renderer.get());
 	commandRegistry = std::make_unique<CommandRegistry>();
-	commandLine = std::make_unique<CommandLine>(envVars.get(), commandRegistry.get(), window.get());
+	commandLine = std::make_unique<CommandLine>(envVars.get(), commandRegistry.get(), window.get(), renderer.get());
 	inputManager = std::make_unique<InputManager>(window->getWindowInstance());
 	scene = std::make_unique<Scene>(window.get(), camera.get());
 
@@ -141,14 +147,33 @@ void Illumo::Update(double dt)
 
 void Illumo::Render()
 {
+	// Dev-only pure-token path (env UseTokenProof=1): no drawables.
+	if (envVars && envVars->getVar("UseTokenProof").value == "1")
+	{
+		if (renderer)
+		{
+			renderer->BeginFrame();
+			renderer->RenderProofQuad();
+			// Proof already submitted; EndFrame submits empty queue then swaps.
+			renderer->EndFrame();
+		}
+		return;
+	}
+
+	// Production path (Phase 2): modules contribute drawables; Renderer owns
+	// token clear/viewport, hybrid immediate Draw, and swap via backend EndFrame.
 	context.scene->ClearDrawables();
 	for (auto& module : modules)
 	{
 		module->DispatchDrawables(context.scene);
 	}
-	scene->Update();
-	window->swapBuffers();
-	
+
+	if (renderer)
+	{
+		renderer->BeginFrame();
+		renderer->RenderScene(context.scene, context.camera);
+		renderer->EndFrame();
+	}
 }
 
 void Illumo::Shutdown()

@@ -6,14 +6,17 @@ decision log when resolved.
 
 \begin{openbox}
 \begin{enumerate}
-  \item \textbf{Token payload:} flat struct vs variant vs byte stream?
-  \item \textbf{Handle type:} keep \texttt{unsigned long}, or introduce
-        typed IDs (\texttt{MeshId}, \texttt{TextureId}) as strong typedefs?
-  \item \textbf{Who emits tokens?} each drawable, or a single scene compiler
-        that reads components?
-  \item \textbf{Lifetime ownership:} refcounts, generational handles, or
+  \item \sout{\textbf{Token payload:} flat struct vs variant vs byte stream?}
+        \textbf{Resolved D-R1:} simple tagged union (C-style).
+  \item \sout{\textbf{Handle type:} keep \texttt{unsigned long} \ldots?}
+        \textbf{Resolved D-R3:} \texttt{unsigned long} + registries for v1.
+  \item \sout{\textbf{Who emits tokens?} each drawable vs scene compiler?}
+        \textbf{Resolved D-R2:} each drawable emits via \texttt{AppendCommands}.
+  \item \textbf{Resource ownership:} refcounts, generational handles, or
         ``destroy only at shutdown'' for v1?
+        \emph{(Working answer D-R4: shutdown-only for v1.)}
   \item \textbf{Canvas upload:} full texture rewrite each frame vs dirty rects?
+        \emph{(Working answer D-R4: full rewrite for v1.)}
   \item \textbf{Illumo $\leftrightarrow$ Game dependency:} how should modules be
         registered without Engine including Game headers?
   \item \textbf{InputManager $\rightarrow$ CellContext include:} should Services
@@ -24,12 +27,12 @@ decision log when resolved.
         or experimental dead code?
   \item \textbf{Linux/macOS:} invest now or freeze until token GL path is solid
         on Windows?
+        \emph{(Working answer D-R4: freeze until Windows token path solid.)}
   \item \textbf{Tracy:} always-on in Debug only --- any CI policy?
-  \item \textbf{Tests:} what is the first meaningful automated test (ruleset?
-        mock backend submit?)?
+  \item \sout{\textbf{Tests:} first meaningful automated test?}
+        \textbf{Resolved D-R7:} mock backend submit sequence
+        (\texttt{CSimRenderTests} / CTest \texttt{MockBackend}).
   \item \textbf{Author intent name ``Illumo'':} engine codename meaning /
         permanence?
 \end{enumerate}
 \end{openbox}
-
-\todoauthor{Prioritize the top 3 questions you want settled before coding Phase 1.}

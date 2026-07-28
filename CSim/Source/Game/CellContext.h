@@ -9,13 +9,15 @@
 #include "Rendering/IRenderWindow.h"
 #include "Rendering/Camera.h"
 
+class Renderer;
 
 class CellContext {
     public:
-        CellContext(std::string modeString, IEnvVars* envVars = nullptr, IRenderWindow* window = nullptr, Camera* camera = nullptr) {
+        CellContext(std::string modeString, IEnvVars* envVars = nullptr, IRenderWindow* window = nullptr, Camera* camera = nullptr, Renderer* renderer = nullptr) {
             this->envVars = envVars;
             this->window = window;
             this->camera = camera;
+            this->renderer = renderer;
             this->commandLine = nullptr;
 
             long cx = 80;
@@ -26,7 +28,7 @@ class CellContext {
                 if (cx < 1) cx = 80;
                 if (cy < 1) cy = 60;
             }
-            canvas = new Canvas(static_cast<int>(cx), static_cast<int>(cy), window, camera);
+            canvas = new Canvas(static_cast<int>(cx), static_cast<int>(cy), window, camera, renderer);
             ruleSet = nullptr;
             ModeString = "";
             setRuleSet(modeString);
@@ -112,4 +114,5 @@ class CellContext {
         IEnvVars* envVars;
         IRenderWindow* window;
         Camera* camera;
+        Renderer* renderer;
 };

@@ -28,9 +28,14 @@ public:
 
     unsigned long GetID() const override { return _programID; }
 
-private:
-    
+    void Destroy() override {
+        if (_programID != 0) {
+            glDeleteProgram(_programID);
+            _programID = 0;
+        }
+    }
 
+private:
     std::string ReadFile(const std::string& filePath) {
         std::ifstream file(filePath);
         if (!file.is_open()) {
@@ -101,9 +106,4 @@ private:
         return id;
     }
 
-    void Destroy() override{
-        if (_programID != 0) {
-            glDeleteProgram(_programID);
-        }
-    }
 };

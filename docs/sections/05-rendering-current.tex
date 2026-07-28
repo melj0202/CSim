@@ -2,10 +2,14 @@
 \label{sec:rendering-current}
 
 \begin{statusbox}
-\textbf{Half-migrated.} Interfaces for a command/token backend exist
-(\symbolref{IBackend}, \symbolref{RenderCommand}, \symbolref{CommandQueue},
-\symbolref{Renderer::enroll*}), but the live frame path still largely uses
-\textbf{immediate OpenGL} inside drawables and \symbolref{Scene::Update}.
+\textbf{Phases 1--6 complete for planned scope.} Live frame path is
+enroll + tokens + submit via \symbolref{Renderer}/\symbolref{IBackend}.
+Live drawables emit tokens; GL draw submission is confined to
+\pathref{Rendering/OpenGL/}. \textbf{Phase 6:} headless
+\pathref{Rendering/Mock/MockBackend.h}; \symbolref{Renderer} accepts injected
+\symbolref{IBackend*} (D-R8). CTest \texttt{MockBackend} covers unit + E2E
+(\texttt{RenderScene}, Canvas tokens, hybrid immediate, proof quad).
+No second real GPU API yet. Env \texttt{UseTokenProof=1} for visual debug.
 \end{statusbox}
 
 \subsection{What actually draws frames today}

@@ -13,6 +13,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <RenderPass.h>
+#include <cstring>
 
 GLBackend::GLBackend(IRenderWindow* window)
 {
@@ -21,9 +22,9 @@ GLBackend::GLBackend(IRenderWindow* window)
 	this->window = window;
 	Initialize();
 }
+
 GLBackend::~GLBackend()
 {
-	
 }
 
 void GLBackend::Initialize()
@@ -40,9 +41,9 @@ void GLBackend::Initialize()
 	std::string fullGLString = "OpenGL Context: " + versionStr;
 	Logger::LogInfo(fullGLString.c_str());
 }
+
 void GLBackend::BeginFrame()
 {
-	
 }
 
 void GLBackend::EndFrame()
@@ -60,21 +61,78 @@ void GLBackend::EndFrame()
 	}
 }
 
+void GLBackend::SubmitCommandQueue()
+{
+	GLResourceTables tables;
+	tables.meshes = &_vaoRegistryLookup;
+	tables.programs = &_programRegistryLookup;
+	tables.textures = &_textureRegistryLookup;
+	device->ExecuteCommandQueue(*commandQueue, tables);
+}
+
+void GLBackend::PushToCommandQueue(RenderCommand command)
+{
+	commandQueue->Submit(command);
+}
+
+void GLBackend::ClearCommandQueue()
+{
+	commandQueue->Reset();
+}
 
 void GLBackend::Shutdown()
 {
+	for (std::unordered_map<unsigned long, std::unique_ptr<GLMesh>>::iterator it = _vaoRegistryLookup.begin();
+		 it != _vaoRegistryLookup.end(); ++it)
+	{
+		if (it->second)
+		{
+			it->second->Destroy();
+		}
+	}
+	_vaoRegistryLookup.clear();
+
+	for (std::unordered_map<unsigned long, std::unique_ptr<GLShaderProgram>>::iterator it = _programRegistryLookup.begin();
+		 it != _programRegistryLookup.end(); ++it)
+	{
+		if (it->second)
+		{
+			it->second->Destroy();
+		}
+	}
+	_programRegistryLookup.clear();
+
+	for (std::unordered_map<unsigned long, std::unique_ptr<GLTexture>>::iterator it = _textureRegistryLookup.begin();
+		 it != _textureRegistryLookup.end(); ++it)
+	{
+		if (it->second)
+		{
+			it->second->Destroy();
+		}
+	}
+	_textureRegistryLookup.clear();
+
 	delete device;
+	device = nullptr;
 	delete commandQueue;
+	commandQueue = nullptr;
 }
 
 unsigned long GLBackend::CreateMesh(const void* vertices, size_t vertexSize, const void* indices, size_t indexSize, unsigned long tableID)
 {
-	_vaoRegistryLookup[tableID] = std::make_unique<GLMesh>(vertices, vertexSize, indices, indexSize);
+	return CreateMesh(vertices, vertexSize, indices, indexSize, tableID, MeshVertexLayout::Pos3Color3Uv2, false);
+}
+
+unsigned long GLBackend::CreateMesh(const void* vertices, size_t vertexSize, const void* indices, size_t indexSize, unsigned long tableID, MeshVertexLayout layout, bool dynamic)
+{
+	_vaoRegistryLookup[tableID] = std::make_unique<GLMesh>(vertices, vertexSize, indices, indexSize, layout, dynamic);
 	return tableID;
 }
 
 unsigned long GLBackend::CreateMesh(std::string filePath, unsigned long tableID)
 {
+	(void)filePath;
+	Logger::LogWarning("CreateMesh(filePath) is not implemented");
 	return tableID;
 }
 
@@ -90,10 +148,14 @@ unsigned long GLBackend::CreateShaderProgram(const ShaderSources& sources, unsig
 	return tableID;
 }
 
-
 unsigned long GLBackend::CreateTexture(const unsigned char* data, const int width, const int height, unsigned long tableID)
 {
-	_textureRegistryLookup[tableID] = std::make_unique<GLTexture>(data, width, height);
+	return CreateTexture(data, width, height, 4, tableID);
+}
+
+unsigned long GLBackend::CreateTexture(const unsigned char* data, const int width, const int height, int channels, unsigned long tableID)
+{
+	_textureRegistryLookup[tableID] = std::make_unique<GLTexture>(data, width, height, channels);
 	return tableID;
 }
 

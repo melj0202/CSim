@@ -32,7 +32,6 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 	this->envVars = envVars;
 	this->isFullScreen = envVars ? envVars->getVar("fullscreen").valueAsBool : false;
 	this->window = nullptr;
-	this->renderQueue = RenderQueue();
 
 	/* Initialize the library */
 	if (!glfwInit())
@@ -100,12 +99,8 @@ RenderWindow::RenderWindow(const int width, const int height, const std::string&
 
 void RenderWindow::updateWindow()
 {
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderQueue.draw();
-	glfwSwapBuffers(window);
-
-
+	// Frame clear/draw/swap is owned by Renderer + Illumo::Render.
+	// Kept as a no-op hook for any legacy call sites.
 }
 
 std::array<double, 2> RenderWindow::getMouseCoords()

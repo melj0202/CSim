@@ -15,7 +15,12 @@ class SplashText : public GLString {
         , fadeRate(1.0f)
     {}
     ~SplashText() = default;
-    void DrawImpl() override { GLString::DrawImpl(); Fade(); };
+    void DrawImpl() { GLString::DrawImpl(); Fade(); }
+    bool AppendCommands(Renderer* rend) override {
+        bool migrated = GLString::AppendCommands(rend);
+        Fade();
+        return migrated;
+    }
     void Wake();
     void Fade();
     private:
