@@ -10,8 +10,9 @@ Cross-cutting facilities used by Engine/Game/Rendering:
         mode string, \ldots).
   \item \textbf{Input} --- \symbolref{InputManager}, \symbolref{InputContext},
         \symbolref{KeyCode}; action binding used by the game module.
-  \item \textbf{CLI} --- \symbolref{CommandLine}, \symbolref{CommandRegistry},
-        \symbolref{SysCmdLine}.
+        No Game types (D-E2).
+  \item \textbf{CLI} --- \symbolref{CommandLine} (token UI when open; batched
+        geometry), \symbolref{CommandRegistry}, \symbolref{SysCmdLine}.
   \item \textbf{Allocators} --- pool/arena/debug allocators (experimental /
         learning surface; not all wired into the hot path).
   \item \textbf{SaveLoad API} --- pure declarations; OS dialogs implemented

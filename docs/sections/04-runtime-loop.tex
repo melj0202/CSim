@@ -55,11 +55,12 @@ Registered modules today (from \symbolref{Illumo::Init}):
   \item \symbolref{DebugModule} (non-\texttt{NDEBUG})
 \end{itemize}
 
-\begin{openbox}
-Engine header \pathref{Engine/Illumo.h} currently includes concrete
-\pathref{Game/CellGameModule.h}. Intended long-term: register modules from App
-or a bootstrap file so Engine does not depend on Game.
-\end{openbox}
+\begin{decisionbox}[title={D-E1 module registration}]
+\pathref{Engine/Illumo.h} knows only \symbolref{IModule}.
+\pathref{App/CellMain.cpp} constructs \symbolref{Illumo}, calls \texttt{Init},
+registers \symbolref{CellGameModule} (and \symbolref{DebugModule} in Debug),
+then \texttt{StartModules()}. Engine does not include Game headers.
+\end{decisionbox}
 
 \subsection{Frame flow (conceptual)}
 \begin{center}

@@ -2,96 +2,99 @@
 \label{sec:rendering-current}
 
 \begin{statusbox}
-\textbf{Phases 1--6 complete for planned scope.} Live frame path is
-enroll + tokens + submit via \symbolref{Renderer}/\symbolref{IBackend}.
-Live drawables emit tokens; GL draw submission is confined to
-\pathref{Rendering/OpenGL/}. \textbf{Phase 6:} headless
-\pathref{Rendering/Mock/MockBackend.h}; \symbolref{Renderer} accepts injected
-\symbolref{IBackend*} (D-R8). CTest \texttt{MockBackend} covers unit + E2E
-(\texttt{RenderScene}, Canvas tokens, hybrid immediate, proof quad).
-No second real GPU API yet. Env \texttt{UseTokenProof=1} for visual debug.
+\textbf{Token migration Phases 1--6 are complete for planned scope.} Live frame
+path is enroll + tokens + submit via \symbolref{Renderer}/\symbolref{IBackend}.
+Drawables emit tokens through \texttt{AppendCommands}; GL draw submission is
+confined to \pathref{Rendering/OpenGL/} (plus window bootstrap). Headless
+\pathref{Rendering/Mock/MockBackend.h} powers \texttt{CSimTests}. Canvas
+presentation is \textbf{R8 cell texture + RGB palette} with dirty-rect PBO
+uploads. No second real GPU API.
 \end{statusbox}
 
 \subsection{What actually draws frames today}
 \begin{enumerate}
   \item Modules call \symbolref{DispatchDrawables} and add \symbolref{DrawableBase*}
-        pointers to \symbolref{Scene}.
-  \item \symbolref{Scene::Update} clears color/depth with raw \texttt{glClear*},
-        then calls \symbolref{DrawableBase::Draw} on each entry.
-  \item Concrete drawables (e.g.\ \symbolref{Canvas} via CRTP
-        \symbolref{Drawable<Canvas>}) run \symbolref{DrawImpl}, which issues GL
-        calls and owns GL object handles (VAO/VBO/textures/programs) on the
-        drawable base.
+        pointers to \symbolref{Scene} (order preserved: canvas, console, FPS, splash).
+  \item \symbolref{Illumo::Render} drives \symbolref{Renderer}:
+        \texttt{BeginFrame} $\rightarrow$ \texttt{RenderScene} $\rightarrow$
+        \texttt{EndFrame} (swap).
+  \item \symbolref{Renderer::RenderScene}:
+        clear + viewport tokens; each drawable \texttt{AppendCommands}; if a
+        drawable returns false, legacy immediate \texttt{Draw()} still runs
+        (hybrid fallback; production drawables return true).
+  \item \symbolref{IBackend::SubmitCommandQueue} $\rightarrow$
+        \symbolref{GLDevice::ExecuteCommandQueue} resolves handles and issues GL.
 \end{enumerate}
 
-\subsection{Drawable design (observed)}
+\subsection{Drawable design (current)}
 \begin{itemize}
-  \item \symbolref{DrawableBase} --- type-erased base for storage; virtual
-        \symbolref{Draw}; destructor deletes GL objects.
-  \item \symbolref{Drawable<Derived>} --- CRTP: virtual \symbolref{Draw}
-        dispatches to \symbolref{Derived::DrawImpl} for static polymorphism
-        after the first virtual hop.
+  \item \symbolref{DrawableBase} --- type-erased list entry; virtual
+        \texttt{Draw} + virtual \texttt{AppendCommands} (default returns false).
+        \textbf{No GL handle ownership} on the base (D-R6).
+  \item \symbolref{Drawable<Derived>} --- CRTP: \texttt{Draw} $\rightarrow$
+        \texttt{DrawImpl} for the rare immediate path.
+  \item Production emitters (Canvas, CommandLine, GLString/SplashText) use
+        \texttt{AppendCommands} only; \texttt{DrawImpl} is empty/no-op.
 \end{itemize}
 
-\begin{inferencebox}
-CRTP here is a micro-optimization / style choice: keep a homogeneous list of
-bases while avoiding a second virtual call into each concrete drawer. Resource
-ownership on the base tightly couples ``something that can be listed in a scene''
-to ``OpenGL object lifetime,'' which fights multi-API abstraction.
-\end{inferencebox}
-
-\subsection{Parallel / unfinished stacks still in tree}
-\begin{table}[h]
-\centering
-\begin{tabularx}{\linewidth}{@{}l X@{}}
-\toprule
-\textbf{Stack} & \textbf{Notes} \\
-\midrule
-\symbolref{RenderQueue} on window & Older ``queue of drawables'' idea; add paths often commented out. \\
-\symbolref{IBackend} + \symbolref{CommandQueue} & Target direction; \symbolref{Renderer::RenderScene} mostly clears the queue and returns. \\
-\symbolref{EntityTable} / \symbolref{ModuleObject} & Handle-ish objects with mesh/texture IDs; not the primary cell path. \\
-\symbolref{SceneObject} hierarchy & Parent/child transforms; lightly used relative to drawable list. \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\subsection{Backend surface (already sketched)}
-\symbolref{IBackend} exposes:
+\subsection{Canvas presentation (R8 + palette)}
+\label{sec:canvas-r8}
 \begin{itemize}
-  \item lifecycle: \symbolref{Initialize}, \symbolref{Shutdown},
-        \symbolref{BeginFrame}, \symbolref{EndFrame}
-  \item queue: \symbolref{PushToCommandQueue}, \symbolref{SubmitCommandQueue},
-        \symbolref{ClearCommandQueue}
-  \item resource creation returning \texttt{unsigned long} handles:
-        mesh / shader / texture / descriptor set
+  \item Domain buffer: \symbolref{lifeCanvas} --- one \texttt{unsigned char}
+        per cell (state encoding: $0$ = alive, $1$ = dead for binary CAs;
+        multi-state rules use additional values, e.g.\ Brian's Brain dying $=2$).
+  \item GPU cell texture: \texttt{GL\_R8}, updated via dirty-rect
+        \texttt{UpdateTexture} tokens (optional \texttt{srcRowStride}).
+  \item GPU palette: $256\times 1$ RGB texture filled by
+        \texttt{Canvas::rebuildPalette(RuleSet*)} using \texttt{evalCell}
+        for each state byte. Ruleset switches rebuild palette only (no full
+        cell re-upload).
+  \item Shaders: \pathref{Shader/canvas\_vertex.glsl},
+        \pathref{Shader/canvas\_frag.glsl} --- sample R, look up palette.
+  \item CPU float RGB fade buffers (\texttt{displayRgb}/\texttt{targetRgb})
+        and full-frame RGB \texttt{texCanvasBuffer} are \textbf{removed}.
+        \texttt{cellFadeSpeed} remains as a no-op for env/console compatibility;
+        colors snap via the palette.
 \end{itemize}
 
-\symbolref{CommandType} already enumerates a useful token vocabulary:
-pipeline state, bindings, uniforms, render-pass ops, draw ops
-(\pathref{Rendering/RenderCommand.h}).
+\subsection{Backend surface}
+\symbolref{IBackend}: lifecycle, command queue push/submit/clear, enroll
+\texttt{CreateMesh}/\texttt{CreateShaderProgram}/\texttt{CreateTexture}
+(handles = \texttt{unsigned long} table IDs).
 
-\symbolref{Renderer} separates:
+\symbolref{RenderCommand}: tagged union (\texttt{CommandType} + POD payload)
+including pipeline, bind, uniforms, \texttt{UpdateTexture}, \texttt{UpdateBuffer},
+clear, draw (D-R1).
+
+\symbolref{GLTexture::UpdateSubImage}: PBO ping-pong + dirty-rect packing;
+fallback to client \texttt{glTexSubImage2D} if map fails.
+
+\symbolref{GLDevice}: bind-state tracker (skip redundant program/VAO/texture/
+viewport within a submit); uniform location cache; blend-func-on-enable (D-R5).
+
+\subsection{UI tokens}
 \begin{itemize}
-  \item \textbf{Enrollment} --- create GPU resources up front (not mixed into
-        per-frame command spam).
-  \item \textbf{RenderScene} --- intended to translate a scene into tokens and
-        submit (stub today).
+  \item \symbolref{CommandLine}: one batched \texttt{UpdateBuffer} +
+        \texttt{DrawIndexed} when open; blend for translucent panel.
+  \item \symbolref{GLString}: geometry cache --- skip VBO re-upload if
+        content/style unchanged (FPS $\sim$1\,Hz rebuilds).
+  \item \symbolref{SplashText}: mode label built on GLString; woken on EDIT/NORMAL.
 \end{itemize}
 
-\begin{decisionbox}[title={Intent already visible in code}]
-Game/UI code should not call \texttt{gl*} directly long-term. It should either
-enroll resources or emit \symbolref{RenderCommand} tokens; only the backend
-implementation speaks the API.
-\end{decisionbox}
+\subsection{Tests (headless)}
+Target \texttt{CSimTests} (alias \texttt{CSimRenderTests}); CTest names
+\texttt{CSimTests} / \texttt{MockBackend}. Suites: mock unit, Renderer E2E,
+rulesets, CellContext, canvas domain, UI tokens. No GPU context required.
 
-\subsection{Pain points blocking the migration}
+\subsection{Remaining pain points (non-blocking)}
 \begin{enumerate}
-  \item \symbolref{Canvas} is both domain grid and GL texture/drawable.
-  \item \symbolref{DrawableBase} owns GL handles.
-  \item \symbolref{Scene::Update} is a mini immediate renderer.
-  \item \symbolref{RenderCommand} payload is a flat ``kitchen sink'' struct
-        (not a tagged union / \texttt{std::variant}); many fields unused per
-        command type.
-  \item Two drawable submission ideas (\symbolref{Scene} list vs
-        \symbolref{RenderQueue}) without a single winner.
+  \item Hybrid immediate \texttt{Draw()} still exists for unmigrated stubs;
+        production path is tokens.
+  \item \symbolref{Renderer.h} still includes GL backend headers for production
+        construction (test injection uses \symbolref{IBackend*}).
+  \item \pathref{RenderWindow} still uses GLEW for context create / viewport
+        (window bootstrap, not frame submission).
+  \item Platform Linux/macOS render windows may still be older than the Windows path.
+  \item Some scaffolding (\symbolref{EntityTable}, incomplete \texttt{GLBuffer})
+        remains experimental.
 \end{enumerate}

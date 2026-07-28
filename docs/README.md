@@ -37,7 +37,7 @@ Needs a TeX distro with `tcolorbox`, `booktabs`, `tikz`, `listings`, `hyperref`,
 | Situation | Edit |
 |-----------|------|
 | New closed choice | `sections/09-design-decision-log.tex` |
-| Render migration progress | `sections/05-rendering-current.tex`, `06-rendering-target.tex` |
+| Current render / sim architecture | `sections/05-rendering-current.tex`, `06-rendering-target.tex`, `07-game-and-rules.tex` |
 | Unresolved debate | `sections/10-open-questions.tex` |
 | New important path | `sections/B-file-map.tex` |
 | Package layout change | `sections/03-source-layout.tex` |
@@ -49,6 +49,8 @@ Needs a TeX distro with `tcolorbox`, `booktabs`, `tikz`, `listings`, `hyperref`,
 - **Open** — needs author  
 - **Inferred** — reverse-engineered; correct freely  
 
-### Next planned coding work
+### Current architecture (short)
 
-See **§ Rendering — target token architecture** and migration phases in the design notes before implementing the render-token finish.
+Token frame path is **shipped** (enroll → `AppendCommands` → submit via `IBackend`). Canvas is **R8 + palette** with dirty-rect PBOs. Rules use **double-buffer `nextState`**. Headless **`CSimTests`** covers mock backend, rules, canvas, UI tokens.
+
+See the design notes PDF/sections for full detail and the decision log (D-R*, D-P*).

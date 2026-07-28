@@ -1,12 +1,11 @@
 #pragma once
 
+// Pure input service: no Game includes (D-E2).
 #include <GLFW/glfw3.h>
 #include <queue>
-#include "Game/CellContext.h"
-#include "SaveLoad.h"
-#include "SplashText.h"
-extern SplashText* stateSplash;
-
+#include <unordered_map>
+#include <array>
+#include <string>
 #include "Foundation/ArrayQueue.h"
 #include "Services/KeyCode.h"
 #include "Services/InputContext.h"
@@ -99,7 +98,6 @@ class InputManager {
         static inline InputManager* s_Instance = nullptr;
 
         double* scrollOffset;
-        CellContext* cContext;
         std::unordered_map<KeyCode, InputAction> inputStatesCurrent;
         std::unordered_map<KeyCode, InputAction> inputStatesPrevious;
         InputContext inputContexts[NUM_INPUT_CONTEXTS];
@@ -282,8 +280,7 @@ class InputManager {
     public:
         InputManager(GLFWwindow* window) 
             : window(window)
-            , activeInputContext(&inputContexts[0])
-            , cContext(nullptr) {
+            , activeInputContext(&inputContexts[0]) {
             s_Instance = this;
             glfwSetKeyCallback(window, normalKeyCallback);
             glfwSetCharCallback(window, characterCallback);

@@ -10,31 +10,38 @@ Quick index for chats that need to open the right files. Not exhaustive.
 \toprule
 \textbf{Path} & \textbf{Why it matters} \\
 \midrule
-\pathref{App/CellMain.*} & App loop \\
-\pathref{Engine/Illumo.*} & Composition root \\
+\pathref{App/CellMain.*} & App loop + module registration (D-E1) \\
+\pathref{Engine/Illumo.*} & Services host; \texttt{addModule}/\texttt{StartModules}; frame pump \\
 \pathref{Engine/IllumoContext.h} & Service pointer bag \\
 \pathref{Engine/IModule.h} & Module API \\
-\pathref{Engine/DebugModule.*} & Debug overlay module \\
-\pathref{Game/CellGameModule.*} & Modes, input, sim tick \\
+\pathref{Engine/DebugModule.*} & Debug overlay module (Debug builds) \\
+\pathref{Game/CellGameModule.*} & Modes, input, sim tick, palette rebuild \\
 \pathref{Game/CellContext.h} & Canvas + ruleset factory \\
-\pathref{Game/Canvas.*} & Grid + (today) GL drawable \\
-\pathref{Rulesets/RuleSet.*} & Rule base + generation \\
-\pathref{Rendering/Scene.h} & Drawable list + immediate clear/draw \\
-\pathref{Rendering/Drawable.*} & CRTP drawable / GL resources \\
-\pathref{Rendering/RenderCommand.h} & Token enum + struct \\
+\pathref{Game/Canvas.*} & Grid, dirty rects, R8/palette tokens \\
+\pathref{Rulesets/RuleSet.*} & Double-buffer generation + nextState \\
+\pathref{Rulesets/*RuleSet.*} & Concrete CA rules + evalCell colors \\
+\pathref{Rendering/Scene.h} & Drawable list only \\
+\pathref{Rendering/Drawable.*} & Token emitter base (no GL ownership) \\
+\pathref{Rendering/RenderCommand.h} & Tagged-union tokens \\
 \pathref{Rendering/CommandQueue.*} & Token buffer \\
 \pathref{Rendering/IBackend.h} & Backend interface \\
-\pathref{Rendering/Renderer.h} & Enroll + (stub) RenderScene \\
-\pathref{Rendering/OpenGL/GLBackend.*} & OpenGL backend \\
-\pathref{Rendering/IRenderWindow.h} & Window abstraction \\
+\pathref{Rendering/Renderer.h} & Enroll + RenderScene + push helpers \\
+\pathref{Rendering/OpenGL/GLBackend.*} & OpenGL backend registries \\
+\pathref{Rendering/OpenGL/GLDevice.*} & Execute queue, bind tracker \\
+\pathref{Rendering/OpenGL/GLTexture.h} & R8/RGB/RGBA + PBO UpdateSubImage \\
+\pathref{Rendering/Mock/MockBackend.h} & Headless IBackend for tests \\
+\pathref{Rendering/GLString.*} & FPS / text tokens + geometry cache \\
+\pathref{Rendering/SplashText.*} & Mode splash (GLString wrapper) \\
+\pathref{Services/CommandLine.*} & Console UI tokens (batched) \\
 \pathref{Services/InputManager.*} & Input contexts/actions \\
 \pathref{Services/EnvVars.*} & Runtime config \\
 \pathref{Services/Logger.*} & Logging \\
 \pathref{Services/SaveLoad.h} & Ported dialogs API \\
 \pathref{Platform/Windows/*} & Win main + file dialogs \\
 \pathref{Foundation/MathTypes.h} & GLM aliases (not Math.h!) \\
-\pathref{Foundation/MacroDefs.h} & Force-inline, sleep, Windows includes \\
-\pathref{CSim/CMakeLists.txt} & Sources + include roots \\
+\pathref{Tests/TestMain.cpp} & Headless suite entry \\
+\pathref{CSim/Shader/canvas\_*.glsl} & R8 + palette presentation \\
+\pathref{CSim/CMakeLists.txt} & Sources + CSimTests \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -42,5 +49,7 @@ Quick index for chats that need to open the right files. Not exhaustive.
 \subsection{Archive}
 \begin{itemize}
   \item \pathref{archive/old-states/} --- previous State pattern experiments.
+  \item \pathref{archive/dead-render/} --- retired immediate GL / RenderQueue paths.
+  \item \pathref{archive/dead-engine/} --- unused EntityTable / ModuleObject (D-E3).
   \item Analyzer/build junk may also live under \pathref{archive/}; ignore for design.
 \end{itemize}

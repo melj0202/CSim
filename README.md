@@ -27,12 +27,15 @@ csim/
 
 ## Design documentation
 
-Architecture, decision log, and the render-token migration plan live in:
+Architecture, decision log, and performance notes live in:
 
 - `docs/csim-design-notes.tex` (build with `pdflatex` / `latexmk` from `docs/`)
+- `docs/csim-design-notes.pdf` (generated)
 - `docs/README.md` — how to build and where to edit
 
-Use that document across chat sessions so design intent is not lost.
+**Current stack (short):** token renderer (`AppendCommands` → `IBackend`), Canvas as R8 cell texture + palette, double-buffered CA `nextState`, headless `CSimTests` with `MockBackend`.
+
+Use the design notes across chat sessions so design intent is not lost.
 
 ## Build (CMake)
 
@@ -40,10 +43,18 @@ From the repository root:
 
 ```bash
 cmake -S CSim -B build
-cmake --build build
+cmake --build build --config Release --target CSim
+cmake --build build --config Release --target CSimTests
 ```
 
-The build folder will contain the executable binaries.
+The build folder will contain the executable binaries (`build/Release/CSim.exe`, `CSimTests.exe` on multi-config generators).
+
+Headless tests (no GPU):
+
+```bash
+ctest -C Release -R CSimTests --output-on-failure
+# or: build/Release/CSimTests.exe
+```
 
 Visual Studio: open the generated solution from the build directory, or generate with the VS generator.
 

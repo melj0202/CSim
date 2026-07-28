@@ -3,15 +3,20 @@
 
 \begin{description}[style=nextline, leftmargin=0pt]
   \item[Backend]
-    Implementation of \symbolref{IBackend} for a graphics API.
+    Implementation of \symbolref{IBackend} for a graphics API (or mock).
   \item[Canvas]
-    Cell grid (+ currently also its GPU presentation).
+    Cell grid domain (\texttt{lifeCanvas}) plus token-based R8/palette view.
   \item[Command / token]
     One entry in the render command queue describing a GPU operation.
   \item[CRTP]
-    Curiously Recurring Template Pattern; used by \symbolref{Drawable}.
+    Curiously Recurring Template Pattern; used by \symbolref{Drawable} for
+    optional immediate \texttt{DrawImpl}.
+  \item[Dirty rect]
+    Inclusive AABB of cells/texels that changed; used for sparse visual work
+    and subimage uploads.
   \item[Drawable]
-    Object that can be presented; today immediate GL, tomorrow token emitter.
+    Scene list entry that emits tokens via \texttt{AppendCommands} (preferred)
+    or immediate \texttt{Draw} (fallback).
   \item[Enrollment]
     Creating GPU resources and receiving handles outside the tight frame loop.
   \item[Illumo]
@@ -20,9 +25,12 @@
     Non-owning pointers to services for modules.
   \item[Module]
     \symbolref{IModule} subsystem (game, debug, \ldots).
+  \item[Palette]
+    $256\times 1$ RGB texture mapping cell state bytes to display colors.
+  \item[PBO]
+    Pixel buffer object; async unpack path for texture uploads.
   \item[RuleSet]
-    Cellular automaton transition rules for the canvas.
+    Cellular automaton transition rules (\texttt{nextState} + \texttt{evalCell}).
   \item[Scene]
-    Currently a list of drawables + optional node graph; should become data
-    for the renderer, not an immediate GL executor.
+    Ordered list of drawables for the frame; not an immediate GL executor.
 \end{description}

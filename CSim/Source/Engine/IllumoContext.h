@@ -10,18 +10,18 @@
 #include "EnvVars.h"
 #include "Rendering/Renderer.h"
 #include "CommandRegistry.h"
-#include "EntityTable.h"
 #include "Foundation/MacroDefs.h"
 
+// Non-owning service bag passed to IModule::Start.
+// EntityTable removed — unused experimental ECS path archived (D-E3).
 struct IllumoContext {
-        Scene* scene;
-        RenderWindow* window;
-        CommandLine* commandLine;
-        InputManager* inputManager;
-        Renderer* renderer;
-        AssetManager* assetManager;
-        EnvVars* envVars;
-        Camera* camera;
-        CommandRegistry* commandRegistry;
-        EntityTable* entityTable;
-    };
+	Scene* scene;
+	RenderWindow* window;
+	CommandLine* commandLine;
+	InputManager* inputManager;
+	Renderer* renderer;
+	AssetManager* assetManager;
+	EnvVars* envVars;
+	Camera* camera;
+	CommandRegistry* commandRegistry;
+};

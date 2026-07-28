@@ -11,40 +11,68 @@ Primary gameplay module. Owns a \symbolref{CellContext} and an enum
 \begin{statusbox}
 Mode handling is an \textbf{enum + switch} inside the module, not the older
 class-per-state hierarchy (archived under \pathref{archive/old-states/}).
-SAVE/LOAD cases may still be incomplete relative to method helpers.
+\texttt{E} toggles EDIT/NORMAL and wakes \symbolref{SplashText}.
+SAVE/LOAD use Ctrl+S / Ctrl+O helpers; enum cases may still be thin.
+Simulation rate: env \texttt{tps} $\times$ \texttt{speedFactor}, with
+accumulator + step cap.
 \end{statusbox}
-
-\begin{inferencebox}
-Earlier design used State classes so each mode had its own ``main loop'' body.
-The enum approach is simpler for a small mode set; reintroduce State objects
-only if modes grow heavy (UI stacks, async load, etc.).
-\end{inferencebox}
 
 \subsection{CellContext}
 Constructs \symbolref{Canvas} from env vars (\texttt{CanvasX}, \texttt{CanvasY})
 and selects a \symbolref{RuleSet} from a mode string
-(\texttt{GAME\_OF\_LIFE}, \texttt{BRIANS\_BRAIN}, \ldots).
+(\texttt{GAME\_OF\_LIFE}, \texttt{BRIANS\_BRAIN}, \texttt{SEEDS}, \ldots).
+Mode changes from console/env call \texttt{setRuleSet} and
+\texttt{Canvas::rebuildPalette}.
 
 \subsection{Canvas}
 \begin{itemize}
-  \item CPU grid: \symbolref{lifeCanvas} (and RGB staging \symbolref{texCanvasBuffer}).
-  \item Currently also a \symbolref{Drawable} with GL texture id --- migration
-        target is to split this (\cref{sec:rendering-target}).
+  \item CPU grid: \symbolref{lifeCanvas} only (one byte per cell).
+  \item Dirty flags/rects: life region, R8 upload region; skip work when idle.
+  \item Token view: enrolled mesh, R8 cell texture, palette texture, canvas
+        shaders (\cref{sec:canvas-r8}).
+  \item No dual float RGB buffers; presentation colors come from the palette.
 \end{itemize}
 
 \subsection{Rulesets}
-Classic polymorphic hierarchy:
+Active rules (in \pathref{AllSets.h} / factory): Game of Life, Seeds, Brian's
+Brain, Highlife, Day \& Night, Life Without Death. Stub headers exist for
+Rule 90 / 184 / Wireworld (identity \texttt{nextState}; not in AllSets).
+
 \begin{lstlisting}
 class RuleSet {
-  virtual void evalCell(...) const;
-  virtual void evaluateNeighbors(...) const;
-  void calcGeneration(...); // shared sweeping
+  // Pure transition: cell + Moore count of alive (value==0) neighbors.
+  virtual unsigned char nextState(unsigned char cell,
+                                  unsigned char aliveNeighbors) const;
+  virtual void evalCell(const unsigned char& target,
+                        unsigned char dest[3]) const; // palette colors
+  void calcGeneration(...); // double-buffer: nextGen then memcpy
 };
 \end{lstlisting}
-Concrete rules live in \pathref{Rulesets/}. This package is relatively clean:
-depends on canvas/domain, not on windowing.
+
+\textbf{Generation (perf):}
+\begin{enumerate}
+  \item Count-alive neighbors from raw \texttt{lifeCanvas} (toroidal, fast wrap).
+  \item Write \texttt{nextState} into a scratch \texttt{nextGen} buffer.
+  \item If any cell changed: \texttt{memcpy} back, mark sparse dirty AABB for
+        visual/GPU upload. Still life: no dirty.
+\end{enumerate}
 
 \begin{decisionbox}[title={Keep rules pure}]
-Rulesets should stay free of rendering and input. They read/write cell buffers
-only. That keeps them testable and migration-safe.
+Rulesets stay free of rendering and input. They read/write cell buffers only
+and expose \texttt{evalCell} for palette colors. That keeps them testable
+(headless \texttt{TestRuleSets}).
 \end{decisionbox}
+
+\subsection{Cell encoding}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Value} & \textbf{Meaning (binary CAs)} \\
+\midrule
+$0$ & Alive (neighbor count treats as live) \\
+$1$ & Dead \\
+$\ge 2$ & Multi-state (e.g.\ Brian's Brain dying $=2$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+Historical neighbor tests used \texttt{!getCanvasPixel} (alive when zero).

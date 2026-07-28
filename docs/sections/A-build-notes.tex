@@ -6,22 +6,34 @@
 cmake -S CSim -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release --target CSim
 cmake --build build --config Debug --target CSim
+cmake --build build --config Release --target CSimTests
 \end{lstlisting}
 
 Artifacts:
 \begin{itemize}
   \item \pathref{build/Release/CSim.exe}
   \item \pathref{build/Debug/CSim.exe}
+  \item \pathref{build/Release/CSimTests.exe} (alias target \texttt{CSimRenderTests})
 \end{itemize}
+
+\subsection{Tests (headless)}
+\begin{lstlisting}[language={}]
+ctest -C Release -R CSimTests --output-on-failure
+# or: build/Release/CSimTests.exe
+\end{lstlisting}
+No OpenGL context is required (\texttt{MockBackend}).
 
 \subsection{Known setup issues}
 \begin{itemize}
   \item GLEW is pulled via \pathref{thirdparty/glew-2.1.0/build/cmake}; that
         subtree must exist (do not delete vendored CMake helpers).
-  \item Debug enables \texttt{/fsanitize=address}; requires a toolchain that
+  \item Debug may enable \texttt{/fsanitize=address}; requires a toolchain that
         supports MSVC ASan.
   \item FreeType may warn about missing optional system deps (HarfBuzz, zlib,
         PNG); build can still succeed with bundled defaults.
+  \item GLSL under \pathref{CSim/Shader/} is copied to the build tree at
+        configure time; after adding shaders, reconfigure or copy into
+        \pathref{build/Shader/}.
 \end{itemize}
 
 \subsection{House style (CONTRIBUTING)}

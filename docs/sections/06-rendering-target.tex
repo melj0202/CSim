@@ -1,39 +1,37 @@
-\section{Rendering --- target token architecture}
+\section{Rendering --- architecture and remaining work}
 \label{sec:rendering-target}
 
-This section is the \textbf{plan foundation} for finishing the migration.
-Treat it as the working design; amend via the decision log.
+The token architecture below is the \textbf{shipped} design. Migration phases
+are kept for history; treat them as complete unless a status note says otherwise.
 
-\subsection{Goals}
+\subsection{Goals (achieved)}
 \begin{enumerate}
-  \item \textbf{API isolation:} only \pathref{Rendering/OpenGL/*} (and future
-        backends) include GL/Vulkan/Metal headers for draw submission.
-  \item \textbf{Stable front-end:} game modules describe \emph{what} to draw
-        (meshes, textures, transforms, passes), not \emph{how} in GL terms.
-  \item \textbf{Record then execute:} each frame builds a command stream
-        (``tokens''), then the backend walks it once.
-  \item \textbf{Resource handles:} CPU code holds opaque IDs; backend maps them
-        to API objects.
-  \item \textbf{Incremental:} keep the simulator playable after each step;
-        prefer strangler-fig migration over a big bang rewrite.
+  \item \textbf{API isolation:} frame draw submission is via tokens; OpenGL
+        execute path lives under \pathref{Rendering/OpenGL/}.
+  \item \textbf{Stable front-end:} modules contribute drawables; drawables emit
+        handles/uniforms/updates, not raw GL.
+  \item \textbf{Record then execute:} per-frame command stream, single submit.
+  \item \textbf{Resource handles:} opaque \texttt{unsigned long} table IDs;
+        backend registries map to GL objects (D-R3).
+  \item \textbf{Testability:} \texttt{MockBackend} + injected \symbolref{IBackend}
+        (D-R7, D-R8).
 \end{enumerate}
 
 \subsection{Vocabulary}
 \begin{description}[style=nextline]
   \item[Token / RenderCommand]
-    A discrete instruction: bind X, set uniform Y, draw Z, begin pass, clear, \ldots
+    A discrete instruction: bind X, set uniform Y, draw Z, update texture, \ldots
   \item[Command queue]
-    Ordered buffer of tokens for the frame (or for a pass).
+    Ordered buffer of tokens for the frame.
   \item[Backend]
     API-specific interpreter of tokens + owner of true GPU objects.
   \item[Enrollment]
     One-time (or rare) resource creation; returns a handle.
   \item[Front-end renderer]
-    High-level helper that turns scene/draw requests into tokens
-    (\symbolref{Renderer} today).
+    \symbolref{Renderer}: enroll helpers, push tokens, \texttt{RenderScene}.
 \end{description}
 
-\subsection{Target frame pipeline}
+\subsection{Frame pipeline (current)}
 
 \begin{center}
 \begin{tikzpicture}[
@@ -42,11 +40,11 @@ Treat it as the working design; amend via the decision log.
   arr/.style={-{Latex}, thick}
 ]
   \node[box, fill=orange!12] (mod) {Modules\\Update};
-  \node[box, fill=orange!12, right=0.8cm of mod] (disp) {Dispatch /\\build draw list};
+  \node[box, fill=orange!12, right=0.8cm of mod] (disp) {Dispatch /\\draw list};
   \node[box, fill=purple!10, right=0.8cm of disp] (ren) {Renderer\\emit tokens};
   \node[box, fill=blue!10, right=0.8cm of ren] (q) {CommandQueue};
   \node[box, fill=green!12, below=0.9cm of q] (be) {IBackend\\Submit};
-  \node[box, fill=gray!12, left=0.8cm of be] (gpu) {GPU API};
+  \node[box, fill=gray!12, left=0.8cm of be] (gpu) {GPU API\\or Mock};
 
   \draw[arr] (mod) -- (disp);
   \draw[arr] (disp) -- (ren);
@@ -56,117 +54,70 @@ Treat it as the working design; amend via the decision log.
 \end{tikzpicture}
 \end{center}
 
-\subsection{Recommended layering (target)}
+\subsection{Layering}
 
 \begin{lstlisting}[language={}]
 Game / Rulesets / UI
-    |  (no gl* includes)
+    |  (no gl* for draw submission)
     v
-High-level draw requests / scene data
-    |  (handles, CPU buffers, transforms)
+Drawable::AppendCommands(Renderer*)
+    |  enroll handles + push tokens
     v
-Renderer  ----enroll---->  IBackend::Create*
-    |  (push tokens)
-    v
-CommandQueue<RenderCommand>
+CommandQueue<RenderCommand>   // tagged union payloads
     |
     v
 IBackend::SubmitCommandQueue
     |
-    +-- GLBackend
-    +-- (future) other backends
+    +-- GLBackend + GLDevice   (handle resolve, PBO upload, bind tracker)
+    +-- MockBackend            (tests)
 \end{lstlisting}
 
-\subsection{Token payload design (proposal)}
-\begin{openbox}
-Current \symbolref{RenderCommand} is a single struct with many fields. Options:
-\begin{enumerate}
-  \item \textbf{Keep flat struct} for simplicity and POD friendliness (array
-        queue, Tracy, no heap). Accept waste.
-  \item \textbf{Tagged union / \texttt{std::variant}} for type safety and
-        smaller conceptual surface.
-  \item \textbf{Byte stream + opcodes} (more engine-y; harder to debug).
-\end{enumerate}
-Default recommendation for CSim scale: \textbf{(1) or a simple tagged union},
-not a full GPU-driven byte compiler.
-\end{openbox}
+\subsection{Drawable meaning}
+``Drawable'' means \emph{something that can append tokens} (and optionally fall
+back to immediate \texttt{Draw}). GL objects live in backend registries, not on
+\symbolref{DrawableBase}.
 
-\subsection{What happens to Drawable?}
-\begin{inferencebox}
-Long-term, ``drawable'' should mean \emph{something that can append tokens}
-(or register a renderable descriptor), not \emph{something that calls GL}.
-CRTP can remain for CPU-side specialization, but GL handle fields should move
-into the backend's handle tables.
-\end{inferencebox}
-
-Proposed end state for \symbolref{Canvas}:
+Canvas end state (shipped):
 \begin{itemize}
-  \item Domain: \texttt{lifeCanvas}, dimensions, cell get/set (no GL).
-  \item View/render: texture handle + mesh handle + material/pass ids;
-        upload dirty regions via enrollment or an \texttt{UpdateTexture} token.
+  \item Domain: \texttt{lifeCanvas}, dims, get/set, dirty rects.
+  \item View: mesh + R8 cell texture + palette texture + canvas shaders;
+        dirty-rect \texttt{UpdateTexture}; draw with MVP.
 \end{itemize}
 
-\subsection{Migration phases (strangler)}
+\subsection{Migration phases (historical checklist)}
 \label{sec:migration-phases}
 
 \begin{enumerate}[leftmargin=*]
-  \item \textbf{Phase 0 --- Document \& freeze vocabulary} \\
-        This document; agree command enum + handle meaning; stop adding new
-        raw \texttt{gl*} call sites outside OpenGL backend / temporary
-        drawables.
-
-  \item \textbf{Phase 1 --- Make the queue real for one pass} \\
-        Implement \symbolref{GLBackend::SubmitCommandQueue} for a minimal set:
-        \symbolref{ClearColorBuffer}, \symbolref{SetViewport},
-        \symbolref{SetShader}, \symbolref{SetTexture}, \symbolref{SetUniformMat4},
-        \symbolref{DrawIndexed}.
-        Unit-test or visually verify a fullscreen clear + one textured quad
-        \emph{only} through tokens.
-
-  \item \textbf{Phase 2 --- Route Scene through Renderer} \\
-        \symbolref{Scene::Update} stops calling \texttt{glClear} / \symbolref{Draw}.
-        Instead: build tokens (or ask each renderable to append tokens), then
-        \symbolref{Renderer::RenderScene} $\rightarrow$ submit.
-        Drawables may still be immediate behind a feature flag temporarily.
-
-  \item \textbf{Phase 3 --- Migrate Canvas} \\
-        Split domain vs GPU resources; canvas upload becomes handle-based;
-        \symbolref{DrawImpl} becomes token emission.
-
-  \item \textbf{Phase 4 --- Migrate remaining drawables} \\
-        Splash text, GLString, command-line overlay, debug module, cursor, \ldots
-
-  \item \textbf{Phase 5 --- Delete dead paths} \\
-        Remove unused \symbolref{RenderQueue}-as-drawable-list if tokens won;
-        collapse duplicate transform types; ensure Engine does not include GL.
-
-  \item \textbf{Phase 6 --- Optional second backend} \\
-        Only after OpenGL path is token-clean; e.g.\ mock backend for tests or
-        a second real API.
+  \item \textbf{Phase 0 --- Document \& freeze vocabulary} \quad \textbf{done}
+  \item \textbf{Phase 1 --- Token proof path} \quad \textbf{done}
+        (\texttt{RenderProofQuad}, tagged union, mesh upload, handle resolve)
+  \item \textbf{Phase 2 --- Scene through Renderer} \quad \textbf{done}
+  \item \textbf{Phase 3 --- Canvas tokens} \quad \textbf{done}
+        (later evolved to R8 + palette; see D-P4)
+  \item \textbf{Phase 4 --- UI drawables} \quad \textbf{done}
+        (GLString, CommandLine, SplashText)
+  \item \textbf{Phase 5 --- Dead path cleanup} \quad \textbf{done}
+        (archive under \pathref{archive/dead-render/}; pure DrawableBase)
+  \item \textbf{Phase 6 --- Mock backend} \quad \textbf{done}
+        (no second real API yet)
 \end{enumerate}
 
-\begin{decisionbox}[title={Working order (proposed 2026-07-28)}]
-Prefer \textbf{Phase 1 before large refactors of Game}. Prove the token
-interpreter with a tiny known scene, then move Canvas. Do not invent Vulkan
-until OpenGL is fully behind \symbolref{IBackend}.
-\end{decisionbox}
-
-\subsection{Acceptance criteria for ``migration done''}
+\subsection{Acceptance criteria (migration ``done'')}
 \begin{itemize}
-  \item No \texttt{gl*} / GLEW includes outside \pathref{Rendering/OpenGL/}
-        (and maybe temporary test helpers).
-  \item Frame submission path is enroll + token queue + submit.
-  \item Cell sim still runs: edit, step/rules, camera, save/load hooks.
-  \item \symbolref{Renderer::RenderScene} is non-empty and used.
-  \item Decision log updated; dead stacks removed or quarantined under
-        \pathref{archive/}.
+  \item[\checkmark] Frame path is enroll + token queue + submit.
+  \item[\checkmark] Cell sim runs: edit, step/rules, camera, console, FPS, splash.
+  \item[\checkmark] \symbolref{Renderer::RenderScene} is non-empty and used.
+  \item[\checkmark] Mock/headless tests cover tokens and domain.
+  \item Partial: \texttt{gl*} still appears in window bootstrap and
+        \pathref{Rendering/OpenGL/}; some non-Windows platforms lag.
 \end{itemize}
 
-\subsection{Risks}
+\subsection{Optional future work}
 \begin{itemize}
-  \item Scope creep into full RHI (descriptor sets, multi-pass graph) before
-        the sim needs them.
-  \item Handle lifetime / deletion protocol undefined today.
-  \item Performance paranoia too early (2048 command cap may be fine).
-  \item Platform divergence (Linux/macOS files still older in places).
+  \item Generational handles / explicit destroy beyond shutdown-only (D-R4).
+  \item Second real graphics API (only if needed).
+  \item GPU color fade without bringing back full-grid float RGB.
+  \item Further slim \symbolref{Renderer} so production does not include GL headers
+        in the public header (pimpl / factory).
+  \item Linux/macOS parity with the Windows token path.
 \end{itemize}

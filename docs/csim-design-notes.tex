@@ -96,24 +96,25 @@
 
 \title{%
   CSim Design Notes\\
-  \large Architecture, decisions, and the render-token migration%
+  \large Architecture, decisions, and performance notes%
 }
 \author{Project author + collaborative notes (Grok Build)}
-\date{Started 2026-07-28 \quad (living document)}
+\date{Started 2026-07-28 \quad (living document; audited 2026-07-28)}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
 This document is the \textbf{durable design memory} for CSim (Cell Simulator):
-what the code is doing today, why packages and abstractions exist (to the best of
-our knowledge), and the planned finish of the migration from immediate-mode
-OpenGL calls toward a \textbf{render command / token} architecture that
-abstracts the graphics API behind a backend.
+what the code is doing today, why packages and abstractions exist, and how the
+\textbf{render command / token} path, cellular automata rules, and headless
+tests fit together.
 
-It is intentionally incomplete in places. Sections marked as \emph{inferred}
-were reverse-engineered from the tree; the author should overwrite them with
-intent. Use the decision log to keep choices stable across chat sessions.
+The token migration (Phases 1--6) and the performance ladder (dirty visual
+path, UI batching, double-buffer sim, R8 palette + PBO uploads) are reflected
+in the ``current state'' sections and the decision log. Sections marked as
+\emph{inferred} were reverse-engineered; correct them freely. Append new
+decisions rather than silently rewriting history.
 \end{abstract}
 
 \tableofcontents

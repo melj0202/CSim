@@ -1,6 +1,5 @@
 #include "CommandLine.h"
 #include "CommandRegistry.h"
-#include "DebugModule.h"
 #include "EnvVars.h"
 #include "IModule.h"
 #include "Illumo.h"
@@ -8,7 +7,6 @@
 #include "GLString.h"
 #include <AssetManager.h>
 #include <Camera.h>
-#include <CellGameModule.h>
 #include <RenderWindow.h>
 #include <Renderer.h>
 #include <Scene.h>
@@ -19,8 +17,10 @@
 
 
 Illumo::Illumo(int argc, char** argv)
+	: modulesStarted(false)
 {
-
+	(void)argc;
+	(void)argv;
 }
 
 Illumo::~Illumo()
@@ -119,18 +119,22 @@ void Illumo::Init()
 	context.camera = camera.get();
 	context.commandRegistry = commandRegistry.get();
 	context.scene = scene.get();
+	// Game / debug modules are registered by App (CellMain) after Init (D-E1).
+	modulesStarted = false;
+}
 
-	// Modules after services exist so Start() can use the context safely.
-	// DebugModule (console, showFPS overlay, quit keys) is Debug builds only.
-	addModule(std::make_unique<CellGameModule>());
-#ifndef NDEBUG
-	addModule(std::make_unique<DebugModule>());
-#endif
-
-	for (auto& module : modules)
+void Illumo::StartModules()
+{
+	if (modulesStarted)
+	{
+		Logger::LogWarning("Illumo::StartModules called more than once; ignoring");
+		return;
+	}
+	for (std::unique_ptr<IModule>& module : modules)
 	{
 		module->Start(&context);
 	}
+	modulesStarted = true;
 }
 
 void Illumo::Update(double dt)
@@ -178,7 +182,7 @@ void Illumo::Render()
 
 void Illumo::Shutdown()
 {
-	for (auto& module : modules)
+	for (std::unique_ptr<IModule>& module : modules)
 	{
 		if (module)
 		{
@@ -186,4 +190,5 @@ void Illumo::Shutdown()
 		}
 	}
 	modules.clear();
+	modulesStarted = false;
 }

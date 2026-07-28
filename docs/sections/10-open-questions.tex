@@ -15,24 +15,33 @@ decision log when resolved.
   \item \textbf{Resource ownership:} refcounts, generational handles, or
         ``destroy only at shutdown'' for v1?
         \emph{(Working answer D-R4: shutdown-only for v1.)}
-  \item \textbf{Canvas upload:} full texture rewrite each frame vs dirty rects?
-        \emph{(Working answer D-R4: full rewrite for v1.)}
-  \item \textbf{Illumo $\leftrightarrow$ Game dependency:} how should modules be
-        registered without Engine including Game headers?
-  \item \textbf{InputManager $\rightarrow$ CellContext include:} should Services
-        depend on Game at all?
-  \item \textbf{RenderQueue class:} delete, rename, or repurpose as the token
-        queue UI name?
-  \item \textbf{EntityTable:} first-class for cells, only for 3D-ish objects,
-        or experimental dead code?
+  \item \sout{\textbf{Canvas upload:} full texture rewrite each frame vs dirty rects?}
+        \textbf{Resolved D-P1/D-P4:} dirty rects + R8 cell texture + PBO;
+        palette rebuild on ruleset change only.
+  \item \sout{\textbf{Illumo $\leftrightarrow$ Game dependency:} module registration?}
+        \textbf{Resolved D-E1:} App (\texttt{CellMain}) registers modules after
+        \texttt{Init}; Engine only knows \texttt{IModule}.
+  \item \sout{\textbf{InputManager $\rightarrow$ CellContext include?}}
+        \textbf{Resolved D-E2:} InputManager is Game-free.
+  \item \sout{\textbf{RenderQueue class:} delete, rename, or repurpose?}
+        \textbf{Resolved D-R6:} archived; Scene + Renderer is the path.
+  \item \sout{\textbf{EntityTable:} first-class for cells, or experimental?}
+        \textbf{Resolved D-E3:} experimental/unused; archived under
+        \pathref{archive/dead-engine/}. Cells are drawables, not entities.
+
   \item \textbf{Linux/macOS:} invest now or freeze until token GL path is solid
         on Windows?
-        \emph{(Working answer D-R4: freeze until Windows token path solid.)}
+        \emph{(Working answer D-R4: freeze until Windows token path solid ---
+        Windows token path is solid; parity still open.)}
   \item \textbf{Tracy:} always-on in Debug only --- any CI policy?
   \item \sout{\textbf{Tests:} first meaningful automated test?}
-        \textbf{Resolved D-R7:} mock backend submit sequence
-        (\texttt{CSimRenderTests} / CTest \texttt{MockBackend}).
+        \textbf{Resolved D-R7/D-R8:} \texttt{MockBackend} + \texttt{CSimTests}
+        (unit, E2E, rules, canvas, UI tokens).
   \item \textbf{Author intent name ``Illumo'':} engine codename meaning /
         permanence?
+  \item \textbf{CPU color fade:} bring back without full-grid float RGB
+        (e.g.\ sparse fade or dual-state GPU mix)?
+  \item \textbf{Stub rules:} implement Rule 90 / 184 / Wireworld for real, or
+        remove from the tree?
 \end{enumerate}
 \end{openbox}

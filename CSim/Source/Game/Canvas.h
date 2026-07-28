@@ -5,7 +5,6 @@
 #include <cstring>
 #include "Rendering/Drawable.h"
 #include "Services/PoolAlloc.h"
-#include "Engine/ModuleObject.h"
 
 class Camera;
 class IRenderWindow;

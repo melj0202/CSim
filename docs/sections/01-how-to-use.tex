@@ -5,15 +5,15 @@
 \begin{itemize}
   \item Survive context resets (new chats, compacted histories).
   \item Record \textbf{why}, not only \textbf{what}.
-  \item Host the render-token migration plan so implementation chats start from
-        a shared baseline.
-  \item Separate \emph{observed reality} from \emph{intended design}.
+  \item Describe the \textbf{current} architecture (token renderer, CA sim, tests)
+        and any remaining polish work.
+  \item Separate \emph{observed reality} from \emph{provisional} notes.
 \end{itemize}
 
 \subsection{Conventions}
 \begin{description}[style=nextline]
   \item[Status boxes]
-    Snapshot of maturity (prototype, half-migrated, production-ish).
+    Snapshot of maturity (prototype, shipped, production-ish).
   \item[Decision boxes]
     Closed choices. Prefer adding a new decision over rewriting history silently;
     note supersession dates.
@@ -28,7 +28,7 @@
 \subsection{Workflow for future sessions}
 \begin{enumerate}
   \item Skim \cref{sec:overview}, \cref{sec:rendering-current},
-        \cref{sec:rendering-target}, and the decision log
+        \cref{sec:rendering-target}, \cref{sec:game}, and the decision log
         (\cref{sec:decisions}).
   \item Implement or discuss against those sections, not against chat memory alone.
   \item When a decision is made, append a dated entry to the decision log.
@@ -48,8 +48,8 @@ pdflatex csim-design-notes.tex   # second pass for refs/TOC
 \noindent Output: \pathref{docs/csim-design-notes.pdf}.
 
 \begin{statusbox}
-As of 2026-07-28: source tree reorganized into packages
-(\pathref{App}, \pathref{Engine}, \pathref{Game}, \ldots);
-Release and Debug builds succeed on Windows (MSVC).
-Render path is still dual-architecture (immediate GL + unfinished command backend).
+As of 2026-07-28 (post-audit): packages under \pathref{App}, \pathref{Engine},
+\pathref{Game}, \ldots; token renderer + mock tests shipped; Canvas uses R8
+cell texture + palette; double-buffered rules; headless \texttt{CSimTests}.
+Windows MSVC Release/Debug builds are the primary target.
 \end{statusbox}

@@ -8,11 +8,11 @@ Platform-independent application code lives here. OS-specific entry points and n
 | **Engine/** | Runtime host: modules API, Illumo loop/context, entity scaffolding |
 | **Game/** | Cellular-automata game domain (canvas, game module, editor tools) |
 | **Rulesets/** | CA rule implementations |
-| **Rendering/** | Render types, scene/drawables, backend interfaces, OpenGL |
-| **Services/** | Shared services: logging, env vars, input, CLI, allocators, save/load API |
+| **Rendering/** | Scene/drawables, token command path, OpenGL backend, MockBackend |
+| **Services/** | Shared services: logging, env vars, input, CLI (token UI), allocators, save/load API |
 | **Foundation/** | Low-level shared bits: macros, build info, sysinfo, math helpers |
 | **Assets/** | Asset loaders (fonts, etc.) |
 | **Platform/** | Windows / Linux / macOS ports |
-| **Tests/** | Unit tests (not yet fully wired into CMake) |
+| **Tests/** | Headless suite (`CSimTests`): mock backend, rules, canvas, UI tokens |
 
-Historical / abandoned experiments: `archive/` at the repo root (not part of the build).
+Historical / abandoned experiments: `archive/` at the repo root (not part of the build). See `docs/` for architecture notes.
