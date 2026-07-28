@@ -15,18 +15,22 @@ Primary living document:
 
 ```bash
 cd docs
-pdflatex csim-design-notes.tex
-pdflatex csim-design-notes.tex
+latexmk -pdf -interaction=nonstopmode csim-design-notes.tex
 ```
 
-Or:
+Or twice with:
 
 ```bash
-cd docs
-latexmk -pdf csim-design-notes.tex
+pdflatex -interaction=nonstopmode csim-design-notes.tex
+pdflatex -interaction=nonstopmode csim-design-notes.tex
 ```
 
-Needs a TeX distro (`tcolorbox`, `booktabs`, `tikz`, `listings`, `hyperref`, … — typical full TeX Live / MiKTeX).
+Output: `docs/csim-design-notes.pdf`
+
+Needs a TeX distro with `tcolorbox`, `booktabs`, `tikz`, `listings`, `hyperref`, `ulem`, … (full TeX Live works).
+
+**Windows note:** if `pdflatex` is not on `PATH`, use e.g.  
+`C:\texlive\2026\bin\windows\latexmk.exe` (adjust year) or add that `bin\windows` folder to your user `PATH`, then open a new terminal.
 
 ### What to edit when
 
