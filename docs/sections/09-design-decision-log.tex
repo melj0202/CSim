@@ -258,12 +258,88 @@ service. Splash and rules stay in Game/Rendering.\\
 \begin{decisionbox}[title={D-E3 \quad 2026-07-28}]
 \textbf{Decision:} Archive \pathref{EntityTable.h} and \pathref{ModuleObject.h}
 under \pathref{archive/dead-engine/}. Remove \texttt{entityTable} from
-\symbolref{Scene}/\symbolref{IllumoContext}. \texttt{ObjectID} for the
-lightweight scene graph lives on \pathref{SceneObject.h}.\\
+\symbolref{Scene}/\symbolref{IllumoContext}.\\
 \textbf{Why:} Nothing allocated or used an EntityTable; the live path is
 drawables + tokens, not ECS.\\
 \textbf{Consequences:} Reintroduce a general object table only when a real
 feature needs it; document that cells are not entities.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-E4 --- Scene is a drawable list, not a graph}
+\begin{decisionbox}[title={D-E4 \quad 2026-07-28}]
+\textbf{Decision:} \symbolref{Scene} holds only \texttt{drawables},
+\texttt{window}, and \texttt{activeCamera}. Remove \texttt{root},
+\texttt{nodeLookup}, no-op \texttt{Update}, and unused
+\texttt{RenderableObject}. Archive \pathref{SceneObject.h}; \symbolref{Camera}
+and \symbolref{CommandLine} no longer inherit a node graph.\\
+\textbf{Why:} Architecture review (dead graph scaffolding); production never
+used parent/child transforms for cells or UI.\\
+\textbf{Consequences:} Frame contribution model is explicit and small.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-E5 --- Freeze IllumoContext; validate at Start}
+\begin{decisionbox}[title={D-E5 \quad 2026-07-28}]
+\textbf{Decision:} Keep \symbolref{IllumoContext} as a service bag for the
+\textbf{two shipped modules} only. Document required fields per module.
+\texttt{Start()} logs an error and bails if the bag is incomplete.
+Do not grow the bag for convenience; a third module should take explicit
+constructor dependencies if its subset differs.\\
+\textbf{Why:} Architecture review --- bag cost is zero at $N=2$ but becomes a
+de-facto global API as $N$ grows.\\
+\textbf{Consequences:} \texttt{IllumoContextHasGameCore} /
+\texttt{IllumoContextHasDebugCore} helpers; freeze note on the struct.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-C1 --- Canvas dual role is intentional (for now)}
+\begin{decisionbox}[title={D-C1 \quad 2026-07-28}]
+\textbf{Decision:} Keep \symbolref{Canvas} as domain grid + fade view + GPU
+enroll in one type. Document the scale wall: full-grid
+\texttt{calcGeneration}, dual float RGB buffers ($\sim$24\,B/cell), no
+chunked simulation domain.\\
+\textbf{Why:} Locality for dirty-rect + palette + fade; headless tests already
+use injected MockBackend rather than pure LifeGrid.\\
+\textbf{Consequences:} Split \texttt{LifeGrid}/\texttt{CanvasView} only if pure
+sim tests or large canvases become product requirements.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R9 --- String-named uniforms are backend debt}
+\begin{decisionbox}[title={D-R9 \quad 2026-07-28}]
+\textbf{Decision:} Keep \texttt{char name[32]} uniforms for OpenGL + Mock.
+Treat as debt if a second \emph{real} GPU backend is adopted; prefer binding
+points / pre-resolved locations then.\\
+\textbf{Why:} Architecture review --- uniform path is the least portable part
+of \symbolref{RenderCommand}; handles and UpdateTexture are closer to neutral.\\
+\textbf{Consequences:} Comment on uniform payloads; no API change now.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R10 --- Production drawables are pure-token}
+\begin{decisionbox}[title={D-R10 \quad 2026-07-28}]
+\textbf{Decision:} \symbolref{Canvas}, \symbolref{CommandLine},
+\symbolref{GLString}, \symbolref{SplashText} use
+\texttt{AppendCommands} only (return true when contributing). Immediate
+\texttt{Draw()} hybrid remains for tests/stubs. CRTP \texttt{DrawImpl} is
+legacy for that fallback.\\
+\textbf{Why:} Migration complete for shipped UI/canvas; dual path is debt only
+where unmigrated types exist.\\
+\textbf{Consequences:} Documented in \pathref{Drawable.h} and
+\texttt{Renderer::RenderScene}.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-F1 --- MacroDefs Windows include deferred}
+\begin{decisionbox}[title={D-F1 \quad 2026-07-30}]
+\textbf{Decision:} Do \textbf{not} split \pathref{MacroDefs.h} /
+\texttt{Windows.h} now. Revisit only if include toxicity causes real pain
+(compile time, macro collisions, portability friction).\\
+\textbf{Why:} Author priority --- convenience of \texttt{\_\_SLEEP} outweighs
+hygiene until symptoms appear.\\
+\textbf{Consequences:} Status note in services/platform section; not an open
+blocker.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------

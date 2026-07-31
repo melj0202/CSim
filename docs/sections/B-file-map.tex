@@ -20,7 +20,7 @@ Quick index for chats that need to open the right files. Not exhaustive.
 \pathref{Game/Canvas.*} & Grid, dirty rects, R8/palette tokens \\
 \pathref{Rulesets/RuleSet.*} & Double-buffer generation + nextState \\
 \pathref{Rulesets/*RuleSet.*} & Concrete CA rules + evalCell colors \\
-\pathref{Rendering/Scene.h} & Drawable list only \\
+\pathref{Rendering/Scene.h} & Drawable list + camera + window (no scene graph) \\
 \pathref{Rendering/Drawable.*} & Token emitter base (no GL ownership) \\
 \pathref{Rendering/RenderCommand.h} & Tagged-union tokens \\
 \pathref{Rendering/CommandQueue.*} & Token buffer \\
@@ -50,6 +50,6 @@ Quick index for chats that need to open the right files. Not exhaustive.
 \begin{itemize}
   \item \pathref{archive/old-states/} --- previous State pattern experiments.
   \item \pathref{archive/dead-render/} --- retired immediate GL / RenderQueue paths.
-  \item \pathref{archive/dead-engine/} --- unused EntityTable / ModuleObject (D-E3).
+  \item \pathref{archive/dead-engine/} --- EntityTable, ModuleObject, SceneObject (D-E3/D-E4).
   \item Analyzer/build junk may also live under \pathref{archive/}; ignore for design.
 \end{itemize}

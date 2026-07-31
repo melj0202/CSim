@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "Services/Logger.h"
 #include "Rendering/SplashText.h"
+#include "Rulesets/WireworldRuleSet.h"
 
 SplashText* stateSplash = nullptr;
 
@@ -22,6 +23,14 @@ CellGameModule::~CellGameModule()
 
 void CellGameModule::Start(IllumoContext* context)
 {
+	// D-E5: fail loud if the frozen service bag is incomplete.
+	if (!IllumoContextHasGameCore(context))
+	{
+		Logger::LogError("CellGameModule::Start: IllumoContext missing required services "
+			"(envVars, window, camera, renderer, inputManager, scene)");
+		ic = context;
+		return;
+	}
 	ic = context;
 
 	// Prefer ModeString from envvars / previous console command.
@@ -61,11 +70,28 @@ void CellGameModule::Start(IllumoContext* context)
 	ic->inputManager->setActiveInputContext(contextId);
 
 	currentState = CellState::EDIT;
-	cellContext->getCellCanvas()->setCanvasPixel(50, 40, 0);
-	cellContext->getCellCanvas()->setCanvasPixel(51, 40, 0);
-	cellContext->getCellCanvas()->setCanvasPixel(52, 40, 0);
-	cellContext->getCellCanvas()->setCanvasPixel(52, 39, 0);
-	cellContext->getCellCanvas()->setCanvasPixel(51, 38, 0);
+
+	// Seed a classic glider near the canvas center (not fixed 50,40 — that OOB on small grids).
+	{
+		Canvas* canvas = cellContext->getCellCanvas();
+		const int w = canvas->canvasWidth;
+		const int h = canvas->canvasHeight;
+		if (w >= 5 && h >= 5)
+		{
+			const int ox = w / 2 - 1;
+			const int oy = h / 2 - 1;
+			// Relative offsets for a standard GoL glider (pointing down-right).
+			canvas->setCanvasPixel(ox + 1, oy + 0, 0);
+			canvas->setCanvasPixel(ox + 2, oy + 1, 0);
+			canvas->setCanvasPixel(ox + 0, oy + 2, 0);
+			canvas->setCanvasPixel(ox + 1, oy + 2, 0);
+			canvas->setCanvasPixel(ox + 2, oy + 2, 0);
+		}
+		else
+		{
+			Logger::LogWarning("Canvas too small for glider seed; skipping initial pattern");
+		}
+	}
 
 	// Initial palette from active ruleset; glider cells already mark R8 upload dirty.
 	cellContext->getCellCanvas()->rebuildPalette(cellContext->getRuleSet());
@@ -89,14 +115,8 @@ void CellGameModule::Start(IllumoContext* context)
 void CellGameModule::updateVisualTargets()
 {
 	ZoneScopedN("Visual.updateTargets");
-	Canvas* canvas = cellContext->getCellCanvas();
-	// R8 path: lifeCanvas *is* the GPU source. Paint/generation already expand the
-	// upload dirty rect; this just clears the logical dirty flag after a change.
-	if (!canvas->isCellsDirty())
-	{
-		return;
-	}
-	canvas->onTargetsRebuilt();
+	// life → palette target colors (sparse); tickVisual eases displayRgb toward them.
+	cellContext->getCellCanvas()->rebuildTargetsFromLife();
 }
 
 void CellGameModule::syncSimRateFromEnv()
@@ -125,7 +145,7 @@ void CellGameModule::syncSimRateFromEnv()
 	const double effectiveTps = static_cast<double>(tps) * speedFactor;
 	simStepSeconds = 1.0 / effectiveTps;
 
-	// cellFadeSpeed kept for env/console compatibility; R8 palette path snaps colors.
+	// Live fade rate (higher = snappier; 0 = instant snap).
 	float fadeSpeed = 8.0f;
 	if (ic->envVars->getVar("cellFadeSpeed").value != "")
 	{
@@ -216,9 +236,8 @@ void CellGameModule::Update(double dt)
 			break;
 	}
 
-	// R8: clear cellsDirty after paint/sim (upload rect already expanded).
+	// Map dirty life cells to palette target colors, then ease display toward them.
 	updateVisualTargets();
-	// tickVisual is a no-op on the palette path (kept for API stability).
 	cellContext->getCellCanvas()->tickVisual(static_cast<float>(dt));
 }
 
@@ -294,7 +313,15 @@ void CellGameModule::Edit(double dt)
 
 		if (isLeftPressed || isRightPressed)
 		{
-			unsigned char colorVal = isLeftPressed ? 0 : 1; // 0 = CELL_ALIVE, 1 = CELL_DEAD
+			// Binary CAs: left = alive (0), right = dead (1).
+			// Wireworld: left = conductor, right = empty (heads are rare; place via state or tools).
+			unsigned char colorVal = isLeftPressed ? 0 : 1;
+			if (cellContext->getModeString() == "WIREWORLD")
+			{
+				colorVal = isLeftPressed
+					? WireworldRuleSet::CELL_CONDUCTOR
+					: WireworldRuleSet::CELL_EMPTY;
+			}
 
 			if (wasPressed)
 			{

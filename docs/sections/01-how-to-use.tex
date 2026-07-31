@@ -27,12 +27,17 @@
 
 \subsection{Workflow for future sessions}
 \begin{enumerate}
-  \item Skim \cref{sec:overview}, \cref{sec:rendering-current},
+  \item Read the short consensus first:
+        \pathref{docs/architecture-consensus.md}
+        (strengths, code truth, known bugs, debt, work order).
+  \item Then skim \cref{sec:overview}, \cref{sec:rendering-current},
         \cref{sec:rendering-target}, \cref{sec:game}, and the decision log
         (\cref{sec:decisions}).
-  \item Implement or discuss against those sections, not against chat memory alone.
-  \item When a decision is made, append a dated entry to the decision log.
+  \item Implement or discuss against those sources, not against chat memory alone.
+  \item When a decision is made, append a dated entry to the decision log
+        \textbf{and} update \pathref{architecture-consensus.md} if the consensus shifts.
   \item When code lands, update the ``current state'' sections and the file map.
+        If docs and code disagree, \textbf{code wins} until docs are fixed in the same change.
 \end{enumerate}
 
 \subsection{Building the PDF}

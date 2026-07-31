@@ -77,8 +77,11 @@ struct DirtyRect {
 	int height() const { return valid() ? (maxY - minY + 1) : 0; }
 };
 
-// Domain grid + token-based view (R8 cell texture + RGB palette, P4).
-// lifeCanvas is the GPU source (1 byte/cell). Colors come from a 256-entry palette.
+// Domain + view + GPU enroll in one type (D-C1 — intentional monolith for current scale).
+// Domain: lifeCanvas (1 byte/cell).
+// View: CPU palette → targetRgb; displayRgb eases toward targets; RGB texture upload.
+// GPU: enrolled mesh/shader/texture handles; AppendCommands (pure-token).
+// Split into LifeGrid + CanvasView only if headless pure-sim or large grids demand it.
 struct Canvas : public Drawable<Canvas> {
 
 public:
@@ -95,27 +98,49 @@ public:
 	__CSIM_FORCE_INLINE__ void clearCanvas()
 	{
 		memset(lifeCanvas, 1, static_cast<size_t>(canvasWidth * canvasHeight));
+		const int n = canvasWidth * canvasHeight * 3;
+		for (int i = 0; i < n; ++i)
+		{
+			displayRgb[i] = 1.0f;
+			targetRgb[i] = 1.0f;
+			texCanvasBuffer[i] = 255;
+		}
 		cellsDirty = false;
 		cellsDirtyRect.clear();
+		fadeActive = false;
+		fadeDirtyRect.clear();
 		textureUploadPending = true;
 		uploadDirtyRect.setFull(canvasWidth, canvasHeight);
 	}
 
-	__CSIM_FORCE_INLINE__ void setCanvasPixel(const int& x, const int& y, const unsigned char& colorVal)
+	__CSIM_FORCE_INLINE__ bool inBounds(const int& x, const int& y) const
 	{
+		return x >= 0 && y >= 0 && x < canvasWidth && y < canvasHeight && lifeCanvas != nullptr;
+	}
+
+	// Logical cell write. Marks life dirty for visual target rebuild (not GPU yet).
+	__CSIM_FORCE_INLINE__ bool setCanvasPixel(const int& x, const int& y, const unsigned char& colorVal)
+	{
+		if (!inBounds(x, y))
+		{
+			return false;
+		}
 		const int idx = canvasWidth * y + x;
 		if (lifeCanvas[idx] != colorVal)
 		{
 			lifeCanvas[idx] = colorVal;
 			cellsDirty = true;
 			cellsDirtyRect.include(x, y);
-			textureUploadPending = true;
-			uploadDirtyRect.include(x, y);
 		}
+		return true;
 	}
 
-	__CSIM_FORCE_INLINE__ unsigned char getCanvasPixel(const int& x, const int& y)
+	__CSIM_FORCE_INLINE__ unsigned char getCanvasPixel(const int& x, const int& y) const
 	{
+		if (!inBounds(x, y))
+		{
+			return 1;
+		}
 		return lifeCanvas[canvasWidth * y + x];
 	}
 
@@ -125,57 +150,61 @@ public:
 	void DrawImpl();
 	bool AppendCommands(Renderer* renderer) override;
 
-	// Rebuild 256-entry RGB palette from ruleset evalCell (ruleset change / init).
+	// Map cell state → target display color via palette (used by updateVisualTargets).
+	void setTargetColor(int cellIndex, unsigned char r, unsigned char g, unsigned char b);
+	// Apply palette[life] as targets for dirty life region (or full grid).
+	void rebuildTargetsFromLife();
 	void rebuildPalette(const RuleSet* rules);
-	// Default black/white palette when no ruleset is available yet.
 	void rebuildDefaultPalette();
 
-	// Fade API kept for env/console compatibility; R8 path snaps (no dual float RGB).
 	void setFadeSpeed(float speed);
 	float getFadeSpeed() const { return fadeSpeed; }
 	void tickVisual(float dt);
+	void snapVisualToTargets();
 
-	// --- Dirty / skip API (performance) ---
 	bool isCellsDirty() const { return cellsDirty; }
 	void markCellsDirty();
 	void markCellsDirtyRegion(int x0, int y0, int x1, int y1);
 	bool hasCellsDirtyRegion() const { return cellsDirty && cellsDirtyRect.valid(); }
 	const DirtyRect& getCellsDirtyRegion() const { return cellsDirtyRect; }
-	// After life changes have been queued for GPU upload.
 	void onTargetsRebuilt();
+	bool isFadeActive() const { return fadeActive; }
 	bool isTextureUploadPending() const { return textureUploadPending; }
-	bool isPaletteUploadPending() const { return paletteUploadPending; }
 	const DirtyRect& getUploadDirtyRegion() const { return uploadDirtyRect; }
 	const unsigned char* getPaletteRgb() const { return paletteRgb; }
+	const unsigned char* getDisplayTexBuffer() const { return texCanvasBuffer; }
 
 	int canvasWidth;
 	int canvasHeight;
 	unsigned char* lifeCanvas;
+	unsigned char* texCanvasBuffer;
 	IRenderWindow* window;
 	Camera* camera;
 	Renderer* renderer;
 
 private:
 	void enrollGpuResources();
-	void noteUploadRegion(int x0, int y0, int x1, int y1);
+	void noteTexelChanged(int cellX, int cellY);
+	void writeTexelFromDisplay(int cellIndex, bool* anyByteChange);
 
 	std::array<float, 32> vertices;
 	std::array<unsigned int, 6> indices;
 
-	// 256×1 RGB palette (CPU staging for GPU texture).
 	unsigned char paletteRgb[kPaletteSize * 3];
+	float* displayRgb;
+	float* targetRgb;
 	float fadeSpeed;
 
 	unsigned long meshHandle;
 	unsigned long shaderHandle;
-	unsigned long cellTextureHandle;
-	unsigned long paletteTextureHandle;
+	unsigned long displayTextureHandle;
 	bool gpuReady;
 
 	bool cellsDirty;
+	bool fadeActive;
 	bool textureUploadPending;
-	bool paletteUploadPending;
 
 	DirtyRect cellsDirtyRect;
+	DirtyRect fadeDirtyRect;
 	DirtyRect uploadDirtyRect;
 };

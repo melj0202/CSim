@@ -24,14 +24,27 @@ and selects a \symbolref{RuleSet} from a mode string
 Mode changes from console/env call \texttt{setRuleSet} and
 \texttt{Canvas::rebuildPalette}.
 
-\subsection{Canvas}
+\subsection{Canvas (domain + view + GPU --- D-C1)}
 \begin{itemize}
-  \item CPU grid: \symbolref{lifeCanvas} only (one byte per cell).
-  \item Dirty flags/rects: life region, R8 upload region; skip work when idle.
-  \item Token view: enrolled mesh, R8 cell texture, palette texture, canvas
-        shaders (\cref{sec:canvas-r8}).
-  \item No dual float RGB buffers; presentation colors come from the palette.
+  \item CPU grid: \symbolref{lifeCanvas} (one byte per cell), dense rectangle
+        (not chunked).
+  \item View: CPU palette $\rightarrow$ \texttt{targetRgb}; \texttt{displayRgb}
+        eases toward targets; \texttt{texCanvasBuffer} RGB bytes for upload.
+  \item Token view: enrolled mesh/shader/display texture; dirty-rect
+        \texttt{UpdateTexture} (PBO path).
+  \item Dual role is intentional at current scale; split only if pure-sim tests
+        or large grids require it.
 \end{itemize}
+
+\subsection{Scale walls (simulation / memory)}
+\begin{statusbox}
+\texttt{calcGeneration} always walks the \textbf{full} grid (rect args ignored).
+Neighbor counts are scalar Moore/toroidal. Change detection does a second full
+pass for a dirty AABB (good for sparse \emph{visual} updates, still $O(WH)$).
+Per cell: 1\,B life + $\sim$24\,B float RGB + 3\,B display tex.
+Default $80\times 60$ is fine; large/infinite canvases need a redesign (chunking,
+bitboards, or dropping dual float fade).
+\end{statusbox}
 
 \subsection{Rulesets}
 Active rules (in \pathref{AllSets.h} / factory): Game of Life, Seeds, Brian's

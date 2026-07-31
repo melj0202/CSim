@@ -28,7 +28,8 @@ void SysCmdLine::ParseCommandLine(int argc, char** argv, IEnvVars* envVars)
 				"LIFE_WITHOUT_DEATH\t Life Without Death\n" <<
 				"HIGHLIFE\t\t Similar to Game of Life\n" <<
 				"SEEDS\t\t\t Seeds\n" <<
-				"DAY_AND_NIGHT\t\t Day and Night\n";
+				"DAY_AND_NIGHT\t\t Day and Night\n" <<
+				"WIREWORLD\t\t Wireworld (circuit CA)\n";
 			std::exit(0);
 			return;
 		}

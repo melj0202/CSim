@@ -88,13 +88,14 @@ rulesets, CellContext, canvas domain, UI tokens. No GPU context required.
 
 \subsection{Remaining pain points (non-blocking)}
 \begin{enumerate}
-  \item Hybrid immediate \texttt{Draw()} still exists for unmigrated stubs;
-        production path is tokens.
+  \item Hybrid immediate \texttt{Draw()} remains for \emph{test stubs only};
+        production drawables are pure-token (D-R10).
+  \item String-named uniforms are GL-shaped debt if a second real GPU API appears
+        (D-R9).
   \item \symbolref{Renderer.h} still includes GL backend headers for production
         construction (test injection uses \symbolref{IBackend*}).
   \item \pathref{RenderWindow} still uses GLEW for context create / viewport
         (window bootstrap, not frame submission).
   \item Platform Linux/macOS render windows may still be older than the Windows path.
-  \item Some scaffolding (\symbolref{EntityTable}, incomplete \texttt{GLBuffer})
-        remains experimental.
+  \item Incomplete experimental stubs (e.g.\ \texttt{GLBuffer}) may remain.
 \end{enumerate}

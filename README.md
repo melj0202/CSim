@@ -33,9 +33,9 @@ Architecture, decision log, and performance notes live in:
 - `docs/csim-design-notes.pdf` (generated)
 - `docs/README.md` — how to build and where to edit
 
-**Current stack (short):** token renderer (`AppendCommands` → `IBackend`), Canvas as R8 cell texture + palette, double-buffered CA `nextState`, headless `CSimTests` with `MockBackend`.
+**Current stack (short):** token renderer (`AppendCommands` → `IBackend`), Canvas as life grid + RGB fade display + dirty-rect upload, double-buffered CA `nextState`, headless `CSimTests` with `MockBackend`.
 
-Use the design notes across chat sessions so design intent is not lost.
+**Architecture consensus (for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — merged view of strengths, decisions, known issues, and recommended work order.
 
 ## Build (CMake)
 

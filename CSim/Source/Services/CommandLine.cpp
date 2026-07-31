@@ -187,7 +187,7 @@ void CommandLine::ExecuteCommand()
 		logNormal("  help              - Show this help message");
 		logNormal("  ruleset [name]    - Show or change CA ruleset");
 		logNormal("                      GAME_OF_LIFE, BRIANS_BRAIN, DAY_AND_NIGHT,");
-		logNormal("                      HIGHLIFE, LIFE_WITHOUT_DEATH, SEEDS");
+		logNormal("                      HIGHLIFE, LIFE_WITHOUT_DEATH, SEEDS, WIREWORLD");
 		logNormal("  tps <n>           - Simulation ticks per second (via env)");
 		logNormal("  speedFactor <n>   - Multiplier on tps (via env)");
 		logNormal("  clear             - Clear console history");
@@ -204,7 +204,7 @@ void CommandLine::ExecuteCommand()
 			logNormal("Current ruleset: " + envVars->getVar("ModeString").value);
 			logNormal("Usage: ruleset <name>");
 			logNormal("  GAME_OF_LIFE | BRIANS_BRAIN | DAY_AND_NIGHT");
-			logNormal("  HIGHLIFE | LIFE_WITHOUT_DEATH | SEEDS");
+			logNormal("  HIGHLIFE | LIFE_WITHOUT_DEATH | SEEDS | WIREWORLD");
 		}
 		else
 		{
@@ -221,12 +221,13 @@ void CommandLine::ExecuteCommand()
 				mode == "DAY_AND_NIGHT" ||
 				mode == "HIGHLIFE" ||
 				mode == "LIFE_WITHOUT_DEATH" ||
-				mode == "SEEDS";
+				mode == "SEEDS" ||
+				mode == "WIREWORLD";
 
 			if (!known)
 			{
 				logError("Unknown ruleset '" + args[0] + "'");
-				logNormal("Try: GAME_OF_LIFE, BRIANS_BRAIN, DAY_AND_NIGHT, HIGHLIFE, LIFE_WITHOUT_DEATH, SEEDS");
+				logNormal("Try: GAME_OF_LIFE, BRIANS_BRAIN, DAY_AND_NIGHT, HIGHLIFE, LIFE_WITHOUT_DEATH, SEEDS, WIREWORLD");
 			}
 			else
 			{

@@ -1,12 +1,26 @@
 #pragma once
 #include "RuleSet.h"
 
-// Stub Wireworld CA (not yet fully implemented).
-// Full Wireworld needs electron-head neighbor counts, not Moore "alive" counts.
+// Wireworld (Brian Silverman, 1987): four-state CA for digital circuits.
+// Encoding chosen so value 0 = electron head — RuleSet::countAliveNeighbors
+// already counts heads for the conductor birth rule.
+//
+// States:
+//   HEAD (0)       electron head
+//   EMPTY (1)      empty / background
+//   TAIL (2)       electron tail
+//   CONDUCTOR (3)  wire / copper
 class WireworldRuleSet : public RuleSet {
 public:
+	static const unsigned char CELL_HEAD = 0;
+	static const unsigned char CELL_EMPTY = 1;
+	static const unsigned char CELL_TAIL = 2;
+	static const unsigned char CELL_CONDUCTOR = 3;
+
 	WireworldRuleSet(Canvas* targetCanvas) : RuleSet(targetCanvas) {}
 	~WireworldRuleSet() override = default;
 
+	unsigned char nextState(unsigned char cell, unsigned char headNeighbors) const override;
+	void evalCell(const unsigned char& target, unsigned char dest[3]) const override;
 	std::string getRuleTag() override { return "WIREWORLD"; }
 };

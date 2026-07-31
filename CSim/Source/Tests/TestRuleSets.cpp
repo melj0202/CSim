@@ -6,6 +6,7 @@
 #include "Rulesets/SeedsRuleSet.h"
 #include "Rulesets/BrainsBrainRuleSet.h"
 #include "Rulesets/HighlifeRuleSet.h"
+#include "Rulesets/WireworldRuleSet.h"
 #include <cstdio>
 
 static TestCounters g;
@@ -132,6 +133,92 @@ static void testHighlifeRuleTag()
 	testTrue(g, rules.getRuleTag() == "HIGHLIFE", "Highlife rule tag");
 }
 
+static void testWireworldHeadTailConductorCycle()
+{
+	testSection("Wireworld: head -> tail -> conductor");
+	HeadlessCanvasFixture f(8, 8);
+	f.clearDead(); // all empty (1)
+	// Isolated head on empty background (no conductors).
+	f.canvas->setCanvasPixel(3, 3, WireworldRuleSet::CELL_HEAD);
+
+	WireworldRuleSet rules(f.canvas);
+	rules.calcGeneration(0, 0, 8, 8);
+	testEqUChar(g, f.at(3, 3), WireworldRuleSet::CELL_TAIL, "head becomes tail");
+
+	rules.calcGeneration(0, 0, 8, 8);
+	testEqUChar(g, f.at(3, 3), WireworldRuleSet::CELL_CONDUCTOR, "tail becomes conductor");
+
+	// Isolated conductor stays conductor (0 head neighbors).
+	rules.calcGeneration(0, 0, 8, 8);
+	testEqUChar(g, f.at(3, 3), WireworldRuleSet::CELL_CONDUCTOR, "lonely conductor stays copper");
+}
+
+static void testWireworldElectronOnWire()
+{
+	testSection("Wireworld: electron advances along a wire");
+	HeadlessCanvasFixture f(10, 6);
+	f.clearDead();
+	// Horizontal conductor wire on row 2, columns 1..6
+	for (int x = 1; x <= 6; ++x)
+	{
+		f.canvas->setCanvasPixel(x, 2, WireworldRuleSet::CELL_CONDUCTOR);
+	}
+	// Electron: head at x=1, tail immediately behind would be empty past wire start;
+	// place head at (1,2) so next conductor (2,2) sees exactly one head neighbor.
+	f.canvas->setCanvasPixel(1, 2, WireworldRuleSet::CELL_HEAD);
+
+	WireworldRuleSet rules(f.canvas);
+	rules.calcGeneration(0, 0, 10, 6);
+
+	// Old head → tail; (2,2) had one head neighbor → becomes head.
+	testEqUChar(g, f.at(1, 2), WireworldRuleSet::CELL_TAIL, "old head is tail");
+	testEqUChar(g, f.at(2, 2), WireworldRuleSet::CELL_HEAD, "signal moves one cell right");
+	testEqUChar(g, f.at(3, 2), WireworldRuleSet::CELL_CONDUCTOR, "farther wire still copper");
+
+	rules.calcGeneration(0, 0, 10, 6);
+	testEqUChar(g, f.at(1, 2), WireworldRuleSet::CELL_CONDUCTOR, "tail becomes copper");
+	testEqUChar(g, f.at(2, 2), WireworldRuleSet::CELL_TAIL, "head advances to tail");
+	testEqUChar(g, f.at(3, 2), WireworldRuleSet::CELL_HEAD, "signal at x=3");
+}
+
+static void testWireworldEmptyStaysEmpty()
+{
+	testSection("Wireworld: empty stays empty");
+	HeadlessCanvasFixture f(5, 5);
+	f.clearDead();
+	WireworldRuleSet rules(f.canvas);
+	rules.calcGeneration(0, 0, 5, 5);
+	int nonEmpty = 0;
+	for (int y = 0; y < 5; ++y)
+	{
+		for (int x = 0; x < 5; ++x)
+		{
+			if (f.at(x, y) != WireworldRuleSet::CELL_EMPTY)
+			{
+				++nonEmpty;
+			}
+		}
+	}
+	testEqInt(g, nonEmpty, 0, "no spontaneous signal on empty grid");
+}
+
+static void testWireworldEvalCellColors()
+{
+	testSection("Wireworld: evalCell colors");
+	HeadlessCanvasFixture f(2, 2);
+	WireworldRuleSet rules(f.canvas);
+	unsigned char rgb[3] = {0, 0, 0};
+	rules.evalCell(WireworldRuleSet::CELL_EMPTY, rgb);
+	testTrue(g, rgb[0] == 255 && rgb[1] == 255 && rgb[2] == 255, "empty is white");
+	rules.evalCell(WireworldRuleSet::CELL_HEAD, rgb);
+	testTrue(g, rgb[2] > rgb[0], "head is bluish");
+	rules.evalCell(WireworldRuleSet::CELL_TAIL, rgb);
+	testTrue(g, rgb[0] > rgb[2], "tail is reddish");
+	rules.evalCell(WireworldRuleSet::CELL_CONDUCTOR, rgb);
+	testTrue(g, rgb[0] > 200 && rgb[1] > 150, "conductor is golden");
+	testTrue(g, rules.getRuleTag() == "WIREWORLD", "Wireworld rule tag");
+}
+
 int runRuleSetTests()
 {
 	g.failures = 0;
@@ -143,6 +230,10 @@ int runRuleSetTests()
 	testSeedsBirthOnly();
 	testBriansBrainAliveBecomesDying();
 	testHighlifeRuleTag();
+	testWireworldHeadTailConductorCycle();
+	testWireworldElectronOnWire();
+	testWireworldEmptyStaysEmpty();
+	testWireworldEvalCellColors();
 	std::printf("======== RuleSet done (%d failure(s)) ========\n", g.failures);
 	return g.failures;
 }

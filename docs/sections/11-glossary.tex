@@ -32,5 +32,8 @@
   \item[RuleSet]
     Cellular automaton transition rules (\texttt{nextState} + \texttt{evalCell}).
   \item[Scene]
-    Ordered list of drawables for the frame; not an immediate GL executor.
+    Ordered list of drawables + camera + window for one frame; not a node graph
+    and not an immediate GL executor.
+  \item[IllumoContext]
+    Frozen non-owning service bag for the two shipped modules (D-E5).
 \end{description}

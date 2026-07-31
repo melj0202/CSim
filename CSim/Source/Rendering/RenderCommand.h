@@ -70,6 +70,8 @@ struct CmdBindHandle {
 	unsigned int slot;
 };
 
+// D-R9: string-named uniforms are GL-shaped debt. Fine for OpenGL + MockBackend.
+// A second real API (Metal/Vulkan) would want locations / binding points instead.
 struct CmdUniformInt {
 	char name[32];
 	int value;

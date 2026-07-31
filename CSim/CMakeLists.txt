@@ -179,6 +179,7 @@ add_executable(CSimTests
 	Source/Rulesets/HighlifeRuleSet.cpp
 	Source/Rulesets/DayAndNightRuleSet.cpp
 	Source/Rulesets/LifeWithoutDeathRuleSet.cpp
+	Source/Rulesets/WireworldRuleSet.cpp
 )
 
 # Keep old target name as an alias so existing scripts keep working.

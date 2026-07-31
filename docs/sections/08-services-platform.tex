@@ -24,11 +24,13 @@ Headers that should stay cheap to include:
 macros (\pathref{MacroDefs.h}), build info, sysinfo, \pathref{MathTypes.h},
 \pathref{ArrayQueue.h}.
 
-\begin{openbox}
-\pathref{MacroDefs.h} pulls Windows headers on \texttt{\_WIN32}. That is
-convenient for \texttt{Sleep} etc., but increases include toxicity. Consider
-splitting platform sleep helpers out of the ubiquitous macro header.
-\end{openbox}
+\begin{statusbox}
+\pathref{MacroDefs.h} still pulls Windows headers on \texttt{\_WIN32} (for
+\texttt{Sleep} / \texttt{\_\_SLEEP}). That is include-heavy for a widely used
+header. \textbf{Deferred (D-F1):} leave as-is until compile time, name
+collisions, or header hygiene actually hurt; then split platform sleep into a
+narrower header.
+\end{statusbox}
 
 \subsection{Platform}
 Thin ports:

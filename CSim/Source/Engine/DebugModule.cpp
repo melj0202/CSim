@@ -18,6 +18,14 @@ DebugModule::~DebugModule()
 
 void DebugModule::Start(IllumoContext* context)
 {
+	// D-E5: fail loud if the frozen service bag is incomplete.
+	if (!IllumoContextHasDebugCore(context))
+	{
+		Logger::LogError("DebugModule::Start: IllumoContext missing required services "
+			"(envVars, window, renderer, inputManager, commandLine, commandRegistry)");
+		ic = context;
+		return;
+	}
 	ic = context;
 
 	// Required for GLString / SplashText screen-space drawing

@@ -4,3 +4,4 @@
 #include "HighlifeRuleSet.h"
 #include "LifeWithoutDeathRuleSet.h"
 #include "SeedsRuleSet.h"
+#include "WireworldRuleSet.h"

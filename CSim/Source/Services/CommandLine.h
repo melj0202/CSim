@@ -10,14 +10,14 @@
 #include "Drawable.h"
 #include "Foundation/MathTypes.h"
 #include "CommandRegistry.h"
-#include "SceneObject.h"
 
 #define MAX_CHARS_PER_LINE 1024
 #define MAX_CMD_HISTORY 256
 
 class Renderer;
 
-class CommandLine : public SceneObject, public Drawable<CommandLine> {
+// Console UI drawable (token path). No longer inherits SceneObject (D-E4).
+class CommandLine : public Drawable<CommandLine> {
 public:
 	struct historyBuffer {
 		unsigned char r, g, b, a;

@@ -23,6 +23,7 @@ static void testIsKnownModeString()
 	testTrue(g, CellContext::IsKnownModeString("GAME_OF_LIFE"), "GoL known");
 	testTrue(g, CellContext::IsKnownModeString("SEEDS"), "Seeds known");
 	testTrue(g, CellContext::IsKnownModeString("BRIANS_BRAIN"), "BB known");
+	testTrue(g, CellContext::IsKnownModeString("WIREWORLD"), "Wireworld known");
 	testTrue(g, !CellContext::IsKnownModeString("NOT_A_RULE"), "unknown rejected");
 	testTrue(g, !CellContext::IsKnownModeString("game_of_life"),
 		"lowercase not known until normalize (API is exact)");

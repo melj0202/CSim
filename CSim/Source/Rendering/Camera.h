@@ -3,7 +3,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "IEnvVars.h"
-#include "SceneObject.h"
 
 class IRenderWindow;
 
@@ -12,7 +11,8 @@ enum class ProjectonType {
     PERSPECTIVE
 };
 
-class Camera : public SceneObject {
+// Standalone camera (no longer inherits unused SceneObject graph — D-E4).
+class Camera {
 public:
     Camera(const glm::vec2& initialPos = glm::vec2(0.0f, 0.0f), float initialZoom = 1.0f, IEnvVars* vars = nullptr);
     ~Camera() = default;

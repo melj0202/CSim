@@ -268,14 +268,18 @@ static void testRenderSceneCanvasTokens()
 	Canvas canvas(16, 12, &window, &camera, &renderer);
 	scene.AddDrawable(&canvas);
 
-	// Drain initial R8 + palette enroll uploads.
+	// Drain initial RGB display enroll upload.
 	renderer.BeginFrame();
 	renderer.RenderScene(&scene, &camera);
 	renderer.EndFrame();
 	e2eTrue(mock.countNonEmptyOfType(CommandType::UpdateTexture) >= 1u, "initial enroll uploads");
 
-	// Paint one cell → sparse R8 dirty-rect upload.
+	// Paint → targets → snap → sparse RGB dirty-rect upload.
 	canvas.setCanvasPixel(1, 1, 0);
+	canvas.rebuildTargetsFromLife();
+	canvas.setFadeSpeed(0.0f);
+	canvas.setTargetColor(1 * canvas.canvasWidth + 1, 0, 0, 0);
+	canvas.snapVisualToTargets();
 
 	renderer.BeginFrame();
 	renderer.RenderScene(&scene, &camera);
@@ -287,11 +291,10 @@ static void testRenderSceneCanvasTokens()
 	e2eEqSize(mock.countNonEmptyOfType(CommandType::SetUniformMat4), 1u, "Canvas MVP uniform once");
 	e2eEqSize(mock.countNonEmptyOfType(CommandType::ClearScreen), 1u, "frame clear once");
 
-	// Canvas enroll: mesh + shader + R8 cell + palette
-	e2eTrue(mock.getCreateCount() >= 4u, "Canvas enroll create records");
+	// Canvas enroll: mesh + shader + RGB display
+	e2eTrue(mock.getCreateCount() >= 3u, "Canvas enroll create records");
 
-	// Find UpdateTexture and check sparse R8 dirty-rect (1x1 at painted cell)
-	bool foundR8Update = false;
+	bool foundRgbUpdate = false;
 	for (size_t i = 0; i < mock.getLastNonEmptySubmittedCount(); ++i)
 	{
 		const RenderCommand& cmd = mock.getLastNonEmptySubmitted(i);
@@ -301,12 +304,12 @@ static void testRenderSceneCanvasTokens()
 			e2eEqInt(cmd.updateTexture.y, 1, "UpdateTexture dirty y");
 			e2eEqInt(cmd.updateTexture.width, 1, "UpdateTexture dirty width");
 			e2eEqInt(cmd.updateTexture.height, 1, "UpdateTexture dirty height");
-			e2eEqInt(cmd.updateTexture.channels, 1, "UpdateTexture R8 channels");
+			e2eEqInt(cmd.updateTexture.channels, 3, "UpdateTexture RGB channels");
 			e2eEqInt(cmd.updateTexture.srcRowStride, 16, "UpdateTexture src row stride = canvas width");
-			foundR8Update = true;
+			foundRgbUpdate = true;
 		}
 	}
-	e2eTrue(foundR8Update, "found UpdateTexture command");
+	e2eTrue(foundRgbUpdate, "found UpdateTexture command");
 }
 
 static void testRenderProofQuadOnMock()

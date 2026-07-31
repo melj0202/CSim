@@ -4,8 +4,7 @@
 
 
 Camera::Camera(const glm::vec2& initialPos, float initialZoom, IEnvVars* envVars)
-	: SceneObject(0u)
-	, position(initialPos)
+	: position(initialPos)
 	, targetPosition(initialPos)
 	, rotation(0.0f)
 	, targetRotation(0.0f)

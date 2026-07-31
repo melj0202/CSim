@@ -359,10 +359,9 @@ public:
 	}
 
 	// =========================================================================
-	// Scene render (Phase 2/3 hybrid)
-	// Frame setup + migrated drawables emit tokens; unmigrated use immediate Draw.
-	// Order preserved: token batch submits first (world/canvas under UI), then
-	// immediate overlays (console / FPS).
+	// Scene render (token-first; hybrid immediate only if AppendCommands fails)
+	// Production: Canvas / CommandLine / GLString / SplashText are pure-token (D-R10).
+	// Immediate Draw() remains for test stubs and any future unmigrated drawable.
 	// =========================================================================
 
 	void RenderScene(Scene* scene, Camera* camera)
@@ -373,7 +372,7 @@ public:
 			_camera = camera;
 		}
 
-		// Match historical Scene::Update clear color (0.1, 0.1, 0.1).
+		// Historical clear color (0.1, 0.1, 0.1).
 		std::array<int, 2> dims = _window->getWindowDimensions();
 		pushViewport(0, 0, dims[0], dims[1]);
 
@@ -397,7 +396,7 @@ public:
 				{
 					continue;
 				}
-				// Migrated: AppendCommands returns true and pushes tokens.
+				// Pure-token: returns true. Immediate fallback if false (tests / stubs).
 				if (!drawable->AppendCommands(this))
 				{
 					immediateList.push_back(drawable);
@@ -405,7 +404,7 @@ public:
 			}
 		}
 
-		// Submit clear + all token drawables (e.g. Canvas) before immediate UI.
+		// Submit clear + token drawables before any immediate overlays.
 		_backend->SubmitCommandQueue();
 		_backend->ClearCommandQueue();
 

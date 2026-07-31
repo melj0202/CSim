@@ -51,7 +51,8 @@ class CellContext {
                 || modeString == "DAY_AND_NIGHT"
                 || modeString == "HIGHLIFE"
                 || modeString == "LIFE_WITHOUT_DEATH"
-                || modeString == "SEEDS";
+                || modeString == "SEEDS"
+                || modeString == "WIREWORLD";
         }
 
         // Returns true if the active ruleset instance changed.
@@ -86,6 +87,9 @@ class CellContext {
             }
             else if (modeString == "SEEDS") {
                 ruleSet = new SeedsRuleSet(canvas);
+            }
+            else if (modeString == "WIREWORLD") {
+                ruleSet = new WireworldRuleSet(canvas);
             }
             else {
                 Logger::LogError("Invalid rule set name: " + modeString);
