@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.7.28)  28 JUL 2026 20:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.7.28)  2 AUG 2026 14:20
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -945,10 +945,16 @@ File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10.95> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 24.
- [3{c:/texlive/2026/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]) (./sections/02-
-project-overview.tex)
-(./sections/03-source-layout.tex [4{c:/texlive/2026/texmf-dist/fonts/enc/dvips/
-lm/lm-mathsy.enc}]
+
+Overfull \hbox (87.71353pt too wide) in paragraph at lines 37--39
+[]\T1/lmr/m/n/10.95 When a de-ci-sion is made, ap-pend a dated en-try to the de
+-ci-sion log \T1/lmr/bx/n/10.95 and \T1/lmr/m/n/10.95 up-date \T1/lmtt/m/n/10.9
+5 architecture-consensus.md\T1/lmr/m/n/10.95 . 
+ []
+
+[3{c:/texlive/2026/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}])
+(./sections/02-project-overview.tex) (./sections/03-source-layout.tex [4{c:/tex
+live/2026/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
 Overfull \hbox (4.11687pt too wide) in paragraph at lines 29--31
 []\T1/lmtt/m/n/10.95 CSim/Shader/ \T1/lmr/m/n/10.95 --- GLSL as-sets copied to 
 the build tree (\T1/lmtt/m/n/10.95 canvas_*.glsl\T1/lmr/m/n/10.95 , \T1/lmtt/m/
@@ -967,21 +973,14 @@ enderer\T1/lmr/m/n/10.95 , \T1/lmtt/m/n/10.95 AssetManager\T1/lmr/m/n/10.95 ,
  []
 
 [6]) (./sections/05-rendering-current.tex [7]
-Overfull \hbox (33.4641pt too wide) in paragraph at lines 46--48
-[]\T1/lmr/m/n/10.95 GPU cell tex-ture: \T1/lmtt/m/n/10.95 GL_R8\T1/lmr/m/n/10.9
-5 , up-dated via dirty-rect \T1/lmtt/m/n/10.95 UpdateTexture \T1/lmr/m/n/10.95 
-to-kens (op-tional \T1/lmtt/m/n/10.95 srcRowStride\T1/lmr/m/n/10.95 ). 
+Overfull \hbox (40.99718pt too wide) in paragraph at lines 53--55
+[]\T1/lmr/m/n/10.95 Shaders: \T1/lmtt/m/n/10.95 Shader/canvas_vertex.glsl\T1/lm
+r/m/n/10.95 , \T1/lmtt/m/n/10.95 Shader/canvas_frag.glsl \T1/lmr/m/n/10.95 --- 
+sam-ple \T1/lmtt/m/n/10.95 uDisplayTexture\T1/lmr/m/n/10.95 . 
  []
 
 
-Overfull \hbox (14.52917pt too wide) in paragraph at lines 54--58
-[]\T1/lmr/m/n/10.95 CPU float RGB fade buffers (\T1/lmtt/m/n/10.95 displayRgb\T
-1/lmr/m/n/10.95 /\T1/lmtt/m/n/10.95 targetRgb\T1/lmr/m/n/10.95 ) and full-frame
- RGB \T1/lmtt/m/n/10.95 texCanvasBuffer
- []
-
-
-Overfull \hbox (98.90414pt too wide) in paragraph at lines 61--64
+Overfull \hbox (98.90414pt too wide) in paragraph at lines 62--65
 \T1/lmtt/m/n/10.95 IBackend\T1/lmr/m/n/10.95 : life-cy-cle, com-mand queue push
 /submit/clear, en-roll \T1/lmtt/m/n/10.95 CreateMesh\T1/lmr/m/n/10.95 /\T1/lmtt
 /m/n/10.95 CreateShaderProgram\T1/lmr/m/n/10.95 /\T1/lmtt/m/n/10.95 CreateTextu
@@ -989,7 +988,7 @@ re
  []
 
 
-Overfull \hbox (41.15952pt too wide) in paragraph at lines 69--71
+Overfull \hbox (41.15952pt too wide) in paragraph at lines 70--72
 []\T1/lmtt/m/n/10.95 GLTexture::UpdateSubImage\T1/lmr/m/n/10.95 : PBO ping-pong
  + dirty-rect pack-ing; fall-back to client \T1/lmtt/m/n/10.95 glTexSubImage2D
  []
@@ -1001,20 +1000,14 @@ Overfull \hbox (18.32368pt too wide) in paragraph at lines 11--13
 raw-ables; draw-ables emit han-dles/uniforms/updates,
  []
 
-[9]
-Overfull \hbox (8.70816pt too wide) in paragraph at lines 83--85
-[]\T1/lmr/m/n/10.95 View: mesh + R8 cell tex-ture + palette tex-ture + can-vas 
-shaders; dirty-rect \T1/lmtt/m/n/10.95 UpdateTexture\T1/lmr/m/n/10.95 ;
- []
-
-[10]) (./sections/07-game-and-rules.tex
+[9] [10]) (./sections/07-game-and-rules.tex [11]
 Overfull \hbox (1.8008pt too wide) in paragraph at lines 33--35
 []\T1/lmr/m/n/10.95 Token view: en-rolled mesh/shader/display tex-ture; dirty-r
 ect \T1/lmtt/m/n/10.95 UpdateTexture \T1/lmr/m/n/10.95 (PBO path). 
  []
 
-[11]) (./sections/08-services-platform.tex [12{c:/texlive/2026/texmf-dist/fonts
-/enc/dvips/lm/lm-mathit.enc}]
+[12{c:/texlive/2026/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}])
+(./sections/08-services-platform.tex
 Overfull \hbox (27.28865pt too wide) in paragraph at lines 14--16
 []\T1/lmr/bx/n/10.95 CLI \T1/lmr/m/n/10.95 --- \T1/lmtt/m/n/10.95 CommandLine \
 T1/lmr/m/n/10.95 (to-ken UI when open; batched ge-om-e-try), \T1/lmtt/m/n/10.95
@@ -1029,70 +1022,84 @@ m/n/10.95 MacroDefs.h\T1/lmr/m/n/10.95 ), build info, sys-info, \T1/lmtt/m/n/10
 .95 MathTypes.h\T1/lmr/m/n/10.95 ,
  []
 
-
-Overfull \hbox (35.45534pt too wide) in paragraph at lines 42--44
+[13]
+Overfull \hbox (35.45534pt too wide) in paragraph at lines 44--46
 []\T1/lmr/m/n/10.95 Contract: boot-strap $\OMS/lmsy/m/n/10.95 !$ \T1/lmr/m/n/10
 .95 call \T1/lmtt/m/n/10.95 CellMain $\OMS/lmsy/m/n/10.95 !$ \T1/lmr/m/n/10.95 
 im-ple-ment \T1/lmtt/m/n/10.95 SaveLoad::GetLoadLocation \T1/lmr/m/n/10.95 / \T
 1/lmtt/m/n/10.95 GetSaveLocation\T1/lmr/m/n/10.95 . 
  []
 
-) (./sections/09-design-decision-log.tex [13] [14] [15]
-Underfull \hbox (badness 4899) in paragraph at lines 150--157
+) (./sections/09-design-decision-log.tex [14] [15]
+Underfull \hbox (badness 4899) in paragraph at lines 151--158
 []\T1/lmr/bx/n/10.95 Decision: \T1/lmr/m/n/10.95 Archive win-dow \T1/lmtt/m/n/1
 0.95 RenderQueue\T1/lmr/m/n/10.95 , legacy \T1/lmtt/m/n/10.95 Drawable.cpp \T1/
 lmr/m/n/10.95 GL helpers,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 150--157
+Underfull \hbox (badness 10000) in paragraph at lines 151--158
 \T1/lmr/m/n/10.95 empty \T1/lmtt/m/n/10.95 Transform\T1/lmr/m/n/10.95 /\T1/lmtt
 /m/n/10.95 RenderContext\T1/lmr/m/n/10.95 , and un-used \T1/lmtt/m/n/10.95 Cell
 CommandLine \T1/lmr/m/n/10.95 un-der
  []
 
-
-Underfull \hbox (badness 1107) in paragraph at lines 162--171
-\T1/lmr/m/n/10.95 snap-shot the com-mand queue on \T1/lmtt/m/n/10.95 SubmitComm
-andQueue\T1/lmr/m/n/10.95 . Ship as CMake tar-get
- []
-
 [16]
-Underfull \hbox (badness 2717) in paragraph at lines 176--184
+Underfull \hbox (badness 2717) in paragraph at lines 178--186
 \T1/lmr/m/n/10.95 flag). Pro-duc-tion still owns a \T1/lmtt/m/n/10.95 GLBackend
 \T1/lmr/m/n/10.95 . Tests in-ject \T1/lmtt/m/n/10.95 MockBackend \T1/lmr/m/n/10
 .95 with
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 210--217
+[17]
+Underfull \hbox (badness 10000) in paragraph at lines 212--219
 []\T1/lmr/bx/n/10.95 Decision: \T1/lmtt/m/n/10.95 RuleSet::calcGeneration \T1/l
 mr/m/n/10.95 writes pure \T1/lmtt/m/n/10.95 nextState(cell,
  []
 
-[17] [18] [19]) (./sections/10-open-questions.tex [20])
+
+Underfull \hbox (badness 2865) in paragraph at lines 224--235
+[]\T1/lmr/bx/n/10.95 Decision (orig-i-nal): \T1/lmr/m/n/10.95 Present cells as 
+\T1/lmtt/m/n/10.95 GL_R8 \T1/lmr/m/n/10.95 tex-ture of state bytes plus a
+ []
+
+
+Underfull \hbox (badness 1436) in paragraph at lines 224--235
+\OT1/lmr/m/n/10.95 256 \OMS/lmsy/m/n/10.95 ^^B \OT1/lmr/m/n/10.95 1$ \T1/lmr/m/
+n/10.95 RGB palette (\T1/lmtt/m/n/10.95 evalCell\T1/lmr/m/n/10.95 ). Up-load di
+rty rects via PBO ping-pong in
+ []
+
+[18] [19] [20]) (./sections/10-open-questions.tex [21])
 (./sections/11-glossary.tex
 
 Package enumitem Warning: Negative labelwidth. This does not make much
 (enumitem)                sense, on input line 4.
 
-[21]) (./sections/A-build-notes.tex [22]) (./sections/B-file-map.tex
+[22]) (./sections/A-build-notes.tex
+Overfull \hbox (13.13763pt too wide) in paragraph at lines 22--24
+[]\T1/lmtt/m/n/10.95 build/Release/CSimTests.exe \T1/lmr/m/n/10.95 (legacy CMak
+e tar-get \T1/lmtt/m/n/10.95 CSimRenderTests \T1/lmr/m/n/10.95 aliases \T1/lmtt
+/m/n/10.95 CSimTests\T1/lmr/m/n/10.95 ) 
+ []
+
+) (./sections/B-file-map.tex
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-) [23] [24] (./csim-design-notes.aux)
+[23]) [24] (./csim-design-notes.aux)
  ***********
 LaTeX2e <2026-06-01>
 L3 programming layer <2026-06-18>
  ***********
 Package rerunfilecheck Info: File `csim-design-notes.out' has not changed.
-(rerunfilecheck)             Checksum: 75F21A51BBE4FB8DF972CD60116E3127;9310.
+(rerunfilecheck)             Checksum: C8E7CD9DC86D7E7B7475AD419F875A3B;9366.
  ) 
 Here is how much of TeX's memory you used:
- 30599 strings out of 467168
- 597443 string characters out of 5413699
- 1116068 words of memory out of 5000000
- 59124 multiletter control sequences out of 15000+600000
+ 30606 strings out of 467168
+ 597520 string characters out of 5413699
+ 1117090 words of memory out of 5000000
+ 59128 multiletter control sequences out of 15000+600000
  693638 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,9n,94p,510b,2120s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1107,10 +1114,10 @@ live/2026/texmf-dist/fonts/type1/public/lm/lmtk10.pfb><c:/texlive/2026/texmf-di
 st/fonts/type1/public/lm/lmtt10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/pub
 lic/lm/lmtti10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/symb
 ols/msam10.pfb>
-Output written on csim-design-notes.pdf (24 pages, 377260 bytes).
+Output written on csim-design-notes.pdf (24 pages, 380437 bytes).
 PDF statistics:
- 679 PDF objects out of 1000 (max. 8388607)
- 618 compressed objects within 7 object streams
- 224 named destinations out of 1000 (max. 500000)
+ 682 PDF objects out of 1000 (max. 8388607)
+ 621 compressed objects within 7 object streams
+ 227 named destinations out of 1000 (max. 500000)
  477 words of extra memory for PDF output out of 10000 (max. 10000000)
 

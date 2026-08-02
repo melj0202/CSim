@@ -5,7 +5,8 @@
   \item[Backend]
     Implementation of \symbolref{IBackend} for a graphics API (or mock).
   \item[Canvas]
-    Cell grid domain (\texttt{lifeCanvas}) plus token-based R8/palette view.
+    Cell grid domain (\texttt{lifeCanvas}) plus CPU palette targets,
+    \texttt{displayRgb} fade, and a token-based RGB display-texture view.
   \item[Command / token]
     One entry in the render command queue describing a GPU operation.
   \item[CRTP]
@@ -22,11 +23,11 @@
   \item[Illumo]
     Engine/host object: owns services, modules, frame pumping.
   \item[IllumoContext]
-    Non-owning pointers to services for modules.
+    Frozen non-owning service bag for the two shipped modules (D-E5).
   \item[Module]
     \symbolref{IModule} subsystem (game, debug, \ldots).
   \item[Palette]
-    $256\times 1$ RGB texture mapping cell state bytes to display colors.
+    CPU table mapping all 256 possible cell-state bytes to RGB target colors.
   \item[PBO]
     Pixel buffer object; async unpack path for texture uploads.
   \item[RuleSet]
@@ -34,6 +35,4 @@
   \item[Scene]
     Ordered list of drawables + camera + window for one frame; not a node graph
     and not an immediate GL executor.
-  \item[IllumoContext]
-    Frozen non-owning service bag for the two shipped modules (D-E5).
 \end{description}

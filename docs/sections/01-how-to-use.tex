@@ -53,8 +53,10 @@ pdflatex csim-design-notes.tex   # second pass for refs/TOC
 \noindent Output: \pathref{docs/csim-design-notes.pdf}.
 
 \begin{statusbox}
-As of 2026-07-28 (post-audit): packages under \pathref{App}, \pathref{Engine},
-\pathref{Game}, \ldots; token renderer + mock tests shipped; Canvas uses R8
-cell texture + palette; double-buffered rules; headless \texttt{CSimTests}.
-Windows MSVC Release/Debug builds are the primary target.
+As of 2026-08-02 (current-state audit): packages under \pathref{App},
+\pathref{Engine}, \pathref{Game}, \ldots; token renderer + mock tests shipped;
+Canvas uses CPU palette targets, \texttt{displayRgb} fade, and a dirty-rect RGB
+display texture; rules are double-buffered; headless \texttt{CSimTests} runs
+as part of the default build. Windows MSVC Release/Debug builds are the primary
+target.
 \end{statusbox}

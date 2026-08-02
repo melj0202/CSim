@@ -4,8 +4,14 @@
 \subsection{Configure \& build (Windows)}
 \begin{lstlisting}[language={}]
 cmake -S CSim -B build -G "Visual Studio 17 2022" -A x64
-cmake --build build --config Release --target CSim
-cmake --build build --config Debug --target CSim
+cmake --build build --config Release
+\end{lstlisting}
+
+The default build compiles the application and \texttt{CSimTests}, then runs
+the \texttt{CSimTests} CTest entry through the \texttt{CSimRunTests} target.
+Use an explicit target only for a focused build.
+
+\begin{lstlisting}[language={}]
 cmake --build build --config Release --target CSimTests
 \end{lstlisting}
 
@@ -13,12 +19,13 @@ Artifacts:
 \begin{itemize}
   \item \pathref{build/Release/CSim.exe}
   \item \pathref{build/Debug/CSim.exe}
-  \item \pathref{build/Release/CSimTests.exe} (alias target \texttt{CSimRenderTests})
+  \item \pathref{build/Release/CSimTests.exe} (legacy CMake target
+        \texttt{CSimRenderTests} aliases \texttt{CSimTests})
 \end{itemize}
 
 \subsection{Tests (headless)}
 \begin{lstlisting}[language={}]
-ctest -C Release -R CSimTests --output-on-failure
+ctest --test-dir build -C Release -R "^CSimTests$" --output-on-failure
 # or: build/Release/CSimTests.exe
 \end{lstlisting}
 No OpenGL context is required (\texttt{MockBackend}).

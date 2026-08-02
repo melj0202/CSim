@@ -128,8 +128,9 @@ Phase 6 (mock backend) included; second real GPU API still optional.\\
 \textbf{Why:} Playable strangler path to API isolation without big-bang rewrite.\\
 \textbf{Also freeze for v1:} destroy resources at shutdown only; Windows GL is
 primary platform.\\
-\textbf{Superseded in part by D-P1/D-P4:} full-frame Canvas rewrite was v1 only;
-dirty-rect R8 uploads are now the path.
+\textbf{Superseded in part by D-P1/D-P4:} full-frame Canvas rewrite was v1 only.
+Dirty-rect/PBO uploads remain, while the R8 presentation was later superseded
+by the restored RGB fade path documented in D-P4.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -161,13 +162,14 @@ draw list is only \symbolref{Scene} + \symbolref{Renderer}.
 \begin{decisionbox}[title={D-R7 \quad 2026-07-28}]
 \textbf{Decision:} Add headless \texttt{MockBackend} implementing
 \symbolref{IBackend}: record \texttt{Create*} and snapshot the command queue
-on \texttt{SubmitCommandQueue}. Ship as CMake target
-\texttt{CSimRenderTests} / CTest \texttt{MockBackend}. Do \textbf{not}
-add Vulkan/Metal yet.\\
+on \texttt{SubmitCommandQueue}. Originally shipped as CMake target
+\texttt{CSimRenderTests} / CTest \texttt{MockBackend}; the current canonical
+target and CTest name are \texttt{CSimTests}, with the old names retained only
+as compatibility aliases. Do \textbf{not} add Vulkan/Metal yet.\\
 \textbf{Why:} First meaningful automated render test without a GPU context;
 proves token vocabulary and handle plumbing independently of GL.\\
-\textbf{Consequences:} CI can run \texttt{ctest -R MockBackend}; second real
-API remains future work after more production needs appear.
+\textbf{Consequences:} CI can run \texttt{ctest -R CSimTests}; second real API
+remains future work after more production needs appear.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------

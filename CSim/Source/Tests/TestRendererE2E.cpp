@@ -1,5 +1,5 @@
 // End-to-end drawable → Renderer → MockBackend token tests (no OpenGL).
-// Linked into CSimRenderTests with TestMockBackend.cpp.
+// Linked into the current CSimTests target with TestMockBackend.cpp.
 
 #include "Rendering/Mock/MockBackend.h"
 #include "Rendering/Renderer.h"

@@ -5,8 +5,9 @@ Cellular-automata **game domain**: canvas state, game module (modes), and editor
 ## Canvas
 
 - **Domain:** `lifeCanvas` — one byte per cell (`0` alive, `1` dead for binary CAs).
-- **View:** token path enrolls mesh + **R8** cell texture + **256×1 RGB palette**; dirty-rect uploads.
-- **No** dual float RGB fade buffers; `rebuildPalette(RuleSet*)` on ruleset change.
+- **View:** a CPU palette maps cell state into `targetRgb`; `displayRgb` eases toward those targets and packs the result into `texCanvasBuffer`.
+- **GPU:** token path enrolls a mesh, canvas shader, and **RGB display texture**; changed texels upload through dirty rectangles (PBO path in OpenGL).
+- `rebuildPalette(RuleSet*)` refreshes visual targets when the active ruleset changes.
 
 See `docs/sections/07-game-and-rules.tex` and `05-rendering-current.tex`.
 

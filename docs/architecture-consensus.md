@@ -159,7 +159,7 @@ Agreement across reviews:
 - Layered modular monolith is **appropriate**  
 - App owns modules; token path + MockBackend are real strengths  
 - Scene-as-list is correct; dead graph/EntityTable should stay gone  
-- Main risks: incomplete module Start handling, Canvas dual role, partial backend neutrality, CMake duplication, docs lagging code (especially Canvas presentation)  
+- Main risks: incomplete module Start handling, Canvas dual role, partial backend neutrality, and command-queue overflow
 - Highest value: product correctness + one canonical Canvas model in docs — **not** ECS or multi-pass  
 
 ---
@@ -495,7 +495,7 @@ From local code review / `docs/current_issues.txt` (fix when touching related co
 From `gpt_csim_arch_assessment.pdf`:
 
 - Command queue **2048** capacity with **silent drop**; raw pointer payloads must stay alive until submit  
-- CMake source-list duplication (CSim vs CSimTests); empty package CMake files  
+- CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; empty package CMake files remain
 - Docs historically described **R8+palette** while code used **RGB fade** — this consensus file + §5.6 is the resolution; keep LaTeX chapters aligned  
 - Renderer.h still includes GL types for production construction  
 - Hybrid token + immediate Draw path remains for stubs  
@@ -517,7 +517,7 @@ From `gpt_csim_arch_assessment.pdf`:
 | String uniforms | D-R9 — GL-shaped until second real backend |
 | Hybrid Draw path | Tests/stubs only; production is tokens |
 | Command queue silent overflow | Prefer log/assert if near cap |
-| CMake duplication | Shared object/library target later |
+| CMake duplication | Resolved 2026-08-02 with shared source lists/settings; no forced package libraries |
 | Renderer.h includes GL types | Factory / pimpl later |
 | Full-grid sim + float fade memory | Scale wall for large canvases |
 | MacroDefs + Windows.h | D-F1 deferred |
@@ -541,7 +541,7 @@ From `gpt_csim_arch_assessment.pdf`:
 ### B. Hygiene
 
 5. Single source of truth for known ruleset names.  
-6. Shared CMake target for common sources.  
+6. CMake source/config consolidation — **completed 2026-08-02**.
 7. Command-queue overflow policy (log/assert).  
 
 ### C. Only if product or learning goals require it

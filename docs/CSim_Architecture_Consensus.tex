@@ -232,7 +232,7 @@ Agreement across reviews:
     \item Layered modular monolith is \textbf{appropriate}
     \item App owns modules; token path + MockBackend are real strengths
     \item Scene-as-list is correct; dead graph/EntityTable should stay gone
-    \item Main risks: incomplete module Start handling, Canvas dual role, partial backend neutrality, CMake duplication, docs lagging code (especially Canvas presentation)
+    \item Main risks: incomplete module Start handling, Canvas dual role, partial backend neutrality, and command-queue overflow
     \item Highest value: product correctness + one canonical Canvas model in docs --- \textbf{not} ECS or multi-pass
 \end{itemize}
 
@@ -635,7 +635,7 @@ SYCL / large-grid parallel & \textbf{Not done} --- serial full-grid; deferred \\
 \subsection{Assessment-only risks (structural)}
 \begin{itemize}
     \item Command queue \textbf{2048} capacity with \textbf{silent drop}; raw pointer payloads must stay alive until submit.
-    \item CMake source-list duplication (\texttt{CSim} vs \texttt{CSimTests}); empty package CMake files.
+    \item CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; empty package CMake files remain.
     \item Renderer.h still includes GL types for production construction.
     \item Hybrid token + immediate Draw path remains for stubs.
 \end{itemize}
@@ -661,7 +661,7 @@ SYCL / large-grid parallel & \textbf{Not done} --- serial full-grid; deferred \\
 String uniforms & D-R9 --- GL-shaped until second real backend \\
 Hybrid Draw path & Tests/stubs only; production is tokens \\
 Command queue silent overflow & Prefer log/assert if near cap \\
-CMake duplication & Shared object/library target later \\
+CMake duplication & Resolved 2026-08-02 with shared source lists/settings; no forced package libraries \\
 Renderer.h includes GL types & Factory / pimpl later \\
 Full-grid sim + float fade memory & Scale wall for large canvases \\
 MacroDefs + Windows.h & D-F1 deferred \\
@@ -687,7 +687,7 @@ Resource destroy/reload & Shutdown-only for v1 (D-R4); hot-reload later \\
 \subsection{B. Hygiene}
 \begin{enumerate}[resume]
     \item Single source of truth for known ruleset names.
-    \item Shared CMake target for common sources.
+    \item CMake source/config consolidation --- \textbf{completed 2026-08-02}.
     \item Command-queue overflow policy (log/assert).
 \end{enumerate}
 

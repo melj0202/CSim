@@ -389,6 +389,7 @@ INPUT ./sections/05-rendering-current.tex
 INPUT ./sections/05-rendering-current.tex
 INPUT ./sections/05-rendering-current.tex
 INPUT sections/05-rendering-current.tex
+INPUT c:/texlive/2026/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc
 INPUT ./sections/06-rendering-target.tex
 INPUT ./sections/06-rendering-target.tex
 INPUT ./sections/06-rendering-target.tex
@@ -399,6 +400,7 @@ INPUT ./sections/07-game-and-rules.tex
 INPUT ./sections/07-game-and-rules.tex
 INPUT ./sections/07-game-and-rules.tex
 INPUT sections/07-game-and-rules.tex
+INPUT c:/texlive/2026/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc
 INPUT ./sections/08-services-platform.tex
 INPUT ./sections/08-services-platform.tex
 INPUT ./sections/08-services-platform.tex
@@ -449,6 +451,7 @@ INPUT ./csim-design-notes.out
 INPUT ./csim-design-notes.out
 INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmbx10.pfb
 INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmbx12.pfb
+INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmmi10.pfb
 INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmr10.pfb
 INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmr12.pfb
 INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmr17.pfb
@@ -458,3 +461,4 @@ INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmsy10.pfb
 INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmtk10.pfb
 INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmtt10.pfb
 INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmtti10.pfb
+INPUT c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb

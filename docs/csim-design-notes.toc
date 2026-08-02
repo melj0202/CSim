@@ -20,7 +20,7 @@
 \contentsline {section}{\numberline {5}Rendering --- current state}{7}{section.5}%
 \contentsline {subsection}{\numberline {5.1}What actually draws frames today}{7}{subsection.5.1}%
 \contentsline {subsection}{\numberline {5.2}Drawable design (current)}{7}{subsection.5.2}%
-\contentsline {subsection}{\numberline {5.3}Canvas presentation (R8 + palette)}{8}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.3}Canvas presentation (RGB fade + dirty rects)}{8}{subsection.5.3}%
 \contentsline {subsection}{\numberline {5.4}Backend surface}{8}{subsection.5.4}%
 \contentsline {subsection}{\numberline {5.5}UI tokens}{8}{subsection.5.5}%
 \contentsline {subsection}{\numberline {5.6}Tests (headless)}{8}{subsection.5.6}%
@@ -37,22 +37,22 @@
 \contentsline {section}{\numberline {7}Game domain and rulesets}{11}{section.7}%
 \contentsline {subsection}{\numberline {7.1}CellGameModule}{11}{subsection.7.1}%
 \contentsline {subsection}{\numberline {7.2}CellContext}{11}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}Canvas (domain + view + GPU --- D-C1)}{11}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.3}Canvas (domain + view + GPU --- D-C1)}{12}{subsection.7.3}%
 \contentsline {subsection}{\numberline {7.4}Scale walls (simulation / memory)}{12}{subsection.7.4}%
 \contentsline {subsection}{\numberline {7.5}Rulesets}{12}{subsection.7.5}%
-\contentsline {subsection}{\numberline {7.6}Cell encoding}{12}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.6}Cell encoding}{13}{subsection.7.6}%
 \contentsline {section}{\numberline {8}Services, foundation, platform}{13}{section.8}%
 \contentsline {subsection}{\numberline {8.1}Services}{13}{subsection.8.1}%
 \contentsline {subsection}{\numberline {8.2}Foundation}{13}{subsection.8.2}%
 \contentsline {subsection}{\numberline {8.3}Platform}{13}{subsection.8.3}%
-\contentsline {subsection}{\numberline {8.4}Third-party}{13}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.4}Third-party}{14}{subsection.8.4}%
 \contentsline {section}{\numberline {9}Design decision log}{14}{section.9}%
-\contentsline {section}{\numberline {10}Open questions}{20}{section.10}%
-\contentsline {section}{\numberline {11}Glossary}{21}{section.11}%
-\contentsline {section}{\numberline {A}Build notes}{22}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}Configure \& build (Windows)}{22}{subsection.A.1}%
+\contentsline {section}{\numberline {10}Open questions}{21}{section.10}%
+\contentsline {section}{\numberline {11}Glossary}{22}{section.11}%
+\contentsline {section}{\numberline {A}Build notes}{23}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Configure \& build (Windows)}{23}{subsection.A.1}%
 \contentsline {subsection}{\numberline {A.2}Tests (headless)}{23}{subsection.A.2}%
 \contentsline {subsection}{\numberline {A.3}Known setup issues}{23}{subsection.A.3}%
 \contentsline {subsection}{\numberline {A.4}House style (CONTRIBUTING)}{23}{subsection.A.4}%
 \contentsline {section}{\numberline {B}Key file map}{23}{appendix.B}%
-\contentsline {subsection}{\numberline {B.1}Archive}{23}{subsection.B.1}%
+\contentsline {subsection}{\numberline {B.1}Archive}{24}{subsection.B.1}%

@@ -43,11 +43,10 @@ From the repository root:
 
 ```bash
 cmake -S CSim -B build
-cmake --build build --config Release --target CSim
-cmake --build build --config Release --target CSimTests
+cmake --build build --config Release
 ```
 
-The build folder will contain the executable binaries (`build/Release/CSim.exe`, `CSimTests.exe` on multi-config generators).
+The default build now builds `CSimTests` and runs it through CTest. The build folder will contain the executable binaries (`build/Release/CSim.exe`, `CSimTests.exe` on multi-config generators).
 
 Headless tests (no GPU):
 

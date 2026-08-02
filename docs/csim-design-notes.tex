@@ -99,7 +99,7 @@
   \large Architecture, decisions, and performance notes%
 }
 \author{Project author + collaborative notes (Grok Build)}
-\date{Started 2026-07-28 \quad (living document; audited 2026-07-28)}
+\date{Started 2026-07-28 \quad (living document; current-state audit 2026-08-02)}
 
 \begin{document}
 \maketitle
@@ -111,7 +111,7 @@ what the code is doing today, why packages and abstractions exist, and how the
 tests fit together.
 
 The token migration (Phases 1--6) and the performance ladder (dirty visual
-path, UI batching, double-buffer sim, R8 palette + PBO uploads) are reflected
+path, UI batching, double-buffer sim, RGB fade + dirty-rect PBO uploads) are reflected
 in the ``current state'' sections and the decision log. Sections marked as
 \emph{inferred} were reverse-engineered; correct them freely. Append new
 decisions rather than silently rewriting history.
