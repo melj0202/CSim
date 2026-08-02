@@ -217,16 +217,19 @@ use identity.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
-\subsection*{D-P4 --- R8 palette + dirty-rect PBO uploads}
+\subsection*{D-P4 --- dirty-rect PBO uploads (R8 path partially superseded)}
 \begin{decisionbox}[title={D-P4 \quad 2026-07-28}]
-\textbf{Decision:} Present cells as \texttt{GL\_R8} texture of state bytes plus
-a $256\times 1$ RGB palette (\texttt{evalCell}). Upload dirty rects via PBO
-ping-pong in \texttt{GLTexture::UpdateSubImage}. Drop dual float RGB staging.\\
-\textbf{Why:} Large grids: bandwidth and CPU of RGB float fade dominated;
-palette + R8 is $O(1)$ bytes per cell on CPU.\\
-\textbf{Consequences:} Colors snap (no CPU fade); ruleset change rebuilds
-palette only; shaders \pathref{canvas\_*.glsl}; bind-state tracker in
-\symbolref{GLDevice}.
+\textbf{Decision (original):} Present cells as \texttt{GL\_R8} texture of state
+bytes plus a $256\times 1$ RGB palette (\texttt{evalCell}). Upload dirty rects
+via PBO ping-pong in \texttt{GLTexture::UpdateSubImage}. Drop dual float RGB
+staging.\\
+\textbf{Why:} Large grids: bandwidth and CPU of RGB float fade dominated.\\
+\textbf{Consequences (kept):} dirty-rect \texttt{UpdateTexture}, PBO path,
+bind-state tracker in \symbolref{GLDevice}.\\
+\textbf{Superseded presentation (2026-07-30):} live path restored to CPU RGB
+fade (\texttt{targetRgb}/\texttt{displayRgb}) + RGB display texture so cell
+colors ease rather than snap. R8+palette is historical experiment, not current
+code truth. Canonical: \pathref{docs/architecture-consensus.md}.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------

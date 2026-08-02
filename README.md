@@ -35,7 +35,7 @@ Architecture, decision log, and performance notes live in:
 
 **Current stack (short):** token renderer (`AppendCommands` → `IBackend`), Canvas as life grid + RGB fade display + dirty-rect upload, double-buffered CA `nextState`, headless `CSimTests` with `MockBackend`.
 
-**Architecture consensus (for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — merged view of strengths, decisions, known issues, and recommended work order.
+**Architecture (single source for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — unified consensus (purpose, history of old plans, current renderer/sim truth, decisions, bugs, debt, work order).
 
 ## Build (CMake)
 

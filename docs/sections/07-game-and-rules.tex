@@ -48,8 +48,8 @@ bitboards, or dropping dual float fade).
 
 \subsection{Rulesets}
 Active rules (in \pathref{AllSets.h} / factory): Game of Life, Seeds, Brian's
-Brain, Highlife, Day \& Night, Life Without Death. Stub headers exist for
-Rule 90 / 184 / Wireworld (identity \texttt{nextState}; not in AllSets).
+Brain, Highlife, Day \& Night, Life Without Death, Wireworld. Stub headers
+remain for Rule 90 / 184 (identity \texttt{nextState}).
 
 \begin{lstlisting}
 class RuleSet {
@@ -80,12 +80,14 @@ and expose \texttt{evalCell} for palette colors. That keeps them testable
 \begin{center}
 \begin{tabular}{@{}ll@{}}
 \toprule
-\textbf{Value} & \textbf{Meaning (binary CAs)} \\
+\textbf{Value} & \textbf{Meaning} \\
 \midrule
-$0$ & Alive (neighbor count treats as live) \\
-$1$ & Dead \\
-$\ge 2$ & Multi-state (e.g.\ Brian's Brain dying $=2$) \\
+$0$ & Alive / Wireworld head (neighbor count treats as ``live'') \\
+$1$ & Dead / Wireworld empty \\
+$2$ & Multi-state (Brian's Brain dying; Wireworld tail) \\
+$3$ & Wireworld conductor \\
 \bottomrule
 \end{tabular}
 \end{center}
 Historical neighbor tests used \texttt{!getCanvasPixel} (alive when zero).
+Wireworld reuses head $=0$ so head-neighbor counting stays simple.

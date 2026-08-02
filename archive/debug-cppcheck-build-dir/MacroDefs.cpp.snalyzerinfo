@@ -1,0 +1,4 @@
+msleep call:[nanosleep,while] noreturn:[nanosleep]
+_generic_swap
+_generic_abs
+_generic_pow2

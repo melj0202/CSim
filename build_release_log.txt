@@ -1,0 +1,126 @@
+MSBuild version 17.14.51+25f168cee for .NET Framework
+
+  freetype.vcxproj -> C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\thirdparty\freetype-2.13.3\Release\freetype.lib
+  glew_s.vcxproj -> C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\lib\Release\libglew32.lib
+  glfw.vcxproj -> C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\thirdparty\glfw-3.4\src\Release\glfw3.lib
+  BriansBrainRuleSet.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\BriansBrainRuleSet.cpp(11,86): warning C4458: declaration of 'ne' hides class member [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+      C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.h(11,37):
+      see declaration of 'RuleSet::ne'
+  
+  RuleSet.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.cpp(24,66): warning C4244: '=': conversion from 'int' to '_Ty', possible loss of data [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.cpp(24,66): warning C4244:         with [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.cpp(24,66): warning C4244:         [ [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.cpp(24,66): warning C4244:             _Ty=unsigned char [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.cpp(24,66): warning C4244:         ] [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  DayAndNightRuleSet.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\DayAndNightRuleSet.cpp(10,86): warning C4458: declaration of 'ne' hides class member [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+      C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.h(11,37):
+      see declaration of 'RuleSet::ne'
+  
+  GameOfLifeRuleSet.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\GameOfLifeRuleSet.cpp(10,85): warning C4458: declaration of 'ne' hides class member [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+      C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.h(11,37):
+      see declaration of 'RuleSet::ne'
+  
+  HighlifeRuleSet.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\HighlifeRuleSet.cpp(10,83): warning C4458: declaration of 'ne' hides class member [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+      C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.h(11,37):
+      see declaration of 'RuleSet::ne'
+  
+  LifeWithoutDeathRuleSet.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\LifeWithoutDeathRuleSet.cpp(9,91): warning C4458: declaration of 'ne' hides class member [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+      C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.h(11,37):
+      see declaration of 'RuleSet::ne'
+  
+  Rule90RuleSet.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\Rule90RuleSet.cpp(3,88): warning C4100: 'h': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\Rule90RuleSet.cpp(3,74): warning C4100: 'w': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\Rule90RuleSet.cpp(3,60): warning C4100: 'c': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\Rule90RuleSet.cpp(3,46): warning C4100: 'r': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  SeedsRuleSet.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\SeedsRuleSet.cpp(11,80): warning C4458: declaration of 'ne' hides class member [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+      C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rulesets\RuleSet.h(11,37):
+      see declaration of 'RuleSet::ne'
+  
+  Canvas.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(35,24): warning C4458: declaration of 'vertices' hides class member [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+      C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.h(59,25):
+      see declaration of 'Canvas::vertices'
+  
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(43,32): warning C4458: declaration of 'indices' hides class member [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+      C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.h(60,33):
+      see declaration of 'Canvas::indices'
+  
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(100,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(105,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(111,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(115,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(119,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(128,21): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(139,21): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\Canvas.cpp(145,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  CellGameModule.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(84,19): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(94,19): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(57,36): warning C4100: 'dt': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(225,21): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(233,19): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(246,17): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(253,21): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(261,19): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(275,19): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(285,21): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Game\CellGameModule.cpp(297,17): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  CommandLine.cpp
+  Logger.cpp
+  SysCmdLine.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Services\SysCmdLine.cpp(102,12): warning C4267: 'initializing': conversion from 'size_t' to 'long', possible loss of data [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Services\SysCmdLine.cpp(114,12): warning C4267: 'initializing': conversion from 'size_t' to 'long', possible loss of data [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  EnvVars.cpp
+  DebugAlloc.cpp
+  CellMain.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\App\CellMain.cpp(36,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  Illumo.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Engine\Illumo.cpp(20,33): warning C4100: 'argv': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Engine\Illumo.cpp(20,20): warning C4100: 'argc': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  DebugModule.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Engine\DebugModule.cpp(13,33): warning C4100: 'dt': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  RenderWindow.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(20,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(56,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(69,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(83,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(87,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(90,19): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(96,17): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(149,93): warning C4100: 'title': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(149,66): warning C4100: 'height': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\RenderWindow.cpp(149,49): warning C4100: 'width': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  GLString.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\GLString.cpp(45,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\GLString.cpp(84,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\GLString.cpp(93,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\GLString.cpp(127,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  Generating Code...
+  Compiling...
+  Drawable.cpp
+  Camera.cpp
+  RenderQueue.cpp
+  SplashText.cpp
+  GLBackend.cpp
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\OpenGL\GLBackend.cpp(32,18): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\OpenGL\GLBackend.cpp(35,19): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\OpenGL\GLBackend.cpp(41,17): warning C4834: discarding return value of function with [[nodiscard]] attribute [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\OpenGL\GLBackend.cpp(57,10): warning C4458: declaration of 'fps' hides class member [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+      C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\OpenGL\GLBackend.h(20,9):
+      see declaration of 'GLBackend::fps'
+  
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\OpenGL\GLBackend.cpp(57,10): warning C4189: 'fps': local variable is initialized but not referenced [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\CSim\Source\Rendering\OpenGL\GLBackend.cpp(77,49): warning C4100: 'filePath': unreferenced parameter [C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\CSim.vcxproj]
+  GLDevice.cpp
+  WinMain.cpp
+  WinSaveLoad.cpp
+  Generating Code...
+  CSim.vcxproj -> C:\Users\gravi\.grok\worktrees\projects-csim-copy\csim\build\Release\CSim.exe

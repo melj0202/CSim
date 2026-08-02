@@ -80,8 +80,10 @@ back to immediate \texttt{Draw}). GL objects live in backend registries, not on
 Canvas end state (shipped):
 \begin{itemize}
   \item Domain: \texttt{lifeCanvas}, dims, get/set, dirty rects.
-  \item View: mesh + R8 cell texture + palette texture + canvas shaders;
-        dirty-rect \texttt{UpdateTexture}; draw with MVP.
+  \item View: mesh + RGB fade buffers + RGB display texture + canvas shaders;
+        dirty-rect \texttt{UpdateTexture} (PBO); draw with MVP.
+  \item See \pathref{docs/architecture-consensus.md} for the single canonical
+        presentation model (R8-only notes are historical).
 \end{itemize}
 
 \subsection{Migration phases (historical checklist)}
@@ -93,7 +95,7 @@ Canvas end state (shipped):
         (\texttt{RenderProofQuad}, tagged union, mesh upload, handle resolve)
   \item \textbf{Phase 2 --- Scene through Renderer} \quad \textbf{done}
   \item \textbf{Phase 3 --- Canvas tokens} \quad \textbf{done}
-        (later evolved to R8 + palette; see D-P4)
+        (later: dirty-rect uploads; D-P4 R8 experiment then fade restore)
   \item \textbf{Phase 4 --- UI drawables} \quad \textbf{done}
         (GLString, CommandLine, SplashText)
   \item \textbf{Phase 5 --- Dead path cleanup} \quad \textbf{done}

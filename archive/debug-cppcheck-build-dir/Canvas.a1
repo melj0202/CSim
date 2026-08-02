@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="15873631308983926559">
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Init/MacroDefs.h&quot; not found." verbose="Include file: &quot;Init/MacroDefs.h&quot; not found.">
+            <location file="Core/Canvas.h" line="2" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;vector&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;array&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;array&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.h" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;cstring&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;cstring&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.h" line="5" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/Drawable.h&quot; not found." verbose="Include file: &quot;Rendering/Drawable.h&quot; not found.">
+            <location file="Core/Canvas.h" line="6" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;System/PoolAlloc.h&quot; not found." verbose="Include file: &quot;System/PoolAlloc.h&quot; not found.">
+            <location file="Core/Canvas.h" line="7" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;IRenderWindow.h&quot; not found." verbose="Include file: &quot;IRenderWindow.h&quot; not found.">
+            <location file="Core/Canvas.cpp" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Logger.h&quot; not found." verbose="Include file: &quot;Logger.h&quot; not found.">
+            <location file="Core/Canvas.cpp" line="3" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Rendering/Camera.h&quot; not found." verbose="Include file: &quot;Rendering/Camera.h&quot; not found.">
+            <location file="Core/Canvas.cpp" line="4" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;GL/glew.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.cpp" line="5" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;array&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;array&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.cpp" line="6" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;fstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;fstream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.cpp" line="7" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;glm/fwd.hpp&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;glm/fwd.hpp&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.cpp" line="8" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;iostream&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.cpp" line="9" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.cpp" line="10" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Core/Canvas.cpp" line="11" column="2"/>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &apos;vertices&apos; shadows outer variable" verbose="Local variable &apos;vertices&apos; shadows outer variable" cwe="398" file0="Core/Canvas.cpp">
+            <location file="Core/Canvas.cpp" line="37" column="24" info="Shadow variable"/>
+            <location file="Core/Canvas.h" line="57" column="25" info="Shadowed declaration"/>
+            <symbol>vertices</symbol>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &apos;indices&apos; shadows outer variable" verbose="Local variable &apos;indices&apos; shadows outer variable" cwe="398" file0="Core/Canvas.cpp">
+            <location file="Core/Canvas.cpp" line="45" column="32" info="Shadow variable"/>
+            <location file="Core/Canvas.h" line="58" column="33" info="Shadowed declaration"/>
+            <symbol>indices</symbol>
+        </error>
+  <FileInfo check="Class">
+<class name="Chunk" file="Core/Canvas.h" configuration="" line="13" col="1" hash="14756574151335628914"/>
+<class name="Canvas" file="Core/Canvas.h" configuration="" line="17" col="1" hash="7280824264562408651"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="Core/Canvas.h:29:29" my-argnr="1" my-argname="x" file="Core/Canvas.h" line="30" col="32" value="0"/>
+    <unsafe-usage my-id="Core/Canvas.h:29:29" my-argnr="2" my-argname="y" file="Core/Canvas.h" line="30" col="28" value="0"/>
+    <unsafe-usage my-id="Core/Canvas.h:32:38" my-argnr="1" my-argname="x" file="Core/Canvas.h" line="33" col="39" value="0"/>
+    <unsafe-usage my-id="Core/Canvas.h:32:38" my-argnr="2" my-argname="y" file="Core/Canvas.h" line="33" col="35" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="Core/Canvas.h" functionName="getDimensions" lineNumber="27" column="43"/>
+    <functiondecl file="Core/Canvas.h" functionName="clearCanvas" lineNumber="28" column="29"/>
+    <functiondecl file="Core/Canvas.h" functionName="setCanvasPixel" lineNumber="29" column="29"/>
+    <functiondecl file="Core/Canvas.h" functionName="getCanvasPixel" lineNumber="32" column="38"/>
+    <functiondecl file="Core/Canvas.h" functionName="freeCanvas" lineNumber="36" column="7"/>
+    <functiondecl file="Core/Canvas.cpp" functionName="initCanvas" lineNumber="16" column="14"/>
+    <functiondecl file="Core/Canvas.cpp" functionName="DrawImpl" lineNumber="150" column="14"/>
+    <functioncall functionName="Drawable"/>
+    <functioncall functionName="EBO"/>
+    <functioncall functionName="GL_ARRAY_BUFFER"/>
+    <functioncall functionName="GL_ARRAY_BUFFER_BINDING"/>
+    <functioncall functionName="GL_BLEND"/>
+    <functioncall functionName="GL_BLEND_DST_ALPHA"/>
+    <functioncall functionName="GL_BLEND_SRC_ALPHA"/>
+    <functioncall functionName="GL_CURRENT_PROGRAM"/>
+    <functioncall functionName="GL_ELEMENT_ARRAY_BUFFER"/>
+    <functioncall functionName="GL_ELEMENT_ARRAY_BUFFER_BINDING"/>
+    <functioncall functionName="GL_FALSE"/>
+    <functioncall functionName="GL_FLOAT"/>
+    <functioncall functionName="GL_NEAREST"/>
+    <functioncall functionName="GL_RGB"/>
+    <functioncall functionName="GL_STATIC_DRAW"/>
+    <functioncall functionName="GL_TEXTURE0"/>
+    <functioncall functionName="GL_TEXTURE_2D"/>
+    <functioncall functionName="GL_TEXTURE_MAG_FILTER"/>
+    <functioncall functionName="GL_TEXTURE_MIN_FILTER"/>
+    <functioncall functionName="GL_TRIANGLES"/>
+    <functioncall functionName="GL_UNSIGNED_BYTE"/>
+    <functioncall functionName="GL_VERTEX_ARRAY_BINDING"/>
+    <functioncall functionName="GLenum"/>
+    <functioncall functionName="GLuint"/>
+    <functioncall functionName="GetMVPMatrix"/>
+    <functioncall functionName="LogTrace"/>
+    <functioncall functionName="LogWarning"/>
+    <functioncall functionName="VAO"/>
+    <functioncall functionName="VBO"/>
+    <functioncall functionName="app"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="array"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="createShaderProgram"/>
+    <functioncall functionName="data"/>
+    <functioncall functionName="freeCanvas"/>
+    <functioncall functionName="getDimensions"/>
+    <functioncall functionName="getWindowDimensions"/>
+    <functioncall functionName="getline"/>
+    <functioncall functionName="glActiveTexture"/>
+    <functioncall functionName="glBindBuffer"/>
+    <functioncall functionName="glBindTexture"/>
+    <functioncall functionName="glBindVertexArray"/>
+    <functioncall functionName="glBlendFunc"/>
+    <functioncall functionName="glBufferData"/>
+    <functioncall functionName="glDeleteTextures"/>
+    <functioncall functionName="glDisable"/>
+    <functioncall functionName="glDrawElements"/>
+    <functioncall functionName="glEnable"/>
+    <functioncall functionName="glEnableVertexAttribArray"/>
+    <functioncall functionName="glGenBuffers"/>
+    <functioncall functionName="glGenTextures"/>
+    <functioncall functionName="glGenVertexArrays"/>
+    <functioncall functionName="glGetAttribLocation"/>
+    <functioncall functionName="glGetIntegerv"/>
+    <functioncall functionName="glGetUniformLocation"/>
+    <functioncall functionName="glIsEnabled"/>
+    <functioncall functionName="glTexImage2D"/>
+    <functioncall functionName="glTexParameteri"/>
+    <functioncall functionName="glTexSubImage2D"/>
+    <functioncall functionName="glUniform1i"/>
+    <functioncall functionName="glUniformMatrix4fv"/>
+    <functioncall functionName="glUseProgram"/>
+    <functioncall functionName="glVertexAttribPointer"/>
+    <functioncall functionName="initCanvas"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="memset"/>
+    <functioncall functionName="open"/>
+  </FileInfo>
+</analyzerinfo>

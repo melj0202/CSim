@@ -1,0 +1,18 @@
+IEnvVars
+IEnvVars
+EnvVars call:[load] noreturn:[load]
+EnvVars call:[save] noreturn:[save]
+getVars
+load call:[begin,close,end,file,is_object,is_open,is_string,key,setVar,value] noreturn:[close,setVar]
+save call:[close,dump,file,is_open] noreturn:[close]
+setVar call:[begin,end,stod,stol,tolower,transform] noreturn:[stod,stol,tolower]
+setVar call:[setVar,to_string] noreturn:[setVar]
+setVar call:[setVar,to_string] noreturn:[setVar]
+setVar call:[setVar,to_string] noreturn:[setVar]
+setVar call:[setVar,to_string] noreturn:[setVar]
+setVar call:[setVar,to_string] noreturn:[setVar]
+setVar call:[setVar,to_string] noreturn:[setVar]
+setVar call:[setVar,to_string] noreturn:[setVar]
+setVar call:[setVar,to_string] noreturn:[setVar]
+setVar call:[setVar,string] noreturn:[setVar]
+getVar call:[end,find]

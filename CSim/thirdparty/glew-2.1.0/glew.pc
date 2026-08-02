@@ -1,6 +1,6 @@
-prefix=C:/Program Files (x86)/CSim
+prefix=C:/Program Files/CSim
 exec_prefix=${prefix}
-libdir=C:/Program Files (x86)/CSim/lib
+libdir=C:/Program Files/CSim/lib
 includedir=${prefix}/include
 
 Name: glew

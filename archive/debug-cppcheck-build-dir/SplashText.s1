@@ -1,0 +1,10 @@
+DrawableBase call:[glDeleteBuffers,glDeleteProgram,glDeleteShader,glDeleteVertexArrays]
+isVisible
+setVisible
+setRenderWindow
+SplashText
+SplashText
+DrawImpl call:[DrawImpl,Fade] noreturn:[Fade]
+Wake call:[now,setA,setVisible] noreturn:[now]
+Fade call:[count,now,setA,setVisible] noreturn:[setVisible]
+Draw call:[DrawImpl,isVisible] noreturn:[DrawImpl]

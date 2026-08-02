@@ -27,17 +27,17 @@
 
 \subsection{Workflow for future sessions}
 \begin{enumerate}
-  \item Read the short consensus first:
-        \pathref{docs/architecture-consensus.md}
-        (strengths, code truth, known bugs, debt, work order).
-  \item Then skim \cref{sec:overview}, \cref{sec:rendering-current},
+  \item Read \pathref{docs/architecture-consensus.md} first --- the
+        \textbf{single unified} architecture document (purpose, historical
+        plans map, code truth, decisions, bugs, debt, work order).
+  \item Optionally skim \cref{sec:overview}, \cref{sec:rendering-current},
         \cref{sec:rendering-target}, \cref{sec:game}, and the decision log
-        (\cref{sec:decisions}).
-  \item Implement or discuss against those sources, not against chat memory alone.
+        (\cref{sec:decisions}) for long-form detail.
+  \item Implement against those sources, not against chat memory or old PDFs alone.
   \item When a decision is made, append a dated entry to the decision log
-        \textbf{and} update \pathref{architecture-consensus.md} if the consensus shifts.
-  \item When code lands, update the ``current state'' sections and the file map.
-        If docs and code disagree, \textbf{code wins} until docs are fixed in the same change.
+        \textbf{and} update \pathref{architecture-consensus.md}.
+  \item When code lands, update the consensus file and the ``current state''
+        sections. If docs and code disagree, \textbf{code wins} until docs catch up.
 \end{enumerate}
 
 \subsection{Building the PDF}

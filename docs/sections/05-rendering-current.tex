@@ -7,8 +7,9 @@ path is enroll + tokens + submit via \symbolref{Renderer}/\symbolref{IBackend}.
 Drawables emit tokens through \texttt{AppendCommands}; GL draw submission is
 confined to \pathref{Rendering/OpenGL/} (plus window bootstrap). Headless
 \pathref{Rendering/Mock/MockBackend.h} powers \texttt{CSimTests}. Canvas
-presentation is \textbf{R8 cell texture + RGB palette} with dirty-rect PBO
-uploads. No second real GPU API.
+presentation is \textbf{CPU RGB fade + RGB display texture} with dirty-rect
+PBO uploads (see canonical note in \pathref{docs/architecture-consensus.md}).
+No second real GPU API.
 \end{statusbox}
 
 \subsection{What actually draws frames today}
@@ -37,24 +38,24 @@ uploads. No second real GPU API.
         \texttt{AppendCommands} only; \texttt{DrawImpl} is empty/no-op.
 \end{itemize}
 
-\subsection{Canvas presentation (R8 + palette)}
-\label{sec:canvas-r8}
+\subsection{Canvas presentation (RGB fade + dirty rects)}
+\label{sec:canvas-rgb-fade}
 \begin{itemize}
   \item Domain buffer: \symbolref{lifeCanvas} --- one \texttt{unsigned char}
         per cell (state encoding: $0$ = alive, $1$ = dead for binary CAs;
-        multi-state rules use additional values, e.g.\ Brian's Brain dying $=2$).
-  \item GPU cell texture: \texttt{GL\_R8}, updated via dirty-rect
-        \texttt{UpdateTexture} tokens (optional \texttt{srcRowStride}).
-  \item GPU palette: $256\times 1$ RGB texture filled by
-        \texttt{Canvas::rebuildPalette(RuleSet*)} using \texttt{evalCell}
-        for each state byte. Ruleset switches rebuild palette only (no full
-        cell re-upload).
+        multi-state rules use additional values, e.g.\ Brian's Brain dying $=2$;
+        Wireworld: head $=0$, empty $=1$, tail $=2$, conductor $=3$).
+  \item View: CPU palette via \texttt{evalCell} $\rightarrow$ \texttt{targetRgb};
+        \texttt{displayRgb} eases toward targets; packed RGB
+        \texttt{texCanvasBuffer} for upload.
+  \item GPU: RGB display texture, updated via dirty-rect \texttt{UpdateTexture}
+        tokens (PBO path; optional \texttt{srcRowStride}).
   \item Shaders: \pathref{Shader/canvas\_vertex.glsl},
-        \pathref{Shader/canvas\_frag.glsl} --- sample R, look up palette.
-  \item CPU float RGB fade buffers (\texttt{displayRgb}/\texttt{targetRgb})
-        and full-frame RGB \texttt{texCanvasBuffer} are \textbf{removed}.
-        \texttt{cellFadeSpeed} remains as a no-op for env/console compatibility;
-        colors snap via the palette.
+        \pathref{Shader/canvas\_frag.glsl} --- sample \texttt{uDisplayTexture}.
+  \item History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
+        Fade was restored; dirty-rect PBO + bind-state tracker from that work
+        remain. Canonical write-up:
+        \pathref{docs/architecture-consensus.md} \S5.6.
 \end{itemize}
 
 \subsection{Backend surface}

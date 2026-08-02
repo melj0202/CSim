@@ -1,0 +1,6 @@
+DrawableBase call:[glDeleteBuffers,glDeleteProgram,glDeleteShader,glDeleteVertexArrays]
+isVisible
+setVisible
+Draw call:[DrawImpl,isVisible] noreturn:[DrawImpl]
+compileShader call:[glCompileShader,glCreateShader,glDeleteShader,glGetShaderInfoLog,glGetShaderiv,glShaderSource,message]
+createShaderProgram call:[compileShader,glAttachShader,glCreateProgram,glDeleteShader,glGetProgramInfoLog,glGetProgramiv,glLinkProgram,glValidateProgram,message]

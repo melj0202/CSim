@@ -1,0 +1,58 @@
+Code review (current tree)
+
+Scope: Uncommitted Source/Shader/architecture docs + hot-path read-through.
+Tests: CSimTests still ALL PASSED.
+Full write-up: C:\Users\gravi\AppData\Local\Temp\grok-gravi\grok-review-40afe209.md
+
+Overall
+
+No “the architecture is wrong” findings. Wireworld encoding (head = 0), fade pipeline (life → palette targets → displayRgb → dirty RGB upload), Scene cleanup, and pure-token path look sound for the normal paint/sim loop.
+
+What is worth fixing are a few correctness holes around Start/load/Wireworld UX.
+
+───
+
+Bugs (high signal)
+
+┌───┬──────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ # │ Severity │ Issue                                                                                                                                                                        │
+├───┼──────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 1 │ bug      │ Partial Start still crashes later. If IllumoContextHasGameCore fails, Start returns without cellContext, but Update / DispatchDrawables still use it → null deref on first   │
+│   │          │ frame. Same class of hole in DebugModule.                                                                                                                                    │
+├───┼──────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 2 │ bug      │ LoadCellGame skips dirty/fade. Writes lifeCanvas directly; never markCellsDirty(). Display can stay stale until something else dirties the grid.                             │
+├───┼──────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 3 │ bug      │ IllumoContextHasGameCore omits commandLine, but Edit always does ic->commandLine->isOpen. Latent under product Init (always wired); real if bag is incomplete.               │
+├───┼──────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 4 │ bug      │ Wireworld editor can’t place heads. Paint is conductor/empty only; no head/tail tool.                                                                                        │
+├───┼──────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 5 │ bug      │ Startup seed is always a GoL glider (value 0). Under WIREWORLD that plants five electron heads, not a useful wire.                                                           │
+└───┴──────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+Suggestions
+
+┌───┬─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ # │ Issue                                                                                                                       │
+├───┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 6 │ Console ruleset list still duplicated vs CellContext::IsKnownModeString (drift risk — you already hit this with WIREWORLD). │
+├───┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 7 │ Wireworld tests miss 2-head birth / 3-head no-birth; no load→dirty coverage.                                                │
+└───┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+Looks fine
+
+• Classic Wireworld transitions; head-as-0 neighbor counting is intentional and correct
+• Fade order for paint/sim path is consistent
+• rebuildPalette → full dirty refresh on ruleset switch
+• SceneObject removal has no leftover live call sites
+• Wireworld linked in app + tests
+
+───
+
+Recommended fix order (if you want me to implement)
+
+1. Guard Update/DispatchDrawables when Start failed; add commandLine to game-core check
+2. After load: markCellsDirty() (+ rebuild targets / snap)
+3. Mode-aware seed (skip or wire+head for Wireworld)
+4. Wireworld brush: cycle states or modifier+click for head
+5. Shared known-mode list for console + factory

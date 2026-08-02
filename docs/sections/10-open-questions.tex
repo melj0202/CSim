@@ -25,8 +25,8 @@ decision log when resolved.
   \item \sout{\textbf{String uniforms multi-API?}}
         \textbf{Resolved D-R9:} debt if second real GPU backend.
   \item \sout{\textbf{Canvas upload:} full texture rewrite each frame vs dirty rects?}
-        \textbf{Resolved D-P1/D-P4:} dirty rects + R8 cell texture + PBO;
-        palette rebuild on ruleset change only.
+        \textbf{Resolved D-P1/D-P4:} dirty rects + PBO. Presentation is RGB
+        fade display (R8+palette experiment partially rolled back; fade restored).
   \item \sout{\textbf{Illumo $\leftrightarrow$ Game dependency:} module registration?}
         \textbf{Resolved D-E1:} App (\texttt{CellMain}) registers modules after
         \texttt{Init}; Engine only knows \texttt{IModule}.
@@ -53,7 +53,8 @@ decision log when resolved.
         RGB dirty-rect upload (still float cost at large grids; D-C1).
   \item \sout{\textbf{Wireworld stub?}}
         \textbf{Implemented:} full rule + console \texttt{ruleset WIREWORLD}.
-        Rule 90 / 184 remain stubs.
+        Rule 90 / 184 remain stubs. Product UX (head paint, seed) still open
+        --- see \pathref{docs/architecture-consensus.md} \S8.
   \item \sout{\textbf{MacroDefs / Windows.h include toxicity?}}
         \textbf{Deferred D-F1:} fix only when it starts to cause problems.
 \end{enumerate}

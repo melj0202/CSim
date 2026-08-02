@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="17049268742170241672">
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rulesets/RuleSet.h" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Canvas.h&quot; not found." verbose="Include file: &quot;Canvas.h&quot; not found.">
+            <location file="Rulesets/RuleSet.h" line="3" column="2"/>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;RuleSet&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;RuleSet&apos; has a constructor with 1 argument that is not explicit. Such, so called &quot;Converting constructors&quot;, should in general be explicit for type safety reasons as that prevents unintended implicit conversions." cwe="398" file0="Rulesets/LifeWithoutDeathRuleSet.cpp">
+            <location file="Rulesets/RuleSet.h" line="13" column="2"/>
+            <symbol>RuleSet</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;LifeWithoutDeathRuleSet&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;LifeWithoutDeathRuleSet&apos; has a constructor with 1 argument that is not explicit. Such, so called &quot;Converting constructors&quot;, should in general be explicit for type safety reasons as that prevents unintended implicit conversions." cwe="398" file0="Rulesets/LifeWithoutDeathRuleSet.cpp">
+            <location file="Rulesets/LifeWithoutDeathRuleSet.h" line="10" column="2"/>
+            <symbol>LifeWithoutDeathRuleSet</symbol>
+        </error>
+        <error id="compareValueOutOfTypeRangeError" severity="style" msg="Comparing expression of type &apos;const unsigned char &amp;&apos; against value 0. Condition is always true." verbose="Comparing expression of type &apos;const unsigned char &amp;&apos; against value 0. Condition is always true." cwe="398" file0="Rulesets/LifeWithoutDeathRuleSet.cpp">
+            <location file="Rulesets/LifeWithoutDeathRuleSet.cpp" line="15" column="51"/>
+        </error>
+        <error id="unsignedPositive" severity="style" msg="Unsigned expression &apos;ne&apos; can&apos;t be negative so it is unnecessary to test it." verbose="Unsigned expression &apos;ne&apos; can&apos;t be negative so it is unnecessary to test it." cwe="570" file0="Rulesets/LifeWithoutDeathRuleSet.cpp">
+            <location file="Rulesets/LifeWithoutDeathRuleSet.cpp" line="15" column="48" info="Unsigned positive"/>
+            <symbol>ne</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="Rulesets/LifeWithoutDeathRuleSet.h" functionName="getRuleTag" lineNumber="15" column="14"/>
+    <functiondecl file="Rulesets/LifeWithoutDeathRuleSet.cpp" functionName="evaluateNeighbors" lineNumber="9" column="31"/>
+    <functiondecl file="Rulesets/LifeWithoutDeathRuleSet.cpp" functionName="evalCell" lineNumber="25" column="31"/>
+    <functioncall functionName="RuleSet"/>
+    <functioncall functionName="memset"/>
+    <functioncall functionName="setCanvasPixel"/>
+  </FileInfo>
+</analyzerinfo>

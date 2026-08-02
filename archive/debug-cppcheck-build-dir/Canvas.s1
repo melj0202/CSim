@@ -1,0 +1,9 @@
+Canvas call:[initCanvas] noreturn:[initCanvas]
+Canvas call:[freeCanvas] noreturn:[freeCanvas]
+getDimensions
+clearCanvas call:[memset] noreturn:[memset]
+setCanvasPixel
+getCanvasPixel
+freeCanvas call:[glDeleteTextures]
+initCanvas call:[LogTrace,LogWarning,append,c_str,close,createShaderProgram,data,getDimensions,getline,glBindBuffer,glBindTexture,glBindVertexArray,glBufferData,glEnableVertexAttribArray,glGenBuffers,glGenTextures,glGenVertexArrays,glGetAttribLocation,glTexImage2D,glTexParameteri,glVertexAttribPointer,int,is_open,log,memset,open,sizeof] noreturn:[LogTrace,LogWarning,append,glEnableVertexAttribArray]
+DrawImpl call:[GetMVPMatrix,getDimensions,getWindowDimensions,glActiveTexture,glBindBuffer,glBindTexture,glBindVertexArray,glBlendFunc,glDisable,glDrawElements,glEnable,glGetIntegerv,glGetUniformLocation,glIsEnabled,glTexSubImage2D,glUniform1i,glUniformMatrix4fv,glUseProgram] noreturn:[glBlendFunc,glDisable]

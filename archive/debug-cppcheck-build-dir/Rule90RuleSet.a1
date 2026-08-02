@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="661632759509852559">
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;string&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Rulesets/RuleSet.h" line="2" column="2"/>
+        </error>
+        <error id="missingInclude" severity="information" msg="Include file: &quot;Canvas.h&quot; not found." verbose="Include file: &quot;Canvas.h&quot; not found.">
+            <location file="Rulesets/RuleSet.h" line="3" column="2"/>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;RuleSet&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;RuleSet&apos; has a constructor with 1 argument that is not explicit. Such, so called &quot;Converting constructors&quot;, should in general be explicit for type safety reasons as that prevents unintended implicit conversions." cwe="398" file0="Rulesets/Rule90RuleSet.cpp">
+            <location file="Rulesets/RuleSet.h" line="13" column="2"/>
+            <symbol>RuleSet</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;Rule90RuleSet&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;Rule90RuleSet&apos; has a constructor with 1 argument that is not explicit. Such, so called &quot;Converting constructors&quot;, should in general be explicit for type safety reasons as that prevents unintended implicit conversions." cwe="398" file0="Rulesets/Rule90RuleSet.cpp">
+            <location file="Rulesets/Rule90RuleSet.h" line="6" column="2"/>
+            <symbol>Rule90RuleSet</symbol>
+        </error>
+  <FileInfo check="Class">
+<class name="Rule90RuleSet" file="Rulesets/Rule90RuleSet.h" configuration="" line="4" col="1" hash="3440336901127735925"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="Rulesets/Rule90RuleSet.cpp" functionName="countNeighbors" lineNumber="3" column="20"/>
+    <functioncall functionName="RuleSet"/>
+  </FileInfo>
+</analyzerinfo>

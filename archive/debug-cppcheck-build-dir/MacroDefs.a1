@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<analyzerinfo hash="11395613995972049907">
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;stddef.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;stddef.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="3" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;cstdint&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;cstdint&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="4" column="2"/>
+        </error>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="Init/MacroDefs.h:123:13" my-argnr="1" my-argname="x" file="Init/MacroDefs.h" line="124" col="2" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="Init/MacroDefs.h" functionName="_generic_swap" lineNumber="98" column="13"/>
+    <functiondecl file="Init/MacroDefs.h" functionName="_generic_abs" lineNumber="108" column="13"/>
+    <functiondecl file="Init/MacroDefs.h" functionName="_generic_pow2" lineNumber="123" column="13"/>
+  </FileInfo>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;winsock2.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;winsock2.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="13" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;ws2tcpip.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;ws2tcpip.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="14" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;Windows.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;Windows.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="15" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;stdlib.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;stdlib.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="26" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;unistd.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;unistd.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="27" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;stdlib.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;stdlib.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="19" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;unistd.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;unistd.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="20" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;time.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;time.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="21" column="2"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &lt;errno.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results." verbose="Include file: &lt;errno.h&gt; not found. Please note: Standard library headers do not need to be provided to get proper results.">
+            <location file="Init/MacroDefs.h" line="22" column="2"/>
+        </error>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="Init/MacroDefs.h:123:13" my-argnr="1" my-argname="x" file="Init/MacroDefs.h" line="124" col="2" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl file="Init/MacroDefs.h" functionName="msleep" lineNumber="34" column="12"/>
+    <functiondecl file="Init/MacroDefs.h" functionName="_generic_swap" lineNumber="98" column="13"/>
+    <functiondecl file="Init/MacroDefs.h" functionName="_generic_abs" lineNumber="108" column="13"/>
+    <functiondecl file="Init/MacroDefs.h" functionName="_generic_pow2" lineNumber="123" column="13"/>
+    <functioncall functionName="EINVAL"/>
+    <functioncall functionName="nanosleep"/>
+  </FileInfo>
+</analyzerinfo>

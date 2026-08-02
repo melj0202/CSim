@@ -4,13 +4,11 @@
 
 | File | Role |
 |------|------|
-| **`architecture-consensus.md`** | **Final merged consensus** — strengths, code truth, decisions, known bugs, debt, work order |
-| `csim-design-notes.tex` / `.pdf` | Long-form design notes + full decision log |
+| **`architecture-consensus.md`** | **Single unified architecture document** (read this first) — merges agenda, CA/engine PDFs, assessments, decision log, review bugs, and code truth into one story |
+| `csim-design-notes.tex` / `.pdf` | Long-form LaTeX design notes + full decision log |
 | `sections/*.tex` | Chapter detail |
 
 ## Design notes (LaTeX)
-
-Primary living document:
 
 | File | Role |
 |------|------|
@@ -44,12 +42,10 @@ Needs a TeX distro with `tcolorbox`, `booktabs`, `tikz`, `listings`, `hyperref`,
 
 | Situation | Edit |
 |-----------|------|
-| Consensus shifts (work order, code truth) | **`architecture-consensus.md`** + decision log |
-| New closed choice | `sections/09-design-decision-log.tex` |
-| Current render / sim architecture | `sections/05-rendering-current.tex`, `06-rendering-target.tex`, `07-game-and-rules.tex` |
+| Consensus / work order / code truth | **`architecture-consensus.md`** (primary) |
+| New closed choice (formal ID) | `sections/09-design-decision-log.tex` **and** consensus doc |
+| Long-form chapter detail | `sections/05-…`, `06-…`, `07-…` as needed |
 | Unresolved debate | `sections/10-open-questions.tex` |
-| New important path | `sections/B-file-map.tex` |
-| Package layout change | `sections/03-source-layout.tex` |
 
 ### Provenance tags in the PDF
 
@@ -60,8 +56,6 @@ Needs a TeX distro with `tcolorbox`, `booktabs`, `tikz`, `listings`, `hyperref`,
 
 ### Current architecture (short)
 
-Token frame path is **shipped** (enroll → `AppendCommands` → submit via `IBackend`). Canvas is **domain lifeCanvas + RGB fade display + dirty-rect upload** (CPU palette for targets). Rules use **double-buffer `nextState`**. Headless **`CSimTests`** covers mock backend, rules, canvas, UI tokens.
-
-See **`architecture-consensus.md`** first, then the design notes for full detail (D-R\*, D-P\*, D-E\*, D-C1, D-F1).
+See **`architecture-consensus.md`**. In brief: token renderer; dense `lifeCanvas` + RGB fade display + dirty-rect upload; double-buffer `nextState`; headless `CSimTests`.
 
 **Rule:** if docs and code disagree, **code wins** until docs are updated in the same change.
