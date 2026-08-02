@@ -1,6 +1,0 @@
-RuleSet
-evalCell
-getRuleTag
-evaluateNeighbors
-calcGeneration global:[BLOCK_X,BLOCK_Y] call:[countNeighbors,evaluateNeighbors,getCanvasPixel,resize,size] noreturn:[countNeighbors,evaluateNeighbors,resize]
-countNeighbors call:[getCanvasPixel]

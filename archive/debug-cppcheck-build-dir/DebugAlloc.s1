@@ -1,4 +1,0 @@
-operatornew call:[TracyCAlloc,bad_alloc,malloc] noreturn:[bad_alloc]
-operatordelete call:[TracyCFree,free] noreturn:[free]
-operatornew[] call:[TracyCAlloc,bad_alloc,malloc] noreturn:[bad_alloc]
-operatordelete[] call:[TracyCFree,free] noreturn:[free]

@@ -2,7 +2,7 @@ Code review (current tree)
 
 Scope: Uncommitted Source/Shader/architecture docs + hot-path read-through.
 Tests: CSimTests still ALL PASSED.
-Full write-up: C:\Users\gravi\AppData\Local\Temp\grok-gravi\grok-review-40afe209.md
+Full write-up: local review scratch file (not retained in the repository).
 
 Overall
 

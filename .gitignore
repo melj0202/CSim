@@ -1,51 +1,113 @@
-# Prerequisites
-*.d
+# Project runtime data
 *.csim
 
-# Compiled Object files
+# Compiler outputs
+*.d
 *.slo
 *.lo
 *.o
 *.obj
-
-# Precompiled Headers
 *.gch
 *.pch
-
-# Compiled Dynamic libraries
 *.so
 *.dylib
 *.dll
-
-# Fortran module files
 *.mod
 *.smod
-
-# Compiled Static libraries
 *.lai
 *.la
 *.a
 *.lib
-
-# Executables
 *.exe
 *.out
 *.app
-
-#Debugging Symbols
 *.pdb
+*.ilk
+*.idb
+*.ipdb
+*.iobj
 
-#Some other important directories to ignore
+# CMake and build outputs (including accidental in-source builds)
+build/
+Build/
+cmake-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+Testing/
 x64/
-glfw_app/x64
+glfw_app/x64/
+packages/
+
+# IDE and editor state
 .vs/
 .idea/
 .vscode/
-packages/
-cmake-*/
-build/
-Build/
-
-log.*
-
+*.code-workspace
+*.user
+*.suo
+*.VC.db
+*.VC.VC.opendb
+*.swp
+*.swo
+*~
 \#*\#
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs, crash dumps, profiles, and temporary files
+*.log
+log.*
+*.dmp
+*.stackdump
+*.tracy
+*.tmp
+*.temp
+*.bak
+
+# LaTeX intermediates (keep source .tex and intentionally published PDFs)
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.run.xml
+*.synctex.gz
+*.toc
+
+# Script and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.cache/
+
+# Local/private configuration and credentials
+.priv/
+.agents/
+.codex/
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+secrets*.json
+
+# Local reports and generated repository snapshots
+/build_release_log.txt
+/CSim/build_output*.txt
+/CSim/ORIGINAL_REQUEST.md
+/CSim/Source/all.txt
+/CSim/csim_source.zip
+/archive/*cppcheck-build-dir/
