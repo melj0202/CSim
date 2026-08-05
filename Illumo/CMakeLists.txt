@@ -162,6 +162,45 @@ target_link_libraries(Illumo PRIVATE
     ${ILLUMO_PLATFORM_LIBRARIES}
 )
 
+# Keep the notices required by the libraries and font used at runtime beside
+# distributable binaries. The source-tree inventory also documents vendored
+# packages that are not linked by the current targets.
+add_custom_command(TARGET Illumo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        "$<TARGET_FILE_DIR:Illumo>/licenses"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/../THIRD_PARTY_NOTICES.md"
+        "$<TARGET_FILE_DIR:Illumo>/THIRD_PARTY_NOTICES.md"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/freetype-2.13.3/LICENSE.TXT"
+        "$<TARGET_FILE_DIR:Illumo>/licenses/FreeType-LICENSE.TXT"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/freetype-2.13.3/docs/FTL.TXT"
+        "$<TARGET_FILE_DIR:Illumo>/licenses/FreeType-FTL.TXT"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glew-2.1.0/LICENSE.txt"
+        "$<TARGET_FILE_DIR:Illumo>/licenses/GLEW-LICENSE.txt"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glfw-3.4/LICENSE.md"
+        "$<TARGET_FILE_DIR:Illumo>/licenses/GLFW-LICENSE.md"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glm/copying.txt"
+        "$<TARGET_FILE_DIR:Illumo>/licenses/GLM-LICENSE.txt"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/json/LICENSE.MIT"
+        "$<TARGET_FILE_DIR:Illumo>/licenses/nlohmann-json-LICENSE.MIT"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/stb/LICENSE"
+        "$<TARGET_FILE_DIR:Illumo>/licenses/stb-LICENSE.txt"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/tracy-0.13.1/LICENSE"
+        "$<TARGET_FILE_DIR:Illumo>/licenses/Tracy-LICENSE.txt"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Fonts/Handjet/OFL.txt"
+        "$<TARGET_FILE_DIR:Illumo>/licenses/Handjet-OFL.txt"
+    COMMENT "Copying third-party notices beside Illumo"
+)
+
 if(UNIX AND NOT APPLE)
     target_compile_options(Illumo PRIVATE ${GTK_CFLAGS_OTHER})
     target_include_directories(Illumo SYSTEM PRIVATE ${GTK_INCLUDE_DIRS})

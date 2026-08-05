@@ -45,6 +45,10 @@ under `docs/`. Start with:
 
 Contribution rules are in [`docs/contributing.md`](docs/contributing.md).
 
+Third-party software and font acknowledgements, license choices, and the
+source/binary redistribution checklist are in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
 ## Build (CMake)
 
 From the repository root:
