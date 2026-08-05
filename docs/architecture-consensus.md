@@ -1,27 +1,28 @@
-# CSim — Architecture consensus (unified)
+# Illumo — Architecture consensus (unified)
 
 **Status:** Single living document — **authoritative for later sessions**  
-**Last updated:** 2026-07-30  
+**Last updated:** 2026-08-04
 
 This file **merges and supersedes** scattered design memory into one coherent story. Read this first; treat external PDFs and old agenda notes as **history** (§2).
 
 | Source | Role in this document |
 |--------|------------------------|
-| Desktop “Main agenda for CSim” | Product wishlist → §7 scorecard |
-| `CSim_Architecture_Decisions.pdf` (ChatGPT) | CA / OOP-practice design review → purpose, ownership, input, rules, SYCL |
-| `CSim_Engine_Architecture_Decisions.pdf` (ChatGPT) | Aspirational 2D engine → what we kept vs discarded |
-| `gpt_csim_arch_assessment.pdf` (ChatGPT) | Assessment of *current* tree → risks, direction |
+| Desktop “Main agenda for Illumo” | Product wishlist → §7 scorecard |
+| `Illumo_Architecture_Decisions.pdf` (ChatGPT) | CA / OOP-practice design review → purpose, ownership, input, rules, SYCL |
+| `Illumo_Engine_Architecture_Decisions.pdf` (ChatGPT) | Aspirational 2D engine → what we kept vs discarded |
+| `gpt_illumo_arch_assessment.pdf` (ChatGPT) | Assessment of *current* tree → risks, direction |
 | Grok architecture reviews + local code review | Strengths, bugs, debt |
 | In-repo LaTeX design notes + decision log | Formal decision IDs (D-\*) |
-| `docs/current_issues.txt` | Product/correctness punch list |
-| **Current code under `CSim/Source/`** | **Wins** when anything conflicts |
+| `docs/current-issues.md` | Product/correctness punch list |
+| **Current code under `Illumo/Source/`** | **Wins** when anything conflicts |
 
 **Rule:** If this document and the code disagree, **code wins** until this file is updated in the same change set.
 
 Optional deeper reading (not required to resume work):
 
-- `docs/csim-design-notes.tex` / `.pdf` — long-form chapters  
-- `docs/sections/09-design-decision-log.tex` — append-only formal decision prose  
+- `docs/latex/illumo.tex` — the only current PDF entrypoint
+- `docs/latex/sections/09-design-decision-log.tex` — append-only formal decision prose
+- `docs/sessions/2026-08-04-illumo-console-and-documentation.md` — this session's implementation record
 
 ---
 
@@ -46,7 +47,7 @@ Optional deeper reading (not required to resume work):
 
 ## 0. One-line summary
 
-**CSim is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock), Canvas is a dense grid with RGB fade display. Keep that shape. Fix Start/load/Wireworld correctness and docs drift. Defer ECS, multi-pass pipelines, multi-backend, infinite chunks, and SYCL until product pain or learning goals demand them.**
+**Illumo is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock), and Canvas is a dense grid with RGB fade display. Keep that shape. The project identity, command console, save/load display refresh, fullscreen restoration, and documentation tree are current; failed-Start gating and Wireworld editing remain the leading correctness work. Defer ECS, multi-pass pipelines, multi-backend, infinite chunks, and SYCL until product pain or learning goals demand them.**
 
 ---
 
@@ -99,7 +100,7 @@ A general-purpose allocator (mimalloc-class) is a different product; do not rein
 
 Three generations of “design truth” got mixed in chat history. This section untangles them so later sessions do not re-implement superseded plans.
 
-### 2.1 Desktop agenda (“Main agenda for CSim”)
+### 2.1 Desktop agenda (“Main agenda for Illumo”)
 
 Early product wishlist:
 
@@ -115,7 +116,7 @@ Early product wishlist:
 
 **Outcome today:** UI/tools/pan/most rulesets largely done. **Chunk infinite canvas + SYCL not done** (deliberately deferred). Full scorecard → §7.
 
-### 2.2 CA design review (`CSim_Architecture_Decisions.pdf`)
+### 2.2 CA design review (`Illumo_Architecture_Decisions.pdf`)
 
 Themes that **still guide** the project:
 
@@ -132,13 +133,13 @@ Themes that **still guide** the project:
 
 **Principle:** *abstract real volatility; hard-code stable structure; ownership explicit.*
 
-**Closer to current CSim than the “engine passes” PDF.**
+**Closer to current Illumo than the “engine passes” PDF.**
 
-### 2.3 Engine design PDF (`CSim_Engine_Architecture_Decisions.pdf`)
+### 2.3 Engine design PDF (`Illumo_Engine_Architecture_Decisions.pdf`)
 
 Aspirational **general 2D engine** design (July 2026). Valuable as boundary thinking; **not** the current product plan.
 
-| Proposed | Status in CSim |
+| Proposed | Status in Illumo |
 |----------|----------------|
 | Illumo owns services; context as view | **Kept** |
 | Backend owns GPU resources + ID tables | **Kept** (IBackend / GL registries) |
@@ -166,7 +167,7 @@ Agreement across reviews:
 
 ## 3. Overall assessment
 
-CSim is a **coherent layered modular monolith**:
+Illumo is a **coherent layered modular monolith**:
 
 ```
 Platform
@@ -193,7 +194,7 @@ It is an **engine-shaped application**, not a cleanly separated “engine produc
 | **Render split** | Enroll once; emit tokens per frame; backend executes (D-R1–D-R8, D-R10). |
 | **Rulesets** | Strategy hierarchy; pure `nextState` + `evalCell`; double-buffered generation (D-P3). |
 | **Scene model** | Per-frame drawable list only (D-E3, D-E4). |
-| **Tests** | Headless `CSimTests`: rules, canvas, tokens, UI, renderer inject. |
+| **Tests** | Headless `IllumoTests`: 80 process-isolated CTest cases spanning rules, Canvas, game commands/save-load, input/services, assets, tokens, UI, and renderer injection; Clang/LLVM production-line gate (D-T1). |
 | **Debt hygiene** | Dead experiments under `archive/` rather than half-live. |
 
 ---
@@ -215,7 +216,7 @@ It is an **engine-shaped application**, not a cleanly separated “engine produc
 | **Assets/** | Asset loaders. |
 | **Tests/** | Headless suite. |
 
-House style (D-008 / CONTRIBUTING): avoid `auto`; avoid namespaces (prefer static classes/structs); no recursion; third-party via PR — unless a later decision waives.
+House style (D-008 / `docs/contributing.md`): avoid `auto`; avoid namespaces (prefer static classes/structs); no recursion; third-party via PR — unless a later decision waives.
 
 ### 5.2 Ownership and lifetime
 
@@ -243,7 +244,8 @@ class IModule {
 | DispatchDrawables | Contribute what should draw this frame |
 | Exit | Teardown module-owned state |
 
-Shipped modules: `CellGameModule` (always), `DebugModule` (`#ifndef NDEBUG`).
+Product modules: `CellGameModule` always; `DebugModule` only in Debug. Release
+neither compiles nor registers `DebugModule` (D-B1).
 
 **Known hole:** `Start` can fail without preventing later `Update` / `DispatchDrawables` → §8.
 
@@ -265,7 +267,8 @@ CellMain
       renderer.EndFrame()                   // swap (GL)
 ```
 
-Typical draw order from the game module: canvas → console → FPS → splash.
+Typical combined draw order: game contributes canvas/splash; DebugModule
+contributes console/FPS in Debug builds.
 
 ### 5.5 Rendering architecture (shipped)
 
@@ -372,7 +375,7 @@ JSON describes **data**, not executable behavior. Multi-state (Wireworld, Brian'
 2. Rendering runs every frame.  
 3. Double-buffer prevents reading a half-written generation.  
 4. Visual fade is **presentation**, not simulation state.  
-5. Modes in `CellGameModule`: `NORMAL | EDIT | SAVE | LOAD | EXIT` (enum + switch; old State classes archived).
+5. Modes in `CellGameModule`: `NORMAL | EDIT | EXIT` (enum + switch; save/load are registered commands, not frame states).
 
 Fixed-tick **mesh transform interpolation** (engine PDF) is **not** required for the CA product.
 
@@ -389,18 +392,47 @@ GLFW callbacks / poll → InputManager → module / controller logic
 **D-E2:** InputManager must not depend on Game types.  
 Callbacks should record events/state, not own game policy long-term (CA design PDF — still the direction of travel).
 
-### 5.10 Window / platform boundaries
+### 5.10 Developer console
+
+The Debug-only console separates general tooling from product behavior:
+
+- `CommandLine` owns help, environment-variable inspection/editing, validated
+  timing/display settings, console history, and application exit.
+- `CellGameModule` registers simulation, canvas, camera, ruleset, and save/load
+  commands through `CommandRegistry`; registry metadata drives help and Tab
+  completion.
+- Registered commands execute from the queue without falling through as unknown.
+- Save/load uses the dense legacy format with safer validation; loading activates
+  the saved ruleset, copies row-by-row into the current canvas, and rebuilds the
+  visible state immediately.
+- `vid_restart` is not advertised: safely recreating an OpenGL context requires a
+  complete resource re-enrollment design, so the old no-op now reports that limit.
+- Editing supports measured caret placement, selection, Home/End, Delete,
+  Ctrl+word movement/deletion, Ctrl+A, quoted arguments, history, and horizontal
+  input scrolling. The caret is rendered as geometry at the measured insertion
+  point rather than appended as a character.
+- Console chrome and glyphs remain one token batch. Because `stb_easy_font`
+  expands one character into several quads, the current mesh budget is 6,000 UI
+  quads; the help-page regression test guards against the former 2,000-quad
+  truncation.
+- `Logger` may mirror output into the console while services are alive. The host
+  clears that non-owning logger context before destroying the services.
+
+### 5.11 Window / platform boundaries
 
 - Semantic window ops (`shouldClose`, poll, swap, title, dimensions) justify thin wrappers even if one-liners — they hide GLFW types from the main loop.  
 - OpenGL calls stay under `Rendering/OpenGL/` (+ window bootstrap).  
 - Interfaces only where multiple implementations or third-party volatility are real (`IBackend`, `IRenderWindow`).  
 - macOS Metal myths: GLFW can create a no-client-API window and expose native handles; do not invent a Cocoa window path “because Metal.”
+- Fullscreen transitions preserve the windowed position and dimensions, enter
+  the primary monitor at its current video mode, and restore the saved windowed
+  bounds on exit.
 
 ---
 
 ## 6. Locked decisions (catalog)
 
-Full formal prose also lives in `docs/sections/09-design-decision-log.tex`. Append new IDs there **and** update this table.
+Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`. Append new IDs there **and** update this table.
 
 ### 6.1 Structure and style
 
@@ -412,6 +444,12 @@ Full formal prose also lives in `docs/sections/09-design-decision-log.tex`. Appe
 | **D-005** | Each CA variant is a `RuleSet` subclass (factory in CellContext; registry later optional). |
 | **D-006** | Modes = `CellState` enum in module (not archived State class hierarchy). |
 | **D-008** | House style: avoid `auto`; no namespaces; no recursion; third-party via PR. |
+| **D-N1** | Adopt Illumo as the project, product, CMake-target, runtime, and save-format name; keep the existing `Illumo` host class. |
+| **D-B1** | `DebugModule` is Debug-build product composition only; Release must neither compile nor register it. |
+| **D-CLI1** | Services own generic console mechanics; `CellGameModule` registers domain commands and help/completion metadata. |
+| **D-UI1** | Console editing and caret placement use measured text geometry; one enlarged batch must fit a full help page. |
+| **D-DOC1** | All first-party project documentation lives under `docs/`, with one current LaTeX entrypoint. |
+| **D-T1** | One exact CTest entry per logical behavior; shared filtered runner only for compile efficiency; Clang/LLVM `IllumoCoverage` enforces at least 85% headless-testable production line coverage. |
 
 ### 6.2 Rendering (D-R\*)
 
@@ -458,8 +496,8 @@ Full formal prose also lives in `docs/sections/09-design-decision-log.tex`. Appe
 | Agenda item | Status |
 |-------------|--------|
 | Render text / fonts | **Done** (FreeType + GLString / SplashText) |
-| Command line | **Done** (commands can still grow) |
-| Console on GL screen | **Done** (token UI) |
+| Command line | **Done** (validated built-ins plus module-registered simulation, canvas, camera, ruleset, and file commands) |
+| Console on GL screen | **Done** (token UI, advanced editing, measured caret, scrolling, full-help capacity test) |
 | More rulesets | **Partly** — Wireworld live; 90/184 stubs |
 | Infinite 16×16 chunk canvas | **Not done** — dense grid by design for now |
 | Mouse pan | **Done** (camera controls) |
@@ -471,34 +509,34 @@ Full formal prose also lives in `docs/sections/09-design-decision-log.tex`. Appe
 
 ## 8. Known product / correctness issues
 
-From local code review / `docs/current_issues.txt` (fix when touching related code; not architecture rewrites). Architecture itself is sound for the normal paint/sim loop.
+From local code review / `docs/current-issues.md` (fix when touching related code; not architecture rewrites). Architecture itself is sound for the normal paint/sim loop.
 
 ### 8.1 Bugs (high signal)
 
 | # | Severity | Issue |
 |---|----------|--------|
 | 1 | bug | **Partial Start still crashes later.** If `IllumoContextHasGameCore` fails, `Start` returns without `cellContext`, but `Update` / `DispatchDrawables` still use it → null deref. Same class of hole in DebugModule. |
-| 2 | bug | **`LoadCellGame` skips dirty/fade.** Writes `lifeCanvas` directly; never `markCellsDirty()`. Display can stay stale until something else dirties the grid. |
-| 3 | bug | **`IllumoContextHasGameCore` omits `commandLine`**, but Edit always uses `ic->commandLine->isOpen`. Latent under product Init (always wired); real if bag incomplete. |
-| 4 | bug | **Wireworld editor can’t place heads.** Paint is conductor/empty only; no head/tail tool. |
-| 5 | bug | **Startup seed is always a GoL glider (value 0).** Under WIREWORLD that plants five electron heads, not a useful wire. |
+| 2 | bug | **Wireworld editor can’t place heads with the mouse.** Paint is conductor/empty only; `setcell` can place head/tail states but is not a brush workflow. |
+| 3 | bug | **Startup seed is always a GoL glider (value 0).** Under WIREWORLD that plants five electron heads, not a useful wire. |
 
-### 8.2 Suggestions
+### 8.2 Closed test gaps
 
-| # | Issue |
-|---|--------|
-| 6 | Console ruleset list still duplicated vs `CellContext::IsKnownModeString` (drift risk — already hit with WIREWORLD). |
-| 7 | Wireworld tests miss 2-head birth / 3-head no-birth; no load→dirty coverage. |
+Wireworld now has explicit two-head birth and three-head no-birth truth-table
+coverage. File-backed save/load tests cover round trips, ruleset restoration,
+dimension overlap, missing/truncated/invalid files, extension fallback, and
+dialog cancellation. Native dialog UI still needs a platform smoke test.
 
 ### 8.3 Assessment-only risks (structural)
 
-From `gpt_csim_arch_assessment.pdf`:
+From `gpt_illumo_arch_assessment.pdf`:
 
 - Command queue **2048** capacity with **silent drop**; raw pointer payloads must stay alive until submit  
 - CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; empty package CMake files remain
 - Docs historically described **R8+palette** while code used **RGB fade** — this consensus file + §5.6 is the resolution; keep LaTeX chapters aligned  
 - Renderer.h still includes GL types for production construction  
 - Hybrid token + immediate Draw path remains for stubs  
+- Native file dialogs and live OpenGL/fullscreen behavior still require manual
+  smoke tests; headless MockBackend coverage does not prove them.
 
 ### 8.4 Looks fine (do not “fix” as bugs)
 
@@ -533,25 +571,23 @@ From `gpt_csim_arch_assessment.pdf`:
 
 ### A. Correctness first
 
-1. Failed `Start` → do not run that module’s Update/Dispatch; include `commandLine` in game-core check.  
-2. Load path → `markCellsDirty` + visual rebuild.  
-3. Wireworld seed + head placement UX.  
-4. Keep this file and LaTeX “current state” sections aligned with **RGB fade Canvas** (no stale “GPU R8 as current” claims).  
+1. Failed `Start` → do not run that module’s Update/Dispatch.
+2. Wireworld seed + mouse head-placement UX.
+3. Keep this file and LaTeX “current state” sections aligned with **RGB fade Canvas** (no stale “GPU R8 as current” claims).
 
 ### B. Hygiene
 
-5. Single source of truth for known ruleset names.  
-6. CMake source/config consolidation — **completed 2026-08-02**.
-7. Command-queue overflow policy (log/assert).  
+4. CMake source/config consolidation — **completed 2026-08-02**.
+5. Command-queue overflow policy (log/assert).
 
 ### C. Only if product or learning goals require it
 
-8. Canvas split (`LifeGrid` / `CanvasView`).  
-9. Chunked / infinite canvas (agenda 16×16 map).  
-10. Threaded or SYCL simulation backend behind a narrow interface (serial benchmark first).  
-11. Backend factory + non-string uniforms.  
-12. Data-driven life-like rule family (JSON birth/survive).  
-13. Focused controllers (camera / console) if input coupling becomes painful.  
+6. Canvas split (`LifeGrid` / `CanvasView`).
+7. Chunked / infinite canvas (agenda 16×16 map).
+8. Threaded or SYCL simulation backend behind a narrow interface (serial benchmark first).
+9. Backend factory + non-string uniforms.
+10. Data-driven life-like rule family (JSON birth/survive).
+11. Focused controllers (camera / console) if input coupling becomes painful.
 
 ### Explicitly deferred (engine PDF + consensus)
 
@@ -572,6 +608,8 @@ From `gpt_csim_arch_assessment.pdf`:
 7. **Archive experiments** — don’t leave half-live ECS/graph/passes in the hot path.  
 8. **Simplest architecture that preserves the boundaries you care about** (engine PDF principle, applied to the CA product).  
 9. **Code wins over docs** — update this file when consensus shifts.  
+10. **One documentation tree** — current prose, LaTeX, decisions, package maps,
+    and session records live under `docs/`; generated PDF output is not source.
 
 ---
 
@@ -584,7 +622,6 @@ Most design questions from the LaTeX open list are **resolved** (see §6). Still
 | Resource ownership long-term | Destroy only at shutdown for v1 (D-R4). Refcounts / generational handles later if hot-reload needs them. |
 | Linux/macOS parity | Freeze until Windows token path solid — Windows path is solid; parity still optional. |
 | Tracy CI policy | Debug-oriented; no strict CI policy yet. |
-| Name “Illumo” permanence | Engine codename; no rename required. |
 | When to introduce chunks / SYCL | After correctness + serial benchmarks, or as an explicit learning goal. |
 
 Resolved highlights (do not re-open without a new decision ID):
@@ -603,6 +640,7 @@ Resolved highlights (do not re-open without a new decision ID):
 - CPU color fade → **restored** (RGB display)  
 - Wireworld → implemented  
 - MacroDefs toxicity → D-F1 deferred  
+- Project/product naming → D-N1 (`Illumo`)
 
 ---
 
@@ -612,8 +650,10 @@ Resolved highlights (do not re-open without a new decision ID):
 |------|--------|
 | New chat / new session | Read **this file first**. |
 | Deep dive | Then LaTeX design notes / decision log. |
-| Architecture change | Update **this file** + append a decision log entry in `09-design-decision-log.tex`. |
+| Architecture change | Update **this file** + append a decision log entry in `docs/latex/sections/09-design-decision-log.tex`. |
 | Code lands | Update “code truth” sections here if behavior changed. |
+| Significant session | Add a dated implementation/verification record under `docs/sessions/`. |
+| Rebuild the PDF | Run `docs/build.ps1`; the default Windows CMake build runs `IllumoDocs` when PowerShell and `latexmk` are available. |
 | Old PDFs / agenda | Treat as **history** (§2); do not re-implement superseded engine plans by default. |
 | Bug triage | §8 first; architecture is not the problem until proven otherwise. |
 

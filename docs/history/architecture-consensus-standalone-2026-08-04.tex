@@ -1,0 +1,797 @@
+\documentclass[10pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage[hidelinks,colorlinks=true,linkcolor=navyblue,citecolor=navyblue,urlcolor=navyblue]{hyperref}
+
+% --- Colors ---
+\definecolor{navyblue}{RGB}{16, 44, 87}
+\definecolor{slate}{RGB}{53, 64, 86}
+\definecolor{lightgrey}{RGB}{245, 247, 250}
+\definecolor{bordergrey}{RGB}{210, 215, 225}
+\definecolor{codebg}{RGB}{240, 243, 246}
+\definecolor{accentbox}{RGB}{235, 242, 250}
+
+% --- Page Setup ---
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\textcolor{slate}{\textbf{Illumo} --- Architecture Consensus (Unified)}}
+\rhead{\small\textcolor{slate}{2026-08-04}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setlist[itemize]{noitemsep, topsep=3pt, leftmargin=1.5em}
+\setlist[enumerate]{noitemsep, topsep=3pt, leftmargin=1.5em}
+
+% --- Code Listings ---
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    captionpos=b,
+    commentstyle=\color{gray},
+    keywordstyle=\color{navyblue}\bfseries,
+    stringstyle=\color{teal},
+    frame=single,
+    rulecolor=\color{bordergrey},
+    framerule=0.5pt,
+    xleftmargin=3pt,
+    xrightmargin=3pt
+}
+
+\begin{document}
+
+% --- Title Block ---
+\begin{center}
+    {\LARGE \bfseries \textcolor{navyblue}{Illumo --- Architecture Consensus (Unified)}} \\[0.4em]
+    {\small \textbf{Status:} Single living document --- \textbf{authoritative for later sessions} \quad|\quad \textbf{Last updated:} 2026-08-04}
+\end{center}
+
+\vspace{0.2em}
+\noindent This file \textbf{merges and supersedes} scattered design memory into one coherent story. Read this first; treat external PDFs and old agenda notes as \textbf{history} (\S 2).
+
+\vspace{0.8em}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Source} & \textbf{Role in this document} \\
+\midrule
+Desktop ``Main agenda for Illumo'' & Product wishlist $\rightarrow$ \S7 scorecard \\
+\texttt{Illumo\_Architecture\_Decisions.pdf} (ChatGPT) & CA / OOP-practice design review $\rightarrow$ purpose, ownership, input, rules, SYCL \\
+\texttt{Illumo\_Engine\_Architecture\_Decisions.pdf} (ChatGPT) & Aspirational 2D engine $\rightarrow$ what we kept vs discarded \\
+\texttt{gpt\_illumo\_arch\_assessment.pdf} (ChatGPT) & Assessment of \textit{current} tree $\rightarrow$ risks, direction \\
+Grok architecture reviews + local code review & Strengths, bugs, debt \\
+In-repo LaTeX design notes + decision log & Formal decision IDs (D-*) \\
+\texttt{docs/current\_issues.txt} & Product/correctness punch list \\
+\textbf{Current code under \texttt{Illumo/Source/}} & \textbf{Wins} when anything conflicts \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{tcolorbox}[colback=lightgrey,colframe=slate,boxrule=0.5pt,arc=2pt]
+\textbf{Rule:} If this document and the code disagree, \textbf{code wins} until this file is updated in the same change set.
+\end{tcolorbox}
+
+\noindent Optional deeper reading (not required to resume work):
+\begin{itemize}
+    \item \texttt{docs/illumo-design-notes.tex} / \texttt{.pdf} --- long-form chapters
+    \item \texttt{docs/sections/09-design-decision-log.tex} --- append-only formal decision prose
+\end{itemize}
+
+\vspace{0.5em}
+\tableofcontents
+\newpage
+
+% --- Section 0 ---
+\section{One-line summary}
+\textbf{Illumo is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock), Canvas is a dense grid with RGB fade display. Keep that shape. Fix Start/load/Wireworld correctness and docs drift. Defer ECS, multi-pass pipelines, multi-backend, infinite chunks, and SYCL until product pain or learning goals demand them.}
+
+% --- Section 1 ---
+\section{Project purpose and scope}
+
+\subsection{Primary purpose (still true)}
+From the CA design review and the original spirit of the repo:
+\begin{itemize}
+    \item \textbf{Practice OOP and systems programming}, not ship a commercial game engine.
+    \item The main learning sandbox is \textbf{cellular automata} (GoL family, multi-state rules, editor, camera, console).
+    \item Custom allocators, Tracy, backend interfaces, etc. are \textbf{useful experiments}, not requirements that must dominate the design.
+    \item Do \textbf{not} rewrite everything for an imagined perfect architecture. Refactor where coupling produces \textbf{real friction}.
+\end{itemize}
+
+\subsection{What the project grew into}
+It is no longer ``one Game of Life file.'' It is a \textbf{small CA framework / app}:
+\begin{itemize}
+    \item Multiple rule sets, edit/run modes, save/load hooks
+    \item Token-based OpenGL presentation + headless tests
+    \item Engine-shaped packaging (App / Engine / Game / Rendering / Services)
+\end{itemize}
+That growth is \textbf{acceptable}. Architecture should reflect \textbf{actual families of behavior} (CA + UI + host), not a fantasy multi-genre engine.
+
+\subsection{Explicit non-goals (for now)}
+\begin{itemize}
+    \item Production AAA renderer or full multiplayer engine
+    \item Full ECS / archetypes / cached structural queries
+    \item Scene/World graph as the primary cell path
+    \item Second real graphics API (Vulkan/Metal) as a near-term deliverable
+    \item Perfect Linux/macOS parity before Windows remains solid
+    \item Infinite canvas + SYCL \textbf{before} dense-grid product paths are correct and documented
+    \item Aggressive batching/instancing/render graphs without profiling evidence
+\end{itemize}
+
+\subsection{Allocators (from CA design PDF --- retained policy)}
+Retain arena / stack / pool allocators as learning code and optional utilities. Do \textbf{not} force them into every service. Appropriate uses:
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Allocator} & \textbf{Fit} \\
+\midrule
+Arena & Frame scratch, transient command data, parsers, load buffers \\
+Stack & Nested temporary lifetimes (LIFO free) \\
+Pool & Many same-sized objects with stable slots \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A general-purpose allocator (mimalloc-class) is a different product; do not reinvent it.
+
+% --- Section 2 ---
+\section{Historical sources (how to read old notes)}
+Three generations of ``design truth'' got mixed in chat history. This section untangles them so later sessions do not re-implement superseded plans.
+
+\subsection{Desktop agenda (``Main agenda for Illumo'')}
+Early product wishlist:
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Item} & \textbf{Intent} \\
+\midrule
+On-screen text / fonts & UI \\
+In-game command line & Tools \\
+Console drawn in the GL window & UI \\
+More rule sets & Content \\
+Infinite canvas in \textbf{16$\times$16 chunks} + hash map & Scale \\
+Mouse drag pan & UX \\
+SYCL (or similar) for large cell counts & Scale / learning \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \textbf{Outcome today:} UI/tools/pan/most rulesets largely done. \textbf{Chunk infinite canvas + SYCL not done} (deliberately deferred). Full scorecard $\rightarrow$ \S 7.
+
+\subsection{CA design review (\texttt{Illumo\_Architecture\_Decisions.pdf})}
+Themes that \textbf{still guide} the project:
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Theme} & \textbf{Guidance} \\
+\midrule
+Ownership & Explicit Engine/App object; reduce uncontrolled global lookup \\
+Input & Thin layer: GLFW callbacks $\rightarrow$ InputManager $\rightarrow$ application logic \\
+Boundaries & Contain GLFW/OpenGL behind wrappers; no GL in sim/UI domain \\
+Sim vs view & Separate simulation from presentation; double-buffer generations \\
+Rules & Families (life-like / elementary / multi-state); JSON for \textbf{data}, not executable behavior \\
+Parallel & Parallelize \textbf{simulation data} last---after serial works \\
+SYCL & Optional compute backend; never a hard engine dependency \\
+Refactor plan & Ownership $\rightarrow$ input extract $\rightarrow$ controllers $\rightarrow$ contain GL $\rightarrow$ rule families $\rightarrow$ double-buffer $\rightarrow$ then parallel \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \textbf{Principle:} \textit{Abstract real volatility; hard-code stable structure; ownership explicit.} \quad (Closer to current Illumo than the ``engine passes'' PDF.)
+
+\subsection{Engine design PDF (\texttt{Illumo\_Engine\_Architecture\_Decisions.pdf})}
+Aspirational \textbf{general 2D engine} design (July 2026). Valuable as boundary thinking; \textbf{not} the current product plan.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Proposed} & \textbf{Status in Illumo} \\
+\midrule
+Illumo owns services; context as view & \textbf{Kept} \\
+Backend owns GPU resources + ID tables & \textbf{Kept} (IBackend / GL registries) \\
+Modules as subsystems & \textbf{Kept} \\
+RenderPipeline with Opaque / Transparent / UI / Debug \textbf{passes} & \textbf{Not built} \\
+MeshDrawCommand-style typed pass queues & \textbf{Not built} --- we use tagged-union \texttt{RenderCommand} stream \\
+Minimal EntityTable (transform, mesh, texture) & \textbf{Archived} (D-E3) \\
+Transform hierarchies + fixed-tick mesh interpolation & \textbf{Not needed} for CA; cell \textbf{fade} is the visual interpolation \\
+Full ECS (sparse-set sketches) & \textbf{Deferred forever-until-pain} \\
+Multi-backend, render graphs, heavy batching & \textbf{Explicitly deferred} in that PDF too \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \textbf{Do not} re-introduce pass objects or entity mesh tables ``because the engine PDF said so.'' Token stream + drawable list is the shipped boundary.
+
+\subsection{Later assessments (Grok + ChatGPT on the \textit{current} tree)}
+Agreement across reviews:
+\begin{itemize}
+    \item Layered modular monolith is \textbf{appropriate}
+    \item App owns modules; token path + MockBackend are real strengths
+    \item Scene-as-list is correct; dead graph/EntityTable should stay gone
+    \item Main risks: incomplete module Start handling, Canvas dual role, partial backend neutrality, and command-queue overflow
+    \item Highest value: product correctness + one canonical Canvas model in docs --- \textbf{not} ECS or multi-pass
+\end{itemize}
+
+% --- Section 3 ---
+\section{Overall assessment}
+Illumo is a \textbf{coherent layered modular monolith}:
+
+\begin{lstlisting}[language=bash]
+Platform
+  -> App/CellMain          (product composition)
+  -> Engine/Illumo         (owns services + module list)
+  -> Modules               (CellGameModule, DebugModule)
+  -> Game + Rulesets       (CA domain / rules)
+  -> Rendering             (Scene list, drawables, Renderer, tokens)
+  -> IBackend              (GLBackend | MockBackend)
+\end{lstlisting}
+
+It is an \textbf{engine-shaped application}, not a cleanly separated ``engine product + game product.'' That is \textbf{intentional at current scale}.
+
+\noindent \textbf{Verdict:} Functional and reasonably testable. Residual risk is mostly \textbf{product correctness holes} and \textbf{documented debt}, not a need for ECS or a full rewrite.
+
+% --- Section 4 ---
+\section{Strengths (keep these)}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Area} & \textbf{Consensus} \\
+\midrule
+\textbf{App owns composition} & \texttt{CellMain}: \texttt{Init} $\rightarrow$ \texttt{addModule} $\rightarrow$ \texttt{StartModules} (D-E1). Engine does not construct Game modules. \\
+\textbf{Module lifecycle} & \texttt{Start} / \texttt{Update} / \texttt{DispatchDrawables} / \texttt{Exit} is clear. \\
+\textbf{Render split} & Enroll once; emit tokens per frame; backend executes (D-R1--D-R8, D-R10). \\
+\textbf{Rulesets} & Strategy hierarchy; pure \texttt{nextState} + \texttt{evalCell}; double-buffered generation (D-P3). \\
+\textbf{Scene model} & Per-frame drawable list only (D-E3, D-E4). \\
+\textbf{Tests} & Headless \texttt{IllumoTests}: rules, canvas, tokens, UI, renderer inject. \\
+\textbf{Debt hygiene} & Dead experiments under \texttt{archive/} rather than half-live. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% --- Section 5 ---
+\section{Canonical architecture (code truth)}
+
+\subsection{Packages}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Package} & \textbf{Role} \\
+\midrule
+\textbf{App/} & Product composition (\texttt{CellMain}). \\
+\textbf{Engine/} & Host: Illumo, modules, frozen \texttt{IllumoContext}. \\
+\textbf{Game/} & CA domain + presentation (\texttt{Canvas}, \texttt{CellGameModule}, \texttt{CellContext}). \\
+\textbf{Rulesets/} & CA rules (GoL family, Wireworld, \dots). \\
+\textbf{Rendering/} & Scene list, drawables, Renderer, tokens, OpenGL, Mock. \\
+\textbf{Services/} & Log, env, input, console UI, save/load API, allocators. \\
+\textbf{Foundation/} & Macros, math aliases (\texttt{MathTypes.h}), sysinfo. \\
+\textbf{Platform/} & OS entry + native dialogs. \\
+\textbf{Assets/} & Asset loaders. \\
+\textbf{Tests/} & Headless suite. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \textbf{House style (D-008 / CONTRIBUTING):} avoid \texttt{auto}; avoid namespaces (prefer static classes/structs); no recursion; third-party via PR --- unless a later decision waives.
+
+\subsection{Ownership and lifetime}
+\begin{itemize}
+    \item \textbf{Illumo} owns long-lived services with \texttt{unique\_ptr} (window, renderer, camera, env, input, scene, command line, \dots).
+    \item \textbf{IllumoContext} is a \textbf{non-owning} pointer bag for modules (D-E5: frozen for the two shipped modules; validate at \texttt{Start}).
+    \item \textbf{App} decides which modules exist.
+    \item Do not grow the bag for convenience; a third module with different needs should take \textbf{explicit constructor dependencies}.
+    \item Prefer explicit references for domain logic over ``look up everything from the bag.''
+\end{itemize}
+
+\subsection{Module contract}
+\begin{lstlisting}[language=C++]
+class IModule {
+public:
+    virtual void Start(IllumoContext* context) = 0;
+    virtual void Update(double dt) = 0;
+    virtual void DispatchDrawables(Scene* scene) = 0;
+    virtual void Exit() = 0;
+};
+\end{lstlisting}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Hook} & \textbf{Responsibility} \\
+\midrule
+Start & Bind inputs, allocate game state; bail if context incomplete \\
+Update & Simulation / input \\
+DispatchDrawables & Contribute what should draw this frame \\
+Exit & Teardown module-owned state \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent Shipped modules: \texttt{CellGameModule} (always), \texttt{DebugModule} (\texttt{\#ifndef NDEBUG}).\\
+\textbf{Known hole:} \texttt{Start} can fail without preventing later \texttt{Update} / \texttt{DispatchDrawables} $\rightarrow$ \S 8.
+
+\subsection{Frame loop (production)}
+\begin{lstlisting}[language=bash]
+CellMain
+  -> Illumo::Init()                    // services only
+  -> addModule(CellGameModule)
+  -> addModule(DebugModule)            // Debug builds
+  -> StartModules()
+  loop:
+    Update(dt)   // InputManager -> Camera -> modules.Update
+    Render()
+      scene.ClearDrawables()
+      modules.DispatchDrawables(scene)
+      renderer.BeginFrame()
+      renderer.RenderScene(scene, camera)   // tokens, then optional immediate fallback
+      renderer.EndFrame()                   // swap (GL)
+\end{lstlisting}
+
+\noindent Typical draw order from the game module: canvas $\rightarrow$ console $\rightarrow$ FPS $\rightarrow$ splash.
+
+\subsection{Rendering architecture (shipped)}
+\textbf{Mental model:} Game never issues draw \texttt{gl*} for the live path. It enrolls resources and emits \textbf{tokens}.
+
+\begin{lstlisting}[language=bash]
+Game / Rulesets / UI
+    |  (no gl* for draw submission)
+    v
+Drawable::AppendCommands(Renderer*)
+    |  enroll handles + push tokens
+    v
+CommandQueue<RenderCommand>     // tagged union payloads
+    |
+    v
+IBackend::SubmitCommandQueue
+    |
+    +-- GLBackend + GLDevice   (handle resolve, PBO upload, bind tracker)
+    +-- MockBackend            (tests)
+\end{lstlisting}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Piece} & \textbf{Job} \\
+\midrule
+\textbf{Modules} & Choose what should appear this frame. \\
+\textbf{Scene} & Ordered list of drawable pointers for this frame only. \\
+\textbf{Drawable} & Prefer \texttt{AppendCommands(Renderer*)} $\rightarrow$ tokens. Immediate \texttt{Draw()} only if AppendCommands returns false (tests/stubs). \\
+\textbf{Renderer} & Frame setup tokens; collect drawable tokens; submit; then hybrid immediate list. \\
+\textbf{IBackend} & Create resources, queue, submit, begin/end frame. \\
+\textbf{GLBackend / GLDevice} & Real OpenGL: handle registries, execute tokens, PBO texture updates, bind-state tracking, blend-func-on-enable (D-R5). \\
+\textbf{MockBackend} & Headless: record creates + command order. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \textbf{Enroll (rare):} \texttt{enrollMesh} / \texttt{enrollShader} / \texttt{enrollTexture} $\rightarrow$ opaque \texttt{unsigned long} table IDs.\\
+\textbf{Per frame:} \texttt{RenderCommand} tagged union (bind, uniform, update texture/buffer, draw, clear, viewport, pipeline).\\
+\textbf{Not current (old engine PDF):} separate Opaque/Transparent/UI pass \textit{objects}, MeshDrawCommand-only world draws, entity mesh tables.\\
+\textbf{Production pure-token drawables (D-R10):} Canvas, CommandLine, GLString, SplashText.\\
+\textbf{Token migration phases 0--6:} complete for planned scope.
+
+\subsection{Canvas presentation model (canonical --- code wins)}
+\textbf{Important history:} D-P4 briefly moved presentation to \textbf{GPU R8 state texture + 256$\times$1 palette} (snap colors, drop CPU fade). Fade was later \textbf{restored}. Intermediate LaTeX notes that still describe ``R8-only current'' are \textbf{stale}.
+
+\noindent \textbf{Code truth after fade restore:}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Layer} & \textbf{Contents} \\
+\midrule
+\textbf{Domain} & \texttt{lifeCanvas} --- dense \texttt{unsigned char[width $\times$ height]} (\textbf{not} chunked) \\
+\textbf{View} & CPU palette $\rightarrow$ \texttt{targetRgb} / \texttt{displayRgb} fade; \texttt{texCanvasBuffer} RGB bytes \\
+\textbf{GPU} & RGB display texture; dirty-rect \texttt{UpdateTexture} (PBO); shader samples \texttt{uDisplayTexture} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \textbf{What survived from D-P4:} dirty-rect uploads, PBO path in \texttt{GLTexture::UpdateSubImage}, bind-state tracker, dirty flags for idle frames (D-P1).\\
+\textbf{What was rolled back:} exclusive R8+palette GPU path as the live presentation; dual float RGB staging + fade are back.\\
+\textbf{Decision D-C1:} Keep Canvas as intentional domain + view + GPU enroll \textbf{monolith} until pure-sim tests or large grids force \texttt{LifeGrid} / \texttt{CanvasView}.
+
+\noindent \textbf{Scale walls:}
+\begin{itemize}
+    \item \texttt{calcGeneration} always walks the \textbf{full} grid (rect args ignored).
+    \item Neighbor counts: scalar Moore/toroidal.
+    \item Change detection may do a second full pass for dirty AABB (helps sparse \textbf{upload}, still O($W \times H$) sim).
+    \item Per cell: 1 B life + $\sim$24 B float RGB + 3 B display tex. Default 80$\times$60 is fine; large/infinite needs redesign.
+\end{itemize}
+
+\subsection{Rules and encoding}
+\textbf{Active rules} (factory / AllSets): Game of Life, Seeds, Brian's Brain, Highlife, Day \& Night, Life Without Death, \textbf{Wireworld}.\\
+\textbf{Stubs:} Rule 90 / 184 (identity \texttt{nextState}).
+
+\begin{lstlisting}[language=C++]
+class RuleSet {
+public:
+    virtual unsigned char nextState(unsigned char cell,
+                                    unsigned char aliveNeighbors) const = 0;
+    virtual void evalCell(const unsigned char& target,
+                          unsigned char dest[3]) const = 0; // palette colors
+    void calcGeneration(...); // double-buffer: nextGen then write-back
+};
+\end{lstlisting}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Encoding} & \textbf{Values} \\
+\midrule
+Binary / life-like & \texttt{0} = alive, \texttt{1} = dead; neighbor count treats value \texttt{0} as live \\
+Multi-state (e.g. Brian's Brain) & $\ge 2$ additional states (e.g. dying = 2) \\
+\textbf{Wireworld} & \texttt{0} head, \texttt{1} empty, \texttt{2} tail, \texttt{3} conductor (head = 0 reuses head-neighbor counting) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \textbf{Generation path (D-P3):}
+\begin{enumerate}
+    \item Count neighbors from raw \texttt{lifeCanvas} (toroidal).
+    \item Write \texttt{nextState} into scratch \texttt{nextGen}.
+    \item If any cell changed: copy back, mark sparse dirty AABB for visuals. Still life $\rightarrow$ no dirty.
+\end{enumerate}
+
+\noindent Rules stay free of rendering and input. \texttt{evalCell} supplies palette/RGB colors only.
+
+\noindent \textbf{Optional cleanup (from CA PDF):} collapse life-like rules into one family + JSON birth/survive tables:
+\begin{lstlisting}
+{ "family": "life_like", "birth": [3], "survive": [2, 3] }
+\end{lstlisting}
+JSON describes \textbf{data}, not executable behavior. Multi-state (Wireworld, Brian's Brain) stay separate families.
+
+\subsection{Simulation vs rendering}
+\begin{enumerate}
+    \item Simulation advances on a \textbf{tps $\times$ speedFactor} clock (accumulator + step cap).
+    \item Rendering runs every frame.
+    \item Double-buffer prevents reading a half-written generation.
+    \item Visual fade is \textbf{presentation}, not simulation state.
+    \item Modes in \texttt{CellGameModule}: \texttt{NORMAL | EDIT | EXIT}; save/load are registered commands, not frame states.
+\end{enumerate}
+
+\subsection{Input}
+Intended flow: \texttt{GLFW callbacks / poll $\rightarrow$ InputManager $\rightarrow$ module / controller logic}.\\
+\textbf{Today:} InputManager holds key/mouse state and contexts; CellGameModule / DebugModule consume it.\\
+\textbf{D-E2:} InputManager must not depend on Game types.
+
+\subsection{Developer console}
+The Debug-only console keeps general tooling in \symbolref{CommandLine} while
+\symbolref{CellGameModule} registers simulation, canvas, camera, ruleset, and
+save/load behavior through \symbolref{CommandRegistry}. Registry usage,
+description, and completion metadata drive live help and Tab completion.
+Registered commands no longer fall through as unknown. Dense saves are validated
+on load, activate their saved ruleset, copy row-by-row into the current canvas,
+and rebuild the visible state immediately. The old \texttt{vid\_restart} no-op is
+not advertised because safe GL-context recreation requires full resource
+re-enrollment.
+
+\subsection{Window / platform boundaries}
+\begin{itemize}
+    \item Semantic window ops hide GLFW types from the main loop.
+    \item OpenGL calls stay under \texttt{Rendering/OpenGL/} (+ window bootstrap).
+    \item Interfaces only where multiple implementations or volatility are real (\texttt{IBackend}, \texttt{IRenderWindow}).
+    \item macOS Metal myths: GLFW can create a no-client-API window and expose native handles.
+\end{itemize}
+
+% --- Section 6 ---
+\section{Locked decisions (catalog)}
+Full formal prose lives in \texttt{docs/sections/09-design-decision-log.tex}.
+
+\subsection{Structure and style}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{ID} & \textbf{Decision} \\
+\midrule
+\textbf{D-001} & Package rename: Core$\rightarrow$Game, System$\rightarrow$\{App,Engine,Services\}, Init+Util$\rightarrow$Foundation, AssetLoaders$\rightarrow$Assets. \\
+\textbf{D-002} & Math aliases in \texttt{MathTypes.h} (not \texttt{Math.h} --- Windows CRT collision). \\
+\textbf{D-004} & Modules: Start / Update / DispatchDrawables / Exit. \\
+\textbf{D-005} & Each CA variant is a \texttt{RuleSet} subclass (factory in CellContext; registry later optional). \\
+\textbf{D-006} & Modes = \texttt{CellState} enum in module (not archived State class hierarchy). \\
+\textbf{D-008} & House style: avoid \texttt{auto}; no namespaces; no recursion; third-party via PR. \\
+\textbf{D-N1} & Adopt Illumo as the project, product, CMake-target, runtime, and save-format name; keep the existing \texttt{Illumo} host class. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Rendering (D-R*)}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{ID} & \textbf{Decision} \\
+\midrule
+\textbf{D-003 / D-R*} & Token submission via IBackend + RenderCommand; game must not permanently depend on raw GL for draw. \\
+\textbf{D-R1} & \texttt{RenderCommand} = simple tagged union (C-style), not byte-stream compiler / \texttt{std::variant}. \\
+\textbf{D-R2} & Each drawable emits tokens via \texttt{AppendCommands}; Renderer owns frame setup + submit. \\
+\textbf{D-R3} & Opaque \texttt{unsigned long} handles + backend registries for v1; strong typedefs deferred. \\
+\textbf{D-R4} & Migration phases 1--6 done; destroy resources at shutdown only for v1; Windows GL primary. \\
+\textbf{D-R5} & On blend enable, always set \texttt{glBlendFunc} (console panel transparency). \\
+\textbf{D-R6} & Archive dead render queue / SceneObject graph helpers; Scene + Renderer is the path. \\
+\textbf{D-R7} & MockBackend + headless tests; no Vulkan/Metal yet. \\
+\textbf{D-R8} & Inject \texttt{IBackend*} into Renderer for tests; production owns GLBackend. \\
+\textbf{D-R9} & String-named uniforms = debt if a second \textit{real} GPU API appears. \\
+\textbf{D-R10} & Production drawables pure-token; hybrid \texttt{Draw()} for tests/stubs only. \\
+\textbf{D-007} & Enroll resources outside the per-frame stream (frame queue = bind/draw/update). \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Performance (D-P*)}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X l}
+\toprule
+\textbf{ID} & \textbf{Decision} & \textbf{Note} \\
+\midrule
+\textbf{D-P1} & Dirty visual path --- idle frames skip full recolor/upload. & Still current \\
+\textbf{D-P2} & UI batch: CommandLine one packed update; GLString geometry cache. & Still current \\
+\textbf{D-P3} & Double-buffer \texttt{calcGeneration} + sparse dirty AABB. & Still current \\
+\textbf{D-P4} & Originally: R8 + palette + dirty-rect PBO; drop dual float RGB. & \textbf{Partially superseded:} RGB fade display restored \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Engine shape (D-E*, D-C*, D-F*)}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{ID} & \textbf{Decision} \\
+\midrule
+\textbf{D-E1} & Module registration lives in App; Engine knows only \texttt{IModule}. \\
+\textbf{D-E2} & InputManager has no Game types. \\
+\textbf{D-E3} & EntityTable archived; cells are not entities. \\
+\textbf{D-E4} & Scene is drawable list only (no graph). \\
+\textbf{D-E5} & Freeze IllumoContext; validate at Start; third module $\rightarrow$ explicit deps. \\
+\textbf{D-C1} & Canvas dual role intentional until scale forces split. \\
+\textbf{D-F1} & MacroDefs / Windows.h include toxicity deferred until real pain. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% --- Section 7 ---
+\section{Early agenda vs today}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Agenda item} & \textbf{Status} \\
+\midrule
+Render text / fonts & \textbf{Done} (FreeType + GLString / SplashText) \\
+Command line & \textbf{Done} (commands can still grow) \\
+Console on GL screen & \textbf{Done} (token UI) \\
+More rulesets & \textbf{Partly} --- Wireworld live; 90/184 stubs \\
+Infinite 16$\times$16 chunk canvas & \textbf{Not done} --- dense grid by design for now \\
+Mouse pan & \textbf{Done} (camera controls) \\
+SYCL / large-grid parallel & \textbf{Not done} --- serial full-grid; deferred \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% --- Section 8 ---
+\section{Known product / correctness issues}
+
+\subsection{Bugs (high signal)}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{c l X}
+\toprule
+\textbf{\#} & \textbf{Severity} & \textbf{Issue} \\
+\midrule
+1 & bug & \textbf{Partial Start still crashes later.} If \texttt{IllumoContextHasGameCore} fails, \texttt{Start} returns without \texttt{cellContext}, but \texttt{Update} / \texttt{DispatchDrawables} still use it $\rightarrow$ null deref. \\
+2 & bug & \textbf{Wireworld editor can't place heads with the mouse.} \texttt{setcell} can place numeric states, but there is no convenient head/tail brush. \\
+3 & bug & \textbf{Startup seed is always a GoL glider (value 0).} Under WIREWORLD that plants five electron heads, not a wire. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Suggestions}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{c X}
+\toprule
+\textbf{\#} & \textbf{Issue} \\
+\midrule
+4 & Wireworld tests miss 2-head birth / 3-head no-birth; save/load command integration coverage remains limited. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Assessment-only risks (structural)}
+\begin{itemize}
+    \item Command queue \textbf{2048} capacity with \textbf{silent drop}; raw pointer payloads must stay alive until submit.
+    \item CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; empty package CMake files remain.
+    \item Renderer.h still includes GL types for production construction.
+    \item Hybrid token + immediate Draw path remains for stubs.
+\end{itemize}
+
+\subsection{Looks fine (do not ``fix'' as bugs)}
+\begin{itemize}
+    \item Wireworld encoding (head = 0) and head-neighbor counting
+    \item Fade order for paint/sim path
+    \item \texttt{rebuildPalette} $\rightarrow$ full dirty refresh on ruleset switch
+    \item SceneObject removal has no leftover live call sites
+    \item Pure-token production drawables
+\end{itemize}
+
+% --- Section 9 ---
+\section{Architectural debt (do when it hurts)}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Item} & \textbf{Notes} \\
+\midrule
+String uniforms & D-R9 --- GL-shaped until second real backend \\
+Hybrid Draw path & Tests/stubs only; production is tokens \\
+Command queue silent overflow & Prefer log/assert if near cap \\
+CMake duplication & Resolved 2026-08-02 with shared source lists/settings; no forced package libraries \\
+Renderer.h includes GL types & Factory / pimpl later \\
+Full-grid sim + float fade memory & Scale wall for large canvases \\
+MacroDefs + Windows.h & D-F1 deferred \\
+IllumoContext growth & Frozen; third module = explicit deps \\
+Life-like JSON family collapse & Optional cleanup of repetitive RuleSet classes \\
+Chunk + SYCL & Optional after serial benchmark / product need \\
+Resource destroy/reload & Shutdown-only for v1 (D-R4); hot-reload later \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% --- Section 10 ---
+\section{Recommended work order}
+
+\subsection{A. Correctness first}
+\begin{enumerate}
+    \item Failed \texttt{Start} $\rightarrow$ do not run that module's Update/Dispatch.
+    \item Wireworld seed + mouse head-placement UX.
+    \item Add focused save/load command integration tests.
+    \item Keep this file and LaTeX ``current state'' sections aligned with \textbf{RGB fade Canvas}.
+\end{enumerate}
+
+\subsection{B. Hygiene}
+\begin{enumerate}[resume]
+    \item CMake source/config consolidation --- \textbf{completed 2026-08-02}.
+    \item Command-queue overflow policy (log/assert).
+\end{enumerate}
+
+\subsection{C. Only if product or learning goals require it}
+\begin{enumerate}[resume]
+    \item Canvas split (\texttt{LifeGrid} / \texttt{CanvasView}).
+    \item Chunked / infinite canvas (agenda 16$\times$16 map).
+    \item Threaded or SYCL simulation backend behind a narrow interface.
+    \item Backend factory + non-string uniforms.
+    \item Data-driven life-like rule family (JSON birth/survive).
+    \item Focused controllers if input coupling becomes painful.
+\end{enumerate}
+
+\noindent \textbf{Explicitly deferred:} Full Scene/World abstractions, general ECS, render graphs, multi-backend, aggressive batching.
+
+% --- Section 11 ---
+\section{Core design principles (merged)}
+\begin{enumerate}
+    \item \textbf{CA learning sandbox first} --- not a general engine product.
+    \item \textbf{Ownership explicit} --- Illumo owns services; App owns module set; context does not own.
+    \item \textbf{Boundaries over cleverness} --- abstract volatility; hard-code stable structure.
+    \item \textbf{Sim produces complete state; render observes} --- double-buffer; no draw mid-generation.
+    \item \textbf{Tokens for draw submission} --- enroll once, emit commands, backend executes.
+    \item \textbf{Parallelize data transformations last} --- serial correctness first; chunks/SYCL optional.
+    \item \textbf{Archive experiments} --- don't leave half-live ECS/graph/passes in the hot path.
+    \item \textbf{Simplest architecture that preserves the boundaries you care about}.
+    \item \textbf{Code wins over docs} --- update this file when consensus shifts.
+\end{enumerate}
+
+% --- Section 12 ---
+\section{Open questions (remaining)}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Topic} & \textbf{Working answer} \\
+\midrule
+Resource ownership long-term & Destroy only at shutdown for v1 (D-R4). Refcounts / generational handles later if hot-reload needs them. \\
+Linux/macOS parity & Freeze until Windows token path solid --- Windows path is solid; parity still optional. \\
+Tracy CI policy & Debug-oriented; no strict CI policy yet. \\
+When to introduce chunks / SYCL & After correctness + serial benchmarks, or as an explicit learning goal. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% --- Section 13 ---
+\section{How to use this document}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{When} & \textbf{Action} \\
+\midrule
+New chat / new session & Read \textbf{this file first}. \\
+Deep dive & Then LaTeX design notes / decision log. \\
+Architecture change & Update \textbf{this file} + append a decision log entry in \texttt{09-design-decision-log.tex}. \\
+Code lands & Update ``code truth'' sections here if behavior changed. \\
+Old PDFs / agenda & Treat as \textbf{history} (\S 2); do not re-implement superseded engine plans by default. \\
+Bug triage & \S 8 first; architecture is not the problem until proven otherwise. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\newpage
+\appendix
+\section{Appendix A --- Source map (where code lives)}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Concern} & \textbf{Typical location} \\
+\midrule
+Frame loop / composition & \texttt{Source/App/CellMain.cpp} \\
+Host / services / modules & \texttt{Source/Engine/Illumo.*} \\
+CA module / modes & \texttt{Source/Game/CellGameModule.*}, \texttt{CellContext.*} \\
+Grid + fade + GPU enroll & \texttt{Source/Game/Canvas.*} \\
+Rules & \texttt{Source/Rulesets/*} \\
+Tokens / Renderer & \texttt{Source/Rendering/Renderer.*}, \texttt{RenderCommand.*} \\
+GL execute & \texttt{Source/Rendering/OpenGL/*} \\
+Mock & \texttt{Source/Rendering/Mock/*} \\
+Console & \texttt{Source/Services/CommandLine.*} \\
+Dead experiments & \texttt{archive/dead-engine/}, \texttt{archive/dead-render/}, \texttt{archive/old-states/} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Appendix B --- What not to do next}
+\begin{itemize}
+    \item Do not reintroduce EntityTable / SceneObject graph ``for completeness.''
+    \item Do not build Opaque/Transparent/UI pass objects unless profiling or a real multi-genre product appears.
+    \item Do not make SYCL a hard dependency of Illumo or Game.
+    \item Do not document R8-only presentation as current without verifying shaders + Canvas.cpp.
+    \item Do not expand IllumoContext casually for a third module.
+\end{itemize}
+
+\end{document}

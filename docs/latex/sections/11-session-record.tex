@@ -1,0 +1,142 @@
+\section{2026-08-04 implementation record}
+\label{sec:session-2026-08-04}
+
+This chapter records the session that established the Illumo product identity,
+expanded the developer console, corrected its text/window presentation, and
+consolidated project documentation. The exact Markdown companion is
+\pathref{docs/sessions/2026-08-04-illumo-console-and-documentation.md}.
+
+\subsection{Product identity and build boundary}
+
+Live first-party project paths, CMake targets, runtime titles, tests, console
+labels, documentation, and the save extension use \textbf{Illumo}. The runtime
+host class remains \symbolref{Illumo}; that shared name is intentional. The
+canonical test executable and CTest name are \texttt{IllumoTests}, and current
+saves use \texttt{.illumo} (D-N1).
+
+\symbolref{DebugModule} remains Debug-only product composition (D-B1):
+\begin{itemize}
+  \item \symbolref{CellMain} includes and registers it only under
+        \texttt{\#ifndef NDEBUG}.
+  \item CMake adds \pathref{DebugModule.cpp} only for the Debug configuration.
+  \item Release verification found no DebugModule object artifact.
+  \item Shared command/logging service code may compile in Release; that does
+        not ship the Debug overlay module.
+\end{itemize}
+
+\subsection{Command ownership and implemented commands}
+
+Generic mechanics stay in \symbolref{CommandLine}; cellular-automata domain
+behavior stays in \symbolref{CellGameModule} and is registered through
+\symbolref{CommandRegistry} (D-CLI1). Registry metadata---usage, description,
+and completion candidates---drives live help and Tab completion.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{Group} & \textbf{Commands} \\
+\midrule
+Console/application & \texttt{help}, \texttt{echo}, \texttt{clear}, \texttt{close}, \texttt{quit} \\
+Environment & \texttt{get}, \texttt{set}, \texttt{toggle}, \texttt{vars} \\
+Timing/display & \texttt{tps}, \texttt{speed}, \texttt{fade}, \texttt{fps}, \texttt{fullscreen} \\
+Simulation & \texttt{pause}, \texttt{run}, \texttt{step}, \texttt{status} \\
+Canvas & \texttt{clear\_canvas}, \texttt{randomize}, \texttt{setcell} \\
+Rules & \texttt{ruleset}, \texttt{mode} \\
+Files & \texttt{save}, \texttt{load}, \texttt{save\_dialog}, \texttt{load\_dialog} \\
+Camera & \texttt{camera}, \texttt{camera\_reset} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Numeric and boolean inputs are validated. Unknown commands do not create
+environment variables. Registered commands queue exactly once and do not fall
+through as unknown. The known-ruleset list comes from \symbolref{CellContext}.
+The old \texttt{vid\_restart} no-op is no longer advertised because safe
+OpenGL-context recreation requires complete resource re-enrollment.
+
+\subsection{Save/load completion}
+
+The registered file commands now call real game behavior:
+\begin{itemize}
+  \item Save writes a bounded, zero-filled ruleset tag, dimensions, and dense
+        cell bytes and reports stream failure.
+  \item Load validates the header, ruleset, dimensions, allocation limit, and
+        complete payload before mutating the current canvas.
+  \item A valid load activates its ruleset, clears the canvas, copies the
+        overlap row-by-row, marks cells dirty, rebuilds targets, and snaps the
+        visible display to the loaded state.
+  \item Native picker variants use the platform \symbolref{SaveLoad} API.
+\end{itemize}
+Native dialogs still require a manual Windows smoke test.
+
+\subsection{Editing and visual corrections}
+
+The editor supports character and word navigation/deletion, Home/End, Shift
+selection, Ctrl+A, selection replacement, history, quoted/escaped arguments,
+and command/variable/ruleset completion. A horizontally scrolling input
+viewport keeps the insertion point visible.
+
+The caret is now a rendered bar located from measured prefix width rather than
+an appended underscore. This removes the apparent rightward cursor offset.
+Console chrome, history, scrollbar, selection, input, and caret remain one
+token batch (D-UI1).
+
+\texttt{stb\_easy\_font} expands each character into several quads. A 2,000-quad
+mesh could exhaust its geometry during a detailed help page and truncate the
+last hint near ``Use 'h''. The mesh now holds 6,000 UI quads, and a focused
+headless regression test renders realistic long help lines beyond the old cap.
+
+Fullscreen toggling now saves the current windowed position and dimensions,
+enters the primary monitor at its active video mode, and restores the saved
+bounds on exit. Commands support on/off/toggle and avoid redundant transitions.
+
+\subsection{Service lifetime and test repair}
+
+\symbolref{Logger} can mirror output into the console while services are alive.
+The host clears that non-owning context before service destruction, preventing
+late shutdown logging from using a dangling pointer.
+
+An unrelated test-only ODR collision was exposed during integration: two test
+translation units defined incompatible \texttt{NullRenderWindow} classes. The
+renderer-E2E-local fake was renamed, restoring deterministic virtual dispatch.
+
+\subsection{Verification}
+
+\begin{itemize}
+  \item Windows Release application build succeeded.
+  \item Windows Debug application build succeeded.
+  \item The canonical \texttt{IllumoTests} executable passed its granular
+        CTest entries.
+  \item A normal Release build automatically ran and passed those entries.
+  \item Release contained no DebugModule object artifact.
+  \item \texttt{git diff --check} passed.
+\end{itemize}
+
+Headless coverage includes command editing/completion/validation/dispatch/help,
+open/closed/invisible console token paths, full-help geometry capacity,
+MockBackend renderer and asset flow, rules, Canvas domain/fade/dirty behavior,
+CellContext, CellGameModule commands and file-backed persistence, input,
+environment, logging, argument parsing, and splash behavior. D-T1 registers
+each behavior separately and gates production line coverage at 85\%. It does
+not prove live OpenGL, native file dialogs, or OS ports.
+
+\subsection{Documentation consolidation}
+
+All first-party prose now lives below \pathref{docs/} (D-DOC1): current
+architecture and issues at the top level, package maps under \pathref{packages/},
+dated work under \pathref{sessions/}, provenance under \pathref{history/}, this
+book under \pathref{latex/}, and generated PDFs under \pathref{output/}. The
+root README and AGENTS bootstrap remain at the repository root. Licenses and
+vendored dependency notes stay beside the assets they govern.
+
+\subsection{Remaining high-value work}
+
+\begin{enumerate}
+  \item Gate module Update/Dispatch after failed Start.
+  \item Make the startup seed ruleset-aware.
+  \item Add an ergonomic Wireworld head/tail mouse brush.
+  \item Keep native-dialog smoke coverage proportional to platform changes.
+  \item Define an explicit policy for the fixed 2,048-command queue capacity.
+\end{enumerate}

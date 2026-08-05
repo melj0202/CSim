@@ -1,4 +1,4 @@
-# CSim repository guidance
+# Illumo repository guidance
 
 This file is the durable bootstrap for Codex work in this repository. Use it at
 the start of every new task, then inspect the live files relevant to the request.
@@ -9,19 +9,23 @@ Do not rely on chat history as the source of truth.
 1. Run `git status --short` and preserve all existing user changes.
 2. Read `README.md` for the current commands and
    `docs/architecture-consensus.md` for the architecture and decision history.
+   Before substantive work, also read `docs/output/illumo.pdf` when it exists
+   and its contents are not already available in the task context. If it is
+   absent or stale, rebuild it first with `docs/build.ps1` rather than relying
+   on an older copy.
 3. Inspect the live implementation before repeating a documentation claim.
    Code wins when code and docs disagree; update the docs in the same change
    when behavior intentionally changes.
-4. Search the live tree narrowly. Exclude `build/`, `CSim/thirdparty/`,
-   `archive/`, `CSim/.agents/`, `CSim/Source/.agents/`, and
-   `CSim/Source/all.txt` unless the task specifically concerns generated,
+4. Search the live tree narrowly. Exclude `build/`, `Illumo/thirdparty/`,
+   `archive/`, `Illumo/.agents/`, `Illumo/Source/.agents/`, and
+   `Illumo/Source/all.txt` unless the task specifically concerns generated,
    vendored, historical, or prior-agent material.
 5. Keep the user's requested boundary. A review request does not authorize
    fixes, cleanup, generated-file removal, or worktree normalization.
 
 ## What this project is
 
-CSim is a C++23 cellular-automata learning sandbox with a small modular-monolith
+Illumo is a C++23 cellular-automata learning sandbox with a small modular-monolith
 shell. It is an engine-shaped application, not a general-purpose game engine.
 Windows, OpenGL, GLFW, and the dense-grid simulation are the current production
 path. Linux and macOS contain older port scaffolding and should not be assumed
@@ -100,52 +104,61 @@ Ruleset truth:
 
 | Concern | Primary files |
 |---|---|
-| Composition and main loop | `CSim/Source/App/CellMain.cpp` |
-| Host, services, modules | `CSim/Source/Engine/Illumo.*`, `IModule.h`, `IllumoContext.h` |
-| CA modes and editor | `CSim/Source/Game/CellGameModule.*`, `CellContext.h` |
-| Grid, fade, dirty upload | `CSim/Source/Game/Canvas.*`, `CSim/Shader/canvas_*` |
-| CA behavior | `CSim/Source/Rulesets/*` |
-| Renderer and tokens | `CSim/Source/Rendering/Renderer.h`, `RenderCommand.h`, `CommandQueue.h` |
-| Real graphics execution | `CSim/Source/Rendering/OpenGL/*` |
-| Headless backend | `CSim/Source/Rendering/Mock/MockBackend.h` |
-| Input, console, env, logging | `CSim/Source/Services/*` |
-| OS entry and native save/load | `CSim/Source/Platform/*` |
-| Tests | `CSim/Source/Tests/*` |
+| Composition and main loop | `Illumo/Source/App/CellMain.cpp` |
+| Host, services, modules | `Illumo/Source/Engine/Illumo.*`, `IModule.h`, `IllumoContext.h` |
+| CA modes and editor | `Illumo/Source/Game/CellGameModule.*`, `CellContext.h` |
+| Grid, fade, dirty upload | `Illumo/Source/Game/Canvas.*`, `Illumo/Shader/canvas_*` |
+| CA behavior | `Illumo/Source/Rulesets/*` |
+| Renderer and tokens | `Illumo/Source/Rendering/Renderer.h`, `RenderCommand.h`, `CommandQueue.h` |
+| Real graphics execution | `Illumo/Source/Rendering/OpenGL/*` |
+| Headless backend | `Illumo/Source/Rendering/Mock/MockBackend.h` |
+| Input, console, env, logging | `Illumo/Source/Services/*` |
+| OS entry and native save/load | `Illumo/Source/Platform/*` |
+| Tests | `Illumo/Source/Tests/*` |
 | Canonical architecture | `docs/architecture-consensus.md` |
-| Formal decisions | `docs/sections/09-design-decision-log.tex` |
+| Formal decisions | `docs/latex/sections/09-design-decision-log.tex` |
 
 ## Build and verification
 
 From the repository root on Windows:
 
 ```powershell
-cmake -S CSim -B build
+cmake -S Illumo -B build
 cmake --build build --config Release
 ```
 
-The default build compiles `CSimTests.exe` and runs the `CSimTests` CTest entry
-through the `CSimRunTests` `ALL` target. A failing suite must fail the build.
+The default build compiles `IllumoTests.exe` and runs every granular `Illumo`
+CTest entry through the `IllumoRunTests` `ALL` target. A failing case must fail
+the build.
+When Windows PowerShell and `latexmk` are found at configure time, the same
+default build also runs `IllumoDocs` (`docs/build.ps1`) and writes
+`docs/output/illumo.pdf`. Configure with `-DILLUMO_BUILD_DOCUMENTATION=OFF` for
+a code-only machine.
 
 Focused test commands:
 
 ```powershell
-cmake --build build --config Release --target CSimTests
-ctest --test-dir build -C Release -R "^CSimTests$" --output-on-failure
+cmake --build build --config Release --target IllumoTests
+ctest --test-dir build -C Release -L Illumo --output-on-failure
+ctest --test-dir build -C Release -N -L Illumo
 ```
 
-`CSimRenderTests` is only a backward-compatible CMake alias. An old
-`build/Debug/CSimRenderTests.exe` may remain from an earlier configuration; do
-not use it as the current suite. The current executable is
-`build/Release/CSimTests.exe` (or the matching active configuration).
+`IllumoRenderTests` is a convenience CMake alias. The canonical executable is
+`build/Release/IllumoTests.exe` (or the matching active configuration). It
+supports `--list` and `--run <exact-name>`; CTest invokes one case per process
+with an isolated working directory.
 
-Headless tests cover MockBackend, Renderer token flow, rulesets, CellContext,
-Canvas domain/fade/dirty behavior, and CommandLine/GLString tokens. They do not
-prove that the live OpenGL window, native dialogs, or non-Windows ports work.
-Run a proportional manual smoke test when changing those paths.
+Headless tests cover MockBackend, Renderer/token/asset flow, rulesets,
+CellContext, CellGameModule commands and file-backed save/load, Canvas
+domain/fade/dirty behavior, input, environment/logging, SysCmdLine, and
+CommandLine/GLString/SplashText tokens. `ILLUMO_ENABLE_COVERAGE=ON` adds the
+Clang/LLVM `IllumoCoverage` target, an 85% production-line gate, and an HTML
+report. They do not prove that the live OpenGL window, native dialogs, or
+non-Windows ports work. Run a proportional manual smoke test for those paths.
 
 ## Change rules
 
-- Follow `CSim/CONTRIBUTING.md`: avoid `auto`, avoid namespaces, do not add
+- Follow `docs/contributing.md`: avoid `auto`, avoid namespaces, do not add
   recursion, and do not add third-party dependencies without user approval.
 - Match local formatting and existing C++23 conventions. Prefer explicit
   ownership and narrow dependencies.
@@ -157,7 +170,7 @@ Run a proportional manual smoke test when changing those paths.
   validation, CMake source lists, palette behavior, and focused tests together.
 - Architecture changes require an update to
   `docs/architecture-consensus.md`; closed decisions also require a new entry in
-  `docs/sections/09-design-decision-log.tex`.
+  `docs/latex/sections/09-design-decision-log.tex`.
 - Edit LaTeX/Markdown sources, not generated `.aux`, `.fls`, `.fdb_latexmk`,
   `.log`, `.toc`, PDF, source dumps, ZIPs, or build outputs unless the user
   explicitly requests regenerated artifacts.
@@ -170,29 +183,30 @@ Confirm each against the current tree before acting:
 
 - A module whose `Start` returns early can still receive `Update` and
   `DispatchDrawables`; the game path can then dereference a null `cellContext`.
-- `IllumoContextHasGameCore` omits `commandLine`, although Edit uses it.
-- `LoadCellGame` writes `lifeCanvas` directly without marking visual targets
-  dirty, so the display can remain stale.
 - Wireworld lacks a convenient head-placement brush, and startup still seeds a
   Game-of-Life glider even in Wireworld mode.
-- The console duplicates the known-ruleset list from `CellContext`.
 - `CommandQueue` has a fixed capacity of 2048 commands and its overflow policy
   needs explicit handling.
-- Keep sources shared by `CSim` and `CSimTests` in `CSIM_SHARED_SOURCES`, and
-  put common target settings in `csim_configure_target`; preserve target-only
+- Keep sources shared by `Illumo` and `IllumoTests` in `ILLUMO_SHARED_SOURCES`, and
+  put common target settings in `illumo_configure_target`; preserve target-only
   behavior such as the application's Debug Tracy instrumentation.
-- Keep package READMEs synchronized with the canonical architecture; do not
+- Register each new logical behavior as its own exact `Illumo.<area>.<case>`
+  entry. Do not collapse new coverage back into one monolithic CTest result.
+- Keep `docs/packages/` maps synchronized with the canonical architecture; do not
   let current-state summaries drift back to the archived R8-only or entity
   scaffolding descriptions.
+- Keep general console commands in `CommandLine` and domain behavior registered
+  by `CellGameModule` through `CommandRegistry`; usage, descriptions, and argument
+  completion data belong with the registered command.
 
-Treat `docs/current_issues.txt` as a review snapshot, not a guarantee that every
+Treat `docs/current-issues.md` as a review snapshot, not a guarantee that every
 item remains open. Reproduce or inspect before fixing.
 
 ## Generated and historical material
 
 - `build/`, root `CMakeFiles/`, and `CMakeCache.txt`: generated configuration.
-- `CSim/thirdparty/`: vendored dependencies; avoid broad searches and edits.
+- `Illumo/thirdparty/`: vendored dependencies; avoid broad searches and edits.
 - `archive/`: intentionally non-live experiments and analysis output.
-- `CSim/.agents/` and `CSim/Source/.agents/`: prior-agent working records.
-- `CSim/Source/all.txt`, `CSim/csim_source.zip`, logs, and LaTeX auxiliaries:
+- `Illumo/.agents/` and `Illumo/Source/.agents/`: prior-agent working records.
+- `Illumo/Source/all.txt`, `Illumo/illumo_source.zip`, logs, and LaTeX auxiliaries:
   snapshots or generated artifacts, never the implementation source of truth.

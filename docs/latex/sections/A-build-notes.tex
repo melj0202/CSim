@@ -1,0 +1,83 @@
+\section{Build notes}
+\label{sec:build}
+
+\subsection{Configure \& build (Windows)}
+\begin{lstlisting}[language={}]
+cmake -S Illumo -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release
+\end{lstlisting}
+
+The default build compiles the application and \texttt{IllumoTests}, then runs
+every granular \texttt{Illumo} CTest entry through the
+\texttt{IllumoRunTests} target. Use an explicit target only for a focused
+build.
+
+\symbolref{DebugModule} is intentionally absent from Release. CMake adds
+\pathref{Source/Engine/DebugModule.cpp} only for the Debug configuration, and
+\symbolref{CellMain} includes/registers the module only when
+\texttt{NDEBUG} is not defined (D-B1).
+
+\begin{lstlisting}[language={}]
+cmake --build build --config Release --target IllumoTests
+\end{lstlisting}
+
+Artifacts:
+\begin{itemize}
+  \item \pathref{build/Release/Illumo.exe}
+  \item \pathref{build/Debug/Illumo.exe}
+  \item \pathref{build/Release/IllumoTests.exe} (convenience CMake target
+        \texttt{IllumoRenderTests} aliases \texttt{IllumoTests})
+\end{itemize}
+
+\subsection{Tests (headless)}
+\begin{lstlisting}[language={}]
+ctest --test-dir build -C Release -N -L Illumo
+ctest --test-dir build -C Release -L Illumo --output-on-failure
+build/Release/IllumoTests.exe --list
+build/Release/IllumoTests.exe --run Illumo.CellGame.SaveLoadRoundTrip
+\end{lstlisting}
+One runner avoids recompiling shared production sources, but each logical case
+is a separately named CTest process with its own working directory (D-T1). No
+OpenGL context is required (\texttt{MockBackend}).
+
+\subsection{Coverage (Clang/LLVM)}
+\begin{lstlisting}[language={}]
+cmake -S Illumo -B build-coverage -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+  -DILLUMO_BUILD_DOCUMENTATION=OFF -DILLUMO_ENABLE_COVERAGE=ON
+cmake --build build-coverage --target IllumoCoverage
+\end{lstlisting}
+The target runs every granular test, merges per-process profiles, prints an
+LLVM report, fails below 85\% production line coverage, and writes
+\pathref{build-coverage/coverage-html/index.html}. The denominator excludes
+tests, vendored/system code, MockBackend, and the live OpenGL backend. Platform
+dialogs/windows and live OpenGL remain manual smoke-test responsibilities.
+
+\subsection{Documentation PDF}
+From the repository root, run:
+\begin{lstlisting}[language={}]
+.\docs\build.ps1
+\end{lstlisting}
+The script creates \pathref{docs/output/} and builds
+\pathref{docs/output/illumo.pdf} from \pathref{docs/latex/illumo.tex}. On
+Windows, a normal all-target CMake build invokes this same script through
+\texttt{IllumoDocs} when PowerShell and \texttt{latexmk} were found at configure
+time. Configure with \texttt{-DILLUMO\_BUILD\_DOCUMENTATION=OFF} to opt out.
+
+\subsection{Known setup issues}
+\begin{itemize}
+  \item GLEW is pulled via \pathref{thirdparty/glew-2.1.0/build/cmake}; that
+        subtree must exist (do not delete vendored CMake helpers).
+  \item Debug may enable \texttt{/fsanitize=address}; requires a toolchain that
+        supports MSVC ASan.
+  \item FreeType may warn about missing optional system deps (HarfBuzz, zlib,
+        PNG); build can still succeed with bundled defaults.
+  \item GLSL under \pathref{Illumo/Shader/} is copied to the build tree at
+        configure time; after adding shaders, reconfigure or copy into
+        \pathref{build/Shader/}.
+\end{itemize}
+
+\subsection{House style (CONTRIBUTING)}
+See \pathref{docs/contributing.md}: limited \texttt{auto}, avoid namespaces,
+no recursion, third-party via PR.

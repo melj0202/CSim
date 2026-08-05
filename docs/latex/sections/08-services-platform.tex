@@ -1,0 +1,57 @@
+\section{Services, foundation, platform}
+\label{sec:services}
+
+\subsection{Services}
+Cross-cutting facilities used by Engine/Game/Rendering:
+\begin{itemize}
+  \item \textbf{Logging} --- \symbolref{Logger} (file + terminal; level from env).
+  \item \textbf{Config} --- \symbolref{EnvVars} / \symbolref{IEnvVars}
+        (defaults filled in \symbolref{Illumo::Init}: canvas size, fps/tps,
+        mode string, \ldots).
+  \item \textbf{Input} --- \symbolref{InputManager}, \symbolref{InputContext},
+        \symbolref{KeyCode}; action binding used by the game module.
+        No Game types (D-E2).
+  \item \textbf{CLI} --- \symbolref{CommandLine} (token UI when open; batched
+        geometry), \symbolref{CommandRegistry}, \symbolref{SysCmdLine}.
+        General tooling stays in Services; \symbolref{CellGameModule} registers
+        simulation/canvas/camera/save-load commands with usage, descriptions,
+        and completion candidates. Editing includes selection, word movement and
+        deletion, history, quoted arguments, measured caret placement, and a
+        horizontally scrolling input viewport. The easy-font batch is sized for
+        6,000 UI quads so a detailed help page is not truncated. The console is
+        Debug-only product composition (D-B1, D-CLI1, D-UI1).
+  \item \textbf{Allocators} --- pool/arena/debug allocators (experimental /
+        learning surface; not all wired into the hot path).
+  \item \textbf{SaveLoad API} --- pure declarations; OS dialogs implemented
+        per platform.
+\end{itemize}
+
+\subsection{Foundation}
+Headers that should stay cheap to include:
+macros (\pathref{MacroDefs.h}), build info, sysinfo, \pathref{MathTypes.h},
+\pathref{ArrayQueue.h}.
+
+\begin{statusbox}
+\pathref{MacroDefs.h} still pulls Windows headers on \texttt{\_WIN32} (for
+\texttt{Sleep} / \texttt{\_\_SLEEP}). That is include-heavy for a widely used
+header. \textbf{Deferred (D-F1):} leave as-is until compile time, name
+collisions, or header hygiene actually hurt; then split platform sleep into a
+narrower header.
+\end{statusbox}
+
+\subsection{Platform}
+Thin ports:
+\begin{itemize}
+  \item Windows: \pathref{WinMain.cpp}, \pathref{WinSaveLoad.cpp}
+  \item Linux: \pathref{\_main.cpp}, \pathref{LinuxSaveLoad.cpp}
+        (GTK pieces may be legacy relative to GLFW-centered shared code)
+  \item macOS: \pathref{Main.cpp}, \pathref{MacSaveLoad.mm}
+\end{itemize}
+
+Contract: bootstrap $\rightarrow$ call \symbolref{CellMain} $\rightarrow$ implement
+\symbolref{SaveLoad::GetLoadLocation} / \symbolref{GetSaveLocation}.
+
+\subsection{Third-party}
+Vendored under \pathref{Illumo/thirdparty/}. Policy from \pathref{docs/contributing.md}:
+new third-party deps require review/PR. Existing: GLFW, GLEW, GLM, FreeType,
+JSON, STB, Tracy, image libs, \ldots

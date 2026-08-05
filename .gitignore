@@ -1,5 +1,5 @@
 # Project runtime data
-*.csim
+*.illumo
 
 # Compiler outputs
 *.d
@@ -30,6 +30,7 @@
 # CMake and build outputs (including accidental in-source builds)
 build/
 Build/
+/build-*/
 cmake-*/
 CMakeFiles/
 CMakeCache.txt
@@ -39,7 +40,7 @@ compile_commands.json
 Testing/
 x64/
 glfw_app/x64/
-packages/
+/packages/
 
 # IDE and editor state
 .vs/
@@ -82,6 +83,7 @@ log.*
 *.run.xml
 *.synctex.gz
 *.toc
+/docs/output/*.pdf
 
 # Script and test caches
 __pycache__/
@@ -106,8 +108,8 @@ secrets*.json
 
 # Local reports and generated repository snapshots
 /build_release_log.txt
-/CSim/build_output*.txt
-/CSim/ORIGINAL_REQUEST.md
-/CSim/Source/all.txt
-/CSim/csim_source.zip
+/Illumo/build_output*.txt
+/Illumo/ORIGINAL_REQUEST.md
+/Illumo/Source/all.txt
+/Illumo/illumo_source.zip
 /archive/*cppcheck-build-dir/

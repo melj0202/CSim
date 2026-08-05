@@ -1,13 +1,17 @@
-# CSim (Cell Simulator)
+# Illumo (Cell Simulator)
 
 An improved version of a previous Game of Life program (OpenGL / GLFW).
 
 ## Layout
 
 ```
-csim/
-  docs/                 # Design notes (LaTeX) — living architecture memory
-  CSim/                 # Project root (CMake)
+illumo/
+  docs/                 # All first-party documentation and LaTeX sources
+    latex/              # One PDF entrypoint plus chapter sources
+    packages/           # Source-package maps formerly scattered by code
+    sessions/           # Dated implementation and verification records
+    history/            # Superseded/original material
+  Illumo/               # Project root (CMake)
     Source/             # Application source packages
       App/              # CellMain loop
       Engine/           # Illumo runtime + modules
@@ -27,33 +31,64 @@ csim/
 
 ## Design documentation
 
-Architecture, decision log, and performance notes live in:
+All first-party architecture, decision, package, history, and build notes live
+under `docs/`. Start with:
 
-- `docs/csim-design-notes.tex` (build with `pdflatex` / `latexmk` from `docs/`)
-- `docs/csim-design-notes.pdf` (generated)
-- `docs/README.md` — how to build and where to edit
+- `docs/README.md` — documentation map and PDF build commands
+- `docs/architecture-consensus.md` — canonical current architecture
+- `docs/latex/illumo.tex` — the only current LaTeX/PDF entrypoint
+- `docs/output/illumo.pdf` — generated locally; not a source of truth
 
-**Current stack (short):** token renderer (`AppendCommands` → `IBackend`), Canvas as life grid + RGB fade display + dirty-rect upload, double-buffered CA `nextState`, headless `CSimTests` with `MockBackend`.
+**Current stack (short):** token renderer (`AppendCommands` → `IBackend`), Canvas as life grid + RGB fade display + dirty-rect upload, double-buffered CA `nextState`, headless `IllumoTests` with `MockBackend`.
 
 **Architecture (single source for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — unified consensus (purpose, history of old plans, current renderer/sim truth, decisions, bugs, debt, work order).
+
+Contribution rules are in [`docs/contributing.md`](docs/contributing.md).
 
 ## Build (CMake)
 
 From the repository root:
 
 ```bash
-cmake -S CSim -B build
+cmake -S Illumo -B build
 cmake --build build --config Release
 ```
 
-The default build now builds `CSimTests` and runs it through CTest. The build folder will contain the executable binaries (`build/Release/CSim.exe`, `CSimTests.exe` on multi-config generators).
+The default build builds `IllumoTests` and runs every registered case through
+CTest. The build folder contains the executable binaries
+(`build/Release/Illumo.exe`, `IllumoTests.exe` on multi-config generators).
+
+When Windows PowerShell and `latexmk` are on `PATH`, the default build also runs
+`IllumoDocs` and writes `docs/output/illumo.pdf`. Disable that optional target
+at configure time with `-DILLUMO_BUILD_DOCUMENTATION=OFF`.
 
 Headless tests (no GPU):
 
 ```bash
-ctest -C Release -R CSimTests --output-on-failure
-# or: build/Release/CSimTests.exe
+ctest --test-dir build -C Release -L Illumo --output-on-failure
+ctest --test-dir build -C Release -N -L Illumo
+# focused: build/Release/IllumoTests.exe --run Illumo.CellGame.SaveLoadRoundTrip
 ```
+
+CTest registers one process-isolated entry per logical case. `IllumoTests.exe`
+is shared only to avoid recompiling the same production sources 80 times; use
+`IllumoTests.exe --list` to print the exact names. Each case gets its own
+working directory under `build/Testing/Illumo/`.
+
+Clang/LLVM coverage (85% production-line gate and HTML report):
+
+```bash
+cmake -S Illumo -B build-coverage -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+  -DILLUMO_BUILD_DOCUMENTATION=OFF -DILLUMO_ENABLE_COVERAGE=ON
+cmake --build build-coverage --target IllumoCoverage
+```
+
+The report measures headless-testable first-party production code. Tests,
+vendored/system code, `MockBackend`, and the live OpenGL backend are excluded;
+native dialogs, window behavior, and live OpenGL still require smoke testing.
+See `Illumo/Source/Tests/README.md` for the exact scope and commands.
 
 Visual Studio: open the generated solution from the build directory, or generate with the VS generator.
 
@@ -65,5 +100,23 @@ Visual Studio: open the generated solution from the build directory, or generate
 - **Right mouse** (Edit) — Place dead cells
 - **C** (Edit) — Clear the cell colony
 - **Q** / **ESC** — Quit
-- **Ctrl+S** (Edit) — Save canvas state
-- **Ctrl+O** (Edit) — Load canvas state
+- **`** — Toggle the developer console
+- **Console:** **Tab** completes commands, variables, and rulesets; **Left/Right**, **Home/End**, and **Delete** edit in place; hold **Ctrl** with Left/Right or Backspace/Delete for word edits; hold **Shift** while moving to select; **Ctrl+A** selects all
+
+## Developer console commands
+
+The in-app console is provided by `DebugModule`, so it is available in Debug
+builds only. Type `help` for the live list or `help <command>` for details.
+
+| Group | Commands |
+|---|---|
+| Simulation | `pause`, `run`, `step [count]`, `status` |
+| Canvas | `clear_canvas`, `randomize [percent]`, `setcell <x> <y> <state>` |
+| Rules and files | `ruleset [name]`, `save <file>`, `load <file>`, `save_dialog`, `load_dialog` |
+| Camera and display | `camera [x y [zoom]]`, `camera_reset`, `fullscreen`, `fps` |
+| Timing | `tps`, `speed`, `fade` |
+| Environment | `get`, `set`, `toggle`, `vars [filter]` |
+| Console/app | `help`, `echo`, `clear`, `close`, `quit` |
+
+Save commands append `.illumo` when no extension is supplied. Loading validates
+the save before changing the canvas and activates the ruleset stored in it.

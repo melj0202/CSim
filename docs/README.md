@@ -1,61 +1,77 @@
-# CSim documentation
+# Illumo documentation
 
-## Start here (later sessions)
+This directory is the single home for Illumo's first-party documentation.
+Source-package folders contain code only; their former README files are
+preserved under `packages/`.
 
-| File | Role |
-|------|------|
-| **`architecture-consensus.md`** | **Single unified architecture document** (read this first) — merges agenda, CA/engine PDFs, assessments, decision log, review bugs, and code truth into one story |
-| `csim-design-notes.tex` / `.pdf` | Long-form LaTeX design notes + full decision log |
-| `sections/*.tex` | Chapter detail |
+## Documentation tree
 
-## Design notes (LaTeX)
-
-| File | Role |
-|------|------|
-| `csim-design-notes.tex` | Main driver (TOC, packages, `\input`s) |
-| `sections/*.tex` | Chapters — edit these in normal work |
-| `figures/` | Optional images/diagrams |
-| `csim-design-notes.pdf` | Build output (generate locally) |
-
-### Build PDF
-
-```bash
-cd docs
-latexmk -pdf -interaction=nonstopmode csim-design-notes.tex
+```text
+docs/
+  README.md                    This index and PDF build instructions
+  architecture-consensus.md   Canonical current architecture and work order
+  current-issues.md            Reproducible product/correctness punch list
+  contributing.md              Project coding and dependency rules
+  packages/                    Focused maps of the source packages
+  sessions/                    Dated implementation and verification records
+  history/                     Original requests and superseded material
+  latex/
+    illumo.tex                 The only current PDF entrypoint
+    sections/                  Long-form chapters and formal decision log
+    figures/                   Optional source figures
+  output/                      Generated PDF output; never a source of truth
 ```
 
-Or twice with:
+The root `README.md` remains the repository landing page, and `AGENTS.md`
+remains the automation bootstrap. All other first-party prose belongs here.
+Licenses and vendored dependency READMEs stay beside the assets they govern.
 
-```bash
-pdflatex -interaction=nonstopmode csim-design-notes.tex
-pdflatex -interaction=nonstopmode csim-design-notes.tex
+## Reading order
+
+1. Read `architecture-consensus.md` for current code truth, locked decisions,
+   known issues, and work order.
+2. Read `sessions/` when the rationale or exact verification history matters.
+3. Read the LaTeX book for the long-form architecture and complete decision
+   log.
+4. Treat `history/` as provenance, not current implementation guidance.
+
+If code and documentation disagree, code wins until the documentation is
+updated in the same change.
+
+## Build the PDF
+
+Use the wrapper script from the repository root:
+
+```powershell
+.\docs\build.ps1
 ```
 
-Output: `docs/csim-design-notes.pdf`
+It creates `docs/output/` and passes the output-directory option to `latexmk`
+as one PowerShell argument, avoiding the PowerShell argument-splitting issue.
 
-Needs a TeX distro with `tcolorbox`, `booktabs`, `tikz`, `listings`, `hyperref`, `ulem`, … (full TeX Live works).
+To remove generated LaTeX output:
 
-**Windows note:** if `pdflatex` is not on `PATH`, use e.g.  
-`C:\texlive\2026\bin\windows\latexmk.exe` (adjust year) or add that `bin\windows` folder to your user `PATH`, then open a new terminal.
+```powershell
+.\docs\build.ps1 -Clean
+```
 
-### What to edit when
+The result is `docs/output/illumo.pdf`. A normal CMake build also invokes this
+script through the `IllumoDocs` target when Windows PowerShell and `latexmk` are
+on `PATH`; turn that off with `-DILLUMO_BUILD_DOCUMENTATION=OFF` at configure
+time. Focused CMake targets such as `IllumoTests` do not require TeX.
 
-| Situation | Edit |
-|-----------|------|
-| Consensus / work order / code truth | **`architecture-consensus.md`** (primary) |
-| New closed choice (formal ID) | `sections/09-design-decision-log.tex` **and** consensus doc |
-| Long-form chapter detail | `sections/05-…`, `06-…`, `07-…` as needed |
-| Unresolved debate | `sections/10-open-questions.tex` |
+A full TeX installation is expected;
+the book uses packages including `tcolorbox`, `booktabs`, `tikz`, `listings`,
+`hyperref`, and `ulem`.
 
-### Provenance tags in the PDF
+## Editing rules
 
-- **Status** — maturity snapshot  
-- **Design decision** — closed choice (also in the log)  
-- **Open** — needs author  
-- **Inferred** — reverse-engineered; correct freely  
+| Change | Files to update |
+|---|---|
+| Runtime behavior or architecture | `architecture-consensus.md` and the relevant `latex/sections/*.tex` chapter |
+| Closed design choice | The files above plus `latex/sections/09-design-decision-log.tex` |
+| Product bug or resolved issue | `current-issues.md` and the matching current-state chapter |
+| Significant implementation session | A dated file under `sessions/` |
+| Package ownership or file map | `packages/` and the LaTeX file map |
 
-### Current architecture (short)
-
-See **`architecture-consensus.md`**. In brief: token renderer; dense `lifeCanvas` + RGB fade display + dirty-rect upload; double-buffer `nextState`; headless `CSimTests`.
-
-**Rule:** if docs and code disagree, **code wins** until docs are updated in the same change.
+Edit textual sources, not `.aux`, `.log`, `.toc`, or PDF output.

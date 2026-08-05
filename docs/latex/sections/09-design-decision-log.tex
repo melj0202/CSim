@@ -1,0 +1,462 @@
+\section{Design decision log}
+\label{sec:decisions}
+
+Append-only log. Newest entries at the bottom. If a decision is reversed, add a
+new entry that supersedes the old id; do not silently delete history.
+
+%----------------------------------------------------------------------------
+\subsection*{D-001 --- Package rename (structure)}
+\begin{decisionbox}[title={D-001 \quad 2026-07-28}]
+\textbf{Decision:} Rename/split ambiguous folders to match responsibility:
+\texttt{Core$\rightarrow$Game}, \texttt{System$\rightarrow$\{App,Engine,Services\}},
+\texttt{Init+Util$\rightarrow$Foundation}, \texttt{AssetLoaders$\rightarrow$Assets}.\\
+\textbf{Why:} Names were lying; slowed reasoning and migrations.\\
+\textbf{Consequences:} Include/CMake paths updated; archive for old States.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-002 --- MathTypes header name}
+\begin{decisionbox}[title={D-002 \quad 2026-07-28}]
+\textbf{Decision:} Project math aliases live in \pathref{MathTypes.h}, not
+\pathref{Math.h}.\\
+\textbf{Why:} Windows case-insensitive include collision with CRT
+\texttt{math.h}.\\
+\textbf{Consequences:} All includes updated; the Foundation package map under
+\pathref{docs/packages/} notes the trap.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-003 --- Render abstraction direction}
+\begin{decisionbox}[title={D-003 \quad 2026-07-28 (implemented; see D-R*) }]
+\textbf{Decision:} Command/token submission via \symbolref{IBackend}
++ \symbolref{RenderCommand} queue; game code must not permanently depend on
+raw GL for draw submission.\\
+\textbf{Why:} Multi-API optionality; clearer frame boundary; testability.\\
+\textbf{Consequences:} Phases 1--6 complete for planned scope
+(\cref{sec:migration-phases}); hybrid immediate \texttt{Draw} remains only as
+fallback.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-004 --- Module frame hooks}
+\begin{decisionbox}[title={D-004 \quad inferred from IModule}]
+\textbf{Decision:} Modules expose \symbolref{Start}/\symbolref{Update}/
+\symbolref{DispatchDrawables}/\symbolref{Exit}.\\
+\textbf{Why:} Separate simulation tick from draw contribution.\\
+\textbf{Consequences:} Draw list is rebuilt or contributed each frame through
+dispatch. Module ownership/composition was later closed by D-E1.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-005 --- Rules as polymorphic sets}
+\begin{decisionbox}[title={D-005 \quad inferred}]
+\textbf{Decision:} Each CA variant is a \symbolref{RuleSet} subclass.\\
+\textbf{Why:} Open for extension; shared generation sweep.\\
+\textbf{Consequences:} Factory logic currently in \symbolref{CellContext}
+string matching (could become a registry later).
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-006 --- Mode handling (enum vs State classes)}
+\begin{decisionbox}[title={D-006 \quad current code; author may supersede}]
+\textbf{Decision (current):} \symbolref{CellState} enum inside
+\symbolref{CellGameModule}.\\
+\textbf{Supersedes:} class hierarchy under \pathref{archive/old-states/}.\\
+\textbf{Why (inferred):} fewer types for a small mode set.\\
+\textbf{Open at decision time:} SAVE/LOAD completeness; whether splash/global
+state is acceptable.\\
+\textbf{Resolution (2026-08-04):} frame modes are now
+\texttt{NORMAL | EDIT | EXIT}; save/load are registered commands with validated
+file handling (D-CLI1).
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-007 --- Enrollment vs per-frame commands}
+\begin{decisionbox}[title={D-007 \quad visible in Renderer comments}]
+\textbf{Decision:} Resource creation goes through enroll/Create* APIs; do not
+stuff mesh/shader creation into the per-frame token stream.\\
+\textbf{Why:} Keep the frame queue about \emph{binding and drawing}.\\
+\textbf{Consequences:} Need an explicit destroy/reload story for hot-reload
+later.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-008 --- contributing constraints}
+\begin{decisionbox}[title={D-008 \quad from docs/contributing.md}]
+\textbf{Decision:} Avoid \texttt{auto}; avoid namespaces (prefer static
+classes/structs); no recursion; third-party via PR.\\
+\textbf{Why:} Author house style / learning constraints.\\
+\textbf{Consequences:} Documentation and new code should respect these unless
+explicitly waived in a later decision.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R1 --- RenderCommand payload shape}
+\begin{decisionbox}[title={D-R1 \quad 2026-07-28}]
+\textbf{Decision:} \symbolref{RenderCommand} uses a \textbf{simple tagged union}
+(\texttt{CommandType} + POD payload union), not a kitchen-sink flat struct and
+not a byte-stream compiler. Prefer C-style union over \texttt{std::variant}.\\
+\textbf{Why:} Type-safe uniforms/clear/update data while remaining
+copyable for \symbolref{ArrayQueue}; matches house style.\\
+\textbf{Consequences:} \pathref{Rendering/RenderCommand.h} redesigned; execute
+path switches on type and reads the matching payload.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R2 --- Who emits tokens}
+\begin{decisionbox}[title={D-R2 \quad 2026-07-28}]
+\textbf{Decision:} Each drawable emits its own tokens via
+\texttt{AppendCommands(Renderer*)} (or equivalent). \symbolref{Renderer}
+owns frame setup (clear/viewport) and submit.\\
+\textbf{Why:} Smallest strangler step from today's
+\symbolref{DispatchDrawables} list.\\
+\textbf{Consequences:} Hybrid phase may still call immediate \texttt{Draw}
+for unmigrated drawables after token submit.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R3 --- Handle typing for v1}
+\begin{decisionbox}[title={D-R3 \quad 2026-07-28}]
+\textbf{Decision:} Keep \texttt{unsigned long} opaque handles with backend
+registries (\texttt{tableID} $\rightarrow$ GL object). Strong typedefs deferred.\\
+\textbf{Why:} Minimal churn; critical fix is resolve-on-submit, not type names.\\
+\textbf{Consequences:} Execute must never treat handles as raw GLuints without
+registry lookup.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R4 --- Migration scope}
+\begin{decisionbox}[title={D-R4 \quad 2026-07-28}]
+\textbf{Decision:} Full migration Phases 1--5 (token proof $\rightarrow$ Scene
+routing $\rightarrow$ Canvas $\rightarrow$ UI drawables $\rightarrow$ cleanup).
+Phase 6 (mock backend) included; second real GPU API still optional.\\
+\textbf{Why:} Playable strangler path to API isolation without big-bang rewrite.\\
+\textbf{Also freeze for v1:} destroy resources at shutdown only; Windows GL is
+primary platform.\\
+\textbf{Superseded in part by D-P1/D-P4:} full-frame Canvas rewrite was v1 only.
+Dirty-rect/PBO uploads remain, while the R8 presentation was later superseded
+by the restored RGB fade path documented in D-P4.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R5 --- Blend state on first enable}
+\begin{decisionbox}[title={D-R5 \quad 2026-07-28}]
+\textbf{Decision:} When enabling blending in \symbolref{GLDevice::ApplyPipelineState},
+always call \texttt{glBlendFunc} (do not rely on CPU-side factor cache matching
+defaults).\\
+\textbf{Why:} OpenGL default is \texttt{ONE}/\texttt{ZERO}; cache defaults were
+SrcAlpha/OneMinusSrcAlpha so factors looked ``unchanged'' and console panel
+lost transparency after the token migration.\\
+\textbf{Consequences:} Semi-transparent UI (console panel alpha) works again.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R6 --- Dead stack cleanup (Phase 5)}
+\begin{decisionbox}[title={D-R6 \quad 2026-07-28}]
+\textbf{Decision:} Archive window \symbolref{RenderQueue}, legacy
+\texttt{Drawable.cpp} GL helpers, empty \texttt{Transform}/\texttt{RenderContext},
+and unused \texttt{CellCommandLine} under \pathref{archive/dead-render/}.
+\symbolref{DrawableBase} is a pure list/token interface (no GL handles).\\
+\textbf{Why:} Token path won; dual submission models confuse maintenance.\\
+\textbf{Consequences:} \texttt{IRenderWindow::getRenderQueue} removed; frame
+draw list is only \symbolref{Scene} + \symbolref{Renderer}.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R7 --- Mock backend for tests (Phase 6)}
+\begin{decisionbox}[title={D-R7 \quad 2026-07-28}]
+\textbf{Decision:} Add headless \texttt{MockBackend} implementing
+\symbolref{IBackend}: record \texttt{Create*} and snapshot the command queue
+on \texttt{SubmitCommandQueue}. Originally shipped as CMake target
+\texttt{IllumoRenderTests} / CTest \texttt{MockBackend}; the current canonical
+target and CTest name are \texttt{IllumoTests}, with the old names retained only
+as compatibility aliases. Do \textbf{not} add Vulkan/Metal yet.\\
+\textbf{Why:} First meaningful automated render test without a GPU context;
+proves token vocabulary and handle plumbing independently of GL.\\
+\textbf{Consequences:} CI can run \texttt{ctest -R IllumoTests}; second real API
+remains future work after more production needs appear.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R8 --- Inject IBackend into Renderer}
+\begin{decisionbox}[title={D-R8 \quad 2026-07-28}]
+\textbf{Decision:} \symbolref{Renderer} accepts an injected \symbolref{IBackend*}
+via constructor (\texttt{takeOwnership} flag). Production still owns a
+\symbolref{GLBackend}. Tests inject \texttt{MockBackend} with
+\texttt{takeOwnership=false}.\\
+\textbf{Why:} End-to-end drawable $\rightarrow$ enroll/token $\rightarrow$ submit
+without a GPU; keeps production construction unchanged.\\
+\textbf{Consequences:} \texttt{TestRendererE2E} covers \texttt{RenderScene},
+Canvas tokens, hybrid immediate drawables, and \texttt{RenderProofQuad}.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P1 --- Dirty visual path}
+\begin{decisionbox}[title={D-P1 \quad 2026-07-28}]
+\textbf{Decision:} Canvas/CellGameModule use dirty flags so idle frames skip
+full-grid visual work and GPU upload.\\
+\textbf{Why:} Dominant cost was recoloring + full texture upload every render
+frame even when the CA did not step.\\
+\textbf{Consequences:} \texttt{cellsDirty}, upload pending, early-out
+\texttt{tickVisual}; still life after sim step does not re-dirty.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P2 --- UI batching and geometry cache}
+\begin{decisionbox}[title={D-P2 \quad 2026-07-28}]
+\textbf{Decision:} CommandLine emits one packed \texttt{UpdateBuffer}/draw when
+open; GLString caches GPU geometry until content/style changes.\\
+\textbf{Why:} Per-line uploads and FPS string rebuilds were measurable when the
+console/FPS overlay was active.\\
+\textbf{Consequences:} Token stream stays small; FPS may rebuild $\sim$1\,Hz.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P3 --- Double-buffer CA generation}
+\begin{decisionbox}[title={D-P3 \quad 2026-07-28}]
+\textbf{Decision:} \texttt{RuleSet::calcGeneration} writes pure
+\texttt{nextState(cell, aliveNeighbors)} into a scratch buffer, then
+\texttt{memcpy}s back; neighbor counts use raw grid pointers + toroidal wrap.\\
+\textbf{Why:} Correct simultaneous update; faster than per-cell
+\texttt{getCanvasPixel}/in-place virtual writes; sparse dirty AABB for visuals.\\
+\textbf{Consequences:} All active rulesets override \texttt{nextState}; stubs
+use identity.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P4 --- dirty-rect PBO uploads (R8 path partially superseded)}
+\begin{decisionbox}[title={D-P4 \quad 2026-07-28}]
+\textbf{Decision (original):} Present cells as \texttt{GL\_R8} texture of state
+bytes plus a $256\times 1$ RGB palette (\texttt{evalCell}). Upload dirty rects
+via PBO ping-pong in \texttt{GLTexture::UpdateSubImage}. Drop dual float RGB
+staging.\\
+\textbf{Why:} Large grids: bandwidth and CPU of RGB float fade dominated.\\
+\textbf{Consequences (kept):} dirty-rect \texttt{UpdateTexture}, PBO path,
+bind-state tracker in \symbolref{GLDevice}.\\
+\textbf{Superseded presentation (2026-07-30):} live path restored to CPU RGB
+fade (\texttt{targetRgb}/\texttt{displayRgb}) + RGB display texture so cell
+colors ease rather than snap. R8+palette is historical experiment, not current
+code truth. Canonical: \pathref{docs/architecture-consensus.md}.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-E1 --- Module registration lives in App}
+\begin{decisionbox}[title={D-E1 \quad 2026-07-28}]
+\textbf{Decision:} \symbolref{Illumo} does not include or construct
+\symbolref{CellGameModule}. \pathref{App/CellMain.cpp} calls \texttt{Init},
+\texttt{addModule}, then \texttt{StartModules}. Debug module is registered
+from App under \texttt{\#ifndef NDEBUG}.\\
+\textbf{Why:} Engine must not depend on Game headers; product composition
+belongs at the application boundary.\\
+\textbf{Consequences:} New products/tests can register different module sets;
+Engine only knows \symbolref{IModule}.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-E2 --- InputManager has no Game types}
+\begin{decisionbox}[title={D-E2 \quad 2026-07-28}]
+\textbf{Decision:} Remove \texttt{CellContext*} and Game includes from
+\symbolref{InputManager}. Also drop unused \texttt{SplashText} extern from the
+input header.\\
+\textbf{Why:} Services must not depend on Game; input is a pure device/action
+service. Splash and rules stay in Game/Rendering.\\
+\textbf{Consequences:} InputManager header only needs KeyCode/InputContext/GLFW.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-E3 --- EntityTable is not the cell path}
+\begin{decisionbox}[title={D-E3 \quad 2026-07-28}]
+\textbf{Decision:} Archive \pathref{EntityTable.h} and \pathref{ModuleObject.h}
+under \pathref{archive/dead-engine/}. Remove \texttt{entityTable} from
+\symbolref{Scene}/\symbolref{IllumoContext}.\\
+\textbf{Why:} Nothing allocated or used an EntityTable; the live path is
+drawables + tokens, not ECS.\\
+\textbf{Consequences:} Reintroduce a general object table only when a real
+feature needs it; document that cells are not entities.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-E4 --- Scene is a drawable list, not a graph}
+\begin{decisionbox}[title={D-E4 \quad 2026-07-28}]
+\textbf{Decision:} \symbolref{Scene} holds only \texttt{drawables},
+\texttt{window}, and \texttt{activeCamera}. Remove \texttt{root},
+\texttt{nodeLookup}, no-op \texttt{Update}, and unused
+\texttt{RenderableObject}. Archive \pathref{SceneObject.h}; \symbolref{Camera}
+and \symbolref{CommandLine} no longer inherit a node graph.\\
+\textbf{Why:} Architecture review (dead graph scaffolding); production never
+used parent/child transforms for cells or UI.\\
+\textbf{Consequences:} Frame contribution model is explicit and small.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-E5 --- Freeze IllumoContext; validate at Start}
+\begin{decisionbox}[title={D-E5 \quad 2026-07-28}]
+\textbf{Decision:} Keep \symbolref{IllumoContext} as a service bag for the
+\textbf{two shipped modules} only. Document required fields per module.
+\texttt{Start()} logs an error and bails if the bag is incomplete.
+Do not grow the bag for convenience; a third module should take explicit
+constructor dependencies if its subset differs.\\
+\textbf{Why:} Architecture review --- bag cost is zero at $N=2$ but becomes a
+de-facto global API as $N$ grows.\\
+\textbf{Consequences:} \texttt{IllumoContextHasGameCore} /
+\texttt{IllumoContextHasDebugCore} helpers; freeze note on the struct.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-C1 --- Canvas dual role is intentional (for now)}
+\begin{decisionbox}[title={D-C1 \quad 2026-07-28}]
+\textbf{Decision:} Keep \symbolref{Canvas} as domain grid + fade view + GPU
+enroll in one type. Document the scale wall: full-grid
+\texttt{calcGeneration}, dual float RGB buffers ($\sim$24\,B/cell), no
+chunked simulation domain.\\
+\textbf{Why:} Locality for dirty-rect + palette + fade; headless tests already
+use injected MockBackend rather than pure LifeGrid.\\
+\textbf{Consequences:} Split \texttt{LifeGrid}/\texttt{CanvasView} only if pure
+sim tests or large canvases become product requirements.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R9 --- String-named uniforms are backend debt}
+\begin{decisionbox}[title={D-R9 \quad 2026-07-28}]
+\textbf{Decision:} Keep \texttt{char name[32]} uniforms for OpenGL + Mock.
+Treat as debt if a second \emph{real} GPU backend is adopted; prefer binding
+points / pre-resolved locations then.\\
+\textbf{Why:} Architecture review --- uniform path is the least portable part
+of \symbolref{RenderCommand}; handles and UpdateTexture are closer to neutral.\\
+\textbf{Consequences:} Comment on uniform payloads; no API change now.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R10 --- Production drawables are pure-token}
+\begin{decisionbox}[title={D-R10 \quad 2026-07-28}]
+\textbf{Decision:} \symbolref{Canvas}, \symbolref{CommandLine},
+\symbolref{GLString}, \symbolref{SplashText} use
+\texttt{AppendCommands} only (return true when contributing). Immediate
+\texttt{Draw()} hybrid remains for tests/stubs. CRTP \texttt{DrawImpl} is
+legacy for that fallback.\\
+\textbf{Why:} Migration complete for shipped UI/canvas; dual path is debt only
+where unmigrated types exist.\\
+\textbf{Consequences:} Documented in \pathref{Drawable.h} and
+\texttt{Renderer::RenderScene}.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-F1 --- MacroDefs Windows include deferred}
+\begin{decisionbox}[title={D-F1 \quad 2026-07-30}]
+\textbf{Decision:} Do \textbf{not} split \pathref{MacroDefs.h} /
+\texttt{Windows.h} now. Revisit only if include toxicity causes real pain
+(compile time, macro collisions, portability friction).\\
+\textbf{Why:} Author priority --- convenience of \texttt{\_\_SLEEP} outweighs
+hygiene until symptoms appear.\\
+\textbf{Consequences:} Status note in services/platform section; not an open
+blocker.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-N1 --- Illumo is the project and product name}
+\begin{decisionbox}[title={D-N1 \quad 2026-08-04}]
+\textbf{Decision:} Adopt \textbf{Illumo} as the repository-facing project,
+product, CMake target, runtime title, console name, and save-format name. Keep
+the existing \symbolref{Illumo} runtime-host class; the shared name is
+intentional. Canonical tests are \texttt{IllumoTests}, and new saves use the
+\texttt{.illumo} extension.\\
+\textbf{Why:} The author selected Illumo as the permanent product identity.\\
+\textbf{Consequences:} Live first-party source and documentation use Illumo;
+generated build trees, vendored material, and archived historical artifacts are
+not implementation sources and are not rewritten by this decision.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-B1 --- DebugModule is excluded from Release}
+\begin{decisionbox}[title={D-B1 \quad 2026-08-04}]
+\textbf{Decision:} \symbolref{DebugModule} is Debug-build product composition
+only. \symbolref{CellMain} must include/register it behind
+\texttt{\#ifndef NDEBUG}, and CMake must compile its implementation only for the
+Debug configuration.\\
+\textbf{Why:} The developer overlay, console input handling, FPS/debug labels,
+and instrumentation are development tools, not Release product behavior.\\
+\textbf{Consequences:} Shared command/logging service code may remain available
+to tests or non-UI systems, but Release must contain no DebugModule object or
+module registration. Audit this boundary after CMake/composition changes.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-CLI1 --- Split generic and domain console ownership}
+\begin{decisionbox}[title={D-CLI1 \quad 2026-08-04}]
+\textbf{Decision:} \symbolref{CommandLine} owns editing, parsing, help,
+environment/application commands, and rendering. Product modules register
+domain behavior through \symbolref{CommandRegistry}; each registration carries
+usage, description, and optional completion candidates.\\
+\textbf{Why:} Services should not acquire Game dependencies, while help and
+completion must describe the commands that actually exist.\\
+\textbf{Consequences:} \symbolref{CellGameModule} owns simulation, canvas,
+ruleset, camera, and save/load commands. The shared known-ruleset list drives
+validation/completion. Queued commands return successfully without falling
+through to environment lookup or an unknown-command error.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-UI1 --- Measured console editor in one bounded batch}
+\begin{decisionbox}[title={D-UI1 \quad 2026-08-04}]
+\textbf{Decision:} Render the command caret and selection from measured text
+prefixes, keep long input visible through a horizontal viewport, and retain one
+batched token draw for console chrome and text. Size the dynamic mesh for 6,000
+UI quads and regression-test a detailed help page beyond the former cap.\\
+\textbf{Why:} An appended underscore produced an apparent cursor offset, while
+the 2,000-quad mesh silently truncated easy-font output because each character
+uses several quads.\\
+\textbf{Consequences:} Editing supports selection and word operations without
+lying about insertion position; a full help page remains one draw without
+cutting off its final line.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-DOC1 --- One first-party documentation tree}
+\begin{decisionbox}[title={D-DOC1 \quad 2026-08-04}]
+\textbf{Decision:} Keep all first-party project documentation under
+\pathref{docs/}: current Markdown at the top level, package maps in
+\pathref{packages/}, dated records in \pathref{sessions/}, provenance in
+\pathref{history/}, one current LaTeX entrypoint at \pathref{latex/illumo.tex},
+and generated output in \pathref{output/}.\\
+\textbf{Why:} Competing LaTeX entrypoints and package READMEs scattered beside
+code made current truth and PDF generation difficult to discover.\\
+\textbf{Consequences:} The repository root keeps only the landing README and
+AGENTS bootstrap as intentional prose exceptions. Licenses and vendored notes
+remain beside governed assets. Architecture changes update Markdown, relevant
+LaTeX chapters, and this append-only log together. \pathref{docs/build.ps1}
+is the PDF wrapper and the optional default-build \texttt{IllumoDocs} target
+uses that same script when TeX is available.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-T1 --- Granular CTest registration and coverage gate}
+\begin{decisionbox}[title={D-T1 \quad 2026-08-04}]
+\textbf{Decision:} Keep one \texttt{IllumoTests} executable for compile
+efficiency, but register each logical behavior as an exact
+\texttt{Illumo.<area>.<case>} CTest entry. CTest runs one filtered case per
+process in an isolated working directory. With
+\texttt{ILLUMO\_ENABLE\_COVERAGE=ON}, Clang/LLVM adds the
+\texttt{IllumoCoverage} target and enforces at least 85\% line coverage over
+headless-testable first-party production code.\\
+\textbf{Why:} A monolithic CTest result hid which of dozens of behaviors ran or
+failed, and a narrow denominator could report a strong percentage while omitting
+game commands, persistence, input, or assets.\\
+\textbf{Consequences:} New behaviors receive separate stable names; file-backed
+tests may run in parallel without sharing working files; tests, vendored/system
+code, MockBackend, and the live OpenGL backend are excluded from the automated
+production denominator. Native dialogs, real-window behavior, and live OpenGL
+still require proportional smoke tests. This supersedes the single-CTest-name
+registration detail in D-R7 without changing the MockBackend decision.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{Template for new entries}
+\begin{lstlisting}[language={}]
+\subsection*{D-0XX --- short title}
+\begin{decisionbox}[title={D-0XX \quad YYYY-MM-DD}]
+\textbf{Decision:} ...
+\textbf{Why:} ...
+\textbf{Consequences:} ...
+\textbf{Supersedes:} D-0YY (optional)
+\end{decisionbox}
+\end{lstlisting}
