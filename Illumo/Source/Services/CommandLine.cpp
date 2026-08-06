@@ -1,17 +1,17 @@
 #include "CommandLine.h"
 #include "CellMain.h"
-#include "Rendering/Renderer.h"
-#include "Rendering/IShaderProgram.h"
 #include "Rendering/IMesh.h"
+#include "Rendering/IShaderProgram.h"
+#include "Rendering/Renderer.h"
 #include "Services/Logger.h"
 #include "thirdparty/stb/stb_easy_font.h"
-#include <sstream>
-#include <iostream>
-#include <cstdint>
-#include <cctype>
-#include <cstring>
-#include <vector>
 #include <algorithm>
+#include <cctype>
+#include <cstdint>
+#include <cstring>
+#include <iostream>
+#include <sstream>
+#include <vector>
 
 namespace {
 const char* kConsoleVertexShader = R"(
@@ -39,1360 +39,1757 @@ void main() {
 }
 )";
 
-struct BuiltInCommandHelp {
-	const char* name;
-	const char* usage;
-	const char* description;
+struct BuiltInCommandHelp
+{
+  const char* name;
+  const char* usage;
+  const char* description;
 };
 
 const BuiltInCommandHelp kBuiltInCommands[] = {
-	{"clear", "clear", "Clear console output"},
-	{"close", "close", "Close the console"},
-	{"echo", "echo <text>", "Print text to the console"},
-	{"fade", "fade [0..1000]", "Show or set cell fade speed"},
-	{"fps", "fps [on|off|toggle]", "Show or change the FPS overlay"},
-	{"fullscreen", "fullscreen [on|off|toggle]", "Show or change fullscreen mode"},
-	{"get", "get <variable>", "Read an environment variable"},
-	{"help", "help [command]", "Show commands or detailed help"},
-	{"quit", "quit", "Exit Illumo"},
-	{"set", "set <variable> <value>", "Create or update an environment variable"},
-	{"speed", "speed [0.01..100]", "Show or set the simulation speed multiplier"},
-	{"toggle", "toggle <variable>", "Toggle a boolean environment variable"},
-	{"tps", "tps [1..1000]", "Show or set simulation ticks per second"},
-	{"vars", "vars [filter]", "List environment variables, optionally filtered"}
+  { "alias", "alias [<name> <command>]", "Create or list command aliases" },
+  { "clear", "clear", "Clear console output" },
+  { "close", "close", "Close the console" },
+  { "echo", "echo <text>", "Print text to the console" },
+  { "fade", "fade [0..1000]", "Show or set cell fade speed" },
+  { "fps", "fps [on|off|toggle]", "Show or change the FPS overlay" },
+  { "fullscreen",
+    "fullscreen [on|off|toggle]",
+    "Show or change fullscreen mode" },
+  { "get", "get <variable>", "Read an environment variable" },
+  { "help", "help [command]", "Show commands or detailed help" },
+  { "history", "history [filter|clear]", "Search or clear command history" },
+  { "quit", "quit", "Exit Illumo" },
+  { "repeat", "repeat <count> <command>", "Execute command multiple times" },
+  { "set",
+    "set <variable> <value>",
+    "Create or update an environment variable" },
+  { "speed",
+    "speed [0.01..100]",
+    "Show or set the simulation speed multiplier" },
+  { "sysinfo", "sysinfo", "Display system telemetry and statistics" },
+  { "toggle", "toggle <variable>", "Toggle a boolean environment variable" },
+  { "tps", "tps [1..1000]", "Show or set simulation ticks per second" },
+  { "unalias", "unalias <name>", "Remove a command alias" },
+  { "vars", "vars [filter]", "List environment variables, optionally filtered" }
 };
 
-std::string lowerCopy(const std::string& text)
+std::string
+lowerCopy(const std::string& text)
 {
-	std::string lowered = text;
-	for (std::size_t i = 0; i < lowered.size(); ++i)
-	{
-		lowered[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(lowered[i])));
-	}
-	return lowered;
+  std::string lowered = text;
+  for (std::size_t i = 0; i < lowered.size(); ++i) {
+    lowered[i] =
+      static_cast<char>(std::tolower(static_cast<unsigned char>(lowered[i])));
+  }
+  return lowered;
 }
 
-std::string joinArguments(const std::vector<std::string>& args, std::size_t first)
+std::string
+joinArguments(const std::vector<std::string>& args, std::size_t first)
 {
-	std::string result;
-	for (std::size_t i = first; i < args.size(); ++i)
-	{
-		if (!result.empty())
-		{
-			result += " ";
-		}
-		result += args[i];
-	}
-	return result;
+  std::string result;
+  for (std::size_t i = first; i < args.size(); ++i) {
+    if (!result.empty()) {
+      result += " ";
+    }
+    result += args[i];
+  }
+  return result;
 }
 
-bool parseLongStrict(const std::string& text, long* value)
+bool
+parseLongStrict(const std::string& text, long* value)
 {
-	if (value == nullptr || text.empty())
-	{
-		return false;
-	}
-	try
-	{
-		std::size_t consumed = 0;
-		long parsed = std::stol(text, &consumed);
-		if (consumed != text.size())
-		{
-			return false;
-		}
-		*value = parsed;
-		return true;
-	}
-	catch (...)
-	{
-		return false;
-	}
+  if (value == nullptr || text.empty()) {
+    return false;
+  }
+  try {
+    std::size_t consumed = 0;
+    long parsed = std::stol(text, &consumed);
+    if (consumed != text.size()) {
+      return false;
+    }
+    *value = parsed;
+    return true;
+  } catch (...) {
+    return false;
+  }
 }
 
-bool parseDoubleStrict(const std::string& text, double* value)
+bool
+parseDoubleStrict(const std::string& text, double* value)
 {
-	if (value == nullptr || text.empty())
-	{
-		return false;
-	}
-	try
-	{
-		std::size_t consumed = 0;
-		double parsed = std::stod(text, &consumed);
-		if (consumed != text.size())
-		{
-			return false;
-		}
-		*value = parsed;
-		return true;
-	}
-	catch (...)
-	{
-		return false;
-	}
+  if (value == nullptr || text.empty()) {
+    return false;
+  }
+  try {
+    std::size_t consumed = 0;
+    double parsed = std::stod(text, &consumed);
+    if (consumed != text.size()) {
+      return false;
+    }
+    *value = parsed;
+    return true;
+  } catch (...) {
+    return false;
+  }
 }
 
-bool parseBoolValue(const std::string& text, bool* value)
+bool
+parseBoolValue(const std::string& text, bool* value)
 {
-	if (value == nullptr)
-	{
-		return false;
-	}
-	const std::string lowered = lowerCopy(text);
-	if (lowered == "on" || lowered == "true" || lowered == "yes" || lowered == "1")
-	{
-		*value = true;
-		return true;
-	}
-	if (lowered == "off" || lowered == "false" || lowered == "no" || lowered == "0")
-	{
-		*value = false;
-		return true;
-	}
-	return false;
+  if (value == nullptr) {
+    return false;
+  }
+  const std::string lowered = lowerCopy(text);
+  if (lowered == "on" || lowered == "true" || lowered == "yes" ||
+      lowered == "1") {
+    *value = true;
+    return true;
+  }
+  if (lowered == "off" || lowered == "false" || lowered == "no" ||
+      lowered == "0") {
+    *value = false;
+    return true;
+  }
+  return false;
 }
 
-const BuiltInCommandHelp* findBuiltInCommand(const std::string& name)
+const BuiltInCommandHelp*
+findBuiltInCommand(const std::string& name)
 {
-	for (const BuiltInCommandHelp& command : kBuiltInCommands)
-	{
-		if (name == command.name)
-		{
-			return &command;
-		}
-	}
-	return nullptr;
+  for (const BuiltInCommandHelp& command : kBuiltInCommands) {
+    if (name == command.name) {
+      return &command;
+    }
+  }
+  return nullptr;
 }
 
-std::string findEnvironmentKey(IEnvVars* envVars, const std::string& requested)
+std::string
+findEnvironmentKey(IEnvVars* envVars, const std::string& requested)
 {
-	if (envVars == nullptr)
-	{
-		return "";
-	}
-	const std::string loweredRequested = lowerCopy(requested);
-	const std::unordered_map<std::string, EnvVar>& variables = envVars->getVars();
-	for (const std::pair<const std::string, EnvVar>& variable : variables)
-	{
-		if (lowerCopy(variable.first) == loweredRequested)
-		{
-			return variable.first;
-		}
-	}
-	return "";
+  if (envVars == nullptr) {
+    return "";
+  }
+  const std::string loweredRequested = lowerCopy(requested);
+  const std::unordered_map<std::string, EnvVar>& variables = envVars->getVars();
+  for (const std::pair<const std::string, EnvVar>& variable : variables) {
+    if (lowerCopy(variable.first) == loweredRequested) {
+      return variable.first;
+    }
+  }
+  return "";
 }
 }
 
-CommandLine::CommandLine(IEnvVars* vars, CommandRegistry* commandRegistry, IRenderWindow* win, Renderer* rendererIn)
-	: envVars(vars)
-	, window(win)
-	, commandRegistry(commandRegistry)
-	, renderer(rendererIn)
-	, meshHandle(0)
-	, shaderHandle(0)
-	, gpuReady(false)
-	, animationProgress(0.0f)
-	, lastAnimTime(std::chrono::high_resolution_clock::now())
-	, cursorPosition(0)
-	, selectionAnchor(0)
+CommandLine::CommandLine(IEnvVars* vars,
+                         CommandRegistry* commandRegistry,
+                         IRenderWindow* win,
+                         Renderer* rendererIn)
+  : envVars(vars)
+  , window(win)
+  , commandRegistry(commandRegistry)
+  , renderer(rendererIn)
+  , meshHandle(0)
+  , shaderHandle(0)
+  , gpuReady(false)
+  , animationProgress(0.0f)
+  , lastAnimTime(std::chrono::high_resolution_clock::now())
+  , cursorPosition(0)
+  , selectionAnchor(0)
 {
-	isOpen = false;
-	currentInput = "";
-	tempInput = "";
-	completionHint = "";
-	history = {
-		{240, 240, 240, 255, "Illumo Developer Console"},
-		{240, 240, 240, 255, "Press ` to toggle, type 'help' for commands"}
-	};
+  isOpen = false;
+  currentInput = "";
+  tempInput = "";
+  completionHint = "";
+  history = {
+    { 240, 240, 240, 255, "Illumo Developer Console" },
+    { 240, 240, 240, 255, "Press ` to toggle, type 'help' for commands" }
+  };
 
-	historyIndex = 0;
-	scrollOffset = 0;
-	consoleInitialized = false;
-	enrollGpuResources();
+  historyIndex = 0;
+  scrollOffset = 0;
+  consoleInitialized = false;
+  enrollGpuResources();
 }
 
-void CommandLine::enrollGpuResources()
+void
+CommandLine::enrollGpuResources()
 {
-	gpuReady = false;
-	consoleInitialized = false;
-	if (!renderer)
-	{
-		Logger::LogError("CommandLine: no Renderer — cannot enroll GPU resources");
-		return;
-	}
+  gpuReady = false;
+  consoleInitialized = false;
+  if (!renderer) {
+    Logger::LogError("CommandLine: no Renderer — cannot enroll GPU resources");
+    return;
+  }
 
-	const unsigned int maxQuads = kUiQuadCap;
-	std::vector<unsigned int> indices(static_cast<size_t>(maxQuads * 6));
-	for (unsigned int i = 0; i < maxQuads; ++i)
-	{
-		indices[static_cast<size_t>(i * 6 + 0)] = static_cast<unsigned int>(i * 4 + 0);
-		indices[static_cast<size_t>(i * 6 + 1)] = static_cast<unsigned int>(i * 4 + 1);
-		indices[static_cast<size_t>(i * 6 + 2)] = static_cast<unsigned int>(i * 4 + 2);
-		indices[static_cast<size_t>(i * 6 + 3)] = static_cast<unsigned int>(i * 4 + 2);
-		indices[static_cast<size_t>(i * 6 + 4)] = static_cast<unsigned int>(i * 4 + 3);
-		indices[static_cast<size_t>(i * 6 + 5)] = static_cast<unsigned int>(i * 4 + 0);
-	}
+  const unsigned int maxQuads = kUiQuadCap;
+  std::vector<unsigned int> indices(static_cast<size_t>(maxQuads * 6));
+  for (unsigned int i = 0; i < maxQuads; ++i) {
+    indices[static_cast<size_t>(i * 6 + 0)] =
+      static_cast<unsigned int>(i * 4 + 0);
+    indices[static_cast<size_t>(i * 6 + 1)] =
+      static_cast<unsigned int>(i * 4 + 1);
+    indices[static_cast<size_t>(i * 6 + 2)] =
+      static_cast<unsigned int>(i * 4 + 2);
+    indices[static_cast<size_t>(i * 6 + 3)] =
+      static_cast<unsigned int>(i * 4 + 2);
+    indices[static_cast<size_t>(i * 6 + 4)] =
+      static_cast<unsigned int>(i * 4 + 3);
+    indices[static_cast<size_t>(i * 6 + 5)] =
+      static_cast<unsigned int>(i * 4 + 0);
+  }
 
-	const size_t vboBytes = static_cast<size_t>(maxQuads) * 4 * sizeof(ConsoleVertex);
-	meshHandle = renderer->allocateHandle();
-	renderer->enrollDynamicMesh(
-		vboBytes,
-		indices.data(),
-		indices.size() * sizeof(unsigned int),
-		meshHandle,
-		MeshVertexLayout::Pos3Color4U8);
+  const size_t vboBytes =
+    static_cast<size_t>(maxQuads) * 4 * sizeof(ConsoleVertex);
+  meshHandle = renderer->allocateHandle();
+  renderer->enrollDynamicMesh(vboBytes,
+                              indices.data(),
+                              indices.size() * sizeof(unsigned int),
+                              meshHandle,
+                              MeshVertexLayout::Pos3Color4U8);
 
-	ShaderSources sources;
-	sources.vertexSource = kConsoleVertexShader;
-	sources.fragmentSource = kConsoleFragmentShader;
-	shaderHandle = renderer->allocateHandle();
-	renderer->enrollShader(sources, shaderHandle);
+  ShaderSources sources;
+  sources.vertexSource = kConsoleVertexShader;
+  sources.fragmentSource = kConsoleFragmentShader;
+  shaderHandle = renderer->allocateHandle();
+  renderer->enrollShader(sources, shaderHandle);
 
-	historyIndex = static_cast<int>(commandHistory.size());
-	consoleInitialized = true;
-	gpuReady = true;
-	Logger::LogTrace("CommandLine enrolled (token path)");
+  historyIndex = static_cast<int>(commandHistory.size());
+  consoleInitialized = true;
+  gpuReady = true;
+  Logger::LogTrace("CommandLine enrolled (token path)");
 }
 
-void CommandLine::Toggle()
+void
+CommandLine::Toggle()
 {
-	isOpen = !isOpen;
-	if (isOpen)
-	{
-		scrollOffset = 0;
-		completionHint = "Tab: complete  |  Ctrl+Arrows: words  |  Ctrl+A: select all";
-	}
+  isOpen = !isOpen;
+  if (isOpen) {
+    scrollOffset = 0;
+    completionHint =
+      "Tab: complete  |  Ctrl+Arrows: words  |  Ctrl+A: select all";
+  }
 }
 
-void CommandLine::clearCompletionHint()
+void
+CommandLine::clearCompletionHint()
 {
-	completionHint.clear();
+  completionHint.clear();
 }
 
-void CommandLine::resetCursorToEnd()
+void
+CommandLine::resetCursorToEnd()
 {
-	cursorPosition = currentInput.size();
-	selectionAnchor = cursorPosition;
+  cursorPosition = currentInput.size();
+  selectionAnchor = cursorPosition;
 }
 
-void CommandLine::eraseSelection()
+void
+CommandLine::eraseSelection()
 {
-	if (!hasSelection())
-	{
-		return;
-	}
+  if (!hasSelection()) {
+    return;
+  }
 
-	std::size_t start = std::min(cursorPosition, selectionAnchor);
-	std::size_t end = std::max(cursorPosition, selectionAnchor);
-	currentInput.erase(start, end - start);
-	cursorPosition = start;
-	selectionAnchor = start;
+  std::size_t start = std::min(cursorPosition, selectionAnchor);
+  std::size_t end = std::max(cursorPosition, selectionAnchor);
+  currentInput.erase(start, end - start);
+  cursorPosition = start;
+  selectionAnchor = start;
 }
 
-std::size_t CommandLine::findPreviousWordBoundary() const
+std::size_t
+CommandLine::findPreviousWordBoundary() const
 {
-	std::size_t position = cursorPosition;
-	while (position > 0 && std::isspace(static_cast<unsigned char>(currentInput[position - 1])))
-	{
-		--position;
-	}
-	while (position > 0 && !std::isspace(static_cast<unsigned char>(currentInput[position - 1])))
-	{
-		--position;
-	}
-	return position;
+  std::size_t position = cursorPosition;
+  while (position > 0 &&
+         std::isspace(static_cast<unsigned char>(currentInput[position - 1]))) {
+    --position;
+  }
+  while (position > 0 && !std::isspace(static_cast<unsigned char>(
+                           currentInput[position - 1]))) {
+    --position;
+  }
+  return position;
 }
 
-std::size_t CommandLine::findNextWordBoundary() const
+std::size_t
+CommandLine::findNextWordBoundary() const
 {
-	std::size_t position = cursorPosition;
-	while (position < currentInput.size() && !std::isspace(static_cast<unsigned char>(currentInput[position])))
-	{
-		++position;
-	}
-	while (position < currentInput.size() && std::isspace(static_cast<unsigned char>(currentInput[position])))
-	{
-		++position;
-	}
-	return position;
+  std::size_t position = cursorPosition;
+  while (position < currentInput.size() &&
+         !std::isspace(static_cast<unsigned char>(currentInput[position]))) {
+    ++position;
+  }
+  while (position < currentInput.size() &&
+         std::isspace(static_cast<unsigned char>(currentInput[position]))) {
+    ++position;
+  }
+  return position;
 }
 
-void CommandLine::AddCharacter(unsigned int codepoint)
+void
+CommandLine::AddCharacter(unsigned int codepoint)
 {
-	std::size_t selectedCharacters = hasSelection()
-		? std::max(cursorPosition, selectionAnchor) - std::min(cursorPosition, selectionAnchor)
-		: 0;
-	if (currentInput.size() - selectedCharacters < MAX_CHARS_PER_LINE - 1)
-	{
-		if (codepoint >= 32 && codepoint <= 126)
-		{
-			eraseSelection();
-			currentInput.insert(cursorPosition, 1, static_cast<char>(codepoint));
-			++cursorPosition;
-			selectionAnchor = cursorPosition;
-			clearCompletionHint();
-		}
-	}
+  std::size_t selectedCharacters =
+    hasSelection() ? std::max(cursorPosition, selectionAnchor) -
+                       std::min(cursorPosition, selectionAnchor)
+                   : 0;
+  if (currentInput.size() - selectedCharacters < MAX_CHARS_PER_LINE - 1) {
+    if (codepoint >= 32 && codepoint <= 126) {
+      eraseSelection();
+      currentInput.insert(cursorPosition, 1, static_cast<char>(codepoint));
+      ++cursorPosition;
+      selectionAnchor = cursorPosition;
+      clearCompletionHint();
+    }
+  }
 }
 
-void CommandLine::HandleBackspace(bool byWord)
+void
+CommandLine::HandleBackspace(bool byWord)
 {
-	if (hasSelection())
-	{
-		eraseSelection();
-		clearCompletionHint();
-		return;
-	}
-	if (cursorPosition == 0)
-	{
-		return;
-	}
+  if (hasSelection()) {
+    eraseSelection();
+    clearCompletionHint();
+    return;
+  }
+  if (cursorPosition == 0) {
+    return;
+  }
 
-	std::size_t eraseFrom = byWord ? findPreviousWordBoundary() : cursorPosition - 1;
-	currentInput.erase(eraseFrom, cursorPosition - eraseFrom);
-	cursorPosition = eraseFrom;
-	selectionAnchor = cursorPosition;
-	clearCompletionHint();
+  std::size_t eraseFrom =
+    byWord ? findPreviousWordBoundary() : cursorPosition - 1;
+  currentInput.erase(eraseFrom, cursorPosition - eraseFrom);
+  cursorPosition = eraseFrom;
+  selectionAnchor = cursorPosition;
+  clearCompletionHint();
 }
 
-void CommandLine::HandleDelete(bool byWord)
+void
+CommandLine::HandleDelete(bool byWord)
 {
-	if (hasSelection())
-	{
-		eraseSelection();
-		clearCompletionHint();
-		return;
-	}
-	if (cursorPosition >= currentInput.size())
-	{
-		return;
-	}
+  if (hasSelection()) {
+    eraseSelection();
+    clearCompletionHint();
+    return;
+  }
+  if (cursorPosition >= currentInput.size()) {
+    return;
+  }
 
-	std::size_t eraseTo = byWord ? findNextWordBoundary() : cursorPosition + 1;
-	currentInput.erase(cursorPosition, eraseTo - cursorPosition);
-	selectionAnchor = cursorPosition;
-	clearCompletionHint();
+  std::size_t eraseTo = byWord ? findNextWordBoundary() : cursorPosition + 1;
+  currentInput.erase(cursorPosition, eraseTo - cursorPosition);
+  selectionAnchor = cursorPosition;
+  clearCompletionHint();
 }
 
-void CommandLine::MoveCursorLeft(bool byWord, bool select)
+void
+CommandLine::MoveCursorLeft(bool byWord, bool select)
 {
-	if (!select && hasSelection())
-	{
-		cursorPosition = std::min(cursorPosition, selectionAnchor);
-		selectionAnchor = cursorPosition;
-		return;
-	}
-	std::size_t newPosition = byWord ? findPreviousWordBoundary() : (cursorPosition > 0 ? cursorPosition - 1 : 0);
-	if (!select)
-	{
-		selectionAnchor = newPosition;
-	}
-	cursorPosition = newPosition;
+  if (!select && hasSelection()) {
+    cursorPosition = std::min(cursorPosition, selectionAnchor);
+    selectionAnchor = cursorPosition;
+    return;
+  }
+  std::size_t newPosition = byWord
+                              ? findPreviousWordBoundary()
+                              : (cursorPosition > 0 ? cursorPosition - 1 : 0);
+  if (!select) {
+    selectionAnchor = newPosition;
+  }
+  cursorPosition = newPosition;
 }
 
-void CommandLine::MoveCursorRight(bool byWord, bool select)
+void
+CommandLine::MoveCursorRight(bool byWord, bool select)
 {
-	if (!select && hasSelection())
-	{
-		cursorPosition = std::max(cursorPosition, selectionAnchor);
-		selectionAnchor = cursorPosition;
-		return;
-	}
-	std::size_t newPosition = byWord ? findNextWordBoundary() : std::min(cursorPosition + 1, currentInput.size());
-	if (!select)
-	{
-		selectionAnchor = newPosition;
-	}
-	cursorPosition = newPosition;
+  if (!select && cursorPosition == currentInput.size()) {
+    std::string ghost = getGhostSuggestion();
+    if (!ghost.empty()) {
+      currentInput += ghost;
+      cursorPosition = currentInput.size();
+      selectionAnchor = cursorPosition;
+      return;
+    }
+  }
+  if (!select && hasSelection()) {
+    cursorPosition = std::max(cursorPosition, selectionAnchor);
+    selectionAnchor = cursorPosition;
+    return;
+  }
+  std::size_t newPosition =
+    byWord ? findNextWordBoundary()
+           : std::min(cursorPosition + 1, currentInput.size());
+  if (!select) {
+    selectionAnchor = newPosition;
+  }
+  cursorPosition = newPosition;
 }
 
-void CommandLine::MoveCursorHome(bool select)
+void
+CommandLine::MoveCursorHome(bool select)
 {
-	if (!select)
-	{
-		selectionAnchor = 0;
-	}
-	cursorPosition = 0;
+  if (!select) {
+    selectionAnchor = 0;
+  }
+  cursorPosition = 0;
 }
 
-void CommandLine::MoveCursorEnd(bool select)
+void
+CommandLine::MoveCursorEnd(bool select)
 {
-	if (!select)
-	{
-		selectionAnchor = currentInput.size();
-	}
-	cursorPosition = currentInput.size();
+  if (!select) {
+    selectionAnchor = currentInput.size();
+  }
+  cursorPosition = currentInput.size();
 }
 
-void CommandLine::SelectAll()
+void
+CommandLine::SelectAll()
 {
-	selectionAnchor = 0;
-	cursorPosition = currentInput.size();
+  selectionAnchor = 0;
+  cursorPosition = currentInput.size();
 }
 
-void CommandLine::ClearInput()
+void
+CommandLine::ClearInput()
 {
-	currentInput.clear();
-	resetCursorToEnd();
-	clearCompletionHint();
+  currentInput.clear();
+  resetCursorToEnd();
+  clearCompletionHint();
 }
 
-void CommandLine::logNormal(const std::string& str)
+void
+CommandLine::logNormal(const std::string& str)
 {
-	AppendString(255, 255, 255, 255, str);
+  AppendString(255, 255, 255, 255, str);
 }
-void CommandLine::logError(const std::string& str)
+void
+CommandLine::logError(const std::string& str)
 {
-	AppendString(255, 100, 100, 255, "ERROR: " + str);
-	//AppendStringLn(255, 255, 255, 255, str);
+  AppendString(255, 100, 100, 255, "ERROR: " + str);
+  // AppendStringLn(255, 255, 255, 255, str);
 }
-void CommandLine::logWarning(const std::string& str)
+void
+CommandLine::logWarning(const std::string& str)
 {
-	AppendString(255, 220, 100, 255, "WARNING: " + str);
-	//AppendStringLn(255, 255, 255, 255, str);
+  AppendString(255, 220, 100, 255, "WARNING: " + str);
+  // AppendStringLn(255, 255, 255, 255, str);
 }
-void CommandLine::logSuccess(const std::string& str)
+void
+CommandLine::logSuccess(const std::string& str)
 {
-	AppendString(100, 255, 100, 255, "SUCCESS: " + str);
-	//AppendStringLn(255, 255, 255, 255, str);
-}
-
-void CommandLine::logTrace(const std::string& str)
-{
-	AppendString(206, 0, 252, 255, "TRACE: " + str);
-	//AppendStringLn(255, 255, 255, 255, str);
+  AppendString(100, 255, 100, 255, "SUCCESS: " + str);
+  // AppendStringLn(255, 255, 255, 255, str);
 }
 
-std::vector<std::string> CommandLine::ParseCommandArgs(const std::string& text, const std::string& delim) const
+void
+CommandLine::logTrace(const std::string& str)
 {
-	std::vector<std::string> args;
-	std::string currentArg;
-	char quote = '\0';
-	bool escaping = false;
-	bool tokenStarted = false;
-
-	for (char character : text)
-	{
-		if (escaping)
-		{
-			currentArg += character;
-			escaping = false;
-			tokenStarted = true;
-			continue;
-		}
-		if (character == '\\')
-		{
-			escaping = true;
-			tokenStarted = true;
-			continue;
-		}
-		if (quote != '\0')
-		{
-			if (character == quote)
-			{
-				quote = '\0';
-			}
-			else
-			{
-				currentArg += character;
-			}
-			tokenStarted = true;
-			continue;
-		}
-		if (character == '\'' || character == '"')
-		{
-			quote = character;
-			tokenStarted = true;
-			continue;
-		}
-		if (delim.find(character) != std::string::npos)
-		{
-			if (tokenStarted)
-			{
-				args.push_back(currentArg);
-				currentArg.clear();
-				tokenStarted = false;
-			}
-			continue;
-		}
-		currentArg += character;
-		tokenStarted = true;
-	}
-
-	if (escaping)
-	{
-		currentArg += '\\';
-	}
-	if (tokenStarted)
-	{
-		args.push_back(currentArg);
-	}
-	return args;
+  AppendString(206, 0, 252, 255, "TRACE: " + str);
+  // AppendStringLn(255, 255, 255, 255, str);
 }
 
-std::vector<std::string> CommandLine::getCompletionCandidates(const std::string& leadingText) const
+std::vector<std::string>
+CommandLine::ParseCommandArgs(const std::string& text,
+                              const std::string& delim) const
 {
-	std::vector<std::string> candidates;
-	std::vector<std::string> leadingArgs = ParseCommandArgs(leadingText, " \t");
-	if (leadingArgs.empty())
-	{
-		for (const BuiltInCommandHelp& command : kBuiltInCommands)
-		{
-			candidates.push_back(command.name);
-		}
+  std::vector<std::string> args;
+  std::string currentArg;
+  char quote = '\0';
+  bool escaping = false;
+  bool tokenStarted = false;
 
-		if (commandRegistry != nullptr)
-		{
-			std::vector<std::string> registeredCommands = commandRegistry->GetCommandNames();
-			candidates.insert(candidates.end(), registeredCommands.begin(), registeredCommands.end());
-		}
-		const std::unordered_map<std::string, EnvVar>& vars = envVars->getVars();
-		for (const std::pair<const std::string, EnvVar>& variable : vars)
-		{
-			candidates.push_back(variable.first);
-		}
-	}
-	else
-	{
-		const std::string command = lowerCopy(leadingArgs[0]);
-		if (commandRegistry != nullptr && commandRegistry->HasCommand(command))
-		{
-			candidates = commandRegistry->GetCommandCompletions(command);
-		}
-		else if (command == "get" || command == "set" || command == "toggle" || command == "vars")
-		{
-			const std::unordered_map<std::string, EnvVar>& vars = envVars->getVars();
-			for (const std::pair<const std::string, EnvVar>& variable : vars)
-			{
-				candidates.push_back(variable.first);
-			}
-		}
-		else if (command == "fps" || command == "fullscreen")
-		{
-			candidates = {"off", "on", "toggle"};
-		}
-	}
+  for (char character : text) {
+    if (escaping) {
+      currentArg += character;
+      escaping = false;
+      tokenStarted = true;
+      continue;
+    }
+    if (character == '\\') {
+      escaping = true;
+      tokenStarted = true;
+      continue;
+    }
+    if (quote != '\0') {
+      if (character == quote) {
+        quote = '\0';
+      } else {
+        currentArg += character;
+      }
+      tokenStarted = true;
+      continue;
+    }
+    if (character == '\'' || character == '"') {
+      quote = character;
+      tokenStarted = true;
+      continue;
+    }
+    if (delim.find(character) != std::string::npos) {
+      if (tokenStarted) {
+        args.push_back(currentArg);
+        currentArg.clear();
+        tokenStarted = false;
+      }
+      continue;
+    }
+    currentArg += character;
+    tokenStarted = true;
+  }
 
-	std::sort(candidates.begin(), candidates.end());
-	candidates.erase(std::unique(candidates.begin(), candidates.end()), candidates.end());
-	return candidates;
+  if (escaping) {
+    currentArg += '\\';
+  }
+  if (tokenStarted) {
+    args.push_back(currentArg);
+  }
+  return args;
 }
 
-void CommandLine::Complete()
+std::vector<std::string>
+CommandLine::SplitCommandChain(const std::string& text) const
 {
-	std::size_t tokenStart = cursorPosition;
-	while (tokenStart > 0 && !std::isspace(static_cast<unsigned char>(currentInput[tokenStart - 1])))
-	{
-		--tokenStart;
-	}
-	const std::string prefix = currentInput.substr(tokenStart, cursorPosition - tokenStart);
-	const std::string leadingText = currentInput.substr(0, tokenStart);
-	std::vector<std::string> candidates = getCompletionCandidates(leadingText);
-	std::vector<std::string> matches;
-	for (const std::string& candidate : candidates)
-	{
-		if (candidate.size() < prefix.size())
-		{
-			continue;
-		}
+  std::vector<std::string> commands;
+  std::string currentCmd;
+  char quote = '\0';
+  bool escaping = false;
 
-		bool matchesPrefix = true;
-		for (std::size_t i = 0; i < prefix.size(); ++i)
-		{
-			if (std::tolower(static_cast<unsigned char>(candidate[i])) != std::tolower(static_cast<unsigned char>(prefix[i])))
-			{
-				matchesPrefix = false;
-				break;
-			}
-		}
-		if (matchesPrefix)
-		{
-			matches.push_back(candidate);
-		}
-	}
+  for (std::size_t i = 0; i < text.size(); ++i) {
+    char character = text[i];
+    if (escaping) {
+      currentCmd += character;
+      escaping = false;
+      continue;
+    }
+    if (character == '\\') {
+      escaping = true;
+      currentCmd += character;
+      continue;
+    }
+    if (quote != '\0') {
+      if (character == quote) {
+        quote = '\0';
+      }
+      currentCmd += character;
+      continue;
+    }
+    if (character == '\'' || character == '"') {
+      quote = character;
+      currentCmd += character;
+      continue;
+    }
+    if (character == ';') {
+      std::size_t firstNonSpace = currentCmd.find_first_not_of(" \t\r\n");
+      if (firstNonSpace != std::string::npos) {
+        commands.push_back(currentCmd);
+      }
+      currentCmd.clear();
+      continue;
+    }
+    currentCmd += character;
+  }
 
-	if (matches.empty())
-	{
-		completionHint = "No completion matches '" + prefix + "'";
-		return;
-	}
-
-	std::string replacement = matches[0];
-	for (std::size_t i = 1; i < matches.size(); ++i)
-	{
-		std::size_t commonLength = 0;
-		while (commonLength < replacement.size() && commonLength < matches[i].size() && replacement[commonLength] == matches[i][commonLength])
-		{
-			++commonLength;
-		}
-		replacement.resize(commonLength);
-	}
-
-	if (replacement.size() > prefix.size() || matches.size() == 1)
-	{
-		currentInput.replace(tokenStart, cursorPosition - tokenStart, replacement);
-		cursorPosition = tokenStart + replacement.size();
-		selectionAnchor = cursorPosition;
-	}
-
-	if (matches.size() == 1)
-	{
-		if (tokenStart == 0 && cursorPosition == currentInput.size())
-		{
-			currentInput += " ";
-			++cursorPosition;
-			selectionAnchor = cursorPosition;
-		}
-		completionHint = "Completed: " + matches[0];
-		return;
-	}
-
-	completionHint = "Matches: ";
-	const std::size_t visibleMatches = std::min(matches.size(), static_cast<std::size_t>(4));
-	for (std::size_t i = 0; i < visibleMatches; ++i)
-	{
-		if (i > 0)
-		{
-			completionHint += "  ";
-		}
-		completionHint += matches[i];
-	}
-	if (matches.size() > visibleMatches)
-	{
-		completionHint += "  ...";
-	}
+  std::size_t firstNonSpace = currentCmd.find_first_not_of(" \t\r\n");
+  if (firstNonSpace != std::string::npos) {
+    commands.push_back(currentCmd);
+  }
+  return commands;
 }
 
-void CommandLine::ExecuteCommand()
+void
+CommandLine::SetAlias(const std::string& name, const std::string& expansion)
 {
-	std::vector<std::string> commandParts = ParseCommandArgs(currentInput, " \t");
-	if (commandParts.empty())
-	{
-		return;
-	}
-
-	AppendString(100, 200, 255, 255, "> " + currentInput);
-
-	const std::string rawCommand = commandParts[0];
-	const std::string cmd = lowerCopy(rawCommand);
-	std::vector<std::string> args(commandParts.begin() + 1, commandParts.end());
-
-	AddToHistory(currentInput);
-
-	if (cmd == "help")
-	{
-		if (args.empty())
-		{
-			logNormal("Built-in commands:");
-			for (const BuiltInCommandHelp& command : kBuiltInCommands)
-			{
-				logNormal("  " + std::string(command.usage) + " - " + command.description);
-			}
-
-			if (commandRegistry != nullptr)
-			{
-				std::vector<std::string> registeredCommands = commandRegistry->GetCommandNames();
-				if (!registeredCommands.empty())
-				{
-					logNormal("Simulation commands:");
-				}
-				for (const std::string& commandName : registeredCommands)
-				{
-					std::string usage = commandRegistry->GetCommandUsage(commandName);
-					std::string description = commandRegistry->GetCommandDescription(commandName);
-					if (usage.empty())
-					{
-						usage = commandName;
-					}
-					logNormal("  " + usage + (description.empty() ? "" : " - " + description));
-				}
-			}
-			logNormal("Use 'help <command>' for one command.");
-		}
-		else
-		{
-			const std::string requested = lowerCopy(args[0]);
-			const BuiltInCommandHelp* builtIn = findBuiltInCommand(requested);
-			if (builtIn != nullptr)
-			{
-				logNormal(std::string(builtIn->usage) + " - " + builtIn->description);
-			}
-			else if (commandRegistry != nullptr && commandRegistry->HasCommand(requested))
-			{
-				std::string usage = commandRegistry->GetCommandUsage(requested);
-				std::string description = commandRegistry->GetCommandDescription(requested);
-				logNormal((usage.empty() ? requested : usage) + (description.empty() ? "" : " - " + description));
-			}
-			else
-			{
-				logError("No help available for '" + args[0] + "'");
-			}
-		}
-	}
-	else if (cmd == "clear")
-	{
-		history.clear();
-		AppendString(240, 240, 240, 255, "Illumo Developer Console");
-	}
-	else if (cmd == "echo")
-	{
-		logNormal(joinArguments(args, 0));
-	}
-	else if (cmd == "get")
-	{
-		if (args.size() != 1)
-		{
-			logNormal("Usage: get <variable>");
-		}
-		else
-		{
-			const std::string key = findEnvironmentKey(envVars, args[0]);
-			if (key.empty())
-			{
-				logError("Unknown variable: " + args[0]);
-			}
-			else
-			{
-				logNormal(key + " = " + envVars->getVar(key).value);
-			}
-		}
-	}
-	else if (cmd == "set")
-	{
-		if (args.size() < 2)
-		{
-			logNormal("Usage: set <variable> <value>");
-		}
-		else
-		{
-			std::string key = findEnvironmentKey(envVars, args[0]);
-			if (key.empty())
-			{
-				key = args[0];
-			}
-			const std::string value = joinArguments(args, 1);
-			envVars->setVar(key, value);
-			logSuccess(key + " = " + value);
-		}
-	}
-	else if (cmd == "toggle")
-	{
-		if (args.size() != 1)
-		{
-			logNormal("Usage: toggle <variable>");
-		}
-		else
-		{
-			const std::string key = findEnvironmentKey(envVars, args[0]);
-			if (key.empty())
-			{
-				logError("Unknown variable: " + args[0]);
-			}
-			else
-			{
-				const bool value = !envVars->getVar(key).valueAsBool;
-				envVars->setVar(key, value);
-				logSuccess(key + " = " + (value ? "true" : "false"));
-			}
-		}
-	}
-	else if (cmd == "vars")
-	{
-		const std::string filter = args.empty() ? "" : lowerCopy(args[0]);
-		std::vector<std::string> variableLines;
-		const std::unordered_map<std::string, EnvVar>& variables = envVars->getVars();
-		for (const std::pair<const std::string, EnvVar>& variable : variables)
-		{
-			if (filter.empty() || lowerCopy(variable.first).find(filter) != std::string::npos)
-			{
-				variableLines.push_back(variable.first + " = " + variable.second.value);
-			}
-		}
-		std::sort(variableLines.begin(), variableLines.end());
-		if (variableLines.empty())
-		{
-			logWarning("No variables match '" + (args.empty() ? std::string("") : args[0]) + "'");
-		}
-		for (const std::string& line : variableLines)
-		{
-			logNormal(line);
-		}
-	}
-	else if (cmd == "tps")
-	{
-		if (args.empty())
-		{
-			logNormal("tps = " + envVars->getVar("tps").value);
-		}
-		else
-		{
-			long value = 0;
-			if (args.size() != 1 || !parseLongStrict(args[0], &value) || value < 1 || value > 1000)
-			{
-				logError("tps must be an integer from 1 to 1000");
-			}
-			else
-			{
-				envVars->setVar("tps", value);
-				logSuccess("tps = " + std::to_string(value));
-			}
-		}
-	}
-	else if (cmd == "speed" || cmd == "speedfactor")
-	{
-		if (args.empty())
-		{
-			logNormal("speedFactor = " + envVars->getVar("speedFactor").value);
-		}
-		else
-		{
-			double value = 0.0;
-			if (args.size() != 1 || !parseDoubleStrict(args[0], &value) || value < 0.01 || value > 100.0)
-			{
-				logError("speed must be a number from 0.01 to 100");
-			}
-			else
-			{
-				envVars->setVar("speedFactor", args[0]);
-				logSuccess("speedFactor = " + args[0]);
-			}
-		}
-	}
-	else if (cmd == "fade" || cmd == "cellfadespeed")
-	{
-		if (args.empty())
-		{
-			logNormal("cellFadeSpeed = " + envVars->getVar("cellFadeSpeed").value);
-		}
-		else
-		{
-			double value = 0.0;
-			if (args.size() != 1 || !parseDoubleStrict(args[0], &value) || value < 0.0 || value > 1000.0)
-			{
-				logError("fade must be a number from 0 to 1000");
-			}
-			else
-			{
-				envVars->setVar("cellFadeSpeed", args[0]);
-				logSuccess("cellFadeSpeed = " + args[0]);
-			}
-		}
-	}
-	else if (cmd == "fps")
-	{
-		const bool currentValue = envVars->getVar("showFPS").valueAsBool;
-		if (args.empty())
-		{
-			logNormal(std::string("FPS overlay: ") + (currentValue ? "on" : "off"));
-		}
-		else
-		{
-			bool requestedValue = false;
-			bool valid = false;
-			if (args.size() == 1 && lowerCopy(args[0]) == "toggle")
-			{
-				requestedValue = !currentValue;
-				valid = true;
-			}
-			else if (args.size() == 1)
-			{
-				valid = parseBoolValue(args[0], &requestedValue);
-			}
-			if (!valid)
-			{
-				logError("Usage: fps [on|off|toggle]");
-			}
-			else
-			{
-				envVars->setVar("showFPS", requestedValue);
-				logSuccess(std::string("FPS overlay: ") + (requestedValue ? "on" : "off"));
-			}
-		}
-	}
-	else if (cmd == "fullscreen")
-	{
-		const bool currentValue = envVars->getVar("fullscreen").valueAsBool;
-		bool requestedValue = !currentValue;
-		bool valid = args.empty();
-		if (args.size() == 1 && lowerCopy(args[0]) == "toggle")
-		{
-			valid = true;
-		}
-		else if (args.size() == 1)
-		{
-			valid = parseBoolValue(args[0], &requestedValue);
-		}
-		if (!valid)
-		{
-			logError("Usage: fullscreen [on|off|toggle]");
-		}
-		else
-		{
-			if (requestedValue != currentValue)
-			{
-				window->toggleFullscreen();
-			}
-			envVars->setVar("fullscreen", requestedValue);
-			logSuccess(std::string("Fullscreen: ") + (requestedValue ? "on" : "off"));
-		}
-	}
-	else if (cmd == "close")
-	{
-		isOpen = false;
-	}
-	else if (cmd == "quit")
-	{
-		window->requestClose();
-	}
-	else if (cmd == "vid_restart")
-	{
-		logWarning("vid_restart is unavailable: safely rebuilding the OpenGL context requires resource re-enrollment");
-	}
-	else
-	{
-		if (commandRegistry != nullptr && commandRegistry->HasCommand(cmd))
-		{
-			commandRegistry->QueueCommand(cmd, args);
-		}
-		else
-		{
-			const std::string key = findEnvironmentKey(envVars, rawCommand);
-			if (!key.empty())
-			{
-				if (args.empty())
-				{
-					logNormal(key + " = " + envVars->getVar(key).value);
-				}
-				else if (args.size() == 1)
-				{
-					envVars->setVar(key, args[0]);
-					logSuccess(key + " = " + args[0]);
-				}
-				else
-				{
-					logError("Variable assignment accepts one value; use set for text with spaces");
-				}
-			}
-			else
-			{
-				logError("Unknown command or variable: " + rawCommand);
-			}
-		}
-	}
-
-	ClearInput();
-	scrollOffset = 0;
+  if (!name.empty()) {
+    aliases[lowerCopy(name)] = expansion;
+  }
 }
 
-void CommandLine::AddToHistory(std::string command)
+void
+CommandLine::RemoveAlias(const std::string& name)
 {
-	commandHistory.push_back(command);
-	//imitate stack behavior by setting historyIndex to top of stack and popping the first entry when full.
-	if (commandHistory.size() > MAX_CMD_HISTORY)
-	{
-		commandHistory.erase(commandHistory.begin());
-	}
-	historyIndex = (int) commandHistory.size();
-	tempInput = "";
-	resetCursorToEnd();
+  aliases.erase(lowerCopy(name));
 }
 
-void CommandLine::HistoryDown()
+bool
+CommandLine::HasAlias(const std::string& name) const
 {
-	if (commandHistory.empty()) return;
-	if (historyIndex < (int) commandHistory.size())
-	{
-		historyIndex++;
-		if (historyIndex == (int) commandHistory.size())
-		{
-			currentInput = tempInput;
-		}
-		else
-		{
-			currentInput = commandHistory[historyIndex];
-		}
-		resetCursorToEnd();
-	}
+  return aliases.find(lowerCopy(name)) != aliases.end();
 }
 
-void CommandLine::HistoryUp()
+std::string
+CommandLine::GetAlias(const std::string& name) const
 {
-	if (commandHistory.empty()) return;
-	if (historyIndex > 0)
-	{
-		if (historyIndex == (int) commandHistory.size())
-		{
-			tempInput = currentInput;
-		}
-		historyIndex--;
-		currentInput = commandHistory[historyIndex];
-		resetCursorToEnd();
-	}
+  std::unordered_map<std::string, std::string>::const_iterator it =
+    aliases.find(lowerCopy(name));
+  if (it != aliases.end()) {
+    return it->second;
+  }
+  return "";
 }
 
-void CommandLine::ScrollUp()
+std::string
+CommandLine::getGhostSuggestion() const
 {
-	std::array<int, 2> windowDimensions = window->getWindowDimensions();
-	int winHeight = windowDimensions[1];
-	float panelHeight = winHeight * 0.52f;
-	if (panelHeight < 240.0f) panelHeight = 240.0f;
-	float lineSpacing = 24.0f;
-	int maxHistoryLines = (int) ((panelHeight - 90.0f) / lineSpacing);
-	if (maxHistoryLines < 1) maxHistoryLines = 1;
+  if (currentInput.empty() || cursorPosition != currentInput.size() ||
+      hasSelection()) {
+    return "";
+  }
 
-	int maxScroll = (int) history.size() - maxHistoryLines;
-	if (maxScroll < 0) maxScroll = 0;
+  std::size_t tokenStart = cursorPosition;
+  while (tokenStart > 0 && !std::isspace(static_cast<unsigned char>(
+                             currentInput[tokenStart - 1]))) {
+    --tokenStart;
+  }
+  const std::string prefix =
+    currentInput.substr(tokenStart, cursorPosition - tokenStart);
+  if (prefix.empty()) {
+    return "";
+  }
 
-	if (scrollOffset < maxScroll)
-	{
-		scrollOffset++;
-	}
+  const std::string leadingText = currentInput.substr(0, tokenStart);
+  std::vector<std::string> candidates = getCompletionCandidates(leadingText);
+  for (const std::string& candidate : candidates) {
+    if (candidate.size() > prefix.size()) {
+      bool matchesPrefix = true;
+      for (std::size_t i = 0; i < prefix.size(); ++i) {
+        if (std::tolower(static_cast<unsigned char>(candidate[i])) !=
+            std::tolower(static_cast<unsigned char>(prefix[i]))) {
+          matchesPrefix = false;
+          break;
+        }
+      }
+      if (matchesPrefix) {
+        return candidate.substr(prefix.size());
+      }
+    }
+  }
+  return "";
 }
 
-void CommandLine::ScrollDown()
+std::string
+CommandLine::getParameterHint(const std::string& inputLine) const
 {
-	if (scrollOffset > 0)
-	{
-		scrollOffset--;
-	}
+  if (inputLine.empty()) {
+    return "";
+  }
+  std::vector<std::string> args = ParseCommandArgs(inputLine, " \t");
+  if (args.empty()) {
+    return "";
+  }
+  const std::string cmd = lowerCopy(args[0]);
+  const BuiltInCommandHelp* builtIn = findBuiltInCommand(cmd);
+  if (builtIn != nullptr) {
+    return std::string("Usage: ") + builtIn->usage;
+  }
+  if (commandRegistry != nullptr && commandRegistry->HasCommand(cmd)) {
+    std::string usage = commandRegistry->GetCommandUsage(cmd);
+    if (!usage.empty()) {
+      return std::string("Usage: ") + usage;
+    }
+  }
+  return "";
 }
 
-void CommandLine::AppendString(unsigned char r, unsigned char g, unsigned char b, unsigned char a, std::string str)
+std::vector<std::string>
+CommandLine::getCompletionCandidates(const std::string& leadingText) const
 {
-	history.push_back({r, g, b, a, str});
-	if (history.size() > MAX_CMD_HISTORY)
-	{
-		history.erase(history.begin());
-	}
-}
-void CommandLine::AppendStringLn(unsigned char r, unsigned char g, unsigned char b, unsigned char a, std::string str)
-{
-	history.push_back({r, g, b, a, str + "\n"});
-	if (history.size() > MAX_CMD_HISTORY)
-	{
-		history.erase(history.begin());
-	}
+  std::vector<std::string> candidates;
+  std::vector<std::string> leadingArgs = ParseCommandArgs(leadingText, " \t");
+  if (leadingArgs.empty()) {
+    for (const BuiltInCommandHelp& command : kBuiltInCommands) {
+      candidates.push_back(command.name);
+    }
+
+    if (commandRegistry != nullptr) {
+      std::vector<std::string> registeredCommands =
+        commandRegistry->GetCommandNames();
+      candidates.insert(
+        candidates.end(), registeredCommands.begin(), registeredCommands.end());
+    }
+    const std::unordered_map<std::string, EnvVar>& vars = envVars->getVars();
+    for (const std::pair<const std::string, EnvVar>& variable : vars) {
+      candidates.push_back(variable.first);
+    }
+    for (const std::pair<const std::string, std::string>& aliasItem : aliases) {
+      candidates.push_back(aliasItem.first);
+    }
+  } else {
+    const std::string command = lowerCopy(leadingArgs[0]);
+    if (commandRegistry != nullptr && commandRegistry->HasCommand(command)) {
+      candidates = commandRegistry->GetCommandCompletions(command);
+    } else if (command == "get" || command == "set" || command == "toggle" ||
+               command == "vars") {
+      const std::unordered_map<std::string, EnvVar>& vars = envVars->getVars();
+      for (const std::pair<const std::string, EnvVar>& variable : vars) {
+        candidates.push_back(variable.first);
+      }
+    } else if (command == "fps" || command == "fullscreen") {
+      candidates = { "off", "on", "toggle" };
+    }
+  }
+
+  std::sort(candidates.begin(), candidates.end());
+  candidates.erase(std::unique(candidates.begin(), candidates.end()),
+                   candidates.end());
+  return candidates;
 }
 
-void CommandLine::DrawImpl()
+void
+CommandLine::Complete()
 {
-	// Migrated to tokens.
+  std::size_t tokenStart = cursorPosition;
+  while (tokenStart > 0 && !std::isspace(static_cast<unsigned char>(
+                             currentInput[tokenStart - 1]))) {
+    --tokenStart;
+  }
+  const std::string prefix =
+    currentInput.substr(tokenStart, cursorPosition - tokenStart);
+  const std::string leadingText = currentInput.substr(0, tokenStart);
+  std::vector<std::string> candidates = getCompletionCandidates(leadingText);
+  std::vector<std::string> matches;
+  for (const std::string& candidate : candidates) {
+    if (candidate.size() < prefix.size()) {
+      continue;
+    }
+
+    bool matchesPrefix = true;
+    for (std::size_t i = 0; i < prefix.size(); ++i) {
+      if (std::tolower(static_cast<unsigned char>(candidate[i])) !=
+          std::tolower(static_cast<unsigned char>(prefix[i]))) {
+        matchesPrefix = false;
+        break;
+      }
+    }
+    if (matchesPrefix) {
+      matches.push_back(candidate);
+    }
+  }
+
+  if (matches.empty()) {
+    completionHint = "No completion matches '" + prefix + "'";
+    return;
+  }
+
+  std::string replacement = matches[0];
+  for (std::size_t i = 1; i < matches.size(); ++i) {
+    std::size_t commonLength = 0;
+    while (commonLength < replacement.size() &&
+           commonLength < matches[i].size() &&
+           replacement[commonLength] == matches[i][commonLength]) {
+      ++commonLength;
+    }
+    replacement.resize(commonLength);
+  }
+
+  if (replacement.size() > prefix.size() || matches.size() == 1) {
+    currentInput.replace(tokenStart, cursorPosition - tokenStart, replacement);
+    cursorPosition = tokenStart + replacement.size();
+    selectionAnchor = cursorPosition;
+  }
+
+  if (matches.size() == 1) {
+    if (tokenStart == 0 && cursorPosition == currentInput.size()) {
+      currentInput += " ";
+      ++cursorPosition;
+      selectionAnchor = cursorPosition;
+    }
+    completionHint = "Completed: " + matches[0];
+    return;
+  }
+
+  completionHint = "Matches: ";
+  const std::size_t visibleMatches =
+    std::min(matches.size(), static_cast<std::size_t>(4));
+  for (std::size_t i = 0; i < visibleMatches; ++i) {
+    if (i > 0) {
+      completionHint += "  ";
+    }
+    completionHint += matches[i];
+  }
+  if (matches.size() > visibleMatches) {
+    completionHint += "  ...";
+  }
+}
+void
+CommandLine::ExecuteCommand()
+{
+  if (currentInput.empty()) {
+    return;
+  }
+
+  AddToHistory(currentInput);
+
+  std::vector<std::string> subCommands = SplitCommandChain(currentInput);
+  ClearInput();
+  scrollOffset = 0;
+
+  for (const std::string& singleCmd : subCommands) {
+    ExecuteSingleCommand(singleCmd, 0);
+  }
+}
+
+void
+CommandLine::ExecuteSingleCommand(const std::string& singleCmd,
+                                  int expansionDepth)
+{
+  if (expansionDepth > 8) {
+    logError("Alias expansion depth limit exceeded");
+    return;
+  }
+
+  std::vector<std::string> commandParts = ParseCommandArgs(singleCmd, " \t");
+  if (commandParts.empty()) {
+    return;
+  }
+
+  if (expansionDepth == 0) {
+    AppendString(100, 200, 255, 255, "> " + singleCmd);
+  }
+
+  const std::string rawCommand = commandParts[0];
+  const std::string cmd = lowerCopy(rawCommand);
+  std::vector<std::string> args(commandParts.begin() + 1, commandParts.end());
+
+  if (HasAlias(cmd)) {
+    std::string expanded = GetAlias(cmd);
+    if (!args.empty()) {
+      expanded += " " + joinArguments(args, 0);
+    }
+    std::vector<std::string> chained = SplitCommandChain(expanded);
+    for (const std::string& subCmd : chained) {
+      ExecuteSingleCommand(subCmd, expansionDepth + 1);
+    }
+    return;
+  }
+
+  if (cmd == "alias") {
+    if (args.empty()) {
+      if (aliases.empty()) {
+        logNormal("No aliases defined.");
+      } else {
+        logNormal("Defined aliases:");
+        std::vector<std::pair<std::string, std::string>> sortedAliases(
+          aliases.begin(), aliases.end());
+        std::sort(sortedAliases.begin(), sortedAliases.end());
+        for (const std::pair<std::string, std::string>& aliasItem :
+             sortedAliases) {
+          logNormal("  " + aliasItem.first + " = \"" + aliasItem.second + "\"");
+        }
+      }
+    } else if (args.size() == 1) {
+      if (HasAlias(args[0])) {
+        logNormal(args[0] + " = \"" + GetAlias(args[0]) + "\"");
+      } else {
+        logError("Unknown alias: " + args[0]);
+      }
+    } else {
+      const std::string name = args[0];
+      const std::string expansion = joinArguments(args, 1);
+      SetAlias(name, expansion);
+      logSuccess("Alias '" + name + "' set to: " + expansion);
+    }
+  } else if (cmd == "unalias") {
+    if (args.size() != 1) {
+      logNormal("Usage: unalias <name>");
+    } else if (HasAlias(args[0])) {
+      RemoveAlias(args[0]);
+      logSuccess("Alias '" + args[0] + "' removed");
+    } else {
+      logError("Unknown alias: " + args[0]);
+    }
+  } else if (cmd == "repeat") {
+    if (args.size() < 2) {
+      logNormal("Usage: repeat <count> <command>");
+    } else {
+      long count = 0;
+      if (!parseLongStrict(args[0], &count) || count < 1 || count > 1000) {
+        logError("repeat count must be an integer from 1 to 1000");
+      } else {
+        const std::string repeatCmd = joinArguments(args, 1);
+        for (long i = 0; i < count; ++i) {
+          ExecuteSingleCommand(repeatCmd, expansionDepth + 1);
+        }
+      }
+    }
+  } else if (cmd == "history") {
+    if (args.size() == 1 && lowerCopy(args[0]) == "clear") {
+      commandHistory.clear();
+      historyIndex = 0;
+      logSuccess("Command history cleared");
+    } else {
+      const std::string filter = args.empty() ? "" : lowerCopy(args[0]);
+      logNormal("Command history:");
+      int count = 0;
+      for (std::size_t i = 0; i < commandHistory.size(); ++i) {
+        if (filter.empty() ||
+            lowerCopy(commandHistory[i]).find(filter) != std::string::npos) {
+          logNormal("  " + std::to_string(i + 1) + ": " + commandHistory[i]);
+          ++count;
+        }
+      }
+      if (count == 0) {
+        logWarning("No history entries match '" + filter + "'");
+      }
+    }
+  } else if (cmd == "sysinfo" || cmd == "status") {
+    logNormal("=== Illumo System Telemetry ===");
+    logNormal("Registered commands: " +
+              std::to_string(commandRegistry
+                               ? commandRegistry->GetCommandNames().size()
+                               : 0));
+    logNormal("Env variables:       " +
+              std::to_string(envVars ? envVars->getVars().size() : 0));
+    logNormal("Defined aliases:     " + std::to_string(aliases.size()));
+    std::array<int, 2> dims =
+      window ? window->getWindowDimensions() : std::array<int, 2>{ 0, 0 };
+    logNormal("Window resolution:   " + std::to_string(dims[0]) + "x" +
+              std::to_string(dims[1]));
+    logNormal("FPS overlay:         " +
+              std::string(envVars && envVars->getVar("showFPS").valueAsBool
+                            ? "on"
+                            : "off"));
+    logNormal("TPS setting:         " +
+              (envVars ? envVars->getVar("tps").value : "N/A"));
+    logNormal("Fade speed:          " +
+              (envVars ? envVars->getVar("cellFadeSpeed").value : "N/A"));
+  } else if (cmd == "help") {
+    if (args.empty()) {
+      logNormal("Built-in commands:");
+      for (const BuiltInCommandHelp& command : kBuiltInCommands) {
+        logNormal("  " + std::string(command.usage) + " - " +
+                  command.description);
+      }
+
+      if (commandRegistry != nullptr) {
+        std::vector<std::string> registeredCommands =
+          commandRegistry->GetCommandNames();
+        if (!registeredCommands.empty()) {
+          logNormal("Simulation commands:");
+        }
+        for (const std::string& commandName : registeredCommands) {
+          std::string usage = commandRegistry->GetCommandUsage(commandName);
+          std::string description =
+            commandRegistry->GetCommandDescription(commandName);
+          if (usage.empty()) {
+            usage = commandName;
+          }
+          logNormal("  " + usage +
+                    (description.empty() ? "" : " - " + description));
+        }
+      }
+      logNormal("Use 'help <command>' for one command.");
+    } else {
+      const std::string requested = lowerCopy(args[0]);
+      const BuiltInCommandHelp* builtIn = findBuiltInCommand(requested);
+      if (builtIn != nullptr) {
+        logNormal(std::string(builtIn->usage) + " - " + builtIn->description);
+      } else if (commandRegistry != nullptr &&
+                 commandRegistry->HasCommand(requested)) {
+        std::string usage = commandRegistry->GetCommandUsage(requested);
+        std::string description =
+          commandRegistry->GetCommandDescription(requested);
+        logNormal((usage.empty() ? requested : usage) +
+                  (description.empty() ? "" : " - " + description));
+      } else {
+        logError("No help available for '" + args[0] + "'");
+      }
+    }
+  } else if (cmd == "clear") {
+    history.clear();
+    AppendString(240, 240, 240, 255, "Illumo Developer Console");
+  } else if (cmd == "echo") {
+    logNormal(joinArguments(args, 0));
+  } else if (cmd == "get") {
+    if (args.size() != 1) {
+      logNormal("Usage: get <variable>");
+    } else {
+      const std::string key = findEnvironmentKey(envVars, args[0]);
+      if (key.empty()) {
+        logError("Unknown variable: " + args[0]);
+      } else {
+        logNormal(key + " = " + envVars->getVar(key).value);
+      }
+    }
+  } else if (cmd == "set") {
+    if (args.size() < 2) {
+      logNormal("Usage: set <variable> <value>");
+    } else {
+      std::string key = findEnvironmentKey(envVars, args[0]);
+      if (key.empty()) {
+        key = args[0];
+      }
+      const std::string value = joinArguments(args, 1);
+      envVars->setVar(key, value);
+      logSuccess(key + " = " + value);
+    }
+  } else if (cmd == "toggle") {
+    if (args.size() != 1) {
+      logNormal("Usage: toggle <variable>");
+    } else {
+      const std::string key = findEnvironmentKey(envVars, args[0]);
+      if (key.empty()) {
+        logError("Unknown variable: " + args[0]);
+      } else {
+        const bool value = !envVars->getVar(key).valueAsBool;
+        envVars->setVar(key, value);
+        logSuccess(key + " = " + (value ? "true" : "false"));
+      }
+    }
+  } else if (cmd == "vars") {
+    const std::string filter = args.empty() ? "" : lowerCopy(args[0]);
+    std::vector<std::string> variableLines;
+    const std::unordered_map<std::string, EnvVar>& variables =
+      envVars->getVars();
+    for (const std::pair<const std::string, EnvVar>& variable : variables) {
+      if (filter.empty() ||
+          lowerCopy(variable.first).find(filter) != std::string::npos) {
+        variableLines.push_back(variable.first + " = " + variable.second.value);
+      }
+    }
+    std::sort(variableLines.begin(), variableLines.end());
+    if (variableLines.empty()) {
+      logWarning("No variables match '" +
+                 (args.empty() ? std::string("") : args[0]) + "'");
+    }
+    for (const std::string& line : variableLines) {
+      logNormal(line);
+    }
+  } else if (cmd == "tps") {
+    if (args.empty()) {
+      logNormal("tps = " + envVars->getVar("tps").value);
+    } else {
+      long value = 0;
+      if (args.size() != 1 || !parseLongStrict(args[0], &value) || value < 1 ||
+          value > 1000) {
+        logError("tps must be an integer from 1 to 1000");
+      } else {
+        envVars->setVar("tps", value);
+        logSuccess("tps = " + std::to_string(value));
+      }
+    }
+  } else if (cmd == "speed" || cmd == "speedfactor") {
+    if (args.empty()) {
+      logNormal("speedFactor = " + envVars->getVar("speedFactor").value);
+    } else {
+      double value = 0.0;
+      if (args.size() != 1 || !parseDoubleStrict(args[0], &value) ||
+          value < 0.01 || value > 100.0) {
+        logError("speed must be a number from 0.01 to 100");
+      } else {
+        envVars->setVar("speedFactor", args[0]);
+        logSuccess("speedFactor = " + args[0]);
+      }
+    }
+  } else if (cmd == "fade" || cmd == "cellfadespeed") {
+    if (args.empty()) {
+      logNormal("cellFadeSpeed = " + envVars->getVar("cellFadeSpeed").value);
+    } else {
+      double value = 0.0;
+      if (args.size() != 1 || !parseDoubleStrict(args[0], &value) ||
+          value < 0.0 || value > 1000.0) {
+        logError("fade must be a number from 0 to 1000");
+      } else {
+        envVars->setVar("cellFadeSpeed", args[0]);
+        logSuccess("cellFadeSpeed = " + args[0]);
+      }
+    }
+  } else if (cmd == "fps") {
+    const bool currentValue = envVars->getVar("showFPS").valueAsBool;
+    if (args.empty()) {
+      logNormal(std::string("FPS overlay: ") + (currentValue ? "on" : "off"));
+    } else {
+      bool requestedValue = false;
+      bool valid = false;
+      if (args.size() == 1 && lowerCopy(args[0]) == "toggle") {
+        requestedValue = !currentValue;
+        valid = true;
+      } else if (args.size() == 1) {
+        valid = parseBoolValue(args[0], &requestedValue);
+      }
+      if (!valid) {
+        logError("Usage: fps [on|off|toggle]");
+      } else {
+        envVars->setVar("showFPS", requestedValue);
+        logSuccess(std::string("FPS overlay: ") +
+                   (requestedValue ? "on" : "off"));
+      }
+    }
+  } else if (cmd == "fullscreen") {
+    const bool currentValue = envVars->getVar("fullscreen").valueAsBool;
+    bool requestedValue = !currentValue;
+    bool valid = args.empty();
+    if (args.size() == 1 && lowerCopy(args[0]) == "toggle") {
+      valid = true;
+    } else if (args.size() == 1) {
+      valid = parseBoolValue(args[0], &requestedValue);
+    }
+    if (!valid) {
+      logError("Usage: fullscreen [on|off|toggle]");
+    } else {
+      if (requestedValue != currentValue) {
+        window->toggleFullscreen();
+      }
+      envVars->setVar("fullscreen", requestedValue);
+      logSuccess(std::string("Fullscreen: ") + (requestedValue ? "on" : "off"));
+    }
+  } else if (cmd == "close") {
+    isOpen = false;
+  } else if (cmd == "quit") {
+    window->requestClose();
+  } else if (cmd == "vid_restart") {
+    logWarning("vid_restart is unavailable: safely rebuilding the OpenGL "
+               "context requires resource re-enrollment");
+  } else {
+    if (commandRegistry != nullptr && commandRegistry->HasCommand(cmd)) {
+      commandRegistry->QueueCommand(cmd, args);
+    } else {
+      const std::string key = findEnvironmentKey(envVars, rawCommand);
+      if (!key.empty()) {
+        if (args.empty()) {
+          logNormal(key + " = " + envVars->getVar(key).value);
+        } else if (args.size() == 1) {
+          envVars->setVar(key, args[0]);
+          logSuccess(key + " = " + args[0]);
+        } else {
+          logError("Variable assignment accepts one value; use set for text "
+                   "with spaces");
+        }
+      } else {
+        logError("Unknown command or variable: " + rawCommand);
+      }
+    }
+  }
+}
+
+void
+CommandLine::AddToHistory(std::string command)
+{
+  commandHistory.push_back(command);
+  // imitate stack behavior by setting historyIndex to top of stack and popping
+  // the first entry when full.
+  if (commandHistory.size() > MAX_CMD_HISTORY) {
+    commandHistory.erase(commandHistory.begin());
+  }
+  historyIndex = (int)commandHistory.size();
+  tempInput = "";
+  resetCursorToEnd();
+}
+
+void
+CommandLine::HistoryDown()
+{
+  if (commandHistory.empty())
+    return;
+  if (historyIndex < (int)commandHistory.size()) {
+    historyIndex++;
+    if (historyIndex == (int)commandHistory.size()) {
+      currentInput = tempInput;
+    } else {
+      currentInput = commandHistory[historyIndex];
+    }
+    resetCursorToEnd();
+  }
+}
+
+void
+CommandLine::HistoryUp()
+{
+  if (commandHistory.empty())
+    return;
+  if (historyIndex > 0) {
+    if (historyIndex == (int)commandHistory.size()) {
+      tempInput = currentInput;
+    }
+    historyIndex--;
+    currentInput = commandHistory[historyIndex];
+    resetCursorToEnd();
+  }
+}
+
+void
+CommandLine::ScrollUp()
+{
+  std::array<int, 2> windowDimensions = window->getWindowDimensions();
+  int winHeight = windowDimensions[1];
+  float panelHeight = winHeight * 0.52f;
+  if (panelHeight < 240.0f)
+    panelHeight = 240.0f;
+  float lineSpacing = 24.0f;
+  int maxHistoryLines = (int)((panelHeight - 90.0f) / lineSpacing);
+  if (maxHistoryLines < 1)
+    maxHistoryLines = 1;
+
+  int maxScroll = (int)history.size() - maxHistoryLines;
+  if (maxScroll < 0)
+    maxScroll = 0;
+
+  if (scrollOffset < maxScroll) {
+    scrollOffset++;
+  }
+}
+
+void
+CommandLine::ScrollDown()
+{
+  if (scrollOffset > 0) {
+    scrollOffset--;
+  }
+}
+
+void
+CommandLine::AppendString(unsigned char r,
+                          unsigned char g,
+                          unsigned char b,
+                          unsigned char a,
+                          std::string str)
+{
+  history.push_back({ r, g, b, a, str });
+  if (history.size() > MAX_CMD_HISTORY) {
+    history.erase(history.begin());
+  }
+}
+void
+CommandLine::AppendStringLn(unsigned char r,
+                            unsigned char g,
+                            unsigned char b,
+                            unsigned char a,
+                            std::string str)
+{
+  history.push_back({ r, g, b, a, str + "\n" });
+  if (history.size() > MAX_CMD_HISTORY) {
+    history.erase(history.begin());
+  }
+}
+
+void
+CommandLine::DrawImpl()
+{
+  // Migrated to tokens.
 }
 
 namespace {
 
-struct UiVert {
-	float x, y, z;
-	uint8_t color[4];
+struct UiVert
+{
+  float x, y, z;
+  uint8_t color[4];
 };
 
-static unsigned int packSolidQuad(
-	UiVert* dest,
-	unsigned int destCap,
-	unsigned int writeAt,
-	float x0, float y0, float x1, float y1,
-	unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+static unsigned int
+packSolidQuad(UiVert* dest,
+              unsigned int destCap,
+              unsigned int writeAt,
+              float x0,
+              float y0,
+              float x1,
+              float y1,
+              unsigned char r,
+              unsigned char g,
+              unsigned char b,
+              unsigned char a)
 {
-	if (writeAt + 4 > destCap)
-	{
-		return writeAt;
-	}
-	dest[writeAt + 0] = { x0, y0, 0.0f, { r, g, b, a } };
-	dest[writeAt + 1] = { x1, y0, 0.0f, { r, g, b, a } };
-	dest[writeAt + 2] = { x1, y1, 0.0f, { r, g, b, a } };
-	dest[writeAt + 3] = { x0, y1, 0.0f, { r, g, b, a } };
-	return writeAt + 4;
+  if (writeAt + 4 > destCap) {
+    return writeAt;
+  }
+  dest[writeAt + 0] = { x0, y0, 0.0f, { r, g, b, a } };
+  dest[writeAt + 1] = { x1, y0, 0.0f, { r, g, b, a } };
+  dest[writeAt + 2] = { x1, y1, 0.0f, { r, g, b, a } };
+  dest[writeAt + 3] = { x0, y1, 0.0f, { r, g, b, a } };
+  return writeAt + 4;
 }
 
-static unsigned int packVerticalGradientQuad(
-	UiVert* dest,
-	unsigned int destCap,
-	unsigned int writeAt,
-	float x0, float y0, float x1, float y1,
-	unsigned char topR, unsigned char topG, unsigned char topB, unsigned char topA,
-	unsigned char bottomR, unsigned char bottomG, unsigned char bottomB, unsigned char bottomA)
+static unsigned int
+packVerticalGradientQuad(UiVert* dest,
+                         unsigned int destCap,
+                         unsigned int writeAt,
+                         float x0,
+                         float y0,
+                         float x1,
+                         float y1,
+                         unsigned char topR,
+                         unsigned char topG,
+                         unsigned char topB,
+                         unsigned char topA,
+                         unsigned char bottomR,
+                         unsigned char bottomG,
+                         unsigned char bottomB,
+                         unsigned char bottomA)
 {
-	if (writeAt + 4 > destCap)
-	{
-		return writeAt;
-	}
-	dest[writeAt + 0] = { x0, y0, 0.0f, { topR, topG, topB, topA } };
-	dest[writeAt + 1] = { x1, y0, 0.0f, { topR, topG, topB, topA } };
-	dest[writeAt + 2] = { x1, y1, 0.0f, { bottomR, bottomG, bottomB, bottomA } };
-	dest[writeAt + 3] = { x0, y1, 0.0f, { bottomR, bottomG, bottomB, bottomA } };
-	return writeAt + 4;
+  if (writeAt + 4 > destCap) {
+    return writeAt;
+  }
+  dest[writeAt + 0] = { x0, y0, 0.0f, { topR, topG, topB, topA } };
+  dest[writeAt + 1] = { x1, y0, 0.0f, { topR, topG, topB, topA } };
+  dest[writeAt + 2] = { x1, y1, 0.0f, { bottomR, bottomG, bottomB, bottomA } };
+  dest[writeAt + 3] = { x0, y1, 0.0f, { bottomR, bottomG, bottomB, bottomA } };
+  return writeAt + 4;
 }
 
 // stb_easy_font half-scale coords; bake ×2 so shader uses u_scale=(1,1).
-static unsigned int packFontLine(
-	UiVert* dest,
-	unsigned int destCap,
-	unsigned int writeAt,
-	float x, float y,
-	const char* text,
-	unsigned char color[4])
+static unsigned int
+packFontLine(UiVert* dest,
+             unsigned int destCap,
+             unsigned int writeAt,
+             float x,
+             float y,
+             const char* text,
+             unsigned char color[4])
 {
-	if (writeAt >= destCap || text == nullptr)
-	{
-		return writeAt;
-	}
-	const unsigned int remaining = destCap - writeAt;
-	int numQuads = stb_easy_font_print(
-		x * 0.5f,
-		y * 0.5f,
-		const_cast<char*>(text),
-		color,
-		&dest[writeAt],
-		static_cast<int>(remaining * sizeof(UiVert)));
-	if (numQuads <= 0)
-	{
-		return writeAt;
-	}
-	if (numQuads > static_cast<int>(remaining / 4))
-	{
-		numQuads = static_cast<int>(remaining / 4);
-	}
-	const unsigned int vCount = static_cast<unsigned int>(numQuads * 4);
-	for (unsigned int i = 0; i < vCount; ++i)
-	{
-		dest[writeAt + i].x *= 2.0f;
-		dest[writeAt + i].y *= 2.0f;
-	}
-	return writeAt + vCount;
+  if (writeAt >= destCap || text == nullptr) {
+    return writeAt;
+  }
+  const unsigned int remaining = destCap - writeAt;
+  int numQuads =
+    stb_easy_font_print(x * 0.5f,
+                        y * 0.5f,
+                        const_cast<char*>(text),
+                        color,
+                        &dest[writeAt],
+                        static_cast<int>(remaining * sizeof(UiVert)));
+  if (numQuads <= 0) {
+    return writeAt;
+  }
+  if (numQuads > static_cast<int>(remaining / 4)) {
+    numQuads = static_cast<int>(remaining / 4);
+  }
+  const unsigned int vCount = static_cast<unsigned int>(numQuads * 4);
+  for (unsigned int i = 0; i < vCount; ++i) {
+    dest[writeAt + i].x *= 2.0f;
+    dest[writeAt + i].y *= 2.0f;
+  }
+  return writeAt + vCount;
 }
 
-static float measureFontText(const std::string& text)
+static float
+measureFontText(const std::string& text)
 {
-	std::string mutableText = text;
-	return static_cast<float>(stb_easy_font_width(mutableText.data()) * 2);
+  std::string mutableText = text;
+  return static_cast<float>(stb_easy_font_width(mutableText.data()) * 2);
 }
 
 } // namespace
 
-bool CommandLine::AppendCommands(Renderer* r)
+bool
+CommandLine::AppendCommands(Renderer* r)
 {
-	if (!isVisible())
-	{
-		return true;
-	}
-	if (!gpuReady || !r)
-	{
-		return false;
-	}
+  if (!isVisible()) {
+    return true;
+  }
+  if (!gpuReady || !r) {
+    return false;
+  }
 
-	// Animation
-	std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-	float deltaTime = std::chrono::duration<float>(now - lastAnimTime).count();
-	lastAnimTime = now;
-	if (deltaTime > 0.1f)
-	{
-		deltaTime = 0.1f;
-	}
-	const float animationSpeed = 8.5f;
-	if (isOpen)
-	{
-		animationProgress = Math::lerp(animationProgress, 1.0f, animationSpeed * deltaTime);
-	}
-	else
-	{
-		animationProgress = Math::lerp(animationProgress, 0.0f, animationSpeed * deltaTime);
-	}
-	if (animationProgress <= 0.0f)
-	{
-		return true;
-	}
+  // Animation
+  std::chrono::high_resolution_clock::time_point now =
+    std::chrono::high_resolution_clock::now();
+  float deltaTime = std::chrono::duration<float>(now - lastAnimTime).count();
+  lastAnimTime = now;
+  if (deltaTime > 0.1f) {
+    deltaTime = 0.1f;
+  }
+  const float animationSpeed = 8.5f;
+  if (isOpen) {
+    animationProgress =
+      Math::lerp(animationProgress, 1.0f, animationSpeed * deltaTime);
+  } else {
+    animationProgress =
+      Math::lerp(animationProgress, 0.0f, animationSpeed * deltaTime);
+  }
+  if (animationProgress <= 0.0f) {
+    return true;
+  }
 
-	std::array<int, 2> windowDimensions = window->getWindowDimensions();
-	int winWidth = windowDimensions[0];
-	int winHeight = windowDimensions[1];
-	float width = static_cast<float>(winWidth);
-	float height = static_cast<float>(winHeight);
+  std::array<int, 2> windowDimensions = window->getWindowDimensions();
+  int winWidth = windowDimensions[0];
+  int winHeight = windowDimensions[1];
+  float width = static_cast<float>(winWidth);
+  float height = static_cast<float>(winHeight);
 
-	float panelHeight = height * 0.52f;
-	if (panelHeight < 240.0f)
-	{
-		panelHeight = 240.0f;
-	}
-	if (panelHeight > height - 20.0f)
-	{
-		panelHeight = height - 20.0f;
-	}
-	float yOffset = -panelHeight * (1.0f - animationProgress);
-	const float headerHeight = 34.0f;
-	const float inputRowHeight = 40.0f;
-	const float historyTop = yOffset + headerHeight + 8.0f;
-	const float inputTop = yOffset + panelHeight - inputRowHeight;
-	const float historyBottom = inputTop - 8.0f;
-	float lineSpacing = 24.0f;
-	int maxHistoryLines = static_cast<int>((historyBottom - historyTop) / lineSpacing);
-	if (maxHistoryLines < 1)
-	{
-		maxHistoryLines = 1;
-	}
+  float panelHeight = height * 0.52f;
+  if (panelHeight < 240.0f) {
+    panelHeight = 240.0f;
+  }
+  if (panelHeight > height - 20.0f) {
+    panelHeight = height - 20.0f;
+  }
+  float yOffset = -panelHeight * (1.0f - animationProgress);
+  const float headerHeight = 34.0f;
+  const float inputRowHeight = 40.0f;
+  const float historyTop = yOffset + headerHeight + 8.0f;
+  const float inputTop = yOffset + panelHeight - inputRowHeight;
+  const float historyBottom = inputTop - 8.0f;
+  float lineSpacing = 24.0f;
+  int maxHistoryLines =
+    static_cast<int>((historyBottom - historyTop) / lineSpacing);
+  if (maxHistoryLines < 1) {
+    maxHistoryLines = 1;
+  }
 
-	// Pack entire console (chrome + text) into one vertex buffer for a single
-	// UpdateBuffer + DrawIndexed (P2). Index buffer is sequential quads.
-	const unsigned int kCap = kUiVertCap;
-	unsigned int packed = 0;
-	UiVert* batch = reinterpret_cast<UiVert*>(uiVerts);
+  // Pack entire console (chrome + text) into one vertex buffer for a single
+  // UpdateBuffer + DrawIndexed (P2). Index buffer is sequential quads.
+  const unsigned int kCap = kUiVertCap;
+  unsigned int packed = 0;
+  UiVert* batch = reinterpret_cast<UiVert*>(uiVerts);
 
-	// Layered console chrome: a soft shadow, blue-black gradient, and a clear
-	// title/input hierarchy keep the developer UI readable over a busy canvas.
-	packed = packSolidQuad(batch, kCap, packed, 4.0f, yOffset + 6.0f, width, yOffset + panelHeight + 6.0f, 0, 0, 0, 110);
-	packed = packVerticalGradientQuad(batch, kCap, packed, 0.0f, yOffset, width, yOffset + panelHeight,
-		23, 35, 52, 244, 8, 13, 23, 238);
-	packed = packVerticalGradientQuad(batch, kCap, packed, 0.0f, yOffset, width, yOffset + headerHeight,
-		31, 62, 94, 255, 22, 41, 67, 255);
-	packed = packSolidQuad(batch, kCap, packed, 0.0f, yOffset, 4.0f, yOffset + panelHeight, 82, 205, 255, 255);
-	packed = packSolidQuad(batch, kCap, packed, 0.0f, yOffset + headerHeight, width, yOffset + headerHeight + 1.0f, 95, 210, 255, 155);
-	packed = packSolidQuad(batch, kCap, packed, 8.0f, inputTop, width - 8.0f, yOffset + panelHeight - 6.0f, 5, 10, 18, 230);
-	packed = packSolidQuad(batch, kCap, packed, 8.0f, inputTop, 11.0f, yOffset + panelHeight - 6.0f, 82, 205, 255, 255);
+  long long caretMilliseconds =
+    std::chrono::duration_cast<std::chrono::milliseconds>(
+      now.time_since_epoch())
+      .count();
+  float pulse =
+    (std::sin(static_cast<float>(caretMilliseconds) * 0.005f) + 1.0f) * 0.5f;
 
-	int totalLines = static_cast<int>(history.size());
-	if (totalLines > maxHistoryLines)
-	{
-		float trackTop = historyTop;
-		float trackBottom = historyBottom;
-		float trackHeight = trackBottom - trackTop;
-		float scrollbarWidth = 5.0f;
-		float scrollbarRightMargin = 9.0f;
-		float barX1 = width - scrollbarWidth - scrollbarRightMargin;
-		float barX2 = width - scrollbarRightMargin;
+  // Futuristic layered console chrome: dark space glass, pulsing cyan accent
+  // trim, glowing title bar, and crisp input hierarchy.
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         4.0f,
+                         yOffset + 6.0f,
+                         width,
+                         yOffset + panelHeight + 6.0f,
+                         0,
+                         0,
+                         0,
+                         140);
+  packed = packVerticalGradientQuad(batch,
+                                    kCap,
+                                    packed,
+                                    0.0f,
+                                    yOffset,
+                                    width,
+                                    yOffset + panelHeight,
+                                    12,
+                                    22,
+                                    38,
+                                    248,
+                                    6,
+                                    11,
+                                    20,
+                                    242);
+  packed = packVerticalGradientQuad(batch,
+                                    kCap,
+                                    packed,
+                                    0.0f,
+                                    yOffset,
+                                    width,
+                                    yOffset + headerHeight,
+                                    20,
+                                    48,
+                                    75,
+                                    255,
+                                    14,
+                                    32,
+                                    52,
+                                    255);
 
-		packed = packSolidQuad(batch, kCap, packed, barX1, trackTop, barX2, trackBottom, 3, 8, 15, 180);
+  // Pulsing cyber neon top border line and left accent bar
+  unsigned char neonR = static_cast<unsigned char>(30.0f + pulse * 40.0f);
+  unsigned char neonG = static_cast<unsigned char>(200.0f + pulse * 55.0f);
+  unsigned char borderAlpha =
+    static_cast<unsigned char>(160.0f + pulse * 75.0f);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         0.0f,
+                         yOffset,
+                         width,
+                         yOffset + 2.0f,
+                         neonR,
+                         neonG,
+                         255,
+                         255);
+  packed = packVerticalGradientQuad(batch,
+                                    kCap,
+                                    packed,
+                                    0.0f,
+                                    yOffset,
+                                    4.0f,
+                                    yOffset + panelHeight,
+                                    0,
+                                    240,
+                                    255,
+                                    255,
+                                    140,
+                                    80,
+                                    255,
+                                    240);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         0.0f,
+                         yOffset + headerHeight,
+                         width,
+                         yOffset + headerHeight + 1.0f,
+                         0,
+                         210,
+                         255,
+                         borderAlpha);
 
-		float thumbHeight = trackHeight * (static_cast<float>(maxHistoryLines) / static_cast<float>(totalLines));
-		if (thumbHeight < 15.0f)
-		{
-			thumbHeight = 15.0f;
-		}
-		int maxScroll = totalLines - maxHistoryLines;
-		float scrollPercent = (maxScroll > 0)
-			? (static_cast<float>(scrollOffset) / static_cast<float>(maxScroll))
-			: 0.0f;
-		float thumbTop = (trackBottom - thumbHeight) - scrollPercent * (trackHeight - thumbHeight);
-		float thumbBottom = thumbTop + thumbHeight;
-		packed = packVerticalGradientQuad(batch, kCap, packed, barX1, thumbTop, barX2, thumbBottom,
-			119, 218, 255, 255, 57, 139, 205, 255);
-	}
+  // Input row trough background
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         8.0f,
+                         inputTop,
+                         width - 8.0f,
+                         yOffset + panelHeight - 6.0f,
+                         5,
+                         11,
+                         20,
+                         245);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         8.0f,
+                         inputTop,
+                         11.0f,
+                         yOffset + panelHeight - 6.0f,
+                         0,
+                         220,
+                         255,
+                         255);
 
-	unsigned char titleColor[4] = { 232, 247, 255, 255 };
-	unsigned char statusColor[4] = { 152, 199, 224, 255 };
-	unsigned char promptColor[4] = { 91, 216, 255, 255 };
-	unsigned char inputColor[4] = { 238, 247, 255, 255 };
-	std::string status = completionHint.empty()
-		? "Tab complete  |  Ctrl+Arrows words  |  Ctrl+A select all"
-		: completionHint;
-	packed = packFontLine(batch, kCap, packed, 14.0f, yOffset + 9.0f, "Illumo Console", titleColor);
-	packed = packFontLine(batch, kCap, packed, 174.0f, yOffset + 9.0f, status.c_str(), statusColor);
+  int totalLines = static_cast<int>(history.size());
+  if (totalLines > maxHistoryLines) {
+    float trackTop = historyTop;
+    float trackBottom = historyBottom;
+    float trackHeight = trackBottom - trackTop;
+    float scrollbarWidth = 5.0f;
+    float scrollbarRightMargin = 9.0f;
+    float barX1 = width - scrollbarWidth - scrollbarRightMargin;
+    float barX2 = width - scrollbarRightMargin;
 
-	// History text is drawn after chrome, but before the input row, so its
-	// clipping and scroll thumb agree with the available space.
-	float currentY = historyTop;
-	int endIdx = static_cast<int>(history.size()) - 1 - scrollOffset;
-	if (endIdx >= 0)
-	{
-		int startIdx = endIdx - (maxHistoryLines - 1);
-		if (startIdx < 0)
-		{
-			startIdx = 0;
-		}
-		for (int i = startIdx; i <= endIdx; ++i)
-		{
-			const historyBuffer& item = history[static_cast<size_t>(i)];
-			unsigned char itemColor[4] = { item.r, item.g, item.b, item.a };
-			packed = packFontLine(batch, kCap, packed, 14.0f, currentY, item.content.c_str(), itemColor);
-			currentY += lineSpacing;
-		}
-	}
+    packed = packSolidQuad(
+      batch, kCap, packed, barX1, trackTop, barX2, trackBottom, 3, 8, 15, 180);
 
-	// The input row has a fixed-width text viewport. This keeps a long command
-	// editable: the cursor remains on-screen, selection is visible, and the
-	// caret is a real rendered bar rather than an appended underscore.
-	const float inputTextX = 40.0f;
-	const float inputAvailableWidth = std::max(48.0f, width - inputTextX - 22.0f);
-	std::size_t visibleStart = 0;
-	while (visibleStart < cursorPosition)
-	{
-		std::string textThroughCursor = currentInput.substr(visibleStart, cursorPosition - visibleStart);
-		if (measureFontText(textThroughCursor) <= inputAvailableWidth)
-		{
-			break;
-		}
-		++visibleStart;
-	}
-	std::size_t visibleEnd = cursorPosition;
-	while (visibleEnd < currentInput.size())
-	{
-		std::string candidateText = currentInput.substr(visibleStart, visibleEnd + 1 - visibleStart);
-		if (measureFontText(candidateText) > inputAvailableWidth)
-		{
-			break;
-		}
-		++visibleEnd;
-	}
-	std::string visibleInput = currentInput.substr(visibleStart, visibleEnd - visibleStart);
-	float inputY = inputTop + 12.0f;
-	packed = packFontLine(batch, kCap, packed, 16.0f, inputY, ">", promptColor);
+    float thumbHeight = trackHeight * (static_cast<float>(maxHistoryLines) /
+                                       static_cast<float>(totalLines));
+    if (thumbHeight < 15.0f) {
+      thumbHeight = 15.0f;
+    }
+    int maxScroll = totalLines - maxHistoryLines;
+    float scrollPercent =
+      (maxScroll > 0)
+        ? (static_cast<float>(scrollOffset) / static_cast<float>(maxScroll))
+        : 0.0f;
+    float thumbTop =
+      (trackBottom - thumbHeight) - scrollPercent * (trackHeight - thumbHeight);
+    float thumbBottom = thumbTop + thumbHeight;
+    packed = packVerticalGradientQuad(batch,
+                                      kCap,
+                                      packed,
+                                      barX1,
+                                      thumbTop,
+                                      barX2,
+                                      thumbBottom,
+                                      0,
+                                      230,
+                                      255,
+                                      255,
+                                      70,
+                                      130,
+                                      220,
+                                      255);
+  }
 
-	if (hasSelection())
-	{
-		std::size_t selectionStart = std::min(cursorPosition, selectionAnchor);
-		std::size_t selectionEnd = std::max(cursorPosition, selectionAnchor);
-		std::size_t highlightStart = std::max(selectionStart, visibleStart);
-		std::size_t highlightEnd = std::min(selectionEnd, visibleEnd);
-		if (highlightStart < highlightEnd)
-		{
-			std::string beforeSelection = visibleInput.substr(0, highlightStart - visibleStart);
-			std::string selectedText = visibleInput.substr(highlightStart - visibleStart, highlightEnd - highlightStart);
-			float highlightX0 = inputTextX + measureFontText(beforeSelection);
-			float highlightX1 = highlightX0 + measureFontText(selectedText);
-			packed = packSolidQuad(batch, kCap, packed, highlightX0, inputY - 3.0f, highlightX1, inputY + 16.0f, 38, 123, 181, 190);
-		}
-	}
-	packed = packFontLine(batch, kCap, packed, inputTextX, inputY, visibleInput.c_str(), inputColor);
+  unsigned char titleColor[4] = { 180, 245, 255, 255 };
+  unsigned char promptColor[4] = { 0, 240, 255, 255 };
+  unsigned char inputColor[4] = { 240, 250, 255, 255 };
 
-	long long caretMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-	bool caretVisible = (caretMilliseconds % 1000) < 560;
-	if (caretVisible && cursorPosition >= visibleStart && cursorPosition <= visibleEnd)
-	{
-		std::string textBeforeCaret = visibleInput.substr(0, cursorPosition - visibleStart);
-		float caretX = inputTextX + measureFontText(textBeforeCaret);
-		packed = packSolidQuad(batch, kCap, packed, caretX, inputY - 3.0f, caretX + 2.0f, inputY + 16.0f, 103, 224, 255, 255);
-	}
+  std::string paramHint = getParameterHint(currentInput);
+  std::string statusText;
+  unsigned char statusColor[4];
 
-	if (packed < 4)
-	{
-		return true;
-	}
+  if (!completionHint.empty()) {
+    statusText = completionHint;
+    statusColor[0] = 180;
+    statusColor[1] = 210;
+    statusColor[2] = 255;
+    statusColor[3] = 255;
+  } else if (!paramHint.empty()) {
+    statusText = paramHint;
+    statusColor[0] = 255;
+    statusColor[1] = 220;
+    statusColor[2] = 100;
+    statusColor[3] = 255;
+  } else {
+    statusText = "Tab complete  |  Ctrl+Arrows words  |  Ctrl+A select all";
+    statusColor[0] = 130;
+    statusColor[1] = 195;
+    statusColor[2] = 230;
+    statusColor[3] = 255;
+  }
 
-	const unsigned int totalQuads = packed / 4;
-	// Dynamic mesh index buffer covers kUiQuadCap quads; clamp draw if somehow larger.
-	unsigned int drawQuads = totalQuads;
-	if (drawQuads > kUiQuadCap)
-	{
-		drawQuads = kUiQuadCap;
-	}
+  packed = packFontLine(batch,
+                        kCap,
+                        packed,
+                        14.0f,
+                        yOffset + 9.0f,
+                        "[ILLUMO v2.6 // DEV CONSOLE]",
+                        titleColor);
+  packed = packFontLine(batch,
+                        kCap,
+                        packed,
+                        240.0f,
+                        yOffset + 9.0f,
+                        statusText.c_str(),
+                        statusColor);
 
-	PipelineState ps;
-	ps.depthTestEnabled = false;
-	ps.blendEnabled = true;
-	ps.blendSrc = BlendFactor::SrcAlpha;
-	ps.blendDst = BlendFactor::OneMinusSrcAlpha;
-	ps.faceCullingEnabled = false;
-	ps.primitives = Primitives::Triangles;
-	r->pushPipelineState(ps);
-	r->pushSetShader(shaderHandle);
-	r->pushSetMesh(meshHandle);
-	r->pushUniformVec2("u_resolution", width, height);
-	r->pushUniformVec2("u_scale", 1.0f, 1.0f);
+  // History text is drawn after chrome, but before the input row, so its
+  // clipping and scroll thumb agree with the available space.
+  float currentY = historyTop;
+  int endIdx = static_cast<int>(history.size()) - 1 - scrollOffset;
+  if (endIdx >= 0) {
+    int startIdx = endIdx - (maxHistoryLines - 1);
+    if (startIdx < 0) {
+      startIdx = 0;
+    }
+    for (int i = startIdx; i <= endIdx; ++i) {
+      const historyBuffer& item = history[static_cast<size_t>(i)];
+      unsigned char itemColor[4] = { item.r, item.g, item.b, item.a };
+      packed = packFontLine(
+        batch, kCap, packed, 14.0f, currentY, item.content.c_str(), itemColor);
+      currentY += lineSpacing;
+    }
+  }
 
-	r->pushUpdateBuffer(
-		meshHandle,
-		0,
-		static_cast<unsigned int>(drawQuads * 4 * sizeof(ConsoleVertex)),
-		uiVerts);
-	r->pushDrawIndexed(drawQuads * 6, 0);
+  // The input row has a fixed-width text viewport. This keeps a long command
+  // editable: the cursor remains on-screen, selection is visible, and the
+  // caret is a real rendered bar rather than an appended underscore.
+  const float inputTextX = 40.0f;
+  const float inputAvailableWidth = std::max(48.0f, width - inputTextX - 22.0f);
+  std::size_t visibleStart = 0;
+  while (visibleStart < cursorPosition) {
+    std::string textThroughCursor =
+      currentInput.substr(visibleStart, cursorPosition - visibleStart);
+    if (measureFontText(textThroughCursor) <= inputAvailableWidth) {
+      break;
+    }
+    ++visibleStart;
+  }
+  std::size_t visibleEnd = cursorPosition;
+  while (visibleEnd < currentInput.size()) {
+    std::string candidateText =
+      currentInput.substr(visibleStart, visibleEnd + 1 - visibleStart);
+    if (measureFontText(candidateText) > inputAvailableWidth) {
+      break;
+    }
+    ++visibleEnd;
+  }
+  std::string visibleInput =
+    currentInput.substr(visibleStart, visibleEnd - visibleStart);
+  float inputY = inputTop + 12.0f;
+  packed = packFontLine(batch, kCap, packed, 16.0f, inputY, ">", promptColor);
 
-	return true;
+  if (hasSelection()) {
+    std::size_t selectionStart = std::min(cursorPosition, selectionAnchor);
+    std::size_t selectionEnd = std::max(cursorPosition, selectionAnchor);
+    std::size_t highlightStart = std::max(selectionStart, visibleStart);
+    std::size_t highlightEnd = std::min(selectionEnd, visibleEnd);
+    if (highlightStart < highlightEnd) {
+      std::string beforeSelection =
+        visibleInput.substr(0, highlightStart - visibleStart);
+      std::string selectedText = visibleInput.substr(
+        highlightStart - visibleStart, highlightEnd - highlightStart);
+      float highlightX0 = inputTextX + measureFontText(beforeSelection);
+      float highlightX1 = highlightX0 + measureFontText(selectedText);
+      packed = packSolidQuad(batch,
+                             kCap,
+                             packed,
+                             highlightX0,
+                             inputY - 3.0f,
+                             highlightX1,
+                             inputY + 16.0f,
+                             38,
+                             123,
+                             181,
+                             190);
+    }
+  }
+  packed = packFontLine(
+    batch, kCap, packed, inputTextX, inputY, visibleInput.c_str(), inputColor);
+
+  // Futuristic Ghost Text Auto-Suggestion
+  if (cursorPosition == currentInput.size() &&
+      visibleEnd == currentInput.size()) {
+    std::string ghostText = getGhostSuggestion();
+    if (!ghostText.empty()) {
+      float ghostX = inputTextX + measureFontText(visibleInput);
+      if (ghostX < inputTextX + inputAvailableWidth) {
+        unsigned char ghostColor[4] = { 0, 190, 230, 140 };
+        packed = packFontLine(
+          batch, kCap, packed, ghostX, inputY, ghostText.c_str(), ghostColor);
+      }
+    }
+  }
+
+  bool caretVisible = (caretMilliseconds % 1000) < 560;
+  if (caretVisible && cursorPosition >= visibleStart &&
+      cursorPosition <= visibleEnd) {
+    std::string textBeforeCaret =
+      visibleInput.substr(0, cursorPosition - visibleStart);
+    float caretX = inputTextX + measureFontText(textBeforeCaret);
+    // Glow backlight + sharp cursor stick
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           caretX - 2.0f,
+                           inputY - 3.0f,
+                           caretX + 4.0f,
+                           inputY + 16.0f,
+                           0,
+                           200,
+                           255,
+                           80);
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           caretX,
+                           inputY - 3.0f,
+                           caretX + 2.0f,
+                           inputY + 16.0f,
+                           180,
+                           245,
+                           255,
+                           255);
+  }
+
+  if (packed < 4) {
+    return true;
+  }
+
+  const unsigned int totalQuads = packed / 4;
+  // Dynamic mesh index buffer covers kUiQuadCap quads; clamp draw if somehow
+  // larger.
+  unsigned int drawQuads = totalQuads;
+  if (drawQuads > kUiQuadCap) {
+    drawQuads = kUiQuadCap;
+  }
+
+  PipelineState ps;
+  ps.depthTestEnabled = false;
+  ps.blendEnabled = true;
+  ps.blendSrc = BlendFactor::SrcAlpha;
+  ps.blendDst = BlendFactor::OneMinusSrcAlpha;
+  ps.faceCullingEnabled = false;
+  ps.primitives = Primitives::Triangles;
+  r->pushPipelineState(ps);
+  r->pushSetShader(shaderHandle);
+  r->pushSetMesh(meshHandle);
+  r->pushUniformVec2("u_resolution", width, height);
+  r->pushUniformVec2("u_scale", 1.0f, 1.0f);
+
+  r->pushUpdateBuffer(
+    meshHandle,
+    0,
+    static_cast<unsigned int>(drawQuads * 4 * sizeof(ConsoleVertex)),
+    uiVerts);
+  r->pushDrawIndexed(drawQuads * 6, 0);
+
+  return true;
 }

@@ -1,21 +1,19 @@
 #pragma once
-#include "Scene.h"
 #include "IllumoContext.h"
+#include "Scene.h"
 class IModule
 {
 public:
-    IModule()
-    {
-    }
+  IModule() {}
 
-    virtual ~IModule() = default;
+  virtual ~IModule() = default;
 
 protected:
-    IllumoContext* ic;
+  IllumoContext* ic;
 
 public:
-    virtual void Start(IllumoContext* context) = 0;
-    virtual void Update(double dt) = 0;
-    virtual void DispatchDrawables(Scene* scene) = 0;
-    virtual void Exit() = 0;
+  virtual bool Start(IllumoContext* context) = 0;
+  virtual void Update(double dt) = 0;
+  virtual void DispatchDrawables(Scene* scene) = 0;
+  virtual void Exit() = 0;
 };

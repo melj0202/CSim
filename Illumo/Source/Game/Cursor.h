@@ -2,13 +2,11 @@
 
 #include "Rendering/Drawable.h"
 
-class Cursor : public Drawable<Cursor> {
-    
+class Cursor : public Drawable<Cursor>
+{
 
+public:
+  void Init();
 
-    public:
-    void Init();
-    
-    private:
-    
+private:
 };

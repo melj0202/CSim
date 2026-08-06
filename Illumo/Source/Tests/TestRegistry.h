@@ -4,39 +4,36 @@
 #include <string>
 #include <vector>
 
-struct IllumoTestCase {
-	std::string name;
-	std::function<int()> function;
+struct IllumoTestCase
+{
+  std::string name;
+  std::function<int()> function;
 };
 
-class IllumoTestRegistry {
+class IllumoTestRegistry
+{
 public:
-	void add(const std::string& name, const std::function<int()>& function)
-	{
-		IllumoTestCase testCase;
-		testCase.name = name;
-		testCase.function = function;
-		testCases.push_back(testCase);
-	}
+  void add(const std::string& name, const std::function<int()>& function)
+  {
+    IllumoTestCase testCase;
+    testCase.name = name;
+    testCase.function = function;
+    testCases.push_back(testCase);
+  }
 
-	const std::vector<IllumoTestCase>& getTestCases() const
-	{
-		return testCases;
-	}
+  const std::vector<IllumoTestCase>& getTestCases() const { return testCases; }
 
-	const IllumoTestCase* find(const std::string& name) const
-	{
-		for (const IllumoTestCase& testCase : testCases)
-		{
-			if (testCase.name == name)
-			{
-				return &testCase;
-			}
-		}
+  const IllumoTestCase* find(const std::string& name) const
+  {
+    for (const IllumoTestCase& testCase : testCases) {
+      if (testCase.name == name) {
+        return &testCase;
+      }
+    }
 
-		return nullptr;
-	}
+    return nullptr;
+  }
 
 private:
-	std::vector<IllumoTestCase> testCases;
+  std::vector<IllumoTestCase> testCases;
 };

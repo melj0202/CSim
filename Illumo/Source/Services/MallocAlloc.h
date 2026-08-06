@@ -1,12 +1,13 @@
 #pragma once
 
-#include <cstdlib>
 #include "IAllocator.h"
+#include <cstdlib>
 
-class MallocAlloc {
+class MallocAlloc
+{
 public:
-    MallocAlloc() = default;
-    ~MallocAlloc() override = default;
-    void* Allocate(size_t size) override;
-    void Free(void* ptr) override;
+  MallocAlloc() = default;
+  ~MallocAlloc() override = default;
+  void* Allocate(size_t size) override;
+  void Free(void* ptr) override;
 };

@@ -1,8 +1,8 @@
 #pragma once
 
-class IBuffer {
+class IBuffer
+{
 public:
-    virtual ~IBuffer() = default;
-    virtual void SetData(const void* data, size_t size) = 0;
-    
+  virtual ~IBuffer() = default;
+  virtual void SetData(const void* data, size_t size) = 0;
 };

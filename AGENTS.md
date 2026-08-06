@@ -160,8 +160,9 @@ non-Windows ports work. Run a proportional manual smoke test for those paths.
 
 - Follow `docs/contributing.md`: avoid `auto`, avoid namespaces, do not add
   recursion, and do not add third-party dependencies without user approval.
-- Match local formatting and existing C++23 conventions. Prefer explicit
-  ownership and narrow dependencies.
+- **Run `clang-format`** on all modified files before finalizing tasks to conform to the Mozilla-based configuration.
+- **Enforce naming conventions** on new/modified code (Classes: `PascalCase`, Functions/Variables: `camelCase`, etc.). See `docs/contributing.md` for the full mapping.
+- Prefer explicit ownership and narrow dependencies.
 - Keep Game and Rulesets independent of raw OpenGL. Preserve the token-first
   render boundary and MockBackend testability.
 - Do not grow `IllumoContext` casually. If a genuinely different third module
@@ -171,6 +172,9 @@ non-Windows ports work. Run a proportional manual smoke test for those paths.
 - Architecture changes require an update to
   `docs/architecture-consensus.md`; closed decisions also require a new entry in
   `docs/latex/sections/09-design-decision-log.tex`.
+- **Mandatory Pre-Completion Checklist**: Before declaring any task, feature, or behavior change complete, the agent MUST perform both steps in the same turn:
+  1. **Verification**: Execute `cmake --build build --config Release` and `ctest --test-dir build -C Release -L Illumo --output-on-failure`.
+  2. **Documentation Sync**: Update matching documentation files (`docs/architecture-consensus.md`, `docs/packages/*`, `docs/latex/sections/*`) in the exact same turn before presenting final completion to the user.
 - Edit LaTeX/Markdown sources, not generated `.aux`, `.fls`, `.fdb_latexmk`,
   `.log`, `.toc`, PDF, source dumps, ZIPs, or build outputs unless the user
   explicitly requests regenerated artifacts.

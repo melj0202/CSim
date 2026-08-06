@@ -397,7 +397,7 @@ Callbacks should record events/state, not own game policy long-term (CA design P
 The Debug-only console separates general tooling from product behavior:
 
 - `CommandLine` owns help, environment-variable inspection/editing, validated
-  timing/display settings, console history, and application exit.
+  timing/display settings, console history, alias macro management, multi-command chaining, and application exit.
 - `CellGameModule` registers simulation, canvas, camera, ruleset, and save/load
   commands through `CommandRegistry`; registry metadata drives help and Tab
   completion.
@@ -409,12 +409,13 @@ The Debug-only console separates general tooling from product behavior:
   complete resource re-enrollment design, so the old no-op now reports that limit.
 - Editing supports measured caret placement, selection, Home/End, Delete,
   Ctrl+word movement/deletion, Ctrl+A, quoted arguments, history, and horizontal
-  input scrolling. The caret is rendered as geometry at the measured insertion
-  point rather than appended as a character.
-- Console chrome and glyphs remain one token batch. Because `stb_easy_font`
-  expands one character into several quads, the current mesh budget is 6,000 UI
-  quads; the help-page regression test guards against the former 2,000-quad
-  truncation.
+  input scrolling. The caret is rendered as a glowing dual-layer geometry bar at the measured insertion point.
+- Multi-command chaining splits on `;` (preserving quotes and escape sequences).
+- Alias macro management (`alias`, `unalias`) expands user-defined command shortcuts (with recursion capped at depth 8) and integrates aliases into auto-completion.
+- Inline ghost-text auto-suggestions display faint completion candidates after the caret; pressing Right-Arrow or Tab accepts the ghost text.
+- Dynamic parameter syntax hints dynamically render usage instructions in the status bar while typing known commands.
+- Utility commands include `repeat <N> <command>`, `history [filter|clear]`, and `sysinfo`/`status` telemetry dashboard.
+- Console chrome features a futuristic cyberpunk glassmorphism visual layout with pulsing neon top trim, dark space glass backdrop, status badges, and single-batch quad rendering (6,000 UI quads capacity).
 - `Logger` may mirror output into the console while services are alive. The host
   clears that non-owning logger context before destroying the services.
 

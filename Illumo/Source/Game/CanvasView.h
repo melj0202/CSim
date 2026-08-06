@@ -1,5 +1,4 @@
 #pragma once
 
-class CanvasView {
-
-};
+class CanvasView
+{};

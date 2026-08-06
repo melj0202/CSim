@@ -21,12 +21,12 @@ Command Line Arguements:
  */
 class IEnvVars;
 
-class SysCmdLine {
- public:
+class SysCmdLine
+{
+public:
+  static void ParseCommandLine(int argc, char** argv, IEnvVars* envVars);
 
- static void ParseCommandLine(int argc, char **argv, IEnvVars* envVars);
-
- static bool StringIsDigit(char *str);
- static bool StringisModeString(char *str);
+  static bool StringIsDigit(char* str);
+  static bool StringisModeString(char* str);
 };
 #endif

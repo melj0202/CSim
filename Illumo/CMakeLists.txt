@@ -227,7 +227,12 @@ target_compile_definitions(Illumo PRIVATE
 )
 
 # Copy over the shader files to build execution paths
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/Shader DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+add_custom_command(TARGET Illumo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/Shader"
+        "$<TARGET_FILE_DIR:Illumo>/Shader"
+    COMMENT "Copying Shader directory beside Illumo"
+)
 
 # ---------------------------------------------------------------------------
 # Headless unit / e2e tests (no real window; MockBackend inject)
@@ -242,6 +247,34 @@ add_executable(IllumoTests
 illumo_configure_target(IllumoTests)
 target_compile_definitions(IllumoTests PRIVATE ILLUMO_TESTING)
 target_link_libraries(IllumoTests PRIVATE glfw)
+
+add_custom_command(TARGET IllumoTests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/Shader"
+        "$<TARGET_FILE_DIR:IllumoTests>/Shader"
+    COMMENT "Copying Shader directory beside IllumoTests"
+)
+
+if(MSVC)
+    get_filename_component(MSVC_BIN_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    find_file(ASAN_DLL "clang_rt.asan_dynamic-x86_64.dll"
+        PATHS "${MSVC_BIN_DIR}"
+    )
+    if(ASAN_DLL)
+        add_custom_command(TARGET Illumo POST_BUILD
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> $<$<CONFIG:Debug>:-E> $<$<CONFIG:Debug>:copy_if_different>
+                "$<$<CONFIG:Debug>:${ASAN_DLL}>"
+                "$<$<CONFIG:Debug>:$<TARGET_FILE_DIR:Illumo>>"
+            COMMENT "Copying ASan DLL beside Illumo Debug executable"
+        )
+        add_custom_command(TARGET IllumoTests POST_BUILD
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> $<$<CONFIG:Debug>:-E> $<$<CONFIG:Debug>:copy_if_different>
+                "$<$<CONFIG:Debug>:${ASAN_DLL}>"
+                "$<$<CONFIG:Debug>:$<TARGET_FILE_DIR:IllumoTests>>"
+            COMMENT "Copying ASan DLL beside IllumoTests Debug executable"
+        )
+    endif()
+endif()
 
 option(ILLUMO_ENABLE_COVERAGE "Instrument IllumoTests and add the IllumoCoverage target" OFF)
 if(ILLUMO_ENABLE_COVERAGE)

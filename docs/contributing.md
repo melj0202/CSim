@@ -6,6 +6,17 @@
 2. Avoid namespaces.
 3. Do not add recursive code.
 4. Match the surrounding C++23 style and keep ownership explicit.
+5. **Code Formatting:** The project uses `clang-format` based on Mozilla style (80-column limit, 2-space indent). You must run `clang-format` on your changes before finalizing them.
+6. **Naming Conventions:** Enforce the following conventions on new/modified code:
+   - **Classes and structs:** `PascalCase` (e.g., `RenderQueue`)
+   - **Enums and Enum values:** `PascalCase` (e.g., `BlendMode`, `BlendMode::AlphaBlend`)
+   - **Functions:** `camelCase` (e.g., `submitCommand()`)
+   - **Local variables & Parameters:** `camelCase` (e.g., `commandCount`, `framebufferWidth`)
+   - **Private members:** `m_camelCase` (e.g., `m_framebufferWidth`)
+   - **Constants:** `kPascalCase` (e.g., `kMaximumLights`)
+   - **Namespaces:** `lowercase` or `snake_case` (e.g., `csim::render`)
+   - **Files:** Match the primary type (e.g., `RenderQueue.hpp`, `RenderQueue.cpp`)
+   - **Template parameters:** Short `PascalCase` (e.g., `T`, `Allocator`)
 
 ## Dependencies
 

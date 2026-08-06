@@ -6,15 +6,16 @@
 #define SAVELOAD_H
 #include <string>
 
-
-class SaveLoad {
-  public:
-    static std::string GetLoadLocation();
-    static std::string GetSaveLocation();
+class SaveLoad
+{
+public:
+  static std::string GetLoadLocation();
+  static std::string GetSaveLocation();
 };
 
 /*
-        Implement these functions in source port code, not the main code base please :)
+        Implement these functions in source port code, not the main code base
+   please :)
  */
 
-#endif //SAVELOAD_H
+#endif // SAVELOAD_H

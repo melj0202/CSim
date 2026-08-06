@@ -2,8 +2,8 @@
 // Created by gravi on 10/6/2024.
 //
 #include "CellMain.h"
-#include "Illumo.h"
 #include "Game/CellGameModule.h"
+#include "Illumo.h"
 #ifndef NDEBUG
 #include "Engine/DebugModule.h"
 #endif
@@ -11,39 +11,39 @@
 #include "Logger.h"
 #include <memory>
 
-void CellMain(int argc, char** argv)
+void
+CellMain(int argc, char** argv)
 {
-	Logger::initLogger();
+  Logger::initLogger();
 
-	Illumo* illumo = new Illumo(argc, argv);
+  Illumo* illumo = new Illumo(argc, argv);
 
-	// Services first (no Game includes inside Illumo).
-	illumo->Init();
+  // Services first (no Game includes inside Illumo).
+  illumo->Init();
 
-	// App owns composition: which modules ship in this product (D-E1).
-	illumo->addModule(std::make_unique<CellGameModule>());
+  // App owns composition: which modules ship in this product (D-E1).
+  illumo->addModule(std::make_unique<CellGameModule>());
 #ifndef NDEBUG
-	// Debug console / FPS / quit keys — Debug builds only.
-	illumo->addModule(std::make_unique<DebugModule>());
+  // Debug console / FPS / quit keys — Debug builds only.
+  illumo->addModule(std::make_unique<DebugModule>());
 #endif
-	illumo->StartModules();
+  illumo->StartModules();
 
-	double lastTime = glfwGetTime();
+  double lastTime = glfwGetTime();
 
-	while (!illumo->ShouldClose())
-	{
-		double currentTime = glfwGetTime();
-		double dt = currentTime - lastTime;
-		lastTime = currentTime;
+  while (!illumo->ShouldClose()) {
+    double currentTime = glfwGetTime();
+    double dt = currentTime - lastTime;
+    lastTime = currentTime;
 
-		illumo->Update(dt);
-		illumo->Render();
-	}
+    illumo->Update(dt);
+    illumo->Render();
+  }
 
-	illumo->Shutdown();
+  illumo->Shutdown();
 
-	delete illumo;
+  delete illumo;
 
-	Logger::LogTrace("Main loop finished");
-	Logger::shutdownLogger();
+  Logger::LogTrace("Main loop finished");
+  Logger::shutdownLogger();
 }

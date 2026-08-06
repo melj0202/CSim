@@ -1,44 +1,42 @@
 #include "SplashText.h"
 
-void SplashText::Wake()
+void
+SplashText::Wake()
 {
-	setVisible(true);
-	setA(255);
-	startTime = std::chrono::high_resolution_clock::now();
+  setVisible(true);
+  setA(255);
+  startTime = std::chrono::high_resolution_clock::now();
 }
 
-void SplashText::Fade()
+void
+SplashText::Fade()
 {
-	if (!isVisible())
-	{
-		return;
-	}
+  if (!isVisible()) {
+    return;
+  }
 
-	// Linear fade from opaque to transparent over wakeDuration, then hide.
-	std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<float> durationElapsed = now - startTime;
-	const float total = wakeDuration.count();
-	if (total <= 0.0f || durationElapsed.count() >= total)
-	{
-		setA(0);
-		setVisible(false);
-		return;
-	}
+  // Linear fade from opaque to transparent over wakeDuration, then hide.
+  std::chrono::high_resolution_clock::time_point now =
+    std::chrono::high_resolution_clock::now();
+  std::chrono::duration<float> durationElapsed = now - startTime;
+  const float total = wakeDuration.count();
+  if (total <= 0.0f || durationElapsed.count() >= total) {
+    setA(0);
+    setVisible(false);
+    return;
+  }
 
-	float t = durationElapsed.count() / total;
-	if (t < 0.0f)
-	{
-		t = 0.0f;
-	}
-	if (t > 1.0f)
-	{
-		t = 1.0f;
-	}
-	const float opacity = 255.0f * (1.0f - t);
-	setA(static_cast<int>(opacity + 0.5f));
-	if (opacity <= 1.0f)
-	{
-		setA(0);
-		setVisible(false);
-	}
+  float t = durationElapsed.count() / total;
+  if (t < 0.0f) {
+    t = 0.0f;
+  }
+  if (t > 1.0f) {
+    t = 1.0f;
+  }
+  const float opacity = 255.0f * (1.0f - t);
+  setA(static_cast<int>(opacity + 0.5f));
+  if (opacity <= 1.0f) {
+    setA(0);
+    setVisible(false);
+  }
 }
