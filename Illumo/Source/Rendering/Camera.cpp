@@ -85,13 +85,28 @@ Camera::Reset()
   targetZoom = 1.0f;
 }
 
+std::array<int, 2>
+Camera::GetWinDims() const
+{
+  int winX = 1280;
+  int winY = 720;
+  if (envVars) {
+    long vx = envVars->getVar("WinX").valueAsLong;
+    long vy = envVars->getVar("WinY").valueAsLong;
+    if (vx > 0) {
+      winX = static_cast<int>(vx);
+    }
+    if (vy > 0) {
+      winY = static_cast<int>(vy);
+    }
+  }
+  return { winX, winY };
+}
+
 glm::mat4
 Camera::GetViewMatrix() const
 {
-  std::array<int, 2> winDims{
-    static_cast<int>(envVars->getVar("WinX").valueAsLong),
-    static_cast<int>(envVars->getVar("WinY").valueAsLong)
-  };
+  std::array<int, 2> winDims = GetWinDims();
   float halfW = winDims[0] / 2.0f;
   float halfH = winDims[1] / 2.0f;
 
@@ -111,10 +126,7 @@ Camera::GetViewMatrix() const
 glm::mat4
 Camera::GetProjectionMatrix(float /*aspectRatio*/) const
 {
-  std::array<int, 2> winDims{
-    static_cast<int>(envVars->getVar("WinX").valueAsLong),
-    static_cast<int>(envVars->getVar("WinY").valueAsLong)
-  };
+  std::array<int, 2> winDims = GetWinDims();
 
   switch (projectionType) {
     case ProjectonType::ORTOGRAPHIC:
@@ -141,10 +153,7 @@ Camera::GetMVPMatrix(float aspectRatio) const
 glm::vec2
 Camera::ScreenToWorld(const glm::vec2& screenPos) const
 {
-  std::array<int, 2> winDims{
-    static_cast<int>(envVars->getVar("WinX").valueAsLong),
-    static_cast<int>(envVars->getVar("WinY").valueAsLong)
-  };
+  std::array<int, 2> winDims = GetWinDims();
   float halfW = winDims[0] / 2.0f;
   float halfH = winDims[1] / 2.0f;
 

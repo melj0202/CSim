@@ -576,17 +576,19 @@ CellGameModule::Update(double dt)
     }
   }
 
-  // Common behavior: camera panning
-  CameraPan();
+  // Common behavior: camera panning & scroll zoom (only when console is closed)
+  if (!ic->commandLine->isOpen) {
+    CameraPan();
 
-  // Zoom behavior using scroll offset
-  std::array<double, 2> mouseCoords = ic->window->getMouseCoords();
-  glm::vec2 worldMouse =
-    ic->camera->ScreenToWorld(glm::vec2(mouseCoords[0], mouseCoords[1]));
-  double* scroll = ic->inputManager->getMouseScrollOffset();
-  if (*scroll != 0.0f) {
-    double zoomFactor = (*scroll > 0.0f) ? 1.15 : 0.85;
-    ic->camera->ZoomAt(static_cast<float>(zoomFactor), worldMouse);
+    // Zoom behavior using scroll offset
+    std::array<double, 2> mouseCoords = ic->window->getMouseCoords();
+    glm::vec2 worldMouse =
+      ic->camera->ScreenToWorld(glm::vec2(mouseCoords[0], mouseCoords[1]));
+    double* scroll = ic->inputManager->getMouseScrollOffset();
+    if (*scroll != 0.0f) {
+      double zoomFactor = (*scroll > 0.0f) ? 1.15 : 0.85;
+      ic->camera->ZoomAt(static_cast<float>(zoomFactor), worldMouse);
+    }
   }
 
   // Toggle between NORMAL and EDIT states with 'E' key (only when console is

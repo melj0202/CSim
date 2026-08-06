@@ -1,6 +1,10 @@
+#ifndef GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_NONE
+#endif
 #include "DebugModule.h"
 #include "InputManager.h"
 #include "Logger.h"
+#include <GLFW/glfw3.h>
 #include <sstream>
 
 DebugModule::DebugModule()
@@ -159,7 +163,37 @@ DebugModule::Update(double dt)
     }
   }
 
-  // 3. Execute command queue
+  // 3. Process Mouse Input for CommandLine
+  if (ic->commandLine && ic->commandLine->isOpen && ic->inputManager) {
+    double* scrollOffsetPtr = ic->inputManager->getMouseScrollOffset();
+    if (scrollOffsetPtr && *scrollOffsetPtr != 0.0) {
+      ic->commandLine->HandleScroll(*scrollOffsetPtr);
+      *scrollOffsetPtr = 0.0;
+    }
+
+    std::array<double, 2> mouseCoords = ic->inputManager->getMousePosition();
+    bool isLeftPressed =
+      ic->inputManager->isMouseButtonPressed(KeyCode::MouseLeft);
+    bool isLeftReleased =
+      ic->inputManager->isMouseButtonReleased(KeyCode::MouseLeft);
+
+    static bool wasMouseLeftPressed = false;
+    if (isLeftPressed) {
+      if (!wasMouseLeftPressed) {
+        ic->commandLine->HandleMousePress(mouseCoords[0], mouseCoords[1]);
+        wasMouseLeftPressed = true;
+      } else {
+        ic->commandLine->HandleMouseDrag(mouseCoords[0], mouseCoords[1]);
+      }
+    } else {
+      if (wasMouseLeftPressed || isLeftReleased) {
+        ic->commandLine->HandleMouseRelease();
+        wasMouseLeftPressed = false;
+      }
+    }
+  }
+
+  // 4. Execute command queue
   ic->commandRegistry->ExecuteQueue();
 }
 

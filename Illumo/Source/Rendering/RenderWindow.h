@@ -1,8 +1,9 @@
 #pragma once
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <array>
 #include <string>
+
+struct GLFWwindow;
 
 #include "IRenderWindow.h"
 #include "Services/IEnvVars.h"
@@ -16,7 +17,7 @@ public:
                const int height,
                const std::string& title,
                IEnvVars* envVars);
-  ~RenderWindow() { glfwTerminate(); }
+  ~RenderWindow();
   void reinitializeWindow(const int width,
                           const int height,
                           const std::string& title) override;
@@ -31,7 +32,7 @@ public:
   }
   void handleResize(int width, int height) override;
   bool shouldWindowClose() override;
-  void swapBuffers() override { glfwSwapBuffers(window); }
+  void swapBuffers() override;
   void requestClose() override;
 
 private:

@@ -7,7 +7,7 @@
 #include "Rendering/IRenderWindow.h"
 #include <chrono>
 #include <cstdint>
-#include <iostream>
+
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -47,6 +47,10 @@ public:
   void AddToHistory(std::string command);
   void ScrollUp();
   void ScrollDown();
+  void HandleMousePress(double mouseX, double mouseY, bool isDrag = false);
+  void HandleMouseDrag(double mouseX, double mouseY);
+  void HandleMouseRelease();
+  void HandleScroll(double yOffset);
   void DrawImpl();
   bool AppendCommands(Renderer* renderer) override;
   bool isOpen;
@@ -106,6 +110,9 @@ private:
   int historyIndex;
   int scrollOffset;
   bool consoleInitialized;
+  bool isDraggingScrollbar;
+  float dragStartY;
+  int dragStartScrollOffset;
 
   IEnvVars* envVars;
   IRenderWindow* window;

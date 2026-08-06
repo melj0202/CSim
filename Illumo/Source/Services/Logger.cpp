@@ -2,6 +2,7 @@
 #include "CommandLine.h"
 #include "Foundation/MacroDefs.h"
 #include "Services/IEnvVars.h"
+#include <iostream>
 
 Logger* Logger::instance = nullptr;
 

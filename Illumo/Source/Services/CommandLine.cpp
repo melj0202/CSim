@@ -182,6 +182,13 @@ findEnvironmentKey(IEnvVars* envVars, const std::string& requested)
   }
   return "";
 }
+
+static float
+measureFontText(const std::string& text)
+{
+  std::string mutableText = text;
+  return static_cast<float>(stb_easy_font_width(mutableText.data()) * 2);
+}
 }
 
 CommandLine::CommandLine(IEnvVars* vars,
@@ -199,6 +206,9 @@ CommandLine::CommandLine(IEnvVars* vars,
   , lastAnimTime(std::chrono::high_resolution_clock::now())
   , cursorPosition(0)
   , selectionAnchor(0)
+  , isDraggingScrollbar(false)
+  , dragStartY(0.0f)
+  , dragStartScrollOffset(0)
 {
   isOpen = false;
   currentInput = "";
@@ -1242,6 +1252,231 @@ CommandLine::ScrollDown()
 }
 
 void
+CommandLine::HandleScroll(double yOffset)
+{
+  if (!isOpen || history.empty()) {
+    return;
+  }
+  std::array<int, 2> windowDimensions =
+    window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
+  float height = static_cast<float>(windowDimensions[1]);
+  float panelHeight = height * 0.52f;
+  if (panelHeight < 240.0f) {
+    panelHeight = 240.0f;
+  }
+  if (panelHeight > height - 20.0f) {
+    panelHeight = height - 20.0f;
+  }
+  const float headerHeight = 34.0f;
+  const float inputRowHeight = 40.0f;
+  const float historyTop = 8.0f + headerHeight;
+  const float inputTop = panelHeight - inputRowHeight;
+  const float historyBottom = inputTop - 8.0f;
+  const float lineSpacing = 24.0f;
+  int maxHistoryLines =
+    static_cast<int>((historyBottom - historyTop) / lineSpacing);
+  if (maxHistoryLines < 1) {
+    maxHistoryLines = 1;
+  }
+  int maxScroll = static_cast<int>(history.size()) - maxHistoryLines;
+  if (maxScroll < 0) {
+    maxScroll = 0;
+  }
+
+  int delta = static_cast<int>(yOffset > 0.0 ? 3 : (yOffset < 0.0 ? -3 : 0));
+  scrollOffset += delta;
+  if (scrollOffset < 0) {
+    scrollOffset = 0;
+  }
+  if (scrollOffset > maxScroll) {
+    scrollOffset = maxScroll;
+  }
+}
+
+void
+CommandLine::HandleMousePress(double mouseX, double mouseY, bool isDrag)
+{
+  if (!isOpen) {
+    return;
+  }
+
+  std::array<int, 2> windowDimensions =
+    window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
+  float width = static_cast<float>(windowDimensions[0]);
+  float height = static_cast<float>(windowDimensions[1]);
+  float panelHeight = height * 0.52f;
+  if (panelHeight < 240.0f) {
+    panelHeight = 240.0f;
+  }
+  if (panelHeight > height - 20.0f) {
+    panelHeight = height - 20.0f;
+  }
+  float effectiveAnim =
+    (animationProgress > 0.0f) ? animationProgress : (isOpen ? 1.0f : 0.0f);
+  float yOffset = -panelHeight * (1.0f - effectiveAnim);
+  const float headerHeight = 34.0f;
+  const float inputRowHeight = 40.0f;
+  const float historyTop = yOffset + headerHeight + 8.0f;
+  const float inputTop = yOffset + panelHeight - inputRowHeight;
+  const float historyBottom = inputTop - 8.0f;
+
+  if (mouseY < yOffset || mouseY > yOffset + panelHeight) {
+    return;
+  }
+
+  int totalLines = static_cast<int>(history.size());
+  float lineSpacing = 24.0f;
+  int maxHistoryLines =
+    static_cast<int>((historyBottom - historyTop) / lineSpacing);
+  if (maxHistoryLines < 1) {
+    maxHistoryLines = 1;
+  }
+  int maxScroll =
+    (totalLines > maxHistoryLines) ? (totalLines - maxHistoryLines) : 0;
+
+  if (totalLines > maxHistoryLines) {
+    float scrollbarWidth = 5.0f;
+    float scrollbarRightMargin = 9.0f;
+    float barX1 = width - scrollbarWidth - scrollbarRightMargin;
+    float barX2 = width - scrollbarRightMargin;
+    if (mouseX >= barX1 - 12.0f && mouseX <= barX2 + 12.0f &&
+        mouseY >= historyTop && mouseY <= historyBottom) {
+      if (!isDrag) {
+        isDraggingScrollbar = true;
+        dragStartY = static_cast<float>(mouseY);
+        dragStartScrollOffset = scrollOffset;
+      }
+      float trackHeight = historyBottom - historyTop;
+      float clickRatio =
+        1.0f - (static_cast<float>(mouseY) - historyTop) / trackHeight;
+      if (clickRatio < 0.0f) {
+        clickRatio = 0.0f;
+      }
+      if (clickRatio > 1.0f) {
+        clickRatio = 1.0f;
+      }
+      scrollOffset = static_cast<int>(clickRatio * maxScroll);
+      if (scrollOffset < 0) {
+        scrollOffset = 0;
+      }
+      if (scrollOffset > maxScroll) {
+        scrollOffset = maxScroll;
+      }
+      return;
+    }
+  }
+
+  if (mouseY >= inputTop && mouseY <= yOffset + panelHeight) {
+    const float inputTextX = 40.0f;
+    const float inputAvailableWidth =
+      std::max(48.0f, width - inputTextX - 22.0f);
+    std::size_t visibleStart = 0;
+    while (visibleStart < cursorPosition) {
+      std::string textThroughCursor =
+        currentInput.substr(visibleStart, cursorPosition - visibleStart);
+      if (measureFontText(textThroughCursor) <= inputAvailableWidth) {
+        break;
+      }
+      ++visibleStart;
+    }
+    std::size_t visibleEnd = cursorPosition;
+    while (visibleEnd < currentInput.size()) {
+      std::string candidateText =
+        currentInput.substr(visibleStart, visibleEnd + 1 - visibleStart);
+      if (measureFontText(candidateText) > inputAvailableWidth) {
+        break;
+      }
+      ++visibleEnd;
+    }
+    std::string visibleInput =
+      currentInput.substr(visibleStart, visibleEnd - visibleStart);
+
+    float relX = static_cast<float>(mouseX);
+    std::size_t bestIdx = 0;
+    float minDiff = 1e9f;
+    for (std::size_t i = 0; i <= visibleInput.size(); ++i) {
+      float charX = inputTextX + measureFontText(visibleInput.substr(0, i));
+      float diff = std::abs(charX - relX);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestIdx = i;
+      }
+    }
+    std::size_t targetPos = visibleStart + bestIdx;
+    if (targetPos > currentInput.size()) {
+      targetPos = currentInput.size();
+    }
+
+    cursorPosition = targetPos;
+    if (!isDrag) {
+      selectionAnchor = cursorPosition;
+    }
+  }
+}
+
+void
+CommandLine::HandleMouseDrag(double mouseX, double mouseY)
+{
+  if (!isOpen) {
+    return;
+  }
+  if (isDraggingScrollbar) {
+    std::array<int, 2> windowDimensions =
+      window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
+    float height = static_cast<float>(windowDimensions[1]);
+    float panelHeight = height * 0.52f;
+    if (panelHeight < 240.0f) {
+      panelHeight = 240.0f;
+    }
+    if (panelHeight > height - 20.0f) {
+      panelHeight = height - 20.0f;
+    }
+    float effectiveAnim =
+      (animationProgress > 0.0f) ? animationProgress : (isOpen ? 1.0f : 0.0f);
+    float yOffset = -panelHeight * (1.0f - effectiveAnim);
+    const float headerHeight = 34.0f;
+    const float inputRowHeight = 40.0f;
+    const float historyTop = yOffset + headerHeight + 8.0f;
+    const float inputTop = yOffset + panelHeight - inputRowHeight;
+    const float historyBottom = inputTop - 8.0f;
+
+    int totalLines = static_cast<int>(history.size());
+    float lineSpacing = 24.0f;
+    int maxHistoryLines =
+      static_cast<int>((historyBottom - historyTop) / lineSpacing);
+    if (maxHistoryLines < 1) {
+      maxHistoryLines = 1;
+    }
+    int maxScroll =
+      (totalLines > maxHistoryLines) ? (totalLines - maxHistoryLines) : 0;
+
+    float trackHeight = historyBottom - historyTop;
+    if (trackHeight > 0.0f && maxScroll > 0) {
+      float deltaY = static_cast<float>(mouseY) - dragStartY;
+      float deltaScrollRatio = -deltaY / trackHeight;
+      int newScroll =
+        dragStartScrollOffset + static_cast<int>(deltaScrollRatio * maxScroll);
+      if (newScroll < 0) {
+        newScroll = 0;
+      }
+      if (newScroll > maxScroll) {
+        newScroll = maxScroll;
+      }
+      scrollOffset = newScroll;
+    }
+    return;
+  }
+
+  HandleMousePress(mouseX, mouseY, true);
+}
+
+void
+CommandLine::HandleMouseRelease()
+{
+  isDraggingScrollbar = false;
+}
+
+void
 CommandLine::AppendString(unsigned char r,
                           unsigned char g,
                           unsigned char b,
@@ -1363,13 +1598,6 @@ packFontLine(UiVert* dest,
     dest[writeAt + i].y *= 2.0f;
   }
   return writeAt + vCount;
-}
-
-static float
-measureFontText(const std::string& text)
-{
-  std::string mutableText = text;
-  return static_cast<float>(stb_easy_font_width(mutableText.data()) * 2);
 }
 
 } // namespace
@@ -1625,17 +1853,21 @@ CommandLine::AppendCommands(Renderer* r)
     statusColor[3] = 255;
   }
 
+  const char* titleStr = "[ILLUMO // DEV CONSOLE]";
+  packed = packFontLine(
+    batch, kCap, packed, 14.0f, yOffset + 9.0f, titleStr, titleColor);
+
+  const float titleWidth = measureFontText(titleStr);
+  const float statusWidth = measureFontText(statusText);
+  float statusX = width - statusWidth - 16.0f;
+  if (statusX < 14.0f + titleWidth + 20.0f) {
+    statusX = 14.0f + titleWidth + 20.0f;
+  }
+
   packed = packFontLine(batch,
                         kCap,
                         packed,
-                        14.0f,
-                        yOffset + 9.0f,
-                        "[ILLUMO v2.6 // DEV CONSOLE]",
-                        titleColor);
-  packed = packFontLine(batch,
-                        kCap,
-                        packed,
-                        240.0f,
+                        statusX,
                         yOffset + 9.0f,
                         statusText.c_str(),
                         statusColor);

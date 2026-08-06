@@ -1157,6 +1157,40 @@ testCommandLineRepeatAndHistorySearch()
   executeConsoleText(console, "history clear");
 }
 
+static void
+testCommandLineMouseInteraction()
+{
+  testSection("CommandLine: mouse click positioning, selection drag, "
+              "scrollbar, and wheel");
+  CommandLineFixture fixture(1280, 720);
+  CommandLine& console = fixture.console;
+  console.Toggle();
+
+  enterConsoleText(console, "hello mouse world");
+  float panelHeight = 720.0f * 0.52f;
+  float inputRowY = panelHeight - 20.0f;
+
+  console.HandleMousePress(112.0, inputRowY);
+  testTrue(g,
+           console.getCursorPosition() >= 5u &&
+             console.getCursorPosition() <= 7u,
+           "mouse click places caret near character position");
+  testTrue(g, !console.hasSelection(), "single mouse click clears selection");
+
+  console.HandleMouseDrag(200.0, inputRowY);
+  testTrue(g, console.hasSelection(), "mouse drag creates text selection");
+  console.HandleMouseRelease();
+
+  for (int i = 0; i < 50; ++i) {
+    console.logNormal("History line " + std::to_string(i));
+  }
+  console.HandleScroll(1.0);
+  testTrue(g, console.getHistory().size() > 0, "mouse scroll handled");
+
+  console.HandleMousePress(1270.0, 100.0);
+  console.HandleMouseRelease();
+}
+
 static int
 runUITokenCase(void (*testFunction)())
 {
@@ -1221,5 +1255,8 @@ registerUITokenTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.CommandLine.RepeatAndHistorySearch", []() {
     return runUITokenCase(testCommandLineRepeatAndHistorySearch);
+  });
+  registry.add("Illumo.CommandLine.MouseInteraction", []() {
+    return runUITokenCase(testCommandLineMouseInteraction);
   });
 }

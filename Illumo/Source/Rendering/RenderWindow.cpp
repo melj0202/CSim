@@ -4,7 +4,9 @@
 #include "Services/IEnvVars.h"
 #include "Services/InputManager.h"
 #include "thirdparty/stb/stb_easy_font.h"
+#include <GLFW/glfw3.h>
 #include <chrono>
+#include <iostream>
 
 void
 windowSizeCallback(GLFWwindow* window, int width, int height) noexcept
@@ -71,6 +73,10 @@ RenderWindow::RenderWindow(const int width,
     std::exit(-1);
   }
   glfwGetWindowSize(window, &windowWidth, &windowHeight);
+  if (envVars) {
+    envVars->setVar("WinX", std::to_string(windowWidth));
+    envVars->setVar("WinY", std::to_string(windowHeight));
+  }
   if (!isFullScreen) {
     centerWindow();
     glfwGetWindowPos(window, &windowedX, &windowedY);
@@ -213,4 +219,21 @@ void
 RenderWindow::requestClose()
 {
   glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+void
+RenderWindow::swapBuffers()
+{
+  if (window != nullptr) {
+    glfwSwapBuffers(window);
+  }
+}
+
+RenderWindow::~RenderWindow()
+{
+  if (window != nullptr) {
+    glfwDestroyWindow(window);
+    window = nullptr;
+  }
+  glfwTerminate();
 }

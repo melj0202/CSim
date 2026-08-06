@@ -8,6 +8,7 @@
 #include "Tests/TestHarness.h"
 #include "Tests/TestHelpers.h"
 #include "Tests/TestRegistry.h"
+#include <GLFW/glfw3.h>
 #include <chrono>
 #include <stdexcept>
 #include <string>

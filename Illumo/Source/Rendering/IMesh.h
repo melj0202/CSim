@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
 
 // Vertex attribute layout for enrolled meshes.

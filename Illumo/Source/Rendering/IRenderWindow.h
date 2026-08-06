@@ -4,7 +4,7 @@
 #include <array>
 #include <string>
 
-class GLFWwindow;
+struct GLFWwindow;
 
 // Platform window + GL context host. Draw submission is NOT done here;
 // use Renderer / IBackend. GLFW types are required for input callbacks.

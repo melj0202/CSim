@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <array>
 #include <fstream>
-#include <iostream>
+
 #include <string>
 
 class CocoaRenderWindow

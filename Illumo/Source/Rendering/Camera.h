@@ -59,6 +59,7 @@ public:
   glm::mat4 GetMVPMatrix(float aspectRatio) const;
 
 private:
+  std::array<int, 2> GetWinDims() const;
   ProjectonType projectionType;
   glm::vec2 position;       // Current interpolated position
   glm::vec2 targetPosition; // Target position we pan towards

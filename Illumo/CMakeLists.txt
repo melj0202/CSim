@@ -30,6 +30,7 @@ set(ILLUMO_SHARED_SOURCES
     Source/Services/CommandLine.cpp
     Source/Services/Logger.cpp
     Source/Services/EnvVars.cpp
+    Source/Services/InputManager.cpp
     Source/Rendering/GLString.cpp
     Source/Rendering/Camera.cpp
 )
@@ -106,7 +107,7 @@ function(illumo_configure_target target_name)
     )
 
     if(MSVC)
-        target_compile_options(${target_name} PRIVATE /W4 /FS)
+        target_compile_options(${target_name} PRIVATE /W4 /FS /MP)
     else()
         target_compile_options(${target_name} PRIVATE -Wall -Wextra)
     endif()
