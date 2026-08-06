@@ -189,6 +189,22 @@ measureFontText(const std::string& text)
   std::string mutableText = text;
   return static_cast<float>(stb_easy_font_width(mutableText.data()) * 2);
 }
+
+static std::string
+truncateTextToWidth(const std::string& text, float maxWidth)
+{
+  if (maxWidth <= 8.0f || text.empty()) {
+    return "";
+  }
+  if (measureFontText(text) <= maxWidth) {
+    return text;
+  }
+  std::string result = text;
+  while (!result.empty() && measureFontText(result) > maxWidth) {
+    result.pop_back();
+  }
+  return result;
+}
 }
 
 CommandLine::CommandLine(IEnvVars* vars,
@@ -209,6 +225,25 @@ CommandLine::CommandLine(IEnvVars* vars,
   , isDraggingScrollbar(false)
   , dragStartY(0.0f)
   , dragStartScrollOffset(0)
+  , isFloating(false)
+  , floatingX(-1.0f)
+  , floatingY(20.0f)
+  , floatingW(-1.0f)
+  , floatingH(-1.0f)
+  , isDraggingWindow(false)
+  , isResizingWindow(false)
+  , dragWindowOffsetX(0.0f)
+  , dragWindowOffsetY(0.0f)
+  , resizeStartW(0.0f)
+  , resizeStartH(0.0f)
+  , resizeStartMouseX(0.0f)
+  , resizeStartMouseY(0.0f)
+  , lastHeaderClickTime(std::chrono::high_resolution_clock::time_point{})
+  , currentPanelX(-1.0f)
+  , currentPanelY(-1.0f)
+  , currentPanelW(-1.0f)
+  , currentPanelH(-1.0f)
+  , scanlinePhase(0.0f)
 {
   isOpen = false;
   currentInput = "";
@@ -222,7 +257,109 @@ CommandLine::CommandLine(IEnvVars* vars,
   historyIndex = 0;
   scrollOffset = 0;
   consoleInitialized = false;
+
+  if (commandRegistry) {
+    commandRegistry->RegisterCommand(
+      "console_mode",
+      [this](const std::vector<std::string>& args) {
+        if (args.empty()) {
+          logNormal("Console mode: " +
+                    std::string(isFloating ? "FLOATING" : "MOUNTED"));
+          logNormal("Usage: console_mode [floating|mounted|toggle]");
+          return;
+        }
+        std::string mode = lowerCopy(args[0]);
+        if (mode == "floating" || mode == "float") {
+          setFloatingMode(true);
+        } else if (mode == "mounted" || mode == "mount") {
+          setFloatingMode(false);
+        } else if (mode == "toggle") {
+          ToggleFloatingMode();
+        } else {
+          logError("Unknown console mode: " + args[0]);
+        }
+      },
+      "console_mode [floating|mounted|toggle]",
+      "Switch console between floating and top-mounted modes",
+      { "floating", "mounted", "toggle" });
+
+    commandRegistry->RegisterCommand(
+      "console_size",
+      [this](const std::vector<std::string>& args) {
+        if (args.empty()) {
+          if (floatingW > 0.0f && floatingH > 0.0f) {
+            logNormal(
+              "Console size: " + std::to_string(static_cast<int>(floatingW)) +
+              "x" + std::to_string(static_cast<int>(floatingH)));
+          } else {
+            logNormal("Console size: default/auto");
+          }
+          logNormal("Usage: console_size [<width> <height> | reset]");
+          return;
+        }
+        std::string first = lowerCopy(args[0]);
+        if (first == "reset" || first == "default") {
+          floatingW = -1.0f;
+          floatingH = -1.0f;
+          logSuccess("Console size reset to default");
+          return;
+        }
+        if (args.size() >= 2) {
+          long w = 0, h = 0;
+          if (parseLongStrict(args[0], &w) && parseLongStrict(args[1], &h)) {
+            setFloatingSize(static_cast<float>(w), static_cast<float>(h));
+            return;
+          }
+        }
+        logError("Usage: console_size [<width> <height> | reset]");
+      },
+      "console_size [<width> <height> | reset]",
+      "Set or reset floating console window dimensions",
+      { "800 500", "1000 600", "reset" });
+  }
+
   enrollGpuResources();
+}
+
+void
+CommandLine::ToggleFloatingMode()
+{
+  setFloatingMode(!isFloating);
+}
+
+void
+CommandLine::setFloatingMode(bool floating)
+{
+  isFloating = floating;
+  if (isFloating) {
+    std::array<int, 2> windowDimensions =
+      window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
+    float width = static_cast<float>(windowDimensions[0]);
+    float defaultMarginX = std::clamp(width * 0.08f, 20.0f, 100.0f);
+    if (floatingX < 0.0f) {
+      floatingX = defaultMarginX;
+      floatingY = 20.0f;
+    }
+  } else {
+    isDraggingWindow = false;
+    isResizingWindow = false;
+  }
+  logSuccess(isFloating ? "Console mode set to FLOATING"
+                        : "Console mode set to MOUNTED");
+}
+
+void
+CommandLine::setFloatingSize(float w, float h)
+{
+  floatingW = std::max(280.0f, w);
+  floatingH = std::max(180.0f, h);
+  if (!isFloating) {
+    setFloatingMode(true);
+  } else {
+    logSuccess("Console size set to " +
+               std::to_string(static_cast<int>(floatingW)) + "x" +
+               std::to_string(static_cast<int>(floatingH)));
+  }
 }
 
 void
@@ -278,9 +415,15 @@ CommandLine::Toggle()
 {
   isOpen = !isOpen;
   if (isOpen) {
+    animationProgress = 0.0f;
+    lastAnimTime = std::chrono::high_resolution_clock::now();
     scrollOffset = 0;
     completionHint =
       "Tab: complete  |  Ctrl+Arrows: words  |  Ctrl+A: select all";
+  } else {
+    isDraggingWindow = false;
+    isResizingWindow = false;
+    isDraggingScrollbar = false;
   }
 }
 
@@ -1304,24 +1447,86 @@ CommandLine::HandleMousePress(double mouseX, double mouseY, bool isDrag)
     window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
   float width = static_cast<float>(windowDimensions[0]);
   float height = static_cast<float>(windowDimensions[1]);
-  float panelHeight = height * 0.52f;
-  if (panelHeight < 240.0f) {
-    panelHeight = 240.0f;
+  float defaultMarginX = std::clamp(width * 0.08f, 20.0f, 100.0f);
+  float defaultFloatW = std::max(280.0f, width - defaultMarginX * 2.0f);
+  float defaultFloatH = height * 0.52f;
+  if (defaultFloatH < 240.0f) {
+    defaultFloatH = 240.0f;
   }
-  if (panelHeight > height - 20.0f) {
-    panelHeight = height - 20.0f;
+  if (defaultFloatH > height - 20.0f) {
+    defaultFloatH = height - 20.0f;
   }
+
+  float floatW = (isFloating && floatingW > 0.0f)
+                   ? std::clamp(floatingW, 280.0f, width)
+                   : defaultFloatW;
+  float floatH = (isFloating && floatingH > 0.0f)
+                   ? std::clamp(floatingH, 180.0f, height)
+                   : defaultFloatH;
+  float panelHeight = isFloating ? floatH : defaultFloatH;
+
   float effectiveAnim =
     (animationProgress > 0.0f) ? animationProgress : (isOpen ? 1.0f : 0.0f);
   float yOffset = -panelHeight * (1.0f - effectiveAnim);
+
+  if (isFloating && floatingX < 0.0f) {
+    floatingX = defaultMarginX;
+    floatingY = 20.0f;
+  }
+  float panelX0 =
+    isFloating ? std::clamp(floatingX, 0.0f, width - floatW) : 0.0f;
+  float panelX1 = isFloating ? (panelX0 + floatW) : width;
+  float panelY0 =
+    isFloating ? std::clamp(floatingY, 0.0f, height - panelHeight) : yOffset;
+  float panelY1 = panelY0 + panelHeight;
+
   const float headerHeight = 34.0f;
   const float inputRowHeight = 40.0f;
-  const float historyTop = yOffset + headerHeight + 8.0f;
-  const float inputTop = yOffset + panelHeight - inputRowHeight;
+  const float historyTop = panelY0 + headerHeight + 8.0f;
+  const float inputTop = panelY1 - inputRowHeight;
   const float historyBottom = inputTop - 8.0f;
 
-  if (mouseY < yOffset || mouseY > yOffset + panelHeight) {
+  if (mouseX < panelX0 || mouseX > panelX1 || mouseY < panelY0 ||
+      mouseY > panelY1) {
     return;
+  }
+
+  // Corner resize grip (bottom-right 18x18 region)
+  if (isFloating && mouseX >= panelX1 - 18.0f && mouseX <= panelX1 &&
+      mouseY >= panelY1 - 18.0f && mouseY <= panelY1) {
+    if (!isDrag) {
+      isResizingWindow = true;
+      resizeStartW = panelX1 - panelX0;
+      resizeStartH = panelY1 - panelY0;
+      resizeStartMouseX = static_cast<float>(mouseX);
+      resizeStartMouseY = static_cast<float>(mouseY);
+      return;
+    }
+  }
+
+  if (mouseY >= panelY0 && mouseY <= panelY0 + headerHeight) {
+    if (!isDrag) {
+      if (isFloating && mouseX >= panelX1 - 28.0f && mouseX <= panelX1 - 6.0f) {
+        Toggle();
+        return;
+      }
+      auto now = std::chrono::high_resolution_clock::now();
+      auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                         now - lastHeaderClickTime)
+                         .count();
+      if (elapsedMs > 0 && elapsedMs < 350) {
+        ToggleFloatingMode();
+        lastHeaderClickTime = std::chrono::high_resolution_clock::time_point{};
+        return;
+      }
+      lastHeaderClickTime = now;
+      if (isFloating) {
+        isDraggingWindow = true;
+        dragWindowOffsetX = static_cast<float>(mouseX) - panelX0;
+        dragWindowOffsetY = static_cast<float>(mouseY) - panelY0;
+        return;
+      }
+    }
   }
 
   int totalLines = static_cast<int>(history.size());
@@ -1337,8 +1542,8 @@ CommandLine::HandleMousePress(double mouseX, double mouseY, bool isDrag)
   if (totalLines > maxHistoryLines) {
     float scrollbarWidth = 5.0f;
     float scrollbarRightMargin = 9.0f;
-    float barX1 = width - scrollbarWidth - scrollbarRightMargin;
-    float barX2 = width - scrollbarRightMargin;
+    float barX1 = panelX1 - scrollbarWidth - scrollbarRightMargin;
+    float barX2 = panelX1 - scrollbarRightMargin;
     if (mouseX >= barX1 - 12.0f && mouseX <= barX2 + 12.0f &&
         mouseY >= historyTop && mouseY <= historyBottom) {
       if (!isDrag) {
@@ -1366,10 +1571,10 @@ CommandLine::HandleMousePress(double mouseX, double mouseY, bool isDrag)
     }
   }
 
-  if (mouseY >= inputTop && mouseY <= yOffset + panelHeight) {
-    const float inputTextX = 40.0f;
+  if (mouseY >= inputTop && mouseY <= panelY1) {
+    const float inputTextX = panelX0 + 40.0f;
     const float inputAvailableWidth =
-      std::max(48.0f, width - inputTextX - 22.0f);
+      std::max(48.0f, (panelX1 - panelX0) - 40.0f - 22.0f);
     std::size_t visibleStart = 0;
     while (visibleStart < cursorPosition) {
       std::string textThroughCursor =
@@ -1420,17 +1625,55 @@ CommandLine::HandleMouseDrag(double mouseX, double mouseY)
   if (!isOpen) {
     return;
   }
+  if (isResizingWindow && isFloating) {
+    std::array<int, 2> windowDimensions =
+      window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
+    float width = static_cast<float>(windowDimensions[0]);
+    float height = static_cast<float>(windowDimensions[1]);
+
+    float deltaX = static_cast<float>(mouseX) - resizeStartMouseX;
+    float deltaY = static_cast<float>(mouseY) - resizeStartMouseY;
+
+    floatingW = std::clamp(resizeStartW + deltaX, 280.0f, width - floatingX);
+    floatingH = std::clamp(resizeStartH + deltaY, 180.0f, height - floatingY);
+    return;
+  }
+  if (isDraggingWindow && isFloating) {
+    std::array<int, 2> windowDimensions =
+      window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
+    float width = static_cast<float>(windowDimensions[0]);
+    float height = static_cast<float>(windowDimensions[1]);
+    float defaultMarginX = std::clamp(width * 0.08f, 20.0f, 100.0f);
+    float defaultFloatW = std::max(280.0f, width - defaultMarginX * 2.0f);
+    float defaultFloatH = height * 0.52f;
+    if (defaultFloatH < 240.0f) {
+      defaultFloatH = 240.0f;
+    }
+    if (defaultFloatH > height - 20.0f) {
+      defaultFloatH = height - 20.0f;
+    }
+    float floatW = (floatingW > 0.0f) ? floatingW : defaultFloatW;
+    float floatH = (floatingH > 0.0f) ? floatingH : defaultFloatH;
+
+    floatingX = std::clamp(
+      static_cast<float>(mouseX) - dragWindowOffsetX, 0.0f, width - floatW);
+    floatingY = std::clamp(
+      static_cast<float>(mouseY) - dragWindowOffsetY, 0.0f, height - floatH);
+    return;
+  }
   if (isDraggingScrollbar) {
     std::array<int, 2> windowDimensions =
       window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
     float height = static_cast<float>(windowDimensions[1]);
-    float panelHeight = height * 0.52f;
-    if (panelHeight < 240.0f) {
-      panelHeight = 240.0f;
+    float defaultFloatH = height * 0.52f;
+    if (defaultFloatH < 240.0f) {
+      defaultFloatH = 240.0f;
     }
-    if (panelHeight > height - 20.0f) {
-      panelHeight = height - 20.0f;
+    if (defaultFloatH > height - 20.0f) {
+      defaultFloatH = height - 20.0f;
     }
+    float panelHeight =
+      (isFloating && floatingH > 0.0f) ? floatingH : defaultFloatH;
     float effectiveAnim =
       (animationProgress > 0.0f) ? animationProgress : (isOpen ? 1.0f : 0.0f);
     float yOffset = -panelHeight * (1.0f - effectiveAnim);
@@ -1474,6 +1717,8 @@ void
 CommandLine::HandleMouseRelease()
 {
   isDraggingScrollbar = false;
+  isDraggingWindow = false;
+  isResizingWindow = false;
 }
 
 void
@@ -1620,17 +1865,25 @@ CommandLine::AppendCommands(Renderer* r)
   if (deltaTime > 0.1f) {
     deltaTime = 0.1f;
   }
-  const float animationSpeed = 8.5f;
+  const float animationSpeed = 12.0f;
   if (isOpen) {
     animationProgress =
       Math::lerp(animationProgress, 1.0f, animationSpeed * deltaTime);
+    if (animationProgress > 0.999f) {
+      animationProgress = 1.0f;
+    }
   } else {
     animationProgress =
       Math::lerp(animationProgress, 0.0f, animationSpeed * deltaTime);
+    if (animationProgress < 0.01f) {
+      animationProgress = 0.0f;
+    }
   }
-  if (animationProgress <= 0.0f) {
+  if (!isOpen && animationProgress <= 0.0f) {
     return true;
   }
+  // Cubic Ease-Out for ultra-smooth decelerating open/close animations
+  float easeProgress = 1.0f - std::pow(1.0f - animationProgress, 3.0f);
 
   std::array<int, 2> windowDimensions = window->getWindowDimensions();
   int winWidth = windowDimensions[0];
@@ -1638,18 +1891,67 @@ CommandLine::AppendCommands(Renderer* r)
   float width = static_cast<float>(winWidth);
   float height = static_cast<float>(winHeight);
 
-  float panelHeight = height * 0.52f;
-  if (panelHeight < 240.0f) {
-    panelHeight = 240.0f;
+  float defaultMarginX = std::clamp(width * 0.08f, 20.0f, 100.0f);
+  float defaultFloatW = std::max(280.0f, width - defaultMarginX * 2.0f);
+  float defaultFloatH = height * 0.52f;
+  if (defaultFloatH < 240.0f) {
+    defaultFloatH = 240.0f;
   }
-  if (panelHeight > height - 20.0f) {
-    panelHeight = height - 20.0f;
+  if (defaultFloatH > height - 20.0f) {
+    defaultFloatH = height - 20.0f;
   }
-  float yOffset = -panelHeight * (1.0f - animationProgress);
+
+  float floatW = (isFloating && floatingW > 0.0f)
+                   ? std::clamp(floatingW, 280.0f, width)
+                   : defaultFloatW;
+  float floatH = (isFloating && floatingH > 0.0f)
+                   ? std::clamp(floatingH, 180.0f, height)
+                   : defaultFloatH;
+
+  float targetX0 =
+    isFloating ? std::clamp(floatingX, 0.0f, width - floatW) : 0.0f;
+  float targetY0 =
+    isFloating ? std::clamp(floatingY, 0.0f, height - floatH) : 0.0f;
+  float targetW = isFloating ? floatW : width;
+  float targetH = isFloating ? floatH : defaultFloatH;
+
+  if (isFloating && floatingX < 0.0f) {
+    floatingX = defaultMarginX;
+    floatingY = 20.0f;
+    targetX0 = defaultMarginX;
+    targetY0 = 20.0f;
+  }
+
+  if (currentPanelX < 0.0f) {
+    currentPanelX = targetX0;
+    currentPanelY = targetY0;
+    currentPanelW = targetW;
+    currentPanelH = targetH;
+  } else {
+    float smoothSpeed = (isDraggingWindow || isResizingWindow) ? 35.0f : 16.0f;
+    currentPanelX =
+      Math::lerp(currentPanelX, targetX0, smoothSpeed * deltaTime);
+    currentPanelY =
+      Math::lerp(currentPanelY, targetY0, smoothSpeed * deltaTime);
+    currentPanelW = Math::lerp(currentPanelW, targetW, smoothSpeed * deltaTime);
+    currentPanelH = Math::lerp(currentPanelH, targetH, smoothSpeed * deltaTime);
+  }
+
+  float panelHeight = currentPanelH;
+  float ySlide = isFloating
+                   ? (currentPanelY - (1.0f - easeProgress) *
+                                        (currentPanelY + panelHeight + 40.0f))
+                   : (-panelHeight * (1.0f - easeProgress));
+
+  float panelX0 = currentPanelX;
+  float panelX1 = currentPanelX + currentPanelW;
+  float panelY0 = ySlide;
+  float panelY1 = panelY0 + panelHeight;
+
   const float headerHeight = 34.0f;
   const float inputRowHeight = 40.0f;
-  const float historyTop = yOffset + headerHeight + 8.0f;
-  const float inputTop = yOffset + panelHeight - inputRowHeight;
+  const float historyTop = panelY0 + headerHeight + 8.0f;
+  const float inputTop = panelY1 - inputRowHeight;
   const float historyBottom = inputTop - 8.0f;
   float lineSpacing = 24.0f;
   int maxHistoryLines =
@@ -1676,10 +1978,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         4.0f,
-                         yOffset + 6.0f,
-                         width,
-                         yOffset + panelHeight + 6.0f,
+                         panelX0 + 4.0f,
+                         panelY0 + 6.0f,
+                         panelX1 + 4.0f,
+                         panelY1 + 6.0f,
                          0,
                          0,
                          0,
@@ -1687,10 +1989,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packVerticalGradientQuad(batch,
                                     kCap,
                                     packed,
-                                    0.0f,
-                                    yOffset,
-                                    width,
-                                    yOffset + panelHeight,
+                                    panelX0,
+                                    panelY0,
+                                    panelX1,
+                                    panelY1,
                                     12,
                                     22,
                                     38,
@@ -1702,10 +2004,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packVerticalGradientQuad(batch,
                                     kCap,
                                     packed,
-                                    0.0f,
-                                    yOffset,
-                                    width,
-                                    yOffset + headerHeight,
+                                    panelX0,
+                                    panelY0,
+                                    panelX1,
+                                    panelY0 + headerHeight,
                                     20,
                                     48,
                                     75,
@@ -1723,10 +2025,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         0.0f,
-                         yOffset,
-                         width,
-                         yOffset + 2.0f,
+                         panelX0,
+                         panelY0,
+                         panelX1,
+                         panelY0 + 2.0f,
                          neonR,
                          neonG,
                          255,
@@ -1734,10 +2036,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packVerticalGradientQuad(batch,
                                     kCap,
                                     packed,
-                                    0.0f,
-                                    yOffset,
-                                    4.0f,
-                                    yOffset + panelHeight,
+                                    panelX0,
+                                    panelY0,
+                                    panelX0 + 4.0f,
+                                    panelY1,
                                     0,
                                     240,
                                     255,
@@ -1749,23 +2051,341 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         0.0f,
-                         yOffset + headerHeight,
-                         width,
-                         yOffset + headerHeight + 1.0f,
+                         panelX0,
+                         panelY0 + headerHeight,
+                         panelX1,
+                         panelY0 + headerHeight + 1.0f,
                          0,
                          210,
                          255,
                          borderAlpha);
 
+  // Cyberpunk HUD Corner Brackets (4 corners)
+  unsigned char bracketR = 0;
+  unsigned char bracketG = static_cast<unsigned char>(220.0f + pulse * 35.0f);
+  unsigned char bracketB = 255;
+  unsigned char bracketA = static_cast<unsigned char>(200.0f + pulse * 55.0f);
+
+  // Top-Left Corner Bracket
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX0,
+                         panelY0,
+                         panelX0 + 14.0f,
+                         panelY0 + 3.0f,
+                         bracketR,
+                         bracketG,
+                         bracketB,
+                         bracketA);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX0,
+                         panelY0,
+                         panelX0 + 3.0f,
+                         panelY0 + 14.0f,
+                         bracketR,
+                         bracketG,
+                         bracketB,
+                         bracketA);
+
+  // Top-Right Corner Bracket
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX1 - 14.0f,
+                         panelY0,
+                         panelX1,
+                         panelY0 + 3.0f,
+                         bracketR,
+                         bracketG,
+                         bracketB,
+                         bracketA);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX1 - 3.0f,
+                         panelY0,
+                         panelX1,
+                         panelY0 + 14.0f,
+                         bracketR,
+                         bracketG,
+                         bracketB,
+                         bracketA);
+
+  // Bottom-Left Corner Bracket
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX0,
+                         panelY1 - 3.0f,
+                         panelX0 + 14.0f,
+                         panelY1,
+                         bracketR,
+                         bracketG,
+                         bracketB,
+                         bracketA);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX0,
+                         panelY1 - 14.0f,
+                         panelX0 + 3.0f,
+                         panelY1,
+                         bracketR,
+                         bracketG,
+                         bracketB,
+                         bracketA);
+
+  // Bottom-Right Corner Bracket
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX1 - 14.0f,
+                         panelY1 - 3.0f,
+                         panelX1,
+                         panelY1,
+                         bracketR,
+                         bracketG,
+                         bracketB,
+                         bracketA);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX1 - 3.0f,
+                         panelY1 - 14.0f,
+                         panelX1,
+                         panelY1,
+                         bracketR,
+                         bracketG,
+                         bracketB,
+                         bracketA);
+
+  // CRT Horizontal Scanline Texture (Dimmer)
+  for (float scanY = historyTop; scanY < historyBottom; scanY += 3.0f) {
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           panelX0 + 4.0f,
+                           scanY,
+                           panelX1 - 4.0f,
+                           scanY + 1.0f,
+                           0,
+                           180,
+                           255,
+                           12);
+  }
+
+  // CRT Animated Electron Beam Sweep Line (Dimmer)
+  scanlinePhase += deltaTime * 0.5f; // Slower sweep
+  float laserSweepY =
+    historyTop + std::fmod(scanlinePhase, 1.0f) * (historyBottom - historyTop);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX0 + 4.0f,
+                         laserSweepY - 2.0f,
+                         panelX1 - 4.0f,
+                         laserSweepY + 1.0f,
+                         0,
+                         200,
+                         255,
+                         15);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX0 + 4.0f,
+                         laserSweepY,
+                         panelX1 - 4.0f,
+                         laserSweepY + 2.0f,
+                         0,
+                         245,
+                         255,
+                         60);
+
+  // CRT Phosphor Grain & Static Flicker Particles (More subtle)
+  uint32_t seed = static_cast<uint32_t>(caretMilliseconds);
+  for (int s = 0; s < 25; ++s) {
+    seed = seed * 1664525u + 1013904223u;
+    float staticX =
+      panelX0 + 8.0f +
+      static_cast<float>(seed % static_cast<uint32_t>(
+                                  std::max(10.0f, panelX1 - panelX0 - 24.0f)));
+    seed = seed * 1664525u + 1013904223u;
+    float staticY =
+      historyTop +
+      static_cast<float>(seed % static_cast<uint32_t>(
+                                  std::max(10.0f, historyBottom - historyTop)));
+    unsigned char staticAlpha = static_cast<unsigned char>(4 + (seed % 8));
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           staticX,
+                           staticY,
+                           staticX + 2.0f,
+                           staticY + 1.0f,
+                           160,
+                           230,
+                           255,
+                           staticAlpha);
+  }
+
+  // CRT Screen Glass Sheen Reflection
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX0 + 10.0f,
+                         historyTop + 2.0f,
+                         panelX0 + 120.0f,
+                         historyTop + 45.0f,
+                         255,
+                         255,
+                         255,
+                         8);
+
+  // CRT Inner Edge Vignette Shadows
+  packed = packVerticalGradientQuad(batch,
+                                    kCap,
+                                    packed,
+                                    panelX0 + 4.0f,
+                                    historyTop,
+                                    panelX1 - 4.0f,
+                                    historyTop + 10.0f,
+                                    0,
+                                    0,
+                                    0,
+                                    120,
+                                    0,
+                                    0,
+                                    0,
+                                    0);
+  packed = packVerticalGradientQuad(batch,
+                                    kCap,
+                                    packed,
+                                    panelX0 + 4.0f,
+                                    historyBottom - 10.0f,
+                                    panelX1 - 4.0f,
+                                    historyBottom,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    120);
+
+  // Floating window extra borders & corner resize grip
+  if (isFloating) {
+    packed = packVerticalGradientQuad(batch,
+                                      kCap,
+                                      packed,
+                                      panelX1 - 3.0f,
+                                      panelY0 + 2.0f,
+                                      panelX1,
+                                      panelY1 - 2.0f,
+                                      0,
+                                      240,
+                                      255,
+                                      255,
+                                      140,
+                                      80,
+                                      255,
+                                      240);
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           panelX0,
+                           panelY1 - 2.0f,
+                           panelX1,
+                           panelY1,
+                           neonR,
+                           neonG,
+                           255,
+                           200);
+
+    // Prominent cyberpunk corner resize grip handle
+    // (bottom-right)
+    // 1. Dark cyan glass handle backdrop
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           panelX1 - 18.0f,
+                           panelY1 - 18.0f,
+                           panelX1 - 2.0f,
+                           panelY1 - 2.0f,
+                           10,
+                           35,
+                           60,
+                           240);
+    // 2. High-visibility neon border framing
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           panelX1 - 18.0f,
+                           panelY1 - 18.0f,
+                           panelX1 - 2.0f,
+                           panelY1 - 16.0f,
+                           0,
+                           240,
+                           255,
+                           255);
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           panelX1 - 18.0f,
+                           panelY1 - 18.0f,
+                           panelX1 - 16.0f,
+                           panelY1 - 2.0f,
+                           0,
+                           240,
+                           255,
+                           255);
+    // 3. Bright diagonal grip lines (stepped quads)
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           panelX1 - 14.0f,
+                           panelY1 - 5.0f,
+                           panelX1 - 5.0f,
+                           panelY1 - 3.0f,
+                           0,
+                           255,
+                           255,
+                           255);
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           panelX1 - 10.0f,
+                           panelY1 - 9.0f,
+                           panelX1 - 5.0f,
+                           panelY1 - 7.0f,
+                           0,
+                           255,
+                           255,
+                           255);
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           panelX1 - 6.0f,
+                           panelY1 - 13.0f,
+                           panelX1 - 5.0f,
+                           panelY1 - 11.0f,
+                           0,
+                           255,
+                           255,
+                           255);
+  }
+
   // Input row trough background
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         8.0f,
+                         panelX0 + 8.0f,
                          inputTop,
-                         width - 8.0f,
-                         yOffset + panelHeight - 6.0f,
+                         panelX1 - 8.0f,
+                         panelY1 - 6.0f,
                          5,
                          11,
                          20,
@@ -1773,10 +2393,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         8.0f,
+                         panelX0 + 8.0f,
                          inputTop,
-                         11.0f,
-                         yOffset + panelHeight - 6.0f,
+                         panelX0 + 11.0f,
+                         panelY1 - 6.0f,
                          0,
                          220,
                          255,
@@ -1787,18 +2407,19 @@ CommandLine::AppendCommands(Renderer* r)
     float trackTop = historyTop;
     float trackBottom = historyBottom;
     float trackHeight = trackBottom - trackTop;
-    float scrollbarWidth = 5.0f;
-    float scrollbarRightMargin = 9.0f;
-    float barX1 = width - scrollbarWidth - scrollbarRightMargin;
-    float barX2 = width - scrollbarRightMargin;
+    float scrollbarWidth = 4.0f;
+    float scrollbarRightMargin = isFloating ? 16.0f : 12.0f;
+    float barX1 = panelX1 - scrollbarWidth - scrollbarRightMargin;
+    float barX2 = panelX1 - scrollbarRightMargin;
 
+    // Track background
     packed = packSolidQuad(
-      batch, kCap, packed, barX1, trackTop, barX2, trackBottom, 3, 8, 15, 180);
+      batch, kCap, packed, barX1, trackTop, barX2, trackBottom, 3, 8, 15, 120);
 
     float thumbHeight = trackHeight * (static_cast<float>(maxHistoryLines) /
                                        static_cast<float>(totalLines));
-    if (thumbHeight < 15.0f) {
-      thumbHeight = 15.0f;
+    if (thumbHeight < 20.0f) {
+      thumbHeight = 20.0f;
     }
     int maxScroll = totalLines - maxHistoryLines;
     float scrollPercent =
@@ -1807,22 +2428,20 @@ CommandLine::AppendCommands(Renderer* r)
         : 0.0f;
     float thumbTop =
       (trackBottom - thumbHeight) - scrollPercent * (trackHeight - thumbHeight);
+    thumbTop =
+      std::clamp(thumbTop, trackTop + 2.0f, trackBottom - thumbHeight - 2.0f);
     float thumbBottom = thumbTop + thumbHeight;
-    packed = packVerticalGradientQuad(batch,
-                                      kCap,
-                                      packed,
-                                      barX1,
-                                      thumbTop,
-                                      barX2,
-                                      thumbBottom,
-                                      0,
-                                      230,
-                                      255,
-                                      255,
-                                      70,
-                                      130,
-                                      220,
-                                      255);
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           barX1,
+                           thumbTop,
+                           barX2,
+                           thumbBottom,
+                           0,
+                           190,
+                           255,
+                           160);
   }
 
   unsigned char titleColor[4] = { 180, 245, 255, 255 };
@@ -1846,34 +2465,79 @@ CommandLine::AppendCommands(Renderer* r)
     statusColor[2] = 100;
     statusColor[3] = 255;
   } else {
-    statusText = "Tab complete  |  Ctrl+Arrows words  |  Ctrl+A select all";
+    statusText = "Tab complete  |  Double-click title to float";
     statusColor[0] = 130;
     statusColor[1] = 195;
     statusColor[2] = 230;
     statusColor[3] = 255;
   }
 
-  const char* titleStr = "[ILLUMO // DEV CONSOLE]";
-  packed = packFontLine(
-    batch, kCap, packed, 14.0f, yOffset + 9.0f, titleStr, titleColor);
-
-  const float titleWidth = measureFontText(titleStr);
-  const float statusWidth = measureFontText(statusText);
-  float statusX = width - statusWidth - 16.0f;
-  if (statusX < 14.0f + titleWidth + 20.0f) {
-    statusX = 14.0f + titleWidth + 20.0f;
+  float headerWidth = panelX1 - panelX0;
+  std::string titleStr =
+    isFloating ? "[ILLUMO // FLOATING CONSOLE]" : "[ILLUMO // DEV CONSOLE]";
+  if (headerWidth < 380.0f) {
+    titleStr = "[ILLUMO]";
+  }
+  std::string visibleTitle =
+    truncateTextToWidth(titleStr, std::max(0.0f, headerWidth - 20.0f));
+  if (!visibleTitle.empty()) {
+    packed = packFontLine(batch,
+                          kCap,
+                          packed,
+                          panelX0 + 14.0f,
+                          panelY0 + 9.0f,
+                          visibleTitle.c_str(),
+                          titleColor);
   }
 
-  packed = packFontLine(batch,
-                        kCap,
-                        packed,
-                        statusX,
-                        yOffset + 9.0f,
-                        statusText.c_str(),
-                        statusColor);
+  float closeBtnWidth = 0.0f;
+  if (isFloating) {
+    closeBtnWidth = 28.0f;
+    float closeX1 = panelX1 - 8.0f;
+    float closeX0 = panelX1 - 28.0f;
+    float closeY0 = panelY0 + 6.0f;
+    float closeY1 = panelY0 + 24.0f;
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           closeX0,
+                           closeY0,
+                           closeX1,
+                           closeY1,
+                           180,
+                           40,
+                           50,
+                           240);
+    unsigned char closeTextColor[4] = { 255, 255, 255, 255 };
+    packed = packFontLine(
+      batch, kCap, packed, closeX0 + 6.0f, closeY0 + 3.0f, "X", closeTextColor);
+  }
+
+  float titleWidth = measureFontText(visibleTitle);
+  float statusAvailableWidth =
+    (panelX1 - panelX0) - titleWidth - closeBtnWidth - 44.0f;
+  if (statusAvailableWidth >= 60.0f) {
+    std::string truncatedStatus =
+      truncateTextToWidth(statusText, statusAvailableWidth);
+    if (!truncatedStatus.empty()) {
+      float statusX =
+        panelX1 - closeBtnWidth - measureFontText(truncatedStatus) - 16.0f;
+      packed = packFontLine(batch,
+                            kCap,
+                            packed,
+                            statusX,
+                            panelY0 + 9.0f,
+                            truncatedStatus.c_str(),
+                            statusColor);
+    }
+  }
 
   // History text is drawn after chrome, but before the input row, so its
   // clipping and scroll thumb agree with the available space.
+  float historyAvailableWidth = std::max(20.0f, (panelX1 - panelX0) - 32.0f);
+  if (totalLines > maxHistoryLines) {
+    historyAvailableWidth -= 16.0f;
+  }
   float currentY = historyTop;
   int endIdx = static_cast<int>(history.size()) - 1 - scrollOffset;
   if (endIdx >= 0) {
@@ -1884,8 +2548,38 @@ CommandLine::AppendCommands(Renderer* r)
     for (int i = startIdx; i <= endIdx; ++i) {
       const historyBuffer& item = history[static_cast<size_t>(i)];
       unsigned char itemColor[4] = { item.r, item.g, item.b, item.a };
-      packed = packFontLine(
-        batch, kCap, packed, 14.0f, currentY, item.content.c_str(), itemColor);
+      if (item.content.rfind("SUCCESS:", 0) == 0) {
+        itemColor[0] = 60;
+        itemColor[1] = 255;
+        itemColor[2] = 160;
+        itemColor[3] = 255;
+      } else if (item.content.rfind("ERROR:", 0) == 0) {
+        itemColor[0] = 255;
+        itemColor[1] = 75;
+        itemColor[2] = 95;
+        itemColor[3] = 255;
+      } else if (item.content.rfind("WARNING:", 0) == 0) {
+        itemColor[0] = 255;
+        itemColor[1] = 210;
+        itemColor[2] = 50;
+        itemColor[3] = 255;
+      }
+      std::string truncatedLine =
+        truncateTextToWidth(item.content, historyAvailableWidth);
+      if (!truncatedLine.empty()) {
+        // Less strict cutoff: allow text to slightly overlap top/bottom
+        // boundary to prevent abrupt popping.
+        if (currentY >= historyTop - 12.0f &&
+            currentY <= historyBottom + 2.0f) {
+          packed = packFontLine(batch,
+                                kCap,
+                                packed,
+                                panelX0 + 14.0f,
+                                currentY,
+                                truncatedLine.c_str(),
+                                itemColor);
+        }
+      }
       currentY += lineSpacing;
     }
   }
@@ -1893,8 +2587,9 @@ CommandLine::AppendCommands(Renderer* r)
   // The input row has a fixed-width text viewport. This keeps a long command
   // editable: the cursor remains on-screen, selection is visible, and the
   // caret is a real rendered bar rather than an appended underscore.
-  const float inputTextX = 40.0f;
-  const float inputAvailableWidth = std::max(48.0f, width - inputTextX - 22.0f);
+  const float inputTextX = panelX0 + 42.0f;
+  const float inputAvailableWidth =
+    std::max(48.0f, (panelX1 - panelX0) - 42.0f - 22.0f);
   std::size_t visibleStart = 0;
   while (visibleStart < cursorPosition) {
     std::string textThroughCursor =
@@ -1916,7 +2611,32 @@ CommandLine::AppendCommands(Renderer* r)
   std::string visibleInput =
     currentInput.substr(visibleStart, visibleEnd - visibleStart);
   float inputY = inputTop + 12.0f;
-  packed = packFontLine(batch, kCap, packed, 16.0f, inputY, ">", promptColor);
+
+  // Cyberpunk Prompt Pill Badge Box
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX0 + 12.0f,
+                         inputY - 3.0f,
+                         panelX0 + 34.0f,
+                         inputY + 16.0f,
+                         15,
+                         45,
+                         75,
+                         230);
+  packed = packSolidQuad(batch,
+                         kCap,
+                         packed,
+                         panelX0 + 12.0f,
+                         inputY - 3.0f,
+                         panelX0 + 14.0f,
+                         inputY + 16.0f,
+                         0,
+                         240,
+                         255,
+                         255);
+  packed = packFontLine(
+    batch, kCap, packed, panelX0 + 18.0f, inputY, ">", promptColor);
 
   if (hasSelection()) {
     std::size_t selectionStart = std::min(cursorPosition, selectionAnchor);
@@ -1966,18 +2686,32 @@ CommandLine::AppendCommands(Renderer* r)
     std::string textBeforeCaret =
       visibleInput.substr(0, cursorPosition - visibleStart);
     float caretX = inputTextX + measureFontText(textBeforeCaret);
-    // Glow backlight + sharp cursor stick
+    // Futuristic Multi-Layer Laser Caret with Crosshair Ticks
+    // Layer 1: Outer soft aura glow
     packed = packSolidQuad(batch,
                            kCap,
                            packed,
-                           caretX - 2.0f,
-                           inputY - 3.0f,
-                           caretX + 4.0f,
-                           inputY + 16.0f,
+                           caretX - 3.0f,
+                           inputY - 4.0f,
+                           caretX + 5.0f,
+                           inputY + 17.0f,
                            0,
                            200,
                            255,
-                           80);
+                           70);
+    // Layer 2: Mid neon cyan bar
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           caretX - 1.0f,
+                           inputY - 3.0f,
+                           caretX + 3.0f,
+                           inputY + 16.0f,
+                           0,
+                           240,
+                           255,
+                           180);
+    // Layer 3: Laser white core stick
     packed = packSolidQuad(batch,
                            kCap,
                            packed,
@@ -1985,10 +2719,33 @@ CommandLine::AppendCommands(Renderer* r)
                            inputY - 3.0f,
                            caretX + 2.0f,
                            inputY + 16.0f,
-                           180,
-                           245,
+                           220,
+                           255,
                            255,
                            255);
+    // Top & Bottom Crosshair Cap Ticks
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           caretX - 2.0f,
+                           inputY - 4.0f,
+                           caretX + 4.0f,
+                           inputY - 2.0f,
+                           0,
+                           245,
+                           255,
+                           240);
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           caretX - 2.0f,
+                           inputY + 15.0f,
+                           caretX + 4.0f,
+                           inputY + 17.0f,
+                           0,
+                           245,
+                           255,
+                           240);
   }
 
   if (packed < 4) {

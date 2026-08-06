@@ -136,7 +136,7 @@ testStartRegistersGameFeatures()
            "module starts in edit mode");
   testEqSize(g,
              fixture.registry.GetCommandNames().size(),
-             15,
+             17,
              "all game commands are registered");
   testTrue(
     g, fixture.registry.HasCommand("ruleset"), "ruleset command registered");
@@ -162,7 +162,7 @@ testStartRegistersGameFeatures()
   fixture.started = false;
   testEqSize(g,
              fixture.registry.GetCommandNames().size(),
-             0,
+             2,
              "Exit unregisters every game command");
 }
 

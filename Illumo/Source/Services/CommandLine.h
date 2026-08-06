@@ -91,6 +91,12 @@ public:
   std::size_t getCursorPosition() const { return cursorPosition; }
   bool hasSelection() const { return cursorPosition != selectionAnchor; }
   const std::vector<historyBuffer>& getHistory() const { return history; }
+  bool getFloatingMode() const { return isFloating; }
+  void setFloatingMode(bool floating);
+  void ToggleFloatingMode();
+  float getFloatingWidth() const { return floatingW; }
+  float getFloatingHeight() const { return floatingH; }
+  void setFloatingSize(float w, float h);
 
 private:
   struct ConsoleVertex
@@ -113,6 +119,29 @@ private:
   bool isDraggingScrollbar;
   float dragStartY;
   int dragStartScrollOffset;
+
+  // Floating, Window Drag & Resize State
+  bool isFloating;
+  float floatingX;
+  float floatingY;
+  float floatingW;
+  float floatingH;
+  bool isDraggingWindow;
+  bool isResizingWindow;
+  float dragWindowOffsetX;
+  float dragWindowOffsetY;
+  float resizeStartW;
+  float resizeStartH;
+  float resizeStartMouseX;
+  float resizeStartMouseY;
+  std::chrono::high_resolution_clock::time_point lastHeaderClickTime;
+
+  // Animated Layout Smoothing & FX
+  float currentPanelX;
+  float currentPanelY;
+  float currentPanelW;
+  float currentPanelH;
+  float scanlinePhase;
 
   IEnvVars* envVars;
   IRenderWindow* window;

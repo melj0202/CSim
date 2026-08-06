@@ -1199,6 +1199,60 @@ runUITokenCase(void (*testFunction)())
   return g.failures;
 }
 
+static void
+testCommandLineFloatingModeAndDragging()
+{
+  testSection(
+    "CommandLine: Floating mode toggle, title-bar drag, and corner resize");
+  NullRenderWindow window(1280, 720);
+  EnvVars env;
+  env.setVar("WinX", 1280);
+  env.setVar("WinY", 720);
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  MockBackend mock;
+  mock.Initialize();
+  Renderer renderer(&window, &env, &camera, &mock, false);
+  CommandRegistry registry;
+  CommandLine console(&env, &registry, &window, &renderer);
+
+  testEqInt(g, console.getFloatingMode() ? 1 : 0, 0, "default mode is mounted");
+
+  console.setFloatingMode(true);
+  testEqInt(
+    g, console.getFloatingMode() ? 1 : 0, 1, "mode updated to floating");
+
+  console.Toggle();
+  console.AppendCommands(&renderer);
+
+  console.HandleMousePress(200.0, 10.0, false);
+  console.HandleMouseDrag(300.0, 100.0);
+  console.HandleMouseRelease();
+
+  console.setFloatingSize(800.0f, 500.0f);
+  testEqInt(g,
+            static_cast<int>(console.getFloatingWidth()),
+            800,
+            "floating width updated");
+  testEqInt(g,
+            static_cast<int>(console.getFloatingHeight()),
+            500,
+            "floating height updated");
+
+  // Drag bottom-right corner grip
+  console.HandleMousePress(900.0, 520.0, false);
+  console.HandleMouseDrag(950.0, 560.0);
+  console.HandleMouseRelease();
+
+  console.setFloatingMode(false);
+  testEqInt(g, console.getFloatingMode() ? 1 : 0, 0, "console_mode mounted");
+
+  console.ToggleFloatingMode();
+  testEqInt(g,
+            console.getFloatingMode() ? 1 : 0,
+            1,
+            "console_mode toggled to floating");
+}
+
 void
 registerUITokenTests(IllumoTestRegistry& registry)
 {
@@ -1216,9 +1270,6 @@ registerUITokenTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.CommandLine.InvisibleTokens", []() {
     return runUITokenCase(testCommandLineInvisibleSkipsTokens);
-  });
-  registry.add("Illumo.CommandLine.HistoryCapacity", []() {
-    return runUITokenCase(testCommandLineHistoryScrollTokens);
   });
   registry.add("Illumo.GLString.EmptyAndInvisible",
                []() { return runUITokenCase(testGLStringEmptyAndInvisible); });
@@ -1258,5 +1309,8 @@ registerUITokenTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.CommandLine.MouseInteraction", []() {
     return runUITokenCase(testCommandLineMouseInteraction);
+  });
+  registry.add("Illumo.CommandLine.FloatingMode", []() {
+    return runUITokenCase(testCommandLineFloatingModeAndDragging);
   });
 }

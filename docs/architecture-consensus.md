@@ -7,7 +7,7 @@ This file **merges and supersedes** scattered design memory into one coherent st
 
 | Source | Role in this document |
 |--------|------------------------|
-| Desktop “Main agenda for Illumo” | Product wishlist → §7 scorecard |
+| Desktop “Main agenda for Illumo” | Product wishlist → §7 scorecard |  
 | `Illumo_Architecture_Decisions.pdf` (ChatGPT) | CA / OOP-practice design review → purpose, ownership, input, rules, SYCL |
 | `Illumo_Engine_Architecture_Decisions.pdf` (ChatGPT) | Aspirational 2D engine → what we kept vs discarded |
 | `gpt_illumo_arch_assessment.pdf` (ChatGPT) | Assessment of *current* tree → risks, direction |
@@ -413,9 +413,10 @@ The Debug-only console separates general tooling from product behavior:
 - Multi-command chaining splits on `;` (preserving quotes and escape sequences).
 - Alias macro management (`alias`, `unalias`) expands user-defined command shortcuts (with recursion capped at depth 8) and integrates aliases into auto-completion.
 - Inline ghost-text auto-suggestions display faint completion candidates after the caret; pressing Right-Arrow or Tab accepts the ghost text.
+- Window mode supports switching between top-mounted and floating modes (via `console_mode [floating|mounted|toggle]` or double-clicking the console title bar). In floating mode, title-bar dragging repositions the window across the screen, and dragging the bottom-right corner grip handle (or running `console_size <W> <H> | reset`) dynamically resizes the console window with real-time UI bounds clipping.
 - Dynamic parameter syntax hints dynamically render usage instructions in the status bar while typing known commands.
 - Utility commands include `repeat <N> <command>`, `history [filter|clear]`, and `sysinfo`/`status` telemetry dashboard.
-- Console chrome features a futuristic cyberpunk glassmorphism visual layout with pulsing neon top trim, dark space glass backdrop, status badges, and single-batch quad rendering (6,000 UI quads capacity).
+- Console chrome features a futuristic cyberpunk glassmorphism visual layout with pulsing neon HUD corner brackets, holographic scanlines, multi-layer laser caret beam with crosshair ticks, prompt pill badge, color-coded log level prefixes, and single-batch quad rendering (6,000 UI quads capacity).
 - `Logger` may mirror output into the console while services are alive. The host
   clears that non-owning logger context before destroying the services.
 
