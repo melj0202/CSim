@@ -39,6 +39,9 @@ public:
   void MoveCursorHome(bool select = false);
   void MoveCursorEnd(bool select = false);
   void SelectAll();
+  void CopySelection();
+  void PasteClipboard();
+  void CutSelection();
   void ClearInput();
   void Complete();
   void ExecuteCommand();
@@ -47,6 +50,9 @@ public:
   void AddToHistory(std::string command);
   void ScrollUp();
   void ScrollDown();
+  void ToggleFloatingMode();
+  void setFloatingMode(bool floating);
+  bool isFloatingMode() const { return isFloating; }
   void HandleMousePress(double mouseX, double mouseY, bool isDrag = false);
   void HandleMouseDrag(double mouseX, double mouseY);
   void HandleMouseRelease();
@@ -113,6 +119,13 @@ private:
   bool isDraggingScrollbar;
   float dragStartY;
   int dragStartScrollOffset;
+  bool isFloating;
+  float floatingX;
+  float floatingY;
+  bool isDraggingWindow;
+  float dragWindowOffsetX;
+  float dragWindowOffsetY;
+  std::chrono::high_resolution_clock::time_point lastHeaderClickTime;
 
   IEnvVars* envVars;
   IRenderWindow* window;

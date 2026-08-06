@@ -125,6 +125,12 @@ DebugModule::Update(double dt)
           ic->commandLine->Complete();
         } else if (controlPressed && key == KeyCode::A) {
           ic->commandLine->SelectAll();
+        } else if (controlPressed && key == KeyCode::C) {
+          ic->commandLine->CopySelection();
+        } else if (controlPressed && key == KeyCode::V) {
+          ic->commandLine->PasteClipboard();
+        } else if (controlPressed && key == KeyCode::X) {
+          ic->commandLine->CutSelection();
         } else if (controlPressed && key == KeyCode::L) {
           ic->commandLine->ClearInput();
         } else if (key == KeyCode::Enter) {

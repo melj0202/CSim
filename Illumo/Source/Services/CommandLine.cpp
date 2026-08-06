@@ -1,3 +1,6 @@
+#ifndef GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_NONE
+#endif
 #include "CommandLine.h"
 #include "CellMain.h"
 #include "Rendering/IMesh.h"
@@ -5,6 +8,7 @@
 #include "Rendering/Renderer.h"
 #include "Services/Logger.h"
 #include "thirdparty/stb/stb_easy_font.h"
+#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
@@ -50,6 +54,9 @@ const BuiltInCommandHelp kBuiltInCommands[] = {
   { "alias", "alias [<name> <command>]", "Create or list command aliases" },
   { "clear", "clear", "Clear console output" },
   { "close", "close", "Close the console" },
+  { "console_mode",
+    "console_mode [floating|mounted|toggle]",
+    "Toggle or set floating vs top-mounted console mode" },
   { "echo", "echo <text>", "Print text to the console" },
   { "fade", "fade [0..1000]", "Show or set cell fade speed" },
   { "fps", "fps [on|off|toggle]", "Show or change the FPS overlay" },
@@ -209,6 +216,13 @@ CommandLine::CommandLine(IEnvVars* vars,
   , isDraggingScrollbar(false)
   , dragStartY(0.0f)
   , dragStartScrollOffset(0)
+  , isFloating(false)
+  , floatingX(-1.0f)
+  , floatingY(-1.0f)
+  , isDraggingWindow(false)
+  , dragWindowOffsetX(0.0f)
+  , dragWindowOffsetY(0.0f)
+  , lastHeaderClickTime()
 {
   isOpen = false;
   currentInput = "";
@@ -463,6 +477,56 @@ CommandLine::SelectAll()
 {
   selectionAnchor = 0;
   cursorPosition = currentInput.size();
+}
+
+void
+CommandLine::CopySelection()
+{
+  std::string copyText;
+  if (hasSelection()) {
+    std::size_t start = std::min(cursorPosition, selectionAnchor);
+    std::size_t end = std::max(cursorPosition, selectionAnchor);
+    copyText = currentInput.substr(start, end - start);
+  } else {
+    copyText = currentInput;
+  }
+  if (!copyText.empty() && window && window->getWindowInstance()) {
+    glfwSetClipboardString(window->getWindowInstance(), copyText.c_str());
+  }
+}
+
+void
+CommandLine::PasteClipboard()
+{
+  if (!window || !window->getWindowInstance()) {
+    return;
+  }
+  const char* clipText = glfwGetClipboardString(window->getWindowInstance());
+  if (clipText == nullptr || std::strlen(clipText) == 0) {
+    return;
+  }
+
+  eraseSelection();
+  std::string pasteStr(clipText);
+  pasteStr.erase(std::remove(pasteStr.begin(), pasteStr.end(), '\r'),
+                 pasteStr.end());
+  pasteStr.erase(std::remove(pasteStr.begin(), pasteStr.end(), '\n'),
+                 pasteStr.end());
+
+  currentInput.insert(cursorPosition, pasteStr);
+  cursorPosition += pasteStr.size();
+  selectionAnchor = cursorPosition;
+  clearCompletionHint();
+}
+
+void
+CommandLine::CutSelection()
+{
+  if (hasSelection()) {
+    CopySelection();
+    eraseSelection();
+    clearCompletionHint();
+  }
 }
 
 void
@@ -838,8 +902,22 @@ CommandLine::ExecuteCommand()
   ClearInput();
   scrollOffset = 0;
 
+  auto startTime = std::chrono::high_resolution_clock::now();
+
   for (const std::string& singleCmd : subCommands) {
     ExecuteSingleCommand(singleCmd, 0);
+  }
+
+  auto endTime = std::chrono::high_resolution_clock::now();
+  double ms =
+    std::chrono::duration<double, std::milli>(endTime - startTime).count();
+  if (!history.empty() &&
+      history.back().content != "Illumo Developer Console") {
+    std::ostringstream oss;
+    oss << std::fixed;
+    oss.precision(2);
+    oss << "Executed in " << ms << "ms";
+    logTrace(oss.str());
   }
 }
 
@@ -1147,6 +1225,22 @@ CommandLine::ExecuteSingleCommand(const std::string& singleCmd,
       envVars->setVar("fullscreen", requestedValue);
       logSuccess(std::string("Fullscreen: ") + (requestedValue ? "on" : "off"));
     }
+  } else if (cmd == "console_mode") {
+    if (args.empty()) {
+      logNormal(std::string("Console mode: ") +
+                (isFloating ? "floating" : "mounted"));
+    } else {
+      std::string arg = lowerCopy(args[0]);
+      if (arg == "floating" || arg == "float") {
+        setFloatingMode(true);
+      } else if (arg == "mounted" || arg == "top" || arg == "docked") {
+        setFloatingMode(false);
+      } else if (arg == "toggle") {
+        ToggleFloatingMode();
+      } else {
+        logError("Usage: console_mode [floating|mounted|toggle]");
+      }
+    }
   } else if (cmd == "close") {
     isOpen = false;
   } else if (cmd == "quit") {
@@ -1252,6 +1346,36 @@ CommandLine::ScrollDown()
 }
 
 void
+CommandLine::ToggleFloatingMode()
+{
+  setFloatingMode(!isFloating);
+}
+
+void
+CommandLine::setFloatingMode(bool floating)
+{
+  isFloating = floating;
+  if (isFloating) {
+    std::array<int, 2> dims =
+      window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
+    float w = static_cast<float>(dims[0]);
+    float h = static_cast<float>(dims[1]);
+    float panelH = h * 0.52f;
+    if (panelH < 240.0f) {
+      panelH = 240.0f;
+    }
+    if (panelH > h - 20.0f) {
+      panelH = h - 20.0f;
+    }
+    float margin = std::clamp(w * 0.08f, 20.0f, 100.0f);
+    floatingX = margin;
+    floatingY = 20.0f;
+  }
+  logSuccess(isFloating ? "Console mode set to FLOATING"
+                        : "Console mode set to MOUNTED");
+}
+
+void
 CommandLine::HandleScroll(double yOffset)
 {
   if (!isOpen || history.empty()) {
@@ -1314,14 +1438,49 @@ CommandLine::HandleMousePress(double mouseX, double mouseY, bool isDrag)
   float effectiveAnim =
     (animationProgress > 0.0f) ? animationProgress : (isOpen ? 1.0f : 0.0f);
   float yOffset = -panelHeight * (1.0f - effectiveAnim);
+  float defaultMarginX = std::clamp(width * 0.08f, 20.0f, 100.0f);
+  float floatW = std::max(280.0f, width - defaultMarginX * 2.0f);
+  if (isFloating && floatingX < 0.0f) {
+    floatingX = defaultMarginX;
+    floatingY = 20.0f;
+  }
+  float panelX0 =
+    isFloating ? std::clamp(floatingX, 0.0f, width - floatW) : 0.0f;
+  float panelX1 = isFloating ? (panelX0 + floatW) : width;
+  float panelY0 =
+    isFloating ? std::clamp(floatingY, 0.0f, height - panelHeight) : yOffset;
+  float panelY1 = panelY0 + panelHeight;
+
   const float headerHeight = 34.0f;
   const float inputRowHeight = 40.0f;
-  const float historyTop = yOffset + headerHeight + 8.0f;
-  const float inputTop = yOffset + panelHeight - inputRowHeight;
+  const float historyTop = panelY0 + headerHeight + 8.0f;
+  const float inputTop = panelY1 - inputRowHeight;
   const float historyBottom = inputTop - 8.0f;
 
-  if (mouseY < yOffset || mouseY > yOffset + panelHeight) {
+  if (mouseX < panelX0 || mouseX > panelX1 || mouseY < panelY0 ||
+      mouseY > panelY1) {
     return;
+  }
+
+  if (mouseY >= panelY0 && mouseY <= panelY0 + headerHeight) {
+    if (!isDrag) {
+      auto now = std::chrono::high_resolution_clock::now();
+      auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                         now - lastHeaderClickTime)
+                         .count();
+      if (elapsedMs > 0 && elapsedMs < 350) {
+        ToggleFloatingMode();
+        lastHeaderClickTime = std::chrono::high_resolution_clock::time_point{};
+        return;
+      }
+      lastHeaderClickTime = now;
+      if (isFloating) {
+        isDraggingWindow = true;
+        dragWindowOffsetX = static_cast<float>(mouseX) - panelX0;
+        dragWindowOffsetY = static_cast<float>(mouseY) - panelY0;
+        return;
+      }
+    }
   }
 
   int totalLines = static_cast<int>(history.size());
@@ -1337,8 +1496,8 @@ CommandLine::HandleMousePress(double mouseX, double mouseY, bool isDrag)
   if (totalLines > maxHistoryLines) {
     float scrollbarWidth = 5.0f;
     float scrollbarRightMargin = 9.0f;
-    float barX1 = width - scrollbarWidth - scrollbarRightMargin;
-    float barX2 = width - scrollbarRightMargin;
+    float barX1 = panelX1 - scrollbarWidth - scrollbarRightMargin;
+    float barX2 = panelX1 - scrollbarRightMargin;
     if (mouseX >= barX1 - 12.0f && mouseX <= barX2 + 12.0f &&
         mouseY >= historyTop && mouseY <= historyBottom) {
       if (!isDrag) {
@@ -1366,10 +1525,10 @@ CommandLine::HandleMousePress(double mouseX, double mouseY, bool isDrag)
     }
   }
 
-  if (mouseY >= inputTop && mouseY <= yOffset + panelHeight) {
-    const float inputTextX = 40.0f;
+  if (mouseY >= inputTop && mouseY <= panelY1) {
+    const float inputTextX = panelX0 + 40.0f;
     const float inputAvailableWidth =
-      std::max(48.0f, width - inputTextX - 22.0f);
+      std::max(48.0f, (panelX1 - panelX0) - 62.0f);
     std::size_t visibleStart = 0;
     while (visibleStart < cursorPosition) {
       std::string textThroughCursor =
@@ -1418,6 +1577,28 @@ void
 CommandLine::HandleMouseDrag(double mouseX, double mouseY)
 {
   if (!isOpen) {
+    return;
+  }
+  if (isDraggingWindow && isFloating) {
+    std::array<int, 2> windowDimensions =
+      window ? window->getWindowDimensions() : std::array<int, 2>{ 1280, 720 };
+    float width = static_cast<float>(windowDimensions[0]);
+    float height = static_cast<float>(windowDimensions[1]);
+    float panelHeight = height * 0.52f;
+    if (panelHeight < 240.0f) {
+      panelHeight = 240.0f;
+    }
+    if (panelHeight > height - 20.0f) {
+      panelHeight = height - 20.0f;
+    }
+    float defaultMarginX = std::clamp(width * 0.08f, 20.0f, 100.0f);
+    float floatW = std::max(280.0f, width - defaultMarginX * 2.0f);
+
+    floatingX = std::clamp(
+      static_cast<float>(mouseX) - dragWindowOffsetX, 0.0f, width - floatW);
+    floatingY = std::clamp(static_cast<float>(mouseY) - dragWindowOffsetY,
+                           0.0f,
+                           height - panelHeight);
     return;
   }
   if (isDraggingScrollbar) {
@@ -1474,6 +1655,7 @@ void
 CommandLine::HandleMouseRelease()
 {
   isDraggingScrollbar = false;
+  isDraggingWindow = false;
 }
 
 void
@@ -1646,10 +1828,23 @@ CommandLine::AppendCommands(Renderer* r)
     panelHeight = height - 20.0f;
   }
   float yOffset = -panelHeight * (1.0f - animationProgress);
+  float defaultMarginX = std::clamp(width * 0.08f, 20.0f, 100.0f);
+  float floatW = std::max(280.0f, width - defaultMarginX * 2.0f);
+  if (isFloating && floatingX < 0.0f) {
+    floatingX = defaultMarginX;
+    floatingY = 20.0f;
+  }
+  float panelX0 =
+    isFloating ? std::clamp(floatingX, 0.0f, width - floatW) : 0.0f;
+  float panelX1 = isFloating ? (panelX0 + floatW) : width;
+  float panelY0 =
+    isFloating ? std::clamp(floatingY, 0.0f, height - panelHeight) : yOffset;
+  float panelY1 = panelY0 + panelHeight;
+
   const float headerHeight = 34.0f;
   const float inputRowHeight = 40.0f;
-  const float historyTop = yOffset + headerHeight + 8.0f;
-  const float inputTop = yOffset + panelHeight - inputRowHeight;
+  const float historyTop = panelY0 + headerHeight + 8.0f;
+  const float inputTop = panelY1 - inputRowHeight;
   const float historyBottom = inputTop - 8.0f;
   float lineSpacing = 24.0f;
   int maxHistoryLines =
@@ -1676,10 +1871,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         4.0f,
-                         yOffset + 6.0f,
-                         width,
-                         yOffset + panelHeight + 6.0f,
+                         panelX0 + 4.0f,
+                         panelY0 + 6.0f,
+                         panelX1 + 4.0f,
+                         panelY1 + 6.0f,
                          0,
                          0,
                          0,
@@ -1687,10 +1882,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packVerticalGradientQuad(batch,
                                     kCap,
                                     packed,
-                                    0.0f,
-                                    yOffset,
-                                    width,
-                                    yOffset + panelHeight,
+                                    panelX0,
+                                    panelY0,
+                                    panelX1,
+                                    panelY1,
                                     12,
                                     22,
                                     38,
@@ -1702,10 +1897,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packVerticalGradientQuad(batch,
                                     kCap,
                                     packed,
-                                    0.0f,
-                                    yOffset,
-                                    width,
-                                    yOffset + headerHeight,
+                                    panelX0,
+                                    panelY0,
+                                    panelX1,
+                                    panelY0 + headerHeight,
                                     20,
                                     48,
                                     75,
@@ -1723,10 +1918,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         0.0f,
-                         yOffset,
-                         width,
-                         yOffset + 2.0f,
+                         panelX0,
+                         panelY0,
+                         panelX1,
+                         panelY0 + 2.0f,
                          neonR,
                          neonG,
                          255,
@@ -1734,10 +1929,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packVerticalGradientQuad(batch,
                                     kCap,
                                     packed,
-                                    0.0f,
-                                    yOffset,
-                                    4.0f,
-                                    yOffset + panelHeight,
+                                    panelX0,
+                                    panelY0,
+                                    panelX0 + 4.0f,
+                                    panelY1,
                                     0,
                                     240,
                                     255,
@@ -1749,23 +1944,53 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         0.0f,
-                         yOffset + headerHeight,
-                         width,
-                         yOffset + headerHeight + 1.0f,
+                         panelX0,
+                         panelY0 + headerHeight,
+                         panelX1,
+                         panelY0 + headerHeight + 1.0f,
                          0,
                          210,
                          255,
                          borderAlpha);
 
+  // In floating mode, add right-side and bottom border lines for a full frame.
+  if (isFloating) {
+    packed = packVerticalGradientQuad(batch,
+                                      kCap,
+                                      packed,
+                                      panelX1 - 4.0f,
+                                      panelY0,
+                                      panelX1,
+                                      panelY1,
+                                      0,
+                                      240,
+                                      255,
+                                      255,
+                                      140,
+                                      80,
+                                      255,
+                                      240);
+    packed = packSolidQuad(batch,
+                           kCap,
+                           packed,
+                           panelX0,
+                           panelY1 - 2.0f,
+                           panelX1,
+                           panelY1,
+                           neonR,
+                           neonG,
+                           255,
+                           200);
+  }
+
   // Input row trough background
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         8.0f,
+                         panelX0 + 8.0f,
                          inputTop,
-                         width - 8.0f,
-                         yOffset + panelHeight - 6.0f,
+                         panelX1 - 8.0f,
+                         panelY1 - 6.0f,
                          5,
                          11,
                          20,
@@ -1773,10 +1998,10 @@ CommandLine::AppendCommands(Renderer* r)
   packed = packSolidQuad(batch,
                          kCap,
                          packed,
-                         8.0f,
+                         panelX0 + 8.0f,
                          inputTop,
-                         11.0f,
-                         yOffset + panelHeight - 6.0f,
+                         panelX0 + 11.0f,
+                         panelY1 - 6.0f,
                          0,
                          220,
                          255,
@@ -1789,8 +2014,8 @@ CommandLine::AppendCommands(Renderer* r)
     float trackHeight = trackBottom - trackTop;
     float scrollbarWidth = 5.0f;
     float scrollbarRightMargin = 9.0f;
-    float barX1 = width - scrollbarWidth - scrollbarRightMargin;
-    float barX2 = width - scrollbarRightMargin;
+    float barX1 = panelX1 - scrollbarWidth - scrollbarRightMargin;
+    float barX2 = panelX1 - scrollbarRightMargin;
 
     packed = packSolidQuad(
       batch, kCap, packed, barX1, trackTop, barX2, trackBottom, 3, 8, 15, 180);
@@ -1853,22 +2078,23 @@ CommandLine::AppendCommands(Renderer* r)
     statusColor[3] = 255;
   }
 
-  const char* titleStr = "[ILLUMO // DEV CONSOLE]";
+  const char* titleStr =
+    isFloating ? "[ILLUMO // FLOATING CONSOLE]" : "[ILLUMO // DEV CONSOLE]";
   packed = packFontLine(
-    batch, kCap, packed, 14.0f, yOffset + 9.0f, titleStr, titleColor);
+    batch, kCap, packed, panelX0 + 14.0f, panelY0 + 9.0f, titleStr, titleColor);
 
   const float titleWidth = measureFontText(titleStr);
   const float statusWidth = measureFontText(statusText);
-  float statusX = width - statusWidth - 16.0f;
-  if (statusX < 14.0f + titleWidth + 20.0f) {
-    statusX = 14.0f + titleWidth + 20.0f;
+  float statusX = panelX1 - statusWidth - 16.0f;
+  if (statusX < panelX0 + 14.0f + titleWidth + 20.0f) {
+    statusX = panelX0 + 14.0f + titleWidth + 20.0f;
   }
 
   packed = packFontLine(batch,
                         kCap,
                         packed,
                         statusX,
-                        yOffset + 9.0f,
+                        panelY0 + 9.0f,
                         statusText.c_str(),
                         statusColor);
 
@@ -1884,17 +2110,20 @@ CommandLine::AppendCommands(Renderer* r)
     for (int i = startIdx; i <= endIdx; ++i) {
       const historyBuffer& item = history[static_cast<size_t>(i)];
       unsigned char itemColor[4] = { item.r, item.g, item.b, item.a };
-      packed = packFontLine(
-        batch, kCap, packed, 14.0f, currentY, item.content.c_str(), itemColor);
+      packed = packFontLine(batch,
+                            kCap,
+                            packed,
+                            panelX0 + 14.0f,
+                            currentY,
+                            item.content.c_str(),
+                            itemColor);
       currentY += lineSpacing;
     }
   }
 
-  // The input row has a fixed-width text viewport. This keeps a long command
-  // editable: the cursor remains on-screen, selection is visible, and the
-  // caret is a real rendered bar rather than an appended underscore.
-  const float inputTextX = 40.0f;
-  const float inputAvailableWidth = std::max(48.0f, width - inputTextX - 22.0f);
+  const float inputTextX = panelX0 + 40.0f;
+  const float inputAvailableWidth =
+    std::max(48.0f, (panelX1 - panelX0) - 62.0f);
   std::size_t visibleStart = 0;
   while (visibleStart < cursorPosition) {
     std::string textThroughCursor =
@@ -1916,7 +2145,8 @@ CommandLine::AppendCommands(Renderer* r)
   std::string visibleInput =
     currentInput.substr(visibleStart, visibleEnd - visibleStart);
   float inputY = inputTop + 12.0f;
-  packed = packFontLine(batch, kCap, packed, 16.0f, inputY, ">", promptColor);
+  packed = packFontLine(
+    batch, kCap, packed, panelX0 + 16.0f, inputY, ">", promptColor);
 
   if (hasSelection()) {
     std::size_t selectionStart = std::min(cursorPosition, selectionAnchor);
@@ -1989,6 +2219,74 @@ CommandLine::AppendCommands(Renderer* r)
                            245,
                            255,
                            255);
+  }
+
+  // Visual Autocomplete Dropdown Popup Overlay
+  if (!currentInput.empty()) {
+    std::vector<std::string> candidates = getCompletionCandidates(currentInput);
+    if (!candidates.empty()) {
+      float dropWidth = std::min(width - 32.0f, 400.0f);
+      float dropX = 40.0f;
+      int showCount = std::min(static_cast<int>(candidates.size()), 4);
+      float dropItemHeight = 20.0f;
+      float dropHeight = showCount * dropItemHeight + 6.0f;
+      float dropY = inputTop - dropHeight - 4.0f;
+      if (dropY >= yOffset + headerHeight) {
+        packed = packSolidQuad(batch,
+                               kCap,
+                               packed,
+                               dropX,
+                               dropY,
+                               dropX + dropWidth,
+                               dropY + dropHeight,
+                               10,
+                               22,
+                               38,
+                               245);
+        packed = packSolidQuad(batch,
+                               kCap,
+                               packed,
+                               dropX,
+                               dropY,
+                               dropX + dropWidth,
+                               dropY + 2.0f,
+                               0,
+                               220,
+                               255,
+                               255);
+
+        for (int i = 0; i < showCount; ++i) {
+          float itemY = dropY + 4.0f + i * dropItemHeight;
+          unsigned char itemCol[4] = { 180, 225, 255, 255 };
+          if (i == 0) {
+            packed = packSolidQuad(batch,
+                                   kCap,
+                                   packed,
+                                   dropX + 2.0f,
+                                   itemY - 1.0f,
+                                   dropX + dropWidth - 2.0f,
+                                   itemY + 17.0f,
+                                   20,
+                                   70,
+                                   110,
+                                   220);
+            itemCol[0] = 255;
+            itemCol[1] = 255;
+            itemCol[2] = 255;
+            itemCol[3] = 255;
+          }
+          std::string itemText =
+            std::string(i == 0 ? " -> " : "    ") + candidates[i];
+          packed = packFontLine(batch,
+                                kCap,
+                                packed,
+                                dropX + 6.0f,
+                                itemY,
+                                itemText.c_str(),
+                                itemCol);
+        }
+      }
+    }
   }
 
   if (packed < 4) {

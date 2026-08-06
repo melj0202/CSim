@@ -1191,6 +1191,63 @@ testCommandLineMouseInteraction()
   console.HandleMouseRelease();
 }
 
+static void
+testCommandLineClipboardAndTelemetry()
+{
+  testSection(
+    "CommandLine: execution timing telemetry and visual autocomplete overlay");
+  CommandLineFixture fixture;
+  CommandLine& console = fixture.console;
+
+  executeConsoleText(console, "echo telemetry_test");
+  testTrue(g,
+           consoleHistoryContains(console, "Executed in "),
+           "command execution outputs timing telemetry");
+
+  enterConsoleText(console, "ruleset");
+  testTrue(g,
+           !console.getCurrentInput().empty(),
+           "input has text for candidate dropdown");
+
+  console.CopySelection();
+  console.CutSelection();
+}
+
+static void
+testCommandLineFloatingMode()
+{
+  testSection(
+    "CommandLine: floating vs mounted mode toggle, title double-click, "
+    "console_mode command");
+  CommandLineFixture fixture(1280, 720);
+  CommandLine& console = fixture.console;
+  console.Toggle();
+
+  testTrue(g, !console.isFloatingMode(), "default console mode is mounted");
+
+  console.HandleMousePress(100.0, 10.0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  console.HandleMousePress(100.0, 10.0);
+
+  testTrue(g,
+           console.isFloatingMode(),
+           "double clicking top title bar toggles floating mode");
+
+  executeConsoleText(console, "console_mode mounted");
+  testTrue(g,
+           !console.isFloatingMode(),
+           "console_mode mounted command sets mounted mode");
+
+  executeConsoleText(console, "console_mode toggle");
+  testTrue(
+    g, console.isFloatingMode(), "console_mode toggle command flips mode");
+
+  // Drag floating window by title bar
+  console.HandleMousePress(200.0, 10.0);
+  console.HandleMouseDrag(300.0, 50.0);
+  console.HandleMouseRelease();
+}
+
 static int
 runUITokenCase(void (*testFunction)())
 {
@@ -1259,4 +1316,9 @@ registerUITokenTests(IllumoTestRegistry& registry)
   registry.add("Illumo.CommandLine.MouseInteraction", []() {
     return runUITokenCase(testCommandLineMouseInteraction);
   });
+  registry.add("Illumo.CommandLine.ClipboardAndTelemetry", []() {
+    return runUITokenCase(testCommandLineClipboardAndTelemetry);
+  });
+  registry.add("Illumo.CommandLine.FloatingMode",
+               []() { return runUITokenCase(testCommandLineFloatingMode); });
 }
