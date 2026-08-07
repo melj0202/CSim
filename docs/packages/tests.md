@@ -9,7 +9,7 @@ Executable target: **`IllumoTests`** (alias: `IllumoRenderTests`).
 | RuleSets | `TestRuleSets.cpp` | GoL block/blinker, Seeds, Brian's Brain, tags |
 | CellContext | `TestCellContext.cpp` | Mode normalize, factory, env canvas size |
 | Canvas domain | `TestCanvasDomain.cpp` | set/get, clear, palette/fade, dirty-rect RGB upload, enroll |
-| UI tokens + console | `TestUITokens.cpp` | CommandLine editing/completion/validation/dispatch/help; command chaining and aliases; ghost text and parameter hints; repeat execution and history search; open/closed/invisible tokens; full-help mesh-capacity regression; GLString empty/FPS; combined scene |
+| UI tokens + console | `TestUITokens.cpp` | CommandLine editing/completion/validation/dispatch/help; command chaining and aliases; ghost text and parameter hints; repeat execution and history search; history wrap and scroll-to-start; open/closed/invisible tokens; full-help mesh-capacity regression; GLString empty/FPS; combined scene |
 
 Shared helpers: `TestHelpers.h`, `TestHarness.h` (`NullRenderWindow`, `HeadlessCanvasFixture`).
 

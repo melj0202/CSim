@@ -20,7 +20,8 @@ This file **merges and supersedes** scattered design memory into one coherent st
 
 Optional deeper reading (not required to resume work):
 
-- `docs/latex/illumo.tex` — the only current PDF entrypoint
+- `docs/latex/architecture-map.tex` → `docs/output/architecture-map.pdf` — landscape chart-only package/class map
+- `docs/latex/illumo.tex` — design notes PDF entrypoint (prose chapters under `sections/`)
 - `docs/latex/sections/09-design-decision-log.tex` — append-only formal decision prose
 - `docs/sessions/2026-08-04-illumo-console-and-documentation.md` — this session's implementation record
 
@@ -416,7 +417,7 @@ The Debug-only console separates general tooling from product behavior:
 - Window mode supports switching between top-mounted and floating modes (via `console_mode [floating|mounted|toggle]` or double-clicking the console title bar). In floating mode, title-bar dragging repositions the window across the screen, and dragging the bottom-right corner grip handle (or running `console_size <W> <H> | reset`) dynamically resizes the console window with real-time UI bounds clipping.
 - Dynamic parameter syntax hints dynamically render usage instructions in the status bar while typing known commands.
 - Utility commands include `repeat <N> <command>`, `history [filter|clear]`, and `sysinfo`/`status` telemetry dashboard.
-- Console chrome features a futuristic cyberpunk glassmorphism visual layout with pulsing neon HUD corner brackets, holographic scanlines, multi-layer laser caret beam with crosshair ticks, prompt pill badge, color-coded log level prefixes, and single-batch quad rendering (6,000 UI quads capacity).
+- Console chrome is a refined tactical glass HUD: multi-layer drop shadow and outer neon halo, bezel inset panel, title badge + status chip header, recessed history well with sparse scanlines and a slow beam sweep, elevated command dock with prompt chip, breathing laser caret, gradient scrollbar thumb, and single-batch quad rendering (8,000 UI quads, heap-backed). History output word-wraps to the panel width and scrolls by visual lines so long help text remains fully readable when paging to the oldest entries; PageUp/wheel/scrollbar limits share the same floating-aware layout metrics as the draw path.
 - `Logger` may mirror output into the console while services are alive. The host
   clears that non-owning logger context before destroying the services.
 

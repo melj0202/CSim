@@ -16,5 +16,7 @@ canvas, camera, ruleset, and save/load commands without introducing Game types
 into Services. The console editor uses measured caret/selection geometry, a
 horizontal input viewport, multi-command chaining with `;`, alias macro management
 (`alias`/`unalias`), inline ghost-text auto-suggestions, dynamic parameter syntax hints,
-and futuristic glassmorphic UI styling. A 6,000-quad batch prevents long output
-from silently exhausting the easy-font mesh.
+and futuristic glassmorphic UI styling. History lines word-wrap and scroll by
+visual line so early console output is not truncated when paging upward. An
+8,000-quad batch prevents long wrapped output from silently exhausting the
+easy-font mesh.

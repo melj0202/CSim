@@ -19,8 +19,10 @@ Cross-cutting facilities used by Engine/Game/Rendering:
         deletion, history, quoted arguments, measured caret placement, command
         chaining with \texttt{;}, alias macro management (\texttt{alias}/\texttt{unalias}),
         inline ghost-text auto-suggestions, dynamic parameter hints, and a
-        horizontally scrolling input viewport. The easy-font batch is sized for
-        6,000 UI quads so a detailed help page is not truncated. The console is
+        horizontally scrolling input viewport. History output word-wraps and
+        scrolls by visual line (shared floating-aware layout metrics for
+        PageUp/wheel/scrollbar and draw). The easy-font batch is sized for
+        8,000 UI quads so wrapped help pages are not truncated. The console is
         Debug-only product composition (D-B1, D-CLI1, D-UI1).
   \item \textbf{Allocators} --- pool/arena/debug allocators (experimental /
         learning surface; not all wired into the hot path).

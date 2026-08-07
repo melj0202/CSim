@@ -7,7 +7,7 @@
 #include "Rendering/IRenderWindow.h"
 #include <chrono>
 #include <cstdint>
-
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -91,6 +91,7 @@ public:
   std::size_t getCursorPosition() const { return cursorPosition; }
   bool hasSelection() const { return cursorPosition != selectionAnchor; }
   const std::vector<historyBuffer>& getHistory() const { return history; }
+  int getScrollOffset() const { return scrollOffset; }
   bool getFloatingMode() const { return isFloating; }
   void setFloatingMode(bool floating);
   void ToggleFloatingMode();
@@ -103,6 +104,23 @@ private:
   {
     float x, y, z;
     uint8_t color[4];
+  };
+
+  // Shared panel metrics so scroll handlers, hit tests, and draw agree.
+  struct PanelLayout
+  {
+    float panelX0;
+    float panelY0;
+    float panelX1;
+    float panelY1;
+    float headerHeight;
+    float inputRowHeight;
+    float historyTop;
+    float inputTop;
+    float historyBottom;
+    float lineSpacing;
+    int maxHistoryLines;
+    float historyBaseWidth;
   };
 
   std::string currentInput;
@@ -157,11 +175,13 @@ private:
   std::chrono::high_resolution_clock::time_point lastAnimTime;
 
   // Batched UI verts for one UpdateBuffer + DrawIndexed (valid until Submit).
-  // Easy-font glyphs use several quads each, so a full help page needs more
-  // than one quad per visible character.
-  static const unsigned int kUiQuadCap = 6000;
+  // Easy-font glyphs use several quads each; wrapped history can fill a full
+  // viewport of long lines, so the cap must leave headroom above chrome.
+  // Heap-allocated: a stack-resident CommandLine must stay small for tests and
+  // nested fixtures (two instances used to overflow the default stack).
+  static const unsigned int kUiQuadCap = 8000;
   static const unsigned int kUiVertCap = kUiQuadCap * 4;
-  ConsoleVertex uiVerts[kUiVertCap];
+  std::unique_ptr<ConsoleVertex[]> uiVerts;
 
   friend void CellMain(const std::string&);
   void enrollGpuResources();
@@ -175,4 +195,10 @@ private:
   void ExecuteSingleCommand(const std::string& singleCmd,
                             int expansionDepth = 0);
   std::string getParameterHint(const std::string& inputLine) const;
+  PanelLayout computePanelLayout(bool useSmoothedPanel) const;
+  int countWrappedHistoryLines(float availableWidth) const;
+  void computeHistoryScrollLimits(int* maxHistoryLines,
+                                  int* maxScroll,
+                                  float* historyWidth) const;
+  void clampScrollOffset();
 };

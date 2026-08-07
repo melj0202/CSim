@@ -1,9 +1,13 @@
 # LaTeX book source
 
-`illumo.tex` is the only current PDF entrypoint. It includes every chapter under
-`sections/`, including the formal decision log and the 2026-08-04 session record.
+PDF entrypoints:
 
-Build from the repository root with the wrapper:
+| Source | Output | Role |
+|--------|--------|------|
+| `illumo.tex` | `../output/illumo.pdf` | Design notes, decisions, prose chapters under `sections/` |
+| `architecture-map.tex` | `../output/architecture-map.pdf` | Landscape multi-page chart pack only (layers, ownership, frame loop, class maps) |
+
+Build from the repository root with the wrapper (builds both):
 
 ```powershell
 .\docs\build.ps1

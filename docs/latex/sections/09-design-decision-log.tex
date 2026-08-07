@@ -411,6 +411,21 @@ cutting off its final line.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-UI2 --- Wrapped console history with unified scroll metrics}
+\begin{decisionbox}[title={D-UI2 \quad 2026-08-06}]
+\textbf{Decision:} Word-wrap console history to the panel width, scroll by
+visual lines rather than raw history entries, and compute PageUp/wheel/scrollbar
+limits from the same floating-aware panel layout used when drawing. Raise the
+console UI mesh to 8,000 quads to leave headroom for wrapped lines plus chrome.\\
+\textbf{Why:} Hard truncation hid the rest of long help lines, and scroll
+handlers used a mounted-only height estimate that disagreed with the floating
+panel, so paging to the oldest history could leave text clipped or unreachable.\\
+\textbf{Consequences:} Scrolling fully to the start of history shows the oldest
+characters completely; floating resize and mounted mode share one max-scroll
+definition; a focused wrap/scroll regression covers the clamp and batch path.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
 \subsection*{D-DOC1 --- One first-party documentation tree}
 \begin{decisionbox}[title={D-DOC1 \quad 2026-08-04}]
 \textbf{Decision:} Keep all first-party project documentation under

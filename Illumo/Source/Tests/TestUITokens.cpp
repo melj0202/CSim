@@ -1030,10 +1030,89 @@ testCommandLineHistoryNavigationAndLimits()
   for (int i = 0; i < MAX_CMD_HISTORY + 10; ++i) {
     fixture.console.ScrollUp();
   }
+  const int scrollAtStart = fixture.console.getScrollOffset();
+  testTrue(g,
+           scrollAtStart > 0,
+           "PageUp reaches a non-zero scroll offset for full history");
+  fixture.console.ScrollUp();
+  testEqInt(g,
+            fixture.console.getScrollOffset(),
+            scrollAtStart,
+            "extra PageUp at the start does not overscroll past oldest lines");
   for (int i = 0; i < MAX_CMD_HISTORY + 10; ++i) {
     fixture.console.ScrollDown();
   }
+  testEqInt(g,
+            fixture.console.getScrollOffset(),
+            0,
+            "PageDown returns scroll to the newest history end");
   fixture.console.DrawImpl();
+}
+
+static void
+testCommandLineHistoryWrapAndScrollToStart()
+{
+  testSection("CommandLine: long history lines wrap and remain reachable at "
+              "scroll start");
+  CommandLineFixture fixture(640, 360);
+  CommandLine& console = fixture.console;
+
+  const std::string longHelp =
+    "ruleset [name] - Show or change the cellular-automaton ruleset; includes "
+    "GAME_OF_LIFE, HIGHLIFE, DAY_AND_NIGHT, LIFE_WITHOUT_DEATH, and WIREWORLD";
+  console.AppendString(255, 255, 255, 255, "OLDEST-MARKER " + longHelp);
+  for (int i = 0; i < 40; ++i) {
+    console.AppendString(
+      255, 255, 255, 255, "mid-" + std::to_string(i) + " " + longHelp);
+  }
+  console.AppendString(255, 255, 255, 255, "NEWEST-MARKER");
+
+  console.Toggle();
+  // Settle panel layout so scroll limits match the drawn viewport.
+  for (int i = 0; i < 20; ++i) {
+    console.AppendCommands(&fixture.renderer);
+  }
+
+  for (int i = 0; i < 500; ++i) {
+    console.ScrollUp();
+  }
+  const int startOffset = console.getScrollOffset();
+  testTrue(g,
+           startOffset > 0,
+           "wrapped history produces a positive max scroll offset");
+  console.ScrollUp();
+  testEqInt(g,
+            console.getScrollOffset(),
+            startOffset,
+            "scroll clamps at the oldest wrapped visual line");
+
+  // Rendering at the start must still emit a single UI batch (no silent mesh
+  // overflow that drops the first history lines).
+  fixture.mock.resetCounters();
+  fixture.renderer.BeginFrame();
+  testTrue(g,
+           console.AppendCommands(&fixture.renderer),
+           "scroll-to-start history still emits tokens");
+  fixture.renderer.EndFrame();
+  testEqSize(g,
+             fixture.mock.countNonEmptyOfType(CommandType::UpdateBuffer),
+             1u,
+             "scroll-to-start keeps one UpdateBuffer batch");
+  testEqSize(g,
+             fixture.mock.countNonEmptyOfType(CommandType::DrawIndexed),
+             1u,
+             "scroll-to-start keeps one DrawIndexed batch");
+  bool oldestStillPresent = false;
+  const std::vector<CommandLine::historyBuffer>& lines = console.getHistory();
+  for (const CommandLine::historyBuffer& line : lines) {
+    if (line.content.find("OLDEST-MARKER") != std::string::npos) {
+      oldestStillPresent = true;
+      break;
+    }
+  }
+  testTrue(g,
+           oldestStillPresent,
+           "oldest long history entry remains in the buffer at scroll start");
 }
 
 static void
@@ -1294,6 +1373,9 @@ registerUITokenTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.CommandLine.HistoryNavigation", []() {
     return runUITokenCase(testCommandLineHistoryNavigationAndLimits);
+  });
+  registry.add("Illumo.CommandLine.HistoryWrapAndScrollToStart", []() {
+    return runUITokenCase(testCommandLineHistoryWrapAndScrollToStart);
   });
   registry.add("Illumo.CommandLine.HeadlessAndLongInput", []() {
     return runUITokenCase(testCommandLineHeadlessAndLongSelectionTokens);

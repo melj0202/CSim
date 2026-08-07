@@ -1,0 +1,820 @@
+%==============================================================================
+% Illumo --- Architecture Map (chart pack only)
+% Derived from Illumo/Source (headers + call sites), not design prose.
+% Build: docs/build.ps1  ->  docs/output/architecture-map.pdf
+%==============================================================================
+\documentclass[10pt,landscape,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=0.28in,top=0.22in,bottom=0.26in]{geometry}
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,fit,calc,backgrounds,matrix}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+
+\definecolor{pkgPlatform}{RGB}{90,90,100}
+\definecolor{pkgApp}{RGB}{40,90,160}
+\definecolor{pkgEngine}{RGB}{30,120,100}
+\definecolor{pkgGame}{RGB}{160,90,30}
+\definecolor{pkgRules}{RGB}{130,60,140}
+\definecolor{pkgRender}{RGB}{50,110,170}
+\definecolor{pkgSvc}{RGB}{100,70,50}
+\definecolor{pkgFound}{RGB}{70,70,70}
+\definecolor{pkgAssets}{RGB}{90,110,50}
+\definecolor{pkgTests}{RGB}{80,80,120}
+\definecolor{ifaceFill}{RGB}{245,245,250}
+\definecolor{stubFill}{RGB}{250,245,235}
+\definecolor{noteFill}{RGB}{248,248,248}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\scriptsize Illumo architecture map $\cdot$ code truth: \texttt{Illumo/Source}}
+\fancyfoot[R]{\scriptsize\thepage}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+%------------------------------------------------------------------------------
+% Design system: fixed heights, even gaps, orthogonal edges
+% Page usable ~ 27.6cm x 18.4cm; design canvas 26cm x 15.5cm, then fit.
+%------------------------------------------------------------------------------
+\tikzset{
+  arr/.style={-{Latex[length=1.5mm]}, line width=0.65pt, draw=black!60},
+  owns/.style={-{Latex[length=1.7mm]}, line width=1.0pt, draw=black},
+  nonown/.style={-{Latex[length=1.5mm]}, line width=0.65pt, dashed, draw=black!48},
+  impl/.style={-{Triangle[open, length=1.7mm, width=1.4mm]}, line width=0.65pt, draw=black!60},
+  box/.style={
+    draw=black!50,
+    rounded corners=2pt,
+    align=center,
+    font=\footnotesize\ttfamily,
+    inner xsep=4pt,
+    inner ysep=3pt,
+    minimum height=0.68cm
+  },
+  iface/.style={box, double, double distance=0.85pt, fill=ifaceFill},
+  stub/.style={box, densely dotted, fill=stubFill, text=black!58},
+  titlebox/.style={
+    font=\bfseries\large\rmfamily,
+    fill=black!4,
+    draw=black!22,
+    rounded corners=2pt,
+    inner sep=5pt
+  },
+  sectitle/.style={
+    font=\bfseries\footnotesize\rmfamily,
+    fill=white,
+    draw=black!20,
+    rounded corners=2pt,
+    inner sep=3pt
+  },
+  pkgfill/.style={fill=#1!10, draw=#1!62},
+  layer/.style={
+    box,
+    minimum width=3.4cm,
+    minimum height=2.2cm,
+    font=\footnotesize\ttfamily,
+    align=center
+  },
+  cluster/.style={draw=#1!42, fill=#1!3.5, rounded corners=4pt, inner sep=7pt},
+  legend/.style={font=\footnotesize\rmfamily},
+  card/.style={
+    box,
+    align=left,
+    font=\footnotesize\ttfamily,
+    inner xsep=5pt,
+    inner ysep=4pt
+  },
+  note/.style={
+    box,
+    fill=noteFill,
+    draw=black!28,
+    align=left,
+    font=\footnotesize\rmfamily,
+    inner xsep=5pt,
+    inner ysep=4pt
+  },
+  stepbox/.style={
+    box,
+    minimum width=4.8cm,
+    minimum height=0.72cm
+  },
+}
+
+\newcommand{\ChartTitle}[1]{%
+  \noindent\begin{tikzpicture}
+    \node[titlebox] {#1};
+  \end{tikzpicture}\par\vspace{0.22cm}%
+}
+
+% Fit to page width; design content tall enough that height fills well
+\newcommand{\ChartBegin}{%
+  \noindent\begin{adjustbox}{max width=\textwidth,center}%
+  \begin{tikzpicture}[x=1cm,y=1cm]%
+}
+\newcommand{\ChartEnd}{%
+  \end{tikzpicture}%
+  \end{adjustbox}%
+}
+
+\begin{document}
+
+%==============================================================================
+% PAGE 1 --- System layers
+%==============================================================================
+\ChartTitle{1 $\cdot$ System layers (from entry to backend)}
+\ChartBegin
+  % Row 1: 7 equal cards, centers at 1.9 + k*3.6
+  \node[layer, pkgfill=pkgPlatform] (plat) at (1.9,-1.2) {%
+    \textbf{\rmfamily Platform}\\[3pt]
+    main (WinMain.cpp)\\$\rightarrow$ CellMain\\[2pt]
+    {\scriptsize WinSaveLoad.cpp}};
+  \node[layer, pkgfill=pkgApp] (app) at (5.5,-1.2) {%
+    \textbf{\rmfamily App}\\[3pt]
+    CellMain\\[2pt]
+    {\scriptsize compose modules}\\{\scriptsize while loop}};
+  \node[layer, pkgfill=pkgEngine] (eng) at (9.1,-1.2) {%
+    \textbf{\rmfamily Engine}\\[3pt]
+    Illumo\\IllumoContext\\IModule\\[2pt]
+    {\scriptsize unique\_ptr services}};
+  \node[layer, pkgfill=pkgGame] (mod) at (12.7,-1.2) {%
+    \textbf{\rmfamily Modules}\\[3pt]
+    CellGameModule\\DebugModule\\[2pt]
+    {\scriptsize \#ifndef NDEBUG}};
+  \node[layer, pkgfill=pkgRules] (dom) at (16.3,-1.2) {%
+    \textbf{\rmfamily Domain}\\[3pt]
+    CellContext\\Canvas\\RuleSet*\\[2pt]
+    {\scriptsize factory in CellContext}};
+  \node[layer, pkgfill=pkgRender] (rnd) at (19.9,-1.2) {%
+    \textbf{\rmfamily Rendering}\\[3pt]
+    Scene\\Drawable\\Renderer\\[2pt]
+    {\scriptsize AppendCommands}};
+  \node[layer, pkgfill=pkgRender] (be) at (23.5,-1.2) {%
+    \textbf{\rmfamily IBackend}\\[3pt]
+    GLBackend\\GLDevice\\[2pt]
+    MockBackend\\{\scriptsize Tests only}};
+
+  \draw[owns] (plat) -- (app);
+  \draw[owns] (app) -- (eng);
+  \draw[owns] (eng) -- (mod);
+  \draw[arr] (mod) -- (dom);
+  \draw[arr] (dom) -- (rnd);
+  \draw[arr] (rnd) -- (be);
+
+  % Row 2: equal height support packs, aligned baseline
+  \node[box, pkgfill=pkgFound, minimum width=5.2cm, minimum height=2.5cm] (fnd) at (3.5,-4.8) {%
+    \textbf{\rmfamily Foundation}\\[4pt]
+    MacroDefs · MathTypes\\[2pt]
+    SysInfo · ArrayQueue\\[2pt]
+    BuildInfo};
+  \node[box, pkgfill=pkgSvc, minimum width=8.4cm, minimum height=2.5cm] (svc) at (11.0,-4.8) {%
+    \textbf{\rmfamily Services (Illumo-owned)}\\[4pt]
+    EnvVars · InputManager · CommandLine\\[2pt]
+    CommandRegistry · Logger (static)\\[2pt]
+    SaveLoad (static OS entry)};
+  \node[box, pkgfill=pkgAssets, minimum width=3.8cm, minimum height=2.5cm] (ast) at (18.0,-4.8) {%
+    \textbf{\rmfamily Assets}\\[4pt]
+    TTFLoader};
+  \node[box, pkgfill=pkgTests, minimum width=4.2cm, minimum height=2.5cm] (tst) at (22.8,-4.8) {%
+    \textbf{\rmfamily Tests}\\[4pt]
+    inject MockBackend\\[2pt]
+    NullRenderWindow};
+
+  \draw[owns] (eng.south) -- ++(0,-0.7) -| (svc.north);
+  \draw[nonown] (eng.south west) ++(0.4,0) -- ++(0,-0.7) -| (fnd.north);
+  \draw[arr] (svc) -- (ast);
+  \draw[arr, densely dotted] (tst.north) -- ++(0,0.7) -| (be.south);
+
+  % Legend
+  \node[sectitle] at (1.5,-7.2) {Legend};
+  \draw[owns] (2.9,-7.2) -- (4.0,-7.2);
+  \node[legend, anchor=west] at (4.15,-7.2) {owns};
+  \draw[arr] (5.7,-7.2) -- (6.8,-7.2);
+  \node[legend, anchor=west] at (6.95,-7.2) {uses / calls};
+  \draw[nonown] (9.5,-7.2) -- (10.6,-7.2);
+  \node[legend, anchor=west] at (10.75,-7.2) {non-owning};
+  \draw[impl] (13.5,-7.2) -- (14.6,-7.2);
+  \node[legend, anchor=west] at (14.75,-7.2) {implements};
+  \node[iface, minimum width=1.3cm, minimum height=0.5cm] at (17.2,-7.2) {Iface};
+  \node[legend, anchor=west] at (18.1,-7.2) {interface};
+  \node[stub, minimum width=1.3cm, minimum height=0.5cm] at (20.7,-7.2) {Stub};
+  \node[legend, anchor=west] at (21.6,-7.2) {orphan / unwired};
+
+  \node[note, minimum width=25.2cm, minimum height=2.3cm] at (12.7,-9.2) {%
+    \textbf{Production flow (code)}\\[4pt]
+    Platform entry $\rightarrow$ CellMain composes Illumo + modules $\rightarrow$
+    Illumo owns services via \texttt{unique\_ptr} $\rightarrow$
+    modules receive non-owning \texttt{IllumoContext*} $\rightarrow$\\[2pt]
+    domain (CellContext / Canvas / RuleSet) $\rightarrow$
+    Scene drawables emit tokens $\rightarrow$ IBackend (GL* production, Mock in tests).
+  };
+\ChartEnd
+
+\newpage
+%==============================================================================
+% PAGE 2 --- Ownership
+%==============================================================================
+\ChartTitle{2 $\cdot$ Ownership \& lifetime (\texttt{Illumo.h} / \texttt{Illumo.cpp})}
+\ChartBegin
+  % LEFT composition stack (modules side-by-side so impl edges do not cross peers)
+  \node[sectitle] at (3.2,0) {Composition};
+  \node[box, pkgfill=pkgApp, minimum width=3.6cm] (cm) at (3.2,-1.0) {CellMain};
+  \node[box, pkgfill=pkgEngine, minimum width=3.6cm] (il) at (3.2,-2.1) {\textbf{Illumo}};
+  \node[iface, minimum width=3.6cm] (imod) at (3.2,-3.5) {IModule};
+  \node[box, pkgfill=pkgGame, minimum width=3.0cm] (cgm) at (1.4,-4.8) {CellGameModule};
+  \node[box, pkgfill=pkgEngine, minimum width=3.0cm] (dbg) at (4.4,-4.8) {DebugModule {\scriptsize !NDEBUG}};
+  \draw[owns] (cm) -- node[right, font=\scriptsize\rmfamily] {new} (il);
+  \draw[owns] (il) -- node[right, font=\scriptsize\rmfamily] {modules[]} (imod);
+  \draw[impl] (cgm.north) -- (imod.south west);
+  \draw[impl] (dbg.north) -- (imod.south east);
+
+  % RIGHT: members under horizontal bus (bus ends at Scene, no dangling tail)
+  \node[sectitle] at (15.5,0) {Illumo \texttt{unique\_ptr} members};
+  \coordinate (hub) at (7.0,-1.0);
+  \draw[owns] (il.east) -- (hub);
+  % Row-1 centers spaced for second-row drop gaps: 8.0 10.8 13.6 16.4 19.2 22.0
+  \node[box, pkgfill=pkgSvc, minimum width=2.4cm] (ev) at (8.0,-2.35) {EnvVars};
+  \node[box, pkgfill=pkgRender, minimum width=2.4cm] (rw) at (10.8,-2.35) {RenderWindow};
+  \node[box, pkgfill=pkgRender, minimum width=2.3cm] (cam) at (13.6,-2.35) {Camera};
+  \node[box, pkgfill=pkgRender, minimum width=2.4cm] (ren) at (16.4,-2.35) {Renderer};
+  \node[box, pkgfill=pkgRender, minimum width=2.5cm] (am) at (19.2,-2.35) {AssetManager};
+  \node[box, pkgfill=pkgRender, minimum width=2.2cm] (sc) at (22.0,-2.35) {Scene};
+  \draw[line width=1.0pt, draw=black] (7.0,-1.0) -- (22.0,-1.0);
+  \foreach \n in {ev,rw,cam,ren,am,sc} {
+    \draw[owns] (\n.north |- hub) -- (\n.north);
+  }
+
+  % Second row drops only in column gaps (x ≈ 9.4, 12.2, 15.0)
+  \node[box, pkgfill=pkgSvc, minimum width=2.5cm] (cr) at (9.4,-3.75) {CommandRegistry};
+  \node[box, pkgfill=pkgSvc, minimum width=2.4cm] (cl) at (12.2,-3.75) {CommandLine};
+  \node[box, pkgfill=pkgSvc, minimum width=2.4cm] (im) at (15.0,-3.75) {InputManager};
+  \foreach \n in {cr,cl,im} {
+    \draw[owns] (\n.north |- hub) -- (\n.north);
+  }
+  % GLBackend under AssetManager column (not under InputManager); ctor label right of drop
+  \node[box, pkgfill=pkgRender, minimum width=2.5cm] (glb) at (19.2,-3.75) {GLBackend};
+  \node[iface, minimum width=2.2cm] (ibe) at (22.0,-3.75) {IBackend};
+  \draw[owns] (ren.south) -- ++(0,-0.35) -| (glb.north);
+  \node[font=\scriptsize\rmfamily] at (17.55,-3.05) {ctor};
+  \draw[impl] (glb) -- (ibe);
+
+  % IllumoContext
+  \node[iface, minimum width=16.8cm, minimum height=1.6cm, align=left] (ctx) at (15.5,-5.4) {%
+    \textbf{\rmfamily IllumoContext} --- raw non-owning pointers filled in \texttt{Init()}\\[3pt]
+    \texttt{scene* · window* · commandLine* · inputManager* · renderer* ·
+    assetManager* · envVars* · camera* · commandRegistry*}
+  };
+  % fills/Start: vertical at x=6.5 (dbg R≈5.9, EnvVars L≈6.8)
+  \draw[nonown] (il.east) -- (6.5,-2.1) -- (6.5,-5.4) -- node[above, font=\scriptsize\rmfamily, pos=0.7] {fills} (ctx.west);
+  \draw[nonown] (ctx.north west) -- ++(0,0.35) -| node[right, font=\scriptsize\rmfamily, pos=0.15] {Start(ctx)} (imod.south);
+
+  % Bottom notes: equal height, aligned top
+  \node[note, minimum width=9.2cm, minimum height=3.0cm] (truth) at (7.0,-8.2) {%
+    \textbf{Code truth}\\[4pt]
+    Illumo owns services via \texttt{unique\_ptr}.\\[2pt]
+    Modules: \texttt{vector\textless unique\_ptr\textless IModule\textgreater\textgreater}.\\[2pt]
+    IllumoContext is raw pointers only.\\[2pt]
+    GLBackend is created in Renderer ctor.
+  };
+  \node[card, pkgfill=pkgEngine, minimum width=13.8cm, minimum height=3.0cm] (ord) at (19.0,-8.2) {%
+    \textbf{\rmfamily Init() order (Illumo.cpp)}\\[4pt]
+    1 EnvVars · 2 RenderWindow · 3 Camera · 4 Renderer (+GLBackend)\\[1pt]
+    5 AssetManager · 6 CommandRegistry · 7 CommandLine\\[1pt]
+    8 Logger::setContext · 9 InputManager · 10 Scene\\[1pt]
+    11 GLString::setRenderWindow · 12 fill IllumoContext\\[3pt]
+    StartModules: if \texttt{!Start} $\rightarrow$ erase module
+  };
+\ChartEnd
+
+\newpage
+%==============================================================================
+% PAGE 3 --- Frame loop
+%==============================================================================
+\ChartTitle{3 $\cdot$ Frame loop (\texttt{CellMain.cpp} / \texttt{Illumo::Update/Render})}
+\ChartBegin
+  % Three column headers at same y
+  \node[sectitle] at (4.0,0) {Startup (CellMain)};
+  \node[sectitle] at (12.5,0) {Update (Illumo::Update)};
+  \node[sectitle] at (21.0,0) {Render (Illumo::Render)};
+
+  % Startup: 9 steps, step 0.95cm
+  \node[stepbox, pkgfill=pkgApp] (s1) at (4.0,-1.0) {Logger::initLogger};
+  \node[stepbox, pkgfill=pkgApp] (s2) at (4.0,-1.95) {new Illumo};
+  \node[stepbox, pkgfill=pkgEngine] (s3) at (4.0,-2.9) {Illumo::Init};
+  \node[stepbox, pkgfill=pkgApp] (s4) at (4.0,-3.85) {addModule(CellGame)};
+  \node[stepbox, pkgfill=pkgApp] (s5) at (4.0,-4.8) {addModule(Debug)};
+  \node[stepbox, pkgfill=pkgEngine] (s6) at (4.0,-5.75) {StartModules};
+  \node[stepbox, pkgfill=pkgApp, line width=1.1pt] (s7) at (4.0,-6.7) {while !ShouldClose};
+  \node[stepbox, pkgfill=pkgEngine] (s8) at (4.0,-7.65) {Shutdown / Exit};
+  \node[stepbox, pkgfill=pkgApp] (s9) at (4.0,-8.6) {delete Illumo};
+  \foreach \a/\b in {s1/s2,s2/s3,s3/s4,s4/s5,s5/s6,s6/s7,s7/s8,s8/s9} {\draw[arr] (\a)--(\b);}
+
+  % Update: short chain, then detail cards with large gaps (no grow-into-neighbor)
+  \node[stepbox, pkgfill=pkgEngine] (u0) at (12.5,-1.0) {Illumo::Update(dt)};
+  \node[stepbox, pkgfill=pkgSvc] (u1) at (12.5,-1.95) {inputManager->update};
+  \node[stepbox, pkgfill=pkgRender] (u2) at (12.5,-2.9) {camera->Update};
+  \node[stepbox, pkgfill=pkgGame] (u3) at (12.5,-3.85) {modules[i]->Update};
+  \foreach \a/\b in {u0/u1,u1/u2,u2/u3} {\draw[arr] (\a)--(\b);}
+
+  \node[card, pkgfill=pkgGame, minimum width=5.5cm, text width=5.0cm] (udet) at (12.5,-6.0) {%
+    \textbf{\rmfamily CellGameModule::Update}\\[3pt]
+    ModeString sync\\
+    camera pan/zoom if console closed\\
+    NORMAL / EDIT switch\\
+    calcGeneration / edit paint\\
+    tickVisual + ExecuteQueue
+  };
+  \node[card, pkgfill=pkgEngine, minimum width=5.5cm, text width=5.0cm] (udeb) at (12.5,-8.5) {%
+    \textbf{\rmfamily DebugModule::Update}\\[3pt]
+    FPS · key queue $\rightarrow$ CommandLine\\
+    Grave toggles console
+  };
+  \draw[arr] (u3) -- (udet);
+  \draw[arr] (udet) -- (udeb);
+
+  % Render chain: x=20.0 keeps R=22.4; side cards L≥22.9 (gap ≥0.5)
+  \node[stepbox, pkgfill=pkgEngine] (r0) at (20.0,-1.0) {Illumo::Render};
+  \node[stepbox, pkgfill=pkgRender] (r1) at (20.0,-1.95) {scene->ClearDrawables};
+  \node[stepbox, pkgfill=pkgGame] (r2) at (20.0,-2.9) {DispatchDrawables};
+  \node[stepbox, pkgfill=pkgRender] (r3) at (20.0,-3.85) {renderer->BeginFrame};
+  \node[stepbox, pkgfill=pkgRender] (r4) at (20.0,-4.8) {RenderScene};
+  \node[stepbox, pkgfill=pkgRender] (r5) at (20.0,-5.75) {EndFrame};
+  \foreach \a/\b in {r0/r1,r1/r2,r2/r3,r3/r4,r4/r5} {\draw[arr] (\a)--(\b);}
+
+  % Side cards: same width, aligned centers, ≥0.5cm from step column
+  \node[card, pkgfill=pkgGame, minimum width=3.8cm, text width=3.4cm] (dlist) at (24.6,-3.5) {%
+    \textbf{\rmfamily AddDrawable}\\[2pt]
+    CellGame: Canvas\\
+    CellGame: stateSplash*\\
+    Debug: CommandLine\\
+    Debug: fpsLabel
+  };
+  \draw[arr] (r2.east) -- (dlist.west);
+
+  \node[card, pkgfill=pkgRender, minimum width=3.8cm, text width=3.4cm] (tok) at (24.6,-6.3) {%
+    AppendCommands\\
+    SubmitCommandQueue\\
+    optional Draw()
+  };
+  \draw[arr] (r5.east) -- (tok.west);
+
+  \draw[arr] (s7.east) -- node[above, font=\scriptsize\rmfamily] {each frame} (u0.west);
+  \draw[arr] (u0.east) -- (r0.west);
+  % next-frame: bottom rail, approach while from the west (no vertical through s8/s9)
+  \draw[arr] (tok.south) -- ++(0,-0.4) -- (24.8,-9.5) -- node[below, font=\footnotesize\rmfamily, pos=0.35] {next frame} (1.2,-9.5) -- (1.2,-6.7) -- (s7.west);
+
+  \node[stub, minimum width=5.5cm, text width=5.0cm, font=\scriptsize\ttfamily] (proof) at (12.5,-10.5) {%
+    UseTokenProof==1 $\rightarrow$ RenderProofQuad\\
+    (skips Scene path)
+  };
+  \draw[arr, densely dotted] (u0.south east) -- ++(0.35,0) |- (proof.east);
+\ChartEnd
+
+\newpage
+%==============================================================================
+% PAGE 4 --- Class map
+%==============================================================================
+\ChartTitle{4 $\cdot$ Class map --- App · Engine · Illumo-owned Services}
+\ChartBegin
+  \node[sectitle] at (3.4,0) {App / Engine};
+  \node[sectitle] at (11.0,0) {Services (Illumo-owned*)};
+  \node[sectitle] at (20.2,0) {Render host (Illumo-owned*)};
+
+  % Col A: IllumoContext beside stack; modules side-by-side (no vertical through peers)
+  \node[box, pkgfill=pkgApp, minimum width=3.6cm] (cm) at (3.0,-1.0) {CellMain};
+  \node[box, pkgfill=pkgEngine, minimum width=3.6cm] (il) at (3.0,-2.1) {Illumo};
+  \node[iface, minimum width=3.6cm] (imod) at (3.0,-3.4) {IModule};
+  \node[box, pkgfill=pkgGame, minimum width=3.0cm] (cgm) at (1.3,-4.7) {CellGameModule};
+  \node[box, pkgfill=pkgEngine, minimum width=3.0cm] (dbg) at (4.7,-4.7) {DebugModule};
+  \node[iface, minimum width=3.4cm] (ctx) at (3.0,-6.1) {IllumoContext};
+  \draw[owns] (cm)--(il);
+  \draw[owns] (il)--(imod);
+  \draw[impl] (cgm.north)--(imod.south west);
+  \draw[impl] (dbg.north)--(imod.south east);
+  % IllumoContext non-owning: vertical at x=6.6 (right of modules)
+  \draw[nonown] (il.east) -- (6.6,-2.1) -- (6.6,-6.1) -- (ctx.east);
+  \begin{scope}[on background layer]
+    \node[cluster=pkgEngine, fit=(il)(ctx)(imod)(dbg)(cgm)] {};
+  \end{scope}
+
+  % Col B: two subcolumns, even row rhythm
+  \node[iface, minimum width=3.15cm] (ienv) at (9.2,-1.0) {IEnvVars};
+  \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (env) at (9.2,-2.1) {EnvVars*};
+  \draw[impl] (env)--(ienv);
+
+  \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (im) at (12.8,-1.0) {InputManager*};
+  \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (icx) at (12.8,-2.1) {InputContext};
+  \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (kc) at (12.8,-3.2) {KeyCode / Event};
+  \draw[arr] (im)--(icx)--(kc);
+
+  \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (creg) at (9.2,-4.5) {CommandRegistry*};
+  \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (cline) at (12.8,-4.5) {CommandLine*};
+  \node[iface, minimum width=3.15cm] (dwd) at (12.8,-5.6) {Drawable\textless CL\textgreater};
+  \draw[arr] (cline)--(creg);
+  \draw[impl] (cline)--(dwd);
+
+  \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (log) at (9.2,-6.9) {Logger (static)};
+  \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (sl) at (12.8,-6.9) {SaveLoad (static)};
+  % Route in gap between service columns (x=11.0) so vertical does not hit CommandRegistry*
+  \draw[nonown] (log.east) -- (11.0,-6.9) -- (11.0,-2.1) -- (env.east);
+  \draw[nonown] (log.east) -- ++(0.35,0) |- (cline.south);
+
+  % Even 2.6cm boxes under services; msl R≤15.8 so util L≥16.5 stays clear
+  \node[box, pkgfill=pkgPlatform, minimum width=2.6cm] (wsl) at (9.2,-8.25) {WinSaveLoad};
+  \node[stub, minimum width=2.6cm] (lsl) at (12.5,-8.25) {LinuxSaveLoad};
+  \node[stub, minimum width=2.6cm] (msl) at (15.5,-8.25) {MacSaveLoad};
+  \draw[impl] (wsl.north) -- ++(0,0.35) -| (sl.south west);
+  % stubs side-by-side under SaveLoad — short verticals only (no through-peer edges)
+  \draw[impl, densely dotted] (lsl.north) -- ++(0,0.35) -| (sl.south);
+  \draw[impl, densely dotted] (msl.north) -- ++(0,0.35) -| (sl.south east);
+
+  % Col C
+  \node[iface, minimum width=3.5cm] (irw) at (18.8,-1.0) {IRenderWindow};
+  \node[box, pkgfill=pkgRender, minimum width=3.5cm] (rw) at (18.8,-2.1) {RenderWindow*};
+  \node[box, pkgfill=pkgRender, minimum width=3.5cm] (cam) at (18.8,-3.2) {Camera*};
+  \node[box, pkgfill=pkgRender, minimum width=3.5cm] (ren) at (18.8,-4.3) {Renderer*};
+  \node[box, pkgfill=pkgRender, minimum width=3.5cm] (am) at (18.8,-5.4) {AssetManager*};
+  \node[box, pkgfill=pkgRender, minimum width=3.5cm] (sc) at (18.8,-6.5) {Scene*};
+  \draw[impl] (rw)--(irw);
+  \draw[arr] (ren)--(am);
+
+  \node[box, pkgfill=pkgRender, minimum width=3.3cm] (glb) at (22.8,-4.3) {GLBackend};
+  \node[iface, minimum width=3.3cm] (ibe) at (22.8,-5.4) {IBackend};
+  \draw[owns] (ren)--(glb);
+  \draw[impl] (glb)--(ibe);
+
+  % util L=16.8 clears msl R=16.8? use L=17.0 (center 20.8, w=7.6)
+  \node[stub, minimum width=7.6cm, align=left, font=\scriptsize\ttfamily] (util) at (20.8,-8.0) {%
+    NOT Illumo members / not host frame path:\\[2pt]
+    ArenaAlloc · ChainedStackAlloc · PoolAlloc\\
+    MallocAlloc · DebugAlloc · SysCmdLine
+  };
+  \node[note, minimum width=7.6cm, minimum height=1.9cm] at (20.8,-9.8) {%
+    \textbf{* = Illumo \texttt{unique\_ptr} member}\\[3pt]
+    Logger / SaveLoad are static entry points.\\
+    Context / modules receive raw pointers only.
+  };
+\ChartEnd
+
+\newpage
+%==============================================================================
+% PAGE 5 --- Game / Rulesets / Canvas
+%==============================================================================
+\ChartTitle{5 $\cdot$ Game · Rulesets · Canvas}
+\ChartBegin
+  % Ownership chain well below title
+  \node[iface, minimum width=2.5cm] (imod) at (2.0,-0.9) {IModule};
+  \node[box, pkgfill=pkgGame, minimum width=3.4cm] (cgm) at (5.9,-0.9) {CellGameModule};
+  \node[box, pkgfill=pkgGame, minimum width=3.2cm] (cc) at (10.4,-0.9) {CellContext};
+  \node[box, pkgfill=pkgGame, minimum width=7.4cm, align=left, text width=6.9cm] (cv) at (18.2,-0.9) {%
+    \textbf{Canvas : Drawable}\\[3pt]
+    lifeCanvas · targetRgb / displayRgb · DirtyRect\\
+    texCanvasBuffer · mesh/shader/tex · AppendCommands\\
+    window* camera* renderer*
+  };
+  \draw[impl] (cgm)--(imod);
+  \draw[owns] (cgm)-- node[above, font=\scriptsize\rmfamily] {new in Start} (cc);
+  \draw[owns] (cc)--(cv);
+
+  % Left stack
+  \node[sectitle] at (3.0,-2.5) {Module state};
+  \node[box, pkgfill=pkgGame, minimum width=3.8cm] (st) at (3.0,-3.4) {CellState\\NORMAL|EDIT|EXIT};
+  \node[box, pkgfill=pkgSvc, minimum width=3.8cm] (inx) at (3.0,-4.5) {InputContext};
+  \node[box, pkgfill=pkgRender, minimum width=3.8cm, font=\scriptsize\ttfamily] (spl) at (3.0,-5.7) {%
+    SplashText* stateSplash\\
+    {\rmfamily\scriptsize file-scope global}
+  };
+  \node[box, pkgfill=pkgSvc, minimum width=3.8cm] (sv) at (3.0,-6.9) {SaveLoad};
+  \node[box, pkgfill=pkgGame, minimum width=3.8cm, align=left, font=\scriptsize\ttfamily] (io) at (3.0,-8.1) {%
+    SaveCellGame / LoadCellGame\\
+    (fstream in module)
+  };
+  \node[box, pkgfill=pkgSvc, minimum width=3.8cm] (creg) at (3.0,-9.3) {CommandRegistry};
+  \draw[arr] (cgm.south) -- ++(0,-0.5) -| (st.north);
+  \draw[arr] (st)--(inx)--(spl)--(sv)--(io);
+  % register path: below IModule row, then left rail (misses imod)
+  \draw[arr] (cgm.south) -- ++(0,-0.35) -- (5.9,-1.6) -- (0.7,-1.6) -- (0.7,-9.3) -- (creg.west);
+
+  % RuleSet
+  \node[iface, minimum width=3.0cm] (rs) at (8.6,-3.4) {RuleSet};
+  \draw[owns] (cc.south) -- node[right, font=\scriptsize\rmfamily] {setRuleSet} (rs.north);
+  % canvas* above the factory grid; label on horizontal only
+  \draw[nonown] (rs.north) -- ++(0,0.55) -| node[above, font=\scriptsize\rmfamily, pos=0.55] {canvas*} (cv.west);
+
+  % R(api)=10.1; keep left of factory rail and orph (L≥11.5)
+  \node[card, pkgfill=pkgRules, minimum width=3.0cm, minimum height=2.5cm, text width=2.6cm] (api) at (8.6,-6.9) {%
+    \textbf{RuleSet API}\\[3pt]
+    nextState()\\
+    evalCell()\\
+    calcGeneration()\\
+    nextGen buffer
+  };
+  \draw[arr] (rs.south) -- (api.north);
+
+  % Live rules: two rows, 2.5cm pitch, buses in empty bands only
+  \node[sectitle] at (17.0,-2.4) {Factory live (setRuleSet / AllSets.h)};
+  \node[box, pkgfill=pkgRules, minimum width=2.4cm] (r1) at (12.0,-3.55) {GameOfLife};
+  \node[box, pkgfill=pkgRules, minimum width=2.4cm] (r2) at (14.6,-3.55) {Seeds};
+  \node[box, pkgfill=pkgRules, minimum width=2.4cm] (r3) at (17.2,-3.55) {Highlife};
+  \node[box, pkgfill=pkgRules, minimum width=2.5cm] (r4) at (19.9,-3.55) {DayAndNight};
+  \node[box, pkgfill=pkgRules, minimum width=2.7cm] (r5) at (12.0,-4.9) {LifeWithoutDeath};
+  \node[box, pkgfill=pkgRules, minimum width=2.5cm] (r6) at (14.8,-4.9) {BrainsBrain};
+  \node[box, pkgfill=pkgRules, minimum width=2.4cm] (r7) at (17.5,-4.9) {Wireworld};
+  % Top-row bus BETWEEN rows (y=-4.2)
+  \coordinate (busTop) at (12.0,-4.2);
+  \foreach \n in {r1,r2,r3,r4} {
+    \draw[impl] (\n.south) -- (\n.south |- busTop);
+  }
+  \draw[line width=0.65pt, draw=black!60] (12.0,-4.2) -- (19.9,-4.2);
+  % Bottom-row bus BELOW bottom row (y=-5.6)
+  \coordinate (busBot) at (12.0,-5.6);
+  \foreach \n in {r5,r6,r7} {
+    \draw[impl] (\n.south) -- (\n.south |- busBot);
+  }
+  \draw[line width=0.65pt, draw=black!60] (12.0,-5.6) -- (17.5,-5.6);
+  % Join buses on left rail (gap left of rule L≈10.8)
+  \draw[line width=0.65pt, draw=black!60] (10.5,-4.2) -- (12.0,-4.2);
+  \draw[line width=0.65pt, draw=black!60] (10.5,-5.6) -- (12.0,-5.6);
+  \draw[line width=0.65pt, draw=black!60] (10.5,-4.2) -- (10.5,-5.6);
+  \draw[impl] (10.5,-4.2) -- (10.5,-3.4) -- (rs.east);
+
+  % Unwired stubs to the RIGHT (not stacked under DayAndNight / Wireworld)
+  \node[stub, minimum width=2.3cm] (r8) at (22.5,-3.55) {Rule90};
+  \node[stub, minimum width=2.3cm] (r9) at (22.5,-4.9) {Rule184};
+  \node[legend, font=\scriptsize\rmfamily, align=center] at (22.5,-5.75) {not in setRuleSet\\/ AllSets.h};
+
+  % Orphan + commands strip: L=11.55 > R(api)=10.1; even width under factory
+  \node[stub, minimum width=13.0cm, minimum height=0.78cm, align=left, font=\scriptsize\ttfamily] (orph) at (18.05,-7.15) {%
+    orphan / unwired in Game/: Brush · Cursor · CanvasView · SparseCellGrid · CellWorldIO.h
+  };
+  \node[card, pkgfill=pkgGame, minimum width=13.0cm, align=left, font=\scriptsize\ttfamily] (cmds) at (18.05,-8.55) {%
+    \textbf{CellGame registered commands}\\[3pt]
+    ruleset · mode · run · pause · step · clear\_canvas · randomize · setcell\\
+    save · load · save\_dialog · load\_dialog · camera · camera\_reset · status
+  };
+\ChartEnd
+
+\newpage
+%==============================================================================
+% PAGE 6 --- Rendering
+%==============================================================================
+\ChartTitle{6 $\cdot$ Rendering (\texttt{Renderer::RenderScene} $\rightarrow$ backend)}
+\ChartBegin
+  \node[sectitle] at (4.5,0) {Drawable hierarchy};
+  \node[sectitle] at (13.0,0) {Per-frame path};
+  \node[sectitle] at (21.6,0) {IBackend};
+
+  % LEFT
+  \node[iface, minimum width=3.3cm] (db) at (4.5,-1.0) {DrawableBase};
+  \node[iface, minimum width=3.3cm] (dcrtp) at (4.5,-2.1) {Drawable\textless T\textgreater};
+  \draw[impl] (dcrtp)--(db);
+
+  % Drawable implementers: column gaps leave room for token path
+  \node[box, pkgfill=pkgGame, minimum width=2.5cm] (c) at (1.7,-3.6) {Canvas};
+  \node[box, pkgfill=pkgSvc, minimum width=2.5cm] (cl) at (4.5,-3.6) {CommandLine};
+  \node[box, pkgfill=pkgRender, minimum width=2.5cm] (gls) at (7.3,-3.6) {GLString};
+  \node[box, pkgfill=pkgRender, minimum width=2.5cm] (sp) at (7.3,-4.8) {SplashText};
+  \node[stub, minimum width=2.5cm] (cur) at (1.7,-4.8) {Cursor};
+  \node[legend, font=\scriptsize\rmfamily] at (1.7,-5.5) {unwired};
+  \draw[impl] (c.north) |- (dcrtp.west);
+  \draw[impl] (cl)--(dcrtp);
+  \draw[impl] (gls.north) |- (dcrtp.east);
+  \draw[impl] (sp)--(gls);
+
+  \node[box, pkgfill=pkgAssets, minimum width=2.5cm] (ttf) at (4.5,-6.2) {TTFLoader};
+  \draw[arr] (ttf)--(gls);
+
+  % CENTER
+  \node[box, pkgfill=pkgRender, minimum width=3.6cm] (sc) at (12.0,-1.0) {Scene\\drawables[]*};
+  \node[box, pkgfill=pkgRender, minimum width=3.6cm] (ren) at (12.0,-2.3) {Renderer};
+  \draw[arr] (sc)--(ren);
+
+  % Host column right of flow card (flow R≈14.3 → host L≥14.7)
+  \node[iface, minimum width=3.0cm] (irw) at (16.4,-1.0) {IRenderWindow*};
+  \node[box, pkgfill=pkgRender, minimum width=3.0cm] (rww) at (16.4,-2.2) {RenderWindow};
+  \node[box, pkgfill=pkgRender, minimum width=3.0cm] (cam) at (16.4,-3.4) {Camera};
+  \draw[impl] (rww)--(irw);
+  \draw[nonown] (irw.south)--(rww.north);
+  \draw[nonown] (cam.west) -- node[above, font=\scriptsize\rmfamily] {arg} (ren.east);
+
+  % Under Scene/Renderer only (R≤14.3); leaves Camera L≥14.55 clear; content height ~4cm
+  \node[card, pkgfill=pkgRender, minimum width=4.6cm, text width=4.2cm] (flow) at (12.0,-5.9) {%
+    \textbf{RenderScene body}\\[3pt]
+    pushViewport\\
+    pushPipelineState\\
+    pushClearScreen\\
+    foreach drawable:\\
+    \quad AppendCommands(this)\\
+    \quad else immediateList\\
+    SubmitCommandQueue\\
+    ClearCommandQueue\\
+    immediate Draw()
+  };
+  \draw[arr] (ren)--(flow);
+
+  % Token path under flow body (clear of SplashText and of body card)
+  \node[box, pkgfill=pkgRender, minimum width=2.8cm] (rc) at (10.6,-8.55) {RenderCommand};
+  \node[box, pkgfill=pkgRender, minimum width=2.8cm] (cq) at (13.6,-8.55) {CommandQueue};
+  \draw[arr] (flow.south) -- ++(0,-0.45) -| (rc.north);
+  \draw[arr] (rc)--(cq);
+  \draw[nonown] (db.east) -- ++(1.5,0) |- (sc.west);
+
+  % RIGHT backend column
+  \node[iface, minimum width=3.5cm] (ibe) at (21.6,-1.0) {IBackend};
+  \draw[arr] (ren.north east) -- ++(0,1.5) -| (ibe.north);
+  % cq→IBackend: drop below IBuffer (y=-9.1), right of GL* (x=24), then up to IBackend
+  \draw[arr] (cq.south) -- (13.6,-9.85) -- (24.0,-9.85) -- (24.0,-1.0) -- (ibe.east);
+
+  \node[box, pkgfill=pkgTests, minimum width=3.5cm] (mock) at (21.6,-2.2) {MockBackend};
+  \node[box, pkgfill=pkgRender, minimum width=3.5cm] (glb) at (21.6,-3.4) {GLBackend};
+  \node[box, pkgfill=pkgRender, minimum width=3.5cm] (gld) at (21.6,-4.5) {GLDevice};
+  \draw[impl] (mock)--(ibe);
+  % GLBackend implements IBackend: route right of column so edge misses MockBackend
+  \draw[impl] (glb.east) -- ++(0.55,0) |- (ibe.east);
+  \draw[owns] (glb)--(gld);
+
+  \node[iface, minimum width=2.9cm] (imsh) at (18.0,-5.8) {IMesh};
+  \node[iface, minimum width=2.9cm] (ish) at (18.0,-6.9) {IShaderProgram};
+  \node[iface, minimum width=2.9cm] (itx) at (18.0,-8.0) {ITexture};
+  \node[iface, minimum width=2.9cm] (ibuf) at (18.0,-9.1) {IBuffer};
+  \node[box, pkgfill=pkgRender, minimum width=2.9cm] (glm) at (21.6,-5.8) {GLMesh};
+  \node[box, pkgfill=pkgRender, minimum width=2.9cm] (glp) at (21.6,-6.9) {GLShaderProgram};
+  \node[box, pkgfill=pkgRender, minimum width=2.9cm] (glt) at (21.6,-8.0) {GLTexture};
+  \draw[impl] (glm)--(imsh);
+  \draw[impl] (glp)--(ish);
+  \draw[impl] (glt)--(itx);
+
+  \node[stub, minimum width=14.0cm, align=left, font=\scriptsize\ttfamily] (rp) at (10.5,-10.3) {%
+    Renderer also has enrollRenderPass / FrameBuffer helpers --- not the production per-frame path
+  };
+\ChartEnd
+
+\newpage
+%==============================================================================
+% PAGE 7 --- Input / console
+%==============================================================================
+\ChartTitle{7 $\cdot$ Input · console · commands}
+\ChartBegin
+  \node[sectitle] at (13.0,0) {Input path};
+
+  \node[box, pkgfill=pkgPlatform, minimum width=3.6cm, minimum height=1.0cm] (glfw) at (2.2,-1.1) {GLFW events};
+  \node[box, pkgfill=pkgRender, minimum width=3.6cm, minimum height=1.0cm] (win) at (6.2,-1.1) {RenderWindow\\getWindowInstance};
+  \node[box, pkgfill=pkgSvc, minimum width=3.6cm, minimum height=1.0cm] (im) at (10.2,-1.1) {InputManager};
+  \node[box, pkgfill=pkgGame, minimum width=3.6cm, minimum height=1.0cm] (cgm) at (14.2,-1.1) {CellGameModule};
+  \node[box, pkgfill=pkgRender, minimum width=3.6cm, minimum height=1.0cm] (cam) at (18.2,-1.1) {Camera};
+  \node[box, pkgfill=pkgSvc, minimum width=3.6cm, minimum height=1.0cm] (ic) at (22.2,-1.1) {InputContext};
+  \draw[arr] (glfw)--(win)--(im)--(cgm)--(cam)--(ic);
+
+  % Title left of console row (not under CellGameModule where ExecuteQueue runs)
+  \node[sectitle] at (6.5,-2.5) {Console path};
+  \node[box, pkgfill=pkgEngine, minimum width=3.6cm] (dbg) at (10.2,-3.4) {DebugModule};
+  \node[box, pkgfill=pkgSvc, minimum width=3.6cm] (cl) at (14.2,-3.4) {CommandLine};
+  \node[box, pkgfill=pkgSvc, minimum width=3.6cm] (cr) at (18.2,-3.4) {CommandRegistry};
+  \node[box, pkgfill=pkgRender, minimum width=3.6cm] (fps) at (22.2,-3.4) {GLString* fpsLabel};
+  \draw[arr] (im.south)--(dbg.north);
+  \draw[arr] (dbg)--(cl);
+  \draw[arr] (cl)-- node[above, font=\scriptsize\rmfamily] {QueueCommand} (cr);
+  % ExecuteQueue stays over registry→game (right side), clear of Console path title
+  \draw[arr] (cr.north) -- ++(0,0.4) -| node[above, font=\scriptsize\rmfamily, pos=0.15] {ExecuteQueue} (cgm.south);
+  % owns fps: above console row so edge misses CommandLine/CommandRegistry
+  \draw[owns] (dbg.north) -- ++(0,0.45) -| (fps.north);
+
+  % Three equal-height catalogs
+  \node[card, pkgfill=pkgSvc, minimum width=7.3cm, minimum height=4.3cm, text width=6.8cm] (builtin) at (5.2,-6.6) {%
+    \textbf{\rmfamily kBuiltInCommands (CommandLine)}\\[4pt]
+    alias · clear · close · echo\\
+    fade · fps · fullscreen · get\\
+    help · history · quit · repeat\\
+    set · speed · sysinfo · toggle\\
+    tps · unalias · vars\\[5pt]
+    \textbf{RegisterCommand:}\\
+    console\_mode · console\_size
+  };
+  \node[card, pkgfill=pkgGame, minimum width=7.3cm, minimum height=4.3cm, text width=6.8cm] (domain) at (13.0,-6.6) {%
+    \textbf{\rmfamily CellGame registers}\\[4pt]
+    ruleset · mode\\
+    run · pause · step\\
+    clear\_canvas · randomize · setcell\\
+    save · load · save\_dialog · load\_dialog\\
+    camera · camera\_reset · status
+  };
+  \node[card, pkgfill=pkgSvc, minimum width=6.2cm, minimum height=4.3cm, text width=5.7cm] (side) at (21.0,-6.6) {%
+    \textbf{\rmfamily Side effects}\\[4pt]
+    EnvVars (get/set/vars)\\
+    Logger (console output)\\
+    SaveLoad::Get*\\
+    Save/LoadCellGame\\
+    Canvas lifeCanvas\\
+    Camera pan/zoom
+  };
+  \draw[arr] (cl.south) -- ++(0,-0.45) -| (builtin.north);
+  \draw[arr] (cgm.east) -- ++(0.35,0) |- (domain.north east);
+  \draw[arr] (builtin)--(domain)--(side);
+
+  \node[box, pkgfill=pkgSvc, minimum width=2.8cm] (env) at (3.5,-9.6) {EnvVars};
+  \node[box, pkgfill=pkgSvc, minimum width=2.8cm] (log) at (6.9,-9.6) {Logger};
+  \draw[arr] (builtin.south) -- ++(0,-0.35) -| (env.north);
+  \draw[nonown] (log)--(env);
+  \draw[nonown] (log.north) -- ++(0,0.35) -| (builtin.south east);
+
+  \node[note, minimum width=24.8cm, align=left, font=\footnotesize\ttfamily] at (13.0,-10.9) {%
+    text $\rightarrow$ CommandLine buffer $\rightarrow$ built-in handler OR CommandRegistry::QueueCommand\\
+    $\rightarrow$ ExecuteQueue $\rightarrow$ CellGameModule lambdas $\rightarrow$ CellContext / Canvas / RuleSet / SaveLoad / Camera
+  };
+\ChartEnd
+
+\newpage
+%==============================================================================
+% PAGE 8 --- Inventory
+%==============================================================================
+\ChartTitle{8 $\cdot$ Type inventory (Live = referenced on product path)}
+\ChartBegin
+  % Strict 4x3 grid: col 3.15 + 6.3*i, row -1.5 - 3.35*j
+  % card 5.9 x 2.9, gap ~0.4cm
+  \node[card, pkgfill=pkgPlatform, minimum width=5.9cm, minimum height=2.9cm] at (3.15,-1.5) {%
+    \textbf{\rmfamily Platform}\\[3pt]
+    main $\rightarrow$ CellMain\\
+    WinSaveLoad \textbf{L}\\
+    Linux/macOS ports \textbf{S}};
+  \node[card, pkgfill=pkgApp, minimum width=5.9cm, minimum height=2.9cm] at (9.45,-1.5) {%
+    \textbf{\rmfamily App}\\[3pt]
+    CellMain \textbf{L}};
+  \node[card, pkgfill=pkgEngine, minimum width=5.9cm, minimum height=2.9cm] at (15.75,-1.5) {%
+    \textbf{\rmfamily Engine}\\[3pt]
+    Illumo · IllumoContext \textbf{L}\\
+    IModule · DebugModule \textbf{L}};
+  \node[card, pkgfill=pkgGame, minimum width=5.9cm, minimum height=2.9cm] at (22.05,-1.5) {%
+    \textbf{\rmfamily Game}\\[3pt]
+    CellGameModule · CellContext \textbf{L}\\
+    Canvas · DirtyRect \textbf{L}\\
+    Brush · Cursor · CanvasView \textbf{S}\\
+    SparseCellGrid · CellWorldIO \textbf{S}};
+
+  \node[card, pkgfill=pkgRules, minimum width=5.9cm, minimum height=2.9cm] at (3.15,-4.85) {%
+    \textbf{\rmfamily Rulesets}\\[3pt]
+    RuleSet \textbf{L}\\
+    GoL Seeds Highlife D\&N \textbf{L}\\
+    LWD BrainsBrain Wireworld \textbf{L}\\
+    Rule90 Rule184 \textbf{S}\\
+    AllSets.h (7 live only)};
+  \node[card, pkgfill=pkgRender, minimum width=5.9cm, minimum height=2.9cm] at (9.45,-4.85) {%
+    \textbf{\rmfamily Rendering}\\[3pt]
+    Scene Camera Renderer \textbf{L}\\
+    Drawable RenderCommand \textbf{L}\\
+    CommandQueue AssetManager \textbf{L}\\
+    GLString SplashText \textbf{L}\\
+    RenderWindow · IBackend \textbf{L}\\
+    RenderPass helpers \textbf{U}};
+  \node[card, pkgfill=pkgRender, minimum width=5.9cm, minimum height=2.9cm] at (15.75,-4.85) {%
+    \textbf{\rmfamily OpenGL / Mock}\\[3pt]
+    GLBackend GLDevice \textbf{L}\\
+    GLMesh GLTexture \textbf{L}\\
+    GLShaderProgram GLBuffer \textbf{L}\\
+    MockBackend \textbf{T}};
+  \node[card, pkgfill=pkgSvc, minimum width=5.9cm, minimum height=2.9cm] at (22.05,-4.85) {%
+    \textbf{\rmfamily Services}\\[3pt]
+    EnvVars IEnvVars \textbf{L}\\
+    InputManager InputContext \textbf{L}\\
+    KeyCode CommandLine \textbf{L}\\
+    CommandRegistry Logger \textbf{L}\\
+    SaveLoad \textbf{L}\\
+    allocators SysCmdLine \textbf{U}};
+
+  \node[card, pkgfill=pkgFound, minimum width=5.9cm, minimum height=2.5cm] at (3.15,-7.9) {%
+    \textbf{\rmfamily Foundation}\\[3pt]
+    MacroDefs MathTypes \textbf{L}\\
+    SysInfo ArrayQueue \textbf{L}\\
+    BuildInfo};
+  \node[card, pkgfill=pkgAssets, minimum width=5.9cm, minimum height=2.5cm] at (9.45,-7.9) {%
+    \textbf{\rmfamily Assets}\\[3pt]
+    TTFLoader \textbf{L}};
+  \node[card, pkgfill=pkgTests, minimum width=5.9cm, minimum height=2.5cm] at (15.75,-7.9) {%
+    \textbf{\rmfamily Tests}\\[3pt]
+    IllumoTests \textbf{T}\\
+    MockBackend inject \textbf{T}\\
+    NullRenderWindow \textbf{T}};
+  \node[card, fill=black!5, draw=black!38, minimum width=5.9cm, minimum height=2.5cm] at (22.05,-7.9) {%
+    \textbf{\rmfamily Tags}\\[3pt]
+    \textbf{L} live product path\\
+    \textbf{S} stub / orphan file\\
+    \textbf{U} utility / not host-owned\\
+    \textbf{T} tests only};
+
+  \node[card, pkgfill=pkgEngine, minimum width=24.8cm, align=left, minimum height=1.7cm] at (12.6,-10.2) {%
+    \textbf{\rmfamily Observed dependency direction (production)}\\[3pt]
+    Platform $\rightarrow$ App/CellMain $\rightarrow$ Illumo $\rightarrow$ IModule (CellGame / Debug) $\cdot$
+    CellGame $\rightarrow$ CellContext $\rightarrow$ Canvas + RuleSet $\rightarrow$ Renderer tokens\\
+    Debug $\rightarrow$ CommandLine + GLString $\cdot$
+    Renderer $\rightarrow$ IBackend $\rightarrow$ GL* $\cdot$
+    Tests $\rightarrow$ MockBackend $\cdot$
+    Rulesets do not call OpenGL
+  };
+\ChartEnd
+
+\end{document}
