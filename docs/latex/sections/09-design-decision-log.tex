@@ -389,8 +389,8 @@ where unmigrated types exist.\\
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
-\subsection*{D-R11 --- Scene layers and built-in render styles}
-\begin{decisionbox}[title={D-R11 \quad 2026-08-07}]
+\subsection*{D-R14 --- Scene layers and built-in render styles}
+\begin{decisionbox}[title={D-R14 \quad 2026-08-07}]
 \textbf{Decision:} Introduce \textbf{Phase A} composition without multi-pass
 GPU targets:
 \begin{itemize}
@@ -413,8 +413,8 @@ as duplicated per-drawable shader enrollment and ad-hoc pipeline structs.\\
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
-\subsection*{D-R12 --- Render primitives and GameVisual host}
-\begin{decisionbox}[title={D-R12 \quad 2026-08-07}]
+\subsection*{D-R15 --- Render primitives and GameVisual host}
+\begin{decisionbox}[title={D-R15 \quad 2026-08-07}]
 \textbf{Decision:} Introduce value-type \textbf{render primitives}
 (\symbolref{ShapePrimitive}, \symbolref{SpritePrimitive}) composed on a
 \symbolref{GameVisual} \texttt{Drawable} host.
@@ -429,7 +429,7 @@ as duplicated per-drawable shader enrollment and ad-hoc pipeline structs.\\
   \item Coordinate space is host policy (\texttt{Pixels} or \texttt{World}).
 \end{itemize}
 \textbf{Why:} Composition over per-primitive drawables keeps Scene traffic low
-and matches D-R11 style ownership.\\
+and matches D-R14 style ownership.\\
 \textbf{Consequences:} \pathref{Rendering/Primitives/}; headless tests
 \texttt{Illumo.GameVisual.*}; Canvas/UI paths unchanged.
 \end{decisionbox}
@@ -559,8 +559,8 @@ registration detail in D-R7 without changing the MockBackend decision.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
-\subsection*{D-C1 --- Floating mode, title-bar dragging, and corner resize}
-\begin{decisionbox}[title={D-C1 \quad 2026-08-06}]
+\subsection*{D-UI3 --- Floating mode, title-bar dragging, and corner resize}
+\begin{decisionbox}[title={D-UI3 \quad 2026-08-06}]
 \textbf{Decision:} Extend \symbolref{CommandLine} to support dynamic window modes and resizable floating window geometry. Mode switching is driven by double-clicking the console title bar or executing \texttt{console\_mode [floating|mounted|toggle]}. In floating mode, left-clicking and dragging the title bar repositions the window across the screen, and dragging the bottom-right corner grip handle (or running \texttt{console\_size <W> <H> | reset}) resizes the console window dynamically with real-time viewport clipping and single-batch quad rendering.\\
 \textbf{Why:} Enhances Developer Console usability, allows moving and scaling the console UI away from active grid regions, and provides modular window layout flexibility.\\
 \textbf{Consequences:} \symbolref{CommandLine} geometry (chrome, history text, input trough, scrollbar, ghost text, selection highlight) is computed relative to dynamic floating bounds \texttt{panelX0}, \texttt{panelX1}, \texttt{panelY0}, \texttt{panelY1}; mouse press/drag event dispatch accounts for floating position offset and corner resize bounds.

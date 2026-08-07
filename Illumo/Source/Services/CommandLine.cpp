@@ -7,6 +7,7 @@
 #include "Rendering/Primitives/GameVisual.h"
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <iostream>
@@ -101,7 +102,7 @@ parseDoubleStrict(const std::string& text, double* value)
   try {
     std::size_t consumed = 0;
     double parsed = std::stod(text, &consumed);
-    if (consumed != text.size()) {
+    if (consumed != text.size() || !std::isfinite(parsed)) {
       return false;
     }
     *value = parsed;
@@ -1183,7 +1184,7 @@ CommandLine::ExecuteSingleCommand(const std::string& singleCmd,
         logWarning("No history entries match '" + filter + "'");
       }
     }
-  } else if (cmd == "sysinfo" || cmd == "status") {
+  } else if (cmd == "sysinfo") {
     logNormal("=== Illumo System Telemetry ===");
     logNormal("Registered commands: " +
               std::to_string(commandRegistry
@@ -1848,7 +1849,7 @@ CommandLine::DrawImpl()
 
 namespace {
 
-// Emit chrome/text as GameVisual primitives (D-R12). writeAt tracks approximate
+// Emit chrome/text as GameVisual primitives (D-R15). writeAt tracks approximate
 // vertex budget for overflow (same units as the old packed UI buffer).
 static unsigned int
 packSolidQuad(GameVisual* visual,

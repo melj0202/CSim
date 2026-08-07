@@ -55,5 +55,7 @@ private:
   std::unique_ptr<Scene> scene;
   IllumoContext context;
   std::vector<std::unique_ptr<IModule>> modules;
+  int commandLineArgc;
+  char** commandLineArgv;
   bool modulesStarted;
 };

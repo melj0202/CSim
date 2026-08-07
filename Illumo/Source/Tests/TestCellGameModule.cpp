@@ -99,6 +99,16 @@ struct CellGameFixture
     testTrue(g, queued, ("registered command queues: " + command).c_str());
     registry.ExecuteQueue();
   }
+
+  void executeThroughConsole(const std::string& command)
+  {
+    console.ClearInput();
+    for (const char character : command) {
+      console.AddCharacter(static_cast<unsigned int>(character));
+    }
+    console.ExecuteCommand();
+    registry.ExecuteQueue();
+  }
 };
 
 static void
@@ -406,6 +416,11 @@ testConsoleSimulationCommands()
   testTrue(g,
            historyContains(fixture.console, "percentage from 0 to 100"),
            "randomize validates density");
+  canvas->setCanvasPixel(0, 0, 0);
+  fixture.execute("randomize", { "nan" });
+  fixture.execute("randomize", { "inf" });
+  testEqUChar(
+    g, canvas->getCanvasPixel(0, 0), 0, "randomize rejects non-finite density");
 
   fixture.execute("pause");
   testTrue(g,
@@ -425,10 +440,10 @@ testConsoleSimulationCommands()
            CellGameModuleTestAccess::getState(fixture.module) ==
              CellState::NORMAL,
            "run enters normal state");
-  fixture.execute("status");
+  fixture.executeThroughConsole("status");
   testTrue(g,
            historyContains(fixture.console, "State: RUNNING"),
-           "status reports simulation state");
+           "status dispatches through the console to report simulation state");
 }
 
 static void
@@ -445,6 +460,10 @@ testConsoleCameraAndFiles()
   testTrue(g,
            historyContains(fixture.console, "Usage: camera"),
            "camera validates numeric arguments");
+  fixture.execute("camera", { "nan", "20" });
+  testTrue(g,
+           fixture.camera.GetPosition() == glm::vec2(10.5f, 20.5f),
+           "camera rejects non-finite position");
   fixture.execute("camera_reset");
   testTrue(g,
            historyContains(fixture.console, "Camera reset"),

@@ -1,6 +1,5 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "GLBackend.h"
-#include "GLBuffer.h"
 #include "GLDevice.h"
 #include "GLShaderProgram.h"
 #include "GLTexture.h"

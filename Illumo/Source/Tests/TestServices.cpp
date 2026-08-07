@@ -165,18 +165,20 @@ testCameraCoordinatesAndMatrices()
 static void
 testEnvVarsTypesAndPersistence()
 {
-  testSection("EnvVars: typed conversion, persistence, malformed input");
+  testSection(
+    "EnvVars: typed conversion, explicit-path persistence, malformed input");
+  const std::filesystem::path configPath = "test-envvars.json";
   std::error_code removeError;
-  std::filesystem::remove("envvars.json", removeError);
+  std::filesystem::remove(configPath, removeError);
 
   {
-    std::ofstream fixture("envvars.json", std::ios::trunc);
+    std::ofstream fixture(configPath, std::ios::trunc);
     fixture << "{\"plain\":\"42\",\"wrapped\":{\"value\":\"yes\"},"
                "\"ignoredNumber\":17}";
   }
 
   {
-    EnvVars env;
+    EnvVars env(configPath);
     testEqInt(g,
               static_cast<int>(env.getVar("plain").valueAsLong),
               42,
@@ -227,7 +229,7 @@ testEnvVarsTypesAndPersistence()
   }
 
   {
-    EnvVars reloaded;
+    EnvVars reloaded(configPath);
     testEqInt(g,
               static_cast<int>(reloaded.getVar("unsignedLong").valueAsLong),
               10,
@@ -238,15 +240,46 @@ testEnvVarsTypesAndPersistence()
   }
 
   {
-    std::ofstream malformed("envvars.json", std::ios::trunc);
+    std::ofstream malformed(configPath, std::ios::trunc);
     malformed << "{";
   }
   {
-    EnvVars invalid;
+    EnvVars invalid(configPath);
     testTrue(g,
              invalid.getVars().empty(),
              "malformed JSON is ignored without partial state");
   }
+
+  std::filesystem::remove(configPath, removeError);
+}
+
+static void
+testEnvVarsApplicationPath()
+{
+  testSection("EnvVars: application configuration ignores working directory");
+#ifdef _WIN32
+  const std::filesystem::path originalDirectory =
+    std::filesystem::current_path();
+  const std::filesystem::path configPath = EnvVars::ApplicationConfigPath();
+  const std::filesystem::path changedDirectory =
+    originalDirectory / "envvars-working-directory-test";
+  std::error_code directoryError;
+  std::filesystem::create_directory(changedDirectory, directoryError);
+  std::filesystem::current_path(changedDirectory);
+  const std::filesystem::path changedConfigPath =
+    EnvVars::ApplicationConfigPath();
+  std::filesystem::current_path(originalDirectory);
+  std::filesystem::remove(changedDirectory, directoryError);
+
+  testTrue(
+    g, configPath.is_absolute(), "application configuration path is absolute");
+  testTrue(
+    g,
+    configPath == changedConfigPath,
+    "application configuration path is independent of working directory");
+#else
+  testTrue(g, true, "Windows production path is covered on Windows");
+#endif
 }
 
 static void
@@ -332,10 +365,8 @@ testLoggerLevelsAndSinks()
   testTrue(g,
            Logger::getCommandLine() == nullptr,
            "logger starts without command line context");
-  testTrue(g,
-           Logger::LogInfo(static_cast<const char*>(nullptr)),
-           "null message is ignored");
-  testTrue(g, Logger::LogWarning(""), "empty message is ignored");
+  Logger::LogInfo(static_cast<const char*>(nullptr));
+  Logger::LogWarning("");
 
   NullRenderWindow window(640, 480);
   EnvVars env;
@@ -354,27 +385,21 @@ testLoggerLevelsAndSinks()
   testTrue(g,
            Logger::getCommandLine() == &console,
            "logger exposes active console context");
-  testTrue(g, Logger::LogInfo("info-message"), "info log succeeds");
-  testTrue(g,
-           Logger::LogWarning(std::string("warning-message")),
-           "warning string overload succeeds");
-  testTrue(g, Logger::LogError("error-message"), "error log succeeds");
-  testTrue(g, Logger::Log("plain-message"), "plain log succeeds");
-  testTrue(g, Logger::LogTrace("trace-message"), "trace log succeeds");
+  Logger::LogInfo("info-message");
+  Logger::LogWarning(std::string("warning-message"));
+  Logger::LogError("error-message");
+  Logger::Log("plain-message");
+  Logger::LogTrace("trace-message");
   char mutableMessage[] = "mutable-message";
-  testTrue(
-    g, Logger::LogInfo(mutableMessage), "mutable info overload succeeds");
-  testTrue(
-    g, Logger::LogWarning(mutableMessage), "mutable warning overload succeeds");
-  testTrue(
-    g, Logger::LogError(mutableMessage), "mutable error overload succeeds");
-  testTrue(g, Logger::Log(mutableMessage), "mutable plain overload succeeds");
-  testTrue(
-    g, Logger::LogTrace(mutableMessage), "mutable trace overload succeeds");
-  testTrue(g, Logger::LogWError(L"wide"), "wide error stub succeeds");
-  testTrue(g, Logger::LogWWarning(L"wide"), "wide warning stub succeeds");
-  testTrue(g, Logger::LogWInfo(L"wide"), "wide info stub succeeds");
-  testTrue(g, Logger::LogW(L"wide"), "wide plain stub succeeds");
+  Logger::LogInfo(mutableMessage);
+  Logger::LogWarning(mutableMessage);
+  Logger::LogError(mutableMessage);
+  Logger::Log(mutableMessage);
+  Logger::LogTrace(mutableMessage);
+  Logger::LogWError(L"wide");
+  Logger::LogWWarning(L"wide");
+  Logger::LogWInfo(L"wide");
+  Logger::LogW(L"wide");
 
   testTrue(
     g, historyContains(console, "info-message"), "info reaches console sink");
@@ -388,9 +413,7 @@ testLoggerLevelsAndSinks()
 
   const size_t historyBeforeSuppression = console.getHistory().size();
   env.setVar("logLevel", 0);
-  testTrue(g,
-           Logger::LogError("suppressed-message"),
-           "suppressed log still reports success");
+  Logger::LogError("suppressed-message");
   testEqSize(g,
              console.getHistory().size(),
              historyBeforeSuppression,
@@ -398,16 +421,12 @@ testLoggerLevelsAndSinks()
 
   env.setVar("logLevel", 4);
   Logger::setContext(&env, nullptr);
-  testTrue(g,
-           Logger::LogInfo("file-only-message"),
-           "logger works without console sink");
+  Logger::LogInfo("file-only-message");
   Logger::setContext(&env, &console);
   Logger::shutdownLogger();
   testTrue(
     g, Logger::getCommandLine() == nullptr, "shutdown clears logger instance");
-  testTrue(g,
-           Logger::LogWarning("post-shutdown-message"),
-           "safe default logging works after shutdown");
+  Logger::LogWarning("post-shutdown-message");
 
   std::ifstream logFile("log.txt");
   const std::string logContents((std::istreambuf_iterator<char>(logFile)),
@@ -443,6 +462,8 @@ registerServiceTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.EnvVars.TypesAndPersistence",
                []() { return runServiceCase(testEnvVarsTypesAndPersistence); });
+  registry.add("Illumo.EnvVars.ApplicationPath",
+               []() { return runServiceCase(testEnvVarsApplicationPath); });
   registry.add("Illumo.CommandRegistry.Metadata",
                []() { return runServiceCase(testCommandRegistryMetadata); });
   registry.add("Illumo.CommandRegistry.QueueLifecycle", []() {

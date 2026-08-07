@@ -171,7 +171,7 @@
   \node[box, pkgfill=pkgFound, minimum width=5.2cm, minimum height=2.5cm] (fnd) at (3.5,-4.8) {%
     \textbf{\rmfamily Foundation}\\[4pt]
     MacroDefs · MathTypes\\[2pt]
-    SysInfo · ArrayQueue\\[2pt]
+    ArrayQueue\\[2pt]
     BuildInfo};
   \node[box, pkgfill=pkgSvc, minimum width=8.4cm, minimum height=2.5cm] (svc) at (11.0,-4.8) {%
     \textbf{\rmfamily Services (Illumo-owned)}\\[4pt]
@@ -180,7 +180,7 @@
     SaveLoad (static OS entry)};
   \node[box, pkgfill=pkgAssets, minimum width=3.8cm, minimum height=2.5cm] (ast) at (18.0,-4.8) {%
     \textbf{\rmfamily Assets}\\[4pt]
-    TTFLoader};
+    Runtime data};
   \node[box, pkgfill=pkgTests, minimum width=4.2cm, minimum height=2.5cm] (tst) at (22.8,-4.8) {%
     \textbf{\rmfamily Tests}\\[4pt]
     inject MockBackend\\[2pt]
@@ -482,6 +482,13 @@
   \draw[owns] (cgm)-- node[above, font=\scriptsize\rmfamily] {new in Start} (cc);
   \draw[owns] (cc)--(cv);
 
+  \node[box, pkgfill=pkgGame, minimum width=2.0cm, align=center,
+        font=\scriptsize\ttfamily] (cur) at (6.0,-3.4) {%
+    Cursor\\
+    {\rmfamily\scriptsize GameVisual / UI}
+  };
+  \draw[owns] (cgm.south) -- ++(0,-0.45) -| (cur.north);
+
   % Left stack
   \node[sectitle] at (3.0,-2.5) {Module state};
   \node[box, pkgfill=pkgGame, minimum width=3.8cm] (st) at (3.0,-3.4) {CellState\\NORMAL|EDIT|EXIT};
@@ -551,7 +558,7 @@
 
   % Orphan + commands strip: L=11.55 > R(api)=10.1; even width under factory
   \node[stub, minimum width=13.0cm, minimum height=0.78cm, align=left, font=\scriptsize\ttfamily] (orph) at (18.05,-7.15) {%
-    orphan / unwired in Game/: Brush · Cursor · CanvasView · SparseCellGrid · CellWorldIO.h
+    orphan / unwired in Game/: Brush · CanvasView · SparseCellGrid
   };
   \node[card, pkgfill=pkgGame, minimum width=13.0cm, align=left, font=\scriptsize\ttfamily] (cmds) at (18.05,-8.55) {%
     \textbf{CellGame registered commands}\\[3pt]
@@ -580,15 +587,12 @@
   \node[box, pkgfill=pkgSvc, minimum width=2.5cm] (cl) at (4.5,-3.6) {CommandLine};
   \node[box, pkgfill=pkgRender, minimum width=2.5cm] (gls) at (7.3,-3.6) {GLString};
   \node[box, pkgfill=pkgRender, minimum width=2.5cm] (sp) at (7.3,-4.8) {SplashText};
-  \node[stub, minimum width=2.5cm] (cur) at (1.7,-4.8) {Cursor};
-  \node[legend, font=\scriptsize\rmfamily] at (1.7,-5.5) {unwired};
+  \node[box, pkgfill=pkgGame, minimum width=2.5cm] (cur) at (1.7,-4.8) {Cursor : GameVisual};
   \draw[impl] (c.north) |- (dcrtp.west);
+  \draw[impl] (cur.north) |- (db.west);
   \draw[impl] (cl)--(dcrtp);
   \draw[impl] (gls.north) |- (dcrtp.east);
   \draw[impl] (sp)--(gls);
-
-  \node[box, pkgfill=pkgAssets, minimum width=2.5cm] (ttf) at (4.5,-6.2) {TTFLoader};
-  \draw[arr] (ttf)--(gls);
 
   % CENTER
   \node[box, pkgfill=pkgRender, minimum width=3.6cm] (sc) at (12.0,-1.0) {Scene\\drawables[]*};
@@ -754,7 +758,7 @@
     CellGameModule · CellContext \textbf{L}\\
     Canvas · DirtyRect \textbf{L}\\
     Brush · Cursor · CanvasView \textbf{S}\\
-    SparseCellGrid · CellWorldIO \textbf{S}};
+    SparseCellGrid \textbf{S}};
 
   \node[card, pkgfill=pkgRules, minimum width=5.9cm, minimum height=2.9cm] at (3.15,-4.85) {%
     \textbf{\rmfamily Rulesets}\\[3pt]
@@ -775,7 +779,7 @@
     \textbf{\rmfamily OpenGL / Mock}\\[3pt]
     GLBackend GLDevice \textbf{L}\\
     GLMesh GLTexture \textbf{L}\\
-    GLShaderProgram GLBuffer \textbf{L}\\
+    GLShaderProgram \textbf{L}\\
     MockBackend \textbf{T}};
   \node[card, pkgfill=pkgSvc, minimum width=5.9cm, minimum height=2.9cm] at (22.05,-4.85) {%
     \textbf{\rmfamily Services}\\[3pt]
@@ -789,11 +793,11 @@
   \node[card, pkgfill=pkgFound, minimum width=5.9cm, minimum height=2.5cm] at (3.15,-7.9) {%
     \textbf{\rmfamily Foundation}\\[3pt]
     MacroDefs MathTypes \textbf{L}\\
-    SysInfo ArrayQueue \textbf{L}\\
+    ArrayQueue \textbf{L}\\
     BuildInfo};
   \node[card, pkgfill=pkgAssets, minimum width=5.9cm, minimum height=2.5cm] at (9.45,-7.9) {%
     \textbf{\rmfamily Assets}\\[3pt]
-    TTFLoader \textbf{L}};
+    Runtime data};
   \node[card, pkgfill=pkgTests, minimum width=5.9cm, minimum height=2.5cm] at (15.75,-7.9) {%
     \textbf{\rmfamily Tests}\\[3pt]
     IllumoTests \textbf{T}\\

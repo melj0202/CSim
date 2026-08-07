@@ -353,19 +353,19 @@ testSystemArgumentValidators()
 static void
 testSystemArgumentParsing()
 {
-  testSection("SysCmdLine: dimension options");
+  testSection("SysCmdLine: reordered dimension options");
   EnvVars env;
   char executable[] = "illumo";
-  char ww[] = "-ww";
-  char width[] = "1024";
-  char wh[] = "-wh";
-  char height[] = "768";
-  char cw[] = "-cw";
   char canvasWidth[] = "120";
   char ch[] = "-ch";
   char canvasHeight[] = "90";
-  char* arguments[] = { executable, ww,          width, wh,          height,
-                        cw,         canvasWidth, ch,    canvasHeight };
+  char ww[] = "-ww";
+  char width[] = "1024";
+  char cw[] = "-cw";
+  char wh[] = "-wh";
+  char height[] = "768";
+  char* arguments[] = { executable, ch, canvasHeight, ww, width,
+                        cw,         canvasWidth, wh, height };
   SysCmdLine::ParseCommandLine(9, arguments, &env);
   testTrue(g, env.getVar("WinX").value == "1024", "window width parsed");
   testTrue(g, env.getVar("WinY").value == "768", "window height parsed");

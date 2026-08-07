@@ -62,9 +62,7 @@ $excludeDirNames = @(
 
 # File basenames to skip
 $excludeFileNames = @(
-    "all.txt",           # our own output
-    "debug.cppcheck",
-    "makefile"
+    "all.txt"            # our own output
 )
 
 # Pure source dump: code + shaders + CMake, not README/docs

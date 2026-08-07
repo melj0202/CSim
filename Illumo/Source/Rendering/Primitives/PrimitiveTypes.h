@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-// Shared value types for render primitives (D-R12).
+// Shared value types for render primitives (D-R15).
 // Top-left origin for Rect2. Primitives never own GPU objects.
 
 struct ColorRgba

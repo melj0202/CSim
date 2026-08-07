@@ -4,6 +4,7 @@
 #include "Services/Logger.h"
 #include "Services/SaveLoad.h"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <fstream>
 #include <random>
@@ -39,7 +40,7 @@ parseFloatingArgument(const std::string& text, double* value)
   try {
     std::size_t consumed = 0;
     double parsed = std::stod(text, &consumed);
-    if (consumed != text.size()) {
+    if (consumed != text.size() || !std::isfinite(parsed)) {
       return false;
     }
     *value = parsed;

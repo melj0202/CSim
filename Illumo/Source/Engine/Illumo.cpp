@@ -6,6 +6,7 @@
 #include "IModule.h"
 #include "InputManager.h"
 #include "Rendering/OpenGL/CreateOpenGLBackend.h"
+#include "Services/SysCmdLine.h"
 #include <AssetManager.h>
 #include <Camera.h>
 #include <IBackend.h>
@@ -18,10 +19,10 @@
 #include <utility>
 
 Illumo::Illumo(int argc, char** argv)
-  : modulesStarted(false)
+  : commandLineArgc(argc)
+  , commandLineArgv(argv)
+  , modulesStarted(false)
 {
-  (void)argc;
-  (void)argv;
 }
 
 Illumo::~Illumo()
@@ -41,7 +42,7 @@ Illumo::Init()
 {
 
   // Load env first so flags like showFPS can influence module setup.
-  envVars = std::make_unique<EnvVars>();
+  envVars = std::make_unique<EnvVars>(EnvVars::ApplicationConfigPath());
   if (envVars->getVar("speedFactor").value == "") {
     envVars->setVar("speedFactor", "1");
   }
@@ -83,7 +84,14 @@ Illumo::Init()
   if (envVars->getVar("enableInfCanvas").valueAsBool == false) {
     envVars->setVar("enableInfCanvas", false);
   }
-  window = std::make_unique<RenderWindow>(1280, 720, "Illumo", envVars.get());
+  // Command-line dimensions override persisted configuration and defaults.
+  SysCmdLine::ParseCommandLine(commandLineArgc, commandLineArgv, envVars.get());
+  const int initialWindowWidth =
+    static_cast<int>(envVars->getVar("WinX").valueAsLong);
+  const int initialWindowHeight =
+    static_cast<int>(envVars->getVar("WinY").valueAsLong);
+  window = std::make_unique<RenderWindow>(
+    initialWindowWidth, initialWindowHeight, "Illumo", envVars.get());
   camera = std::make_unique<Camera>(glm::vec2(0.0f, 0.0f), 1.0f, envVars.get());
   // D-R11: construct the concrete backend at composition root via factory.
   // Renderer depends only on IBackend — never on GLBackend types.

@@ -131,7 +131,7 @@ Canvas::enrollGpuResources()
     return;
   }
 
-  // Display is a world-space sprite on GameVisual (D-R12).
+  // Display is a world-space sprite on GameVisual (D-R15).
   renderer->ensureBuiltinStyles();
   visual.setRenderer(renderer);
   visual.setWindow(window);

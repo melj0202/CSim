@@ -10,7 +10,11 @@
 void
 SysCmdLine::ParseCommandLine(int argc, char** argv, IEnvVars* envVars)
 {
-  for (int i = 0; i < argc; i++) {
+  if (argc <= 1 || argv == nullptr || envVars == nullptr) {
+    return;
+  }
+
+  for (int i = 1; i < argc; ++i) {
 
     if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
       // Print out a helpful message dialog and then exit the program
@@ -42,44 +46,48 @@ SysCmdLine::ParseCommandLine(int argc, char** argv, IEnvVars* envVars)
       return;
     }
     if (!strcmp(argv[i], "-ww")) {
-      if (!StringIsDigit(argv[i + 1])) {
+      if (i + 1 >= argc || argv[i + 1] == nullptr ||
+          !StringIsDigit(argv[i + 1])) {
         std::cout << "ERROR: option '-ww' has invalid type!\n";
         std::exit(1);
       } else {
         envVars->setVar("WinX", argv[i + 1]);
-        if (i != argc - 1)
-          i += 2;
+        ++i;
       }
+      continue;
     }
     if (!strcmp(argv[i], "-wh")) {
-      if (!StringIsDigit(argv[i + 1])) {
+      if (i + 1 >= argc || argv[i + 1] == nullptr ||
+          !StringIsDigit(argv[i + 1])) {
         std::cout << "ERROR: option '-wh' has invalid type!\n";
         std::exit(1);
       } else {
         envVars->setVar("WinY", argv[i + 1]);
-        if (i != argc - 1)
-          i += 2;
+        ++i;
       }
+      continue;
     }
     if (!strcmp(argv[i], "-cw")) {
-      if (!StringIsDigit(argv[i + 1])) {
+      if (i + 1 >= argc || argv[i + 1] == nullptr ||
+          !StringIsDigit(argv[i + 1])) {
         std::cout << "ERROR: option '-cw' has invalid type!\n";
         std::exit(1);
       } else {
         envVars->setVar("CanvasX", argv[i + 1]);
-        if (i != argc - 1)
-          i += 2;
+        ++i;
       }
+      continue;
     }
     if (!strcmp(argv[i], "-ch")) {
-      if (!StringIsDigit(argv[i + 1])) {
+      if (i + 1 >= argc || argv[i + 1] == nullptr ||
+          !StringIsDigit(argv[i + 1])) {
         std::cout << "ERROR: option '-ch' has invalid type!\n";
         std::exit(1);
       } else {
         envVars->setVar("CanvasY", argv[i + 1]);
-        if (i != argc - 1)
-          i += 2;
+        ++i;
       }
+      continue;
     }
   }
 }

@@ -1,13 +1,37 @@
 #include "EnvVars.h"
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+std::filesystem::path
+EnvVars::ApplicationConfigPath()
+{
+#ifdef _WIN32
+  std::wstring executablePath(32768, L'\0');
+  const unsigned long pathLength =
+    GetModuleFileNameW(nullptr,
+                       executablePath.data(),
+                       static_cast<unsigned long>(executablePath.size()));
+  if (pathLength > 0 &&
+      static_cast<size_t>(pathLength) < executablePath.size()) {
+    executablePath.resize(pathLength);
+    return std::filesystem::path(executablePath).parent_path() / "envvars.json";
+  }
+#endif
+  return std::filesystem::current_path() / "envvars.json";
+}
 
 void
 EnvVars::load()
 {
-  std::ifstream file("envvars.json");
+  std::ifstream file(m_filePath);
   if (!file.is_open()) {
     return;
   }
@@ -36,7 +60,7 @@ EnvVars::save()
   for (const auto& pair : m_vars) {
     j[pair.first] = pair.second.value;
   }
-  std::ofstream file("envvars.json");
+  std::ofstream file(m_filePath);
   if (file.is_open()) {
     file << j.dump(1);
     file.close();

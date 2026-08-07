@@ -7,12 +7,16 @@ Cross-cutting facilities used by Engine/Game/Rendering:
   \item \textbf{Logging} --- \symbolref{Logger} (file + terminal; level from env).
   \item \textbf{Config} --- \symbolref{EnvVars} / \symbolref{IEnvVars}
         (defaults filled in \symbolref{Illumo::Init}: canvas size, fps/tps,
-        mode string, \ldots).
+        mode string, \ldots). The production file is \texttt{envvars.json}
+        beside the executable, seeded from the tracked default only when absent;
+        it never depends on the launch working directory.
   \item \textbf{Input} --- \symbolref{InputManager}, \symbolref{InputContext},
         \symbolref{KeyCode}; action binding used by the game module.
         No Game types (D-E2).
   \item \textbf{CLI} --- \symbolref{CommandLine} (token UI when open; batched
         geometry), \symbolref{CommandRegistry}, \symbolref{SysCmdLine}.
+        Startup help/version and window/canvas dimension options are applied
+        before the render window is constructed.
         General tooling stays in Services; \symbolref{CellGameModule} registers
         simulation/canvas/camera/save-load commands with usage, descriptions,
         and completion candidates. Editing includes selection, word movement and
@@ -23,7 +27,7 @@ Cross-cutting facilities used by Engine/Game/Rendering:
         scrolls by visual line (shared floating-aware layout metrics for
         PageUp/wheel/scrollbar and draw). The easy-font batch is sized for
         8,000 UI quads so wrapped help pages are not truncated. The console is
-        Debug-only product composition (D-B1, D-CLI1, D-UI1).
+        Debug-only product composition (D-B1, D-CLI1, D-UI1--D-UI3).
   \item \textbf{Allocators} --- pool/arena/debug allocators (experimental /
         learning surface; not all wired into the hot path).
   \item \textbf{SaveLoad API} --- pure declarations; OS dialogs implemented
@@ -32,7 +36,7 @@ Cross-cutting facilities used by Engine/Game/Rendering:
 
 \subsection{Foundation}
 Headers that should stay cheap to include:
-macros (\pathref{MacroDefs.h}), build info, sysinfo, \pathref{MathTypes.h},
+macros (\pathref{MacroDefs.h}), build info, \pathref{MathTypes.h},
 \pathref{ArrayQueue.h}.
 
 \begin{statusbox}

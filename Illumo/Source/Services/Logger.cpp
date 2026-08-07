@@ -59,11 +59,11 @@ Logger::shutdownLogger()
   instance = nullptr;
 }
 
-bool
+void
 Logger::LogInfo(const char* message)
 {
   if (!message || __STRLEN(message) == 0 || getSafeLogLevel() < 3)
-    return true;
+    return;
 #ifndef NDEBUG
   printf("\x1B[34mINFO\033[0m: %s\n", message);
 #endif
@@ -73,14 +73,13 @@ Logger::LogInfo(const char* message)
       instance->commandLine->logNormal(message);
     }
   }
-  return true;
 }
 
-bool
+void
 Logger::LogWarning(const char* message)
 {
   if (!message || __STRLEN(message) == 0 || getSafeLogLevel() < 2)
-    return true;
+    return;
 #ifndef NDEBUG
   printf("\x1B[33mWARNING\033[0m: %s\n", message);
 #endif
@@ -90,14 +89,13 @@ Logger::LogWarning(const char* message)
       instance->commandLine->logWarning(message);
     }
   }
-  return true;
 }
 
-bool
+void
 Logger::LogError(const char* message)
 {
   if (!message || __STRLEN(message) == 0 || getSafeLogLevel() < 1)
-    return true;
+    return;
 #ifndef NDEBUG
   printf("\x1B[31mERROR\033[0m: %s\n", message);
 #endif
@@ -107,14 +105,13 @@ Logger::LogError(const char* message)
       instance->commandLine->logError(message);
     }
   }
-  return true;
 }
 
-bool
+void
 Logger::Log(const char* message)
 {
   if (!message || __STRLEN(message) == 0 || getSafeLogLevel() < 1)
-    return true;
+    return;
 #ifndef NDEBUG
   std::cout << message << std::endl;
 #endif
@@ -124,14 +121,13 @@ Logger::Log(const char* message)
       instance->commandLine->logNormal(message);
     }
   }
-  return true;
 }
 
-bool
+void
 Logger::LogTrace(const char* message)
 {
   if (!message || __STRLEN(message) == 0 || getSafeLogLevel() < 4)
-    return true;
+    return;
 #ifndef NDEBUG
   printf("\x1B[35mTRACE\x1B[0m: %s\n", message);
 #endif
@@ -141,35 +137,34 @@ Logger::LogTrace(const char* message)
       instance->commandLine->logTrace(message);
     }
   }
-  return true;
 }
 
-bool
+void
 Logger::LogInfo(char* message)
 {
-  return LogInfo(static_cast<const char*>(message));
+  LogInfo(static_cast<const char*>(message));
 }
 
-bool
+void
 Logger::LogWarning(char* message)
 {
-  return LogWarning(static_cast<const char*>(message));
+  LogWarning(static_cast<const char*>(message));
 }
 
-bool
+void
 Logger::LogError(char* message)
 {
-  return LogError(static_cast<const char*>(message));
+  LogError(static_cast<const char*>(message));
 }
 
-bool
+void
 Logger::Log(char* message)
 {
-  return Log(static_cast<const char*>(message));
+  Log(static_cast<const char*>(message));
 }
 
-bool
+void
 Logger::LogTrace(char* message)
 {
-  return LogTrace(static_cast<const char*>(message));
+  LogTrace(static_cast<const char*>(message));
 }

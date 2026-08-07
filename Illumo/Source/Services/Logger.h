@@ -29,49 +29,39 @@ public:
   void operator=(const Logger&) = delete;
   Logger(const Logger&) = delete;
 
-  [[nodiscard]] static bool LogError(const char* message);
-  [[nodiscard]] static bool LogWarning(const char* message);
-  [[nodiscard]] static bool LogInfo(const char* message);
-  [[nodiscard]] static bool Log(const char* message);
-  [[nodiscard]] static bool LogTrace(const char* message);
+  // Logging is best-effort side-effect work; callers have no recovery action.
+  static void LogError(const char* message);
+  static void LogWarning(const char* message);
+  static void LogInfo(const char* message);
+  static void Log(const char* message);
+  static void LogTrace(const char* message);
 
-  [[nodiscard]] static bool LogError(char* message);
-  [[nodiscard]] static bool LogWarning(char* message);
-  [[nodiscard]] static bool LogInfo(char* message);
-  [[nodiscard]] static bool Log(char* message);
-  [[nodiscard]] static bool LogTrace(char* message);
+  static void LogError(char* message);
+  static void LogWarning(char* message);
+  static void LogInfo(char* message);
+  static void Log(char* message);
+  static void LogTrace(char* message);
 
-  [[nodiscard]] static bool LogError(const std::string& message)
+  static void LogError(const std::string& message)
   {
-    return LogError(message.c_str());
+    LogError(message.c_str());
   }
-  [[nodiscard]] static bool LogWarning(const std::string& message)
+  static void LogWarning(const std::string& message)
   {
-    return LogWarning(message.c_str());
+    LogWarning(message.c_str());
   }
-  [[nodiscard]] static bool LogInfo(const std::string& message)
+  static void LogInfo(const std::string& message) { LogInfo(message.c_str()); }
+  static void Log(const std::string& message) { Log(message.c_str()); }
+  static void LogTrace(const std::string& message)
   {
-    return LogInfo(message.c_str());
-  }
-  [[nodiscard]] static bool Log(const std::string& message)
-  {
-    return Log(message.c_str());
-  }
-  [[nodiscard]] static bool LogTrace(const std::string& message)
-  {
-    return LogTrace(message.c_str());
+    LogTrace(message.c_str());
   }
 
   // Wide character logging functions
-  static bool LogWError(const wchar_t* /*message*/) { return true; };
-  static bool LogWWarning(const wchar_t* /*message*/) { return true; };
-  static bool LogWInfo(const wchar_t* /*message*/) { return true; };
-  static bool LogW(const wchar_t* /*message*/) { return true; };
-  /*
-      All logging functions return a integer which represents the number of
-     bytes written. This allows for checking for any apparent errors. Just check
-     if the returned value is 0.
-  */
+  static void LogWError(const wchar_t* /*message*/) {};
+  static void LogWWarning(const wchar_t* /*message*/) {};
+  static void LogWInfo(const wchar_t* /*message*/) {};
+  static void LogW(const wchar_t* /*message*/) {};
   static bool initLogger(IEnvVars* ev = nullptr, CommandLine* cl = nullptr);
   static void setContext(IEnvVars* ev, CommandLine* cl);
   static void shutdownLogger();

@@ -35,16 +35,18 @@ and selects a \symbolref{RuleSet} from a mode string
 Mode changes from console/env call \texttt{setRuleSet} and
 \texttt{Canvas::rebuildPalette}.
 
-\subsection{Canvas (domain + view + GPU --- D-C1)}
+\subsection{Canvas (domain + view + GPU --- D-C2)}
 \begin{itemize}
-  \item CPU grid: \symbolref{lifeCanvas} (one byte per cell), dense rectangle
-        (not chunked).
+  \item CPU grid: \symbolref{CellGrid} owns \symbolref{lifeCanvas} (one byte
+        per cell), dense rectangle (not chunked); \symbolref{Canvas} extends
+        it for presentation.
   \item View: CPU palette $\rightarrow$ \texttt{targetRgb}; \texttt{displayRgb}
         eases toward targets; \texttt{texCanvasBuffer} RGB bytes for upload.
   \item Token view: enrolled mesh/shader/display texture; dirty-rect
         \texttt{UpdateTexture} (PBO path).
-  \item Dual role is intentional at current scale; split only if pure-sim tests
-        or large grids require it.
+  \item D-C2 refines D-C1's intentional monolith: \symbolref{Canvas} remains
+        the presentation/GPU adapter, and a further view split waits for a real
+        scale or product need.
 \end{itemize}
 
 \subsection{Scale walls (simulation / memory)}

@@ -10,8 +10,8 @@ Platform-independent application code lives here. OS-specific entry points and n
 | **Rulesets/** | CA rule implementations |
 | **Rendering/** | Scene layers, drawables, built-in render styles, primitives/`GameVisual`, token command path, OpenGL backend, MockBackend |
 | **Services/** | Shared services: logging, env vars, input, CLI (token UI), allocators, save/load API |
-| **Foundation/** | Low-level shared bits: macros, build info, sysinfo, math helpers |
-| **Assets/** | Asset loaders (fonts, etc.) |
+| **Foundation/** | Low-level shared bits: macros, build info, math helpers |
+| **Assets/** | Runtime asset data |
 | **Platform/** | Windows / Linux / macOS ports |
 | **Tests/** | Headless suite (`IllumoTests`): mock backend, rules, canvas, UI tokens |
 

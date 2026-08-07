@@ -13,7 +13,7 @@
 class Camera;
 class Renderer;
 
-// Drawable host for composed render primitives (D-R12).
+// Drawable host for composed render primitives (D-R15).
 // Game/editor objects include a GameVisual and add shapes/sprites/text; they
 // do not hand-roll enroll/bind/draw tokens. Higher-level classes embed
 // GameVisual to build complex visuals from simple primitives.

@@ -208,7 +208,7 @@ It is an **engine-shaped application**, not a cleanly separated “engine produc
 | **Render split** | Enroll once; emit tokens per frame; backend executes (D-R1–D-R8, D-R10). |
 | **Rulesets** | Strategy hierarchy; pure `nextState` + `evalCell`; double-buffered generation (D-P3). |
 | **Scene model** | Per-frame drawable list only (D-E3, D-E4). |
-| **Tests** | Headless `IllumoTests`: 80 process-isolated CTest cases spanning rules, Canvas, game commands/save-load, input/services, assets, tokens, UI, and renderer injection; Clang/LLVM production-line gate (D-T1). |
+| **Tests** | Headless `IllumoTests`: granular process-isolated CTest cases spanning rules, Canvas, game commands/save-load, input/services, assets, tokens, UI, and renderer injection; Clang/LLVM production-line gate (D-T1). |
 | **Debt hygiene** | Dead experiments under `archive/` rather than half-live. |
 
 ---
@@ -225,9 +225,9 @@ It is an **engine-shaped application**, not a cleanly separated “engine produc
 | **Rulesets/** | CA rules (GoL family, Wireworld, …). |
 | **Rendering/** | Scene list, drawables, Renderer, tokens, OpenGL, Mock. |
 | **Services/** | Log, env, input, console UI, save/load API, allocators. |
-| **Foundation/** | Macros, math aliases (`MathTypes.h`), sysinfo. |
+| **Foundation/** | Macros and math aliases (`MathTypes.h`). |
 | **Platform/** | OS entry + native dialogs. |
-| **Assets/** | Asset loaders. |
+| **Assets/** | Runtime asset data. |
 | **Tests/** | Headless suite. |
 
 House style (D-008 / `docs/contributing.md`): avoid `auto`; avoid namespaces (prefer static classes/structs); no recursion; third-party via PR — unless a later decision waives.
@@ -285,6 +285,11 @@ CellMain
 
 There is **no** env-gated alternate product frame path. `Renderer::RenderProofQuad`
 remains for headless token e2e tests only.
+
+Startup options are parsed during `Illumo::Init` after persisted environment
+values and defaults are loaded. Supplied window and canvas dimensions override
+those values before the render window is constructed; `--help` and `--version`
+terminate after printing their output.
 
 Typical combined draw order (Scene layers, one main pass): World canvas;
 UI splash + console + editor cursor; Debug FPS (Debug builds via DebugModule).
@@ -426,7 +431,7 @@ Callbacks should record events/state, not own game policy long-term (CA design P
 The Debug-only console separates general tooling from product behavior:
 
 - `CommandLine` owns help, environment-variable inspection/editing, validated
-  timing/display settings, console history, alias macro management, multi-command chaining, and application exit.
+  finite timing/display settings, console history, alias macro management, multi-command chaining, and application exit.
 - `CellGameModule` registers simulation, canvas, camera, ruleset, and save/load
   commands through `CommandRegistry`; registry metadata drives help and Tab
   completion.
@@ -442,9 +447,9 @@ The Debug-only console separates general tooling from product behavior:
 - Multi-command chaining splits on `;` (preserving quotes and escape sequences).
 - Alias macro management (`alias`, `unalias`) expands user-defined command shortcuts (with recursion capped at depth 8) and integrates aliases into auto-completion.
 - Inline ghost-text auto-suggestions display faint completion candidates after the caret; pressing Right-Arrow or Tab accepts the ghost text.
-- Window mode supports switching between top-mounted and floating modes (via `console_mode [floating|mounted|toggle]` or double-clicking the console title bar). In floating mode, title-bar dragging repositions the window across the screen, and dragging the bottom-right corner grip handle (or running `console_size <W> <H> | reset`) dynamically resizes the console window with real-time UI bounds clipping.
+- Window mode supports switching between top-mounted and floating modes (via `console_mode [floating|mounted|toggle]` or double-clicking the console title bar). In floating mode, title-bar dragging repositions the window across the screen, and dragging the bottom-right corner grip handle (or running `console_size <W> <H> | reset`) dynamically resizes the console window with real-time UI bounds clipping (D-UI3).
 - Dynamic parameter syntax hints dynamically render usage instructions in the status bar while typing known commands.
-- Utility commands include `repeat <N> <command>`, `history [filter|clear]`, and `sysinfo`/`status` telemetry dashboard.
+- Utility commands include `repeat <N> <command>`, `history [filter|clear]`, and the `sysinfo` telemetry dashboard. The simulation-provided `status` command reports simulation, canvas, ruleset, and camera state.
 - Console chrome is a refined tactical glass HUD: multi-layer drop shadow and outer neon halo, bezel inset panel, title badge + status chip header, recessed history well with sparse scanlines and a slow beam sweep, elevated command dock with prompt chip, breathing laser caret, gradient scrollbar thumb, and single-batch quad rendering (8,000 UI quads, heap-backed). History output word-wraps to the panel width and scrolls by visual lines so long help text remains fully readable when paging to the oldest entries; PageUp/wheel/scrollbar limits share the same floating-aware layout metrics as the draw path.
 - `Logger` may mirror output into the console while services are alive. The host
   clears that non-owning logger context before destroying the services.
@@ -479,6 +484,8 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-B1** | `DebugModule` is Debug-build product composition only; Release must neither compile nor register it. |
 | **D-CLI1** | Services own generic console mechanics; `CellGameModule` registers domain commands and help/completion metadata. |
 | **D-UI1** | Console editing and caret placement use measured text geometry; one enlarged batch must fit a full help page. |
+| **D-UI2** | Console history wraps and scrolls by visual lines using shared mounted/floating layout metrics. |
+| **D-UI3** | Console can be mounted or floating; floating mode supports title-bar drag and corner resize. |
 | **D-DOC1** | All first-party project documentation lives under `docs/`, with one current LaTeX entrypoint. |
 | **D-T1** | One exact CTest entry per logical behavior; shared filtered runner only for compile efficiency; Clang/LLVM `IllumoCoverage` enforces at least 85% headless-testable production line coverage. |
 
@@ -573,7 +580,10 @@ dialog cancellation. Native dialog UI still needs a platform smoke test.
 From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 
 - Command queue **2048** capacity: overflow now **logs once per frame** and tracks drop counts (D-R12); raw pointer payloads must still stay alive until submit  
-- CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; empty package CMake files remain
+- CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; the repository root forwards to the live `Illumo/CMakeLists.txt` entrypoint
+- Runtime configuration is one `envvars.json` beside the executable; CMake seeds
+  it from the tracked `Illumo/envvars.json` only when absent, so launch working
+  directories cannot select or overwrite a different configuration.
 - Docs historically described **R8+palette** while code used **RGB fade** — this consensus file + §5.6 is the resolution; keep LaTeX chapters aligned  
 - ~~Renderer.h constructed GLBackend~~ — **resolved D-R11:** composition root injects `IBackend` via `CreateOpenGLBackend`; `Renderer.h` no longer includes OpenGL types  
 - Hybrid token + immediate Draw path remains for stubs  
@@ -609,7 +619,6 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 | Life-like JSON family collapse | Optional cleanup of repetitive RuleSet classes |
 | Chunk + SYCL | Optional after serial benchmark / product need |
 | Resource destroy/reload | Shutdown-only for v1 (D-R4); hot-reload later |
-| Incomplete experimental stubs | e.g. leftover GLBuffer experiments |
 
 ---
 

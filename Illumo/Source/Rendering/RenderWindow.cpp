@@ -65,10 +65,9 @@ RenderWindow::RenderWindow(const int width,
   }
   Logger::LogTrace("Window created");
   if (!window) {
-    if (!Logger::LogError("Failed to create window")) {
-      std::cerr << "Failed to create window" << std::endl;
-      std::cerr << "Exiting cleanly." << std::endl;
-    }
+    Logger::LogError("Failed to create window");
+    std::cerr << "Failed to create window" << std::endl;
+    std::cerr << "Exiting cleanly." << std::endl;
     glfwTerminate();
     std::exit(-1);
   }

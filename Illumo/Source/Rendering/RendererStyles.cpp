@@ -1,7 +1,7 @@
 #include "IShaderProgram.h"
 #include "Renderer.h"
 
-// Built-in style shader sources and enrollment (D-R11). Owned by Renderer;
+// Built-in style shader sources and enrollment (D-R14). Owned by Renderer;
 // production drawables only bind styles and emit content tokens.
 
 static const char* kUiTextVertexShader = R"(

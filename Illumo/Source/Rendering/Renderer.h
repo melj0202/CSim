@@ -45,7 +45,7 @@ private:
   std::vector<Uniform> uniforms;
 
   // Built-in render styles (shader handle + pipeline defaults). GPU programs
-  // still live in the backend registry; Renderer owns the style table (D-R11).
+  // still live in the backend registry; Renderer owns the style table (D-R14).
   std::array<RenderStyle, static_cast<size_t>(RenderStyleId::Count)> _styles{};
   bool _builtinStylesReady = false;
 

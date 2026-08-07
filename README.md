@@ -19,8 +19,8 @@ illumo/
       Rulesets/         # Cellular automata rules
       Rendering/        # Graphics / backend interfaces
       Services/         # Log, input, env, CLI, allocators
-      Foundation/       # Macros, math, sysinfo
-      Assets/           # Asset loaders
+      Foundation/       # Macros and shared helpers
+      Assets/           # Runtime asset data
       Platform/         # OS entry + native save/load
       Tests/
     Shader/             # GLSL shaders
@@ -106,6 +106,19 @@ Visual Studio: open the generated solution from the build directory, or generate
 - **Q** / **ESC** — Quit
 - **`** — Toggle the developer console
 - **Console:** **Tab** completes commands, variables, and rulesets; **Left/Right**, **Home/End**, and **Delete** edit in place; hold **Ctrl** with Left/Right or Backspace/Delete for word edits; hold **Shift** while moving to select; **Ctrl+A** selects all
+
+## Launch options
+
+The executable keeps its persisted configuration in `envvars.json` beside the
+executable, independent of the process working directory. A first build places
+the tracked defaults there without overwriting an existing local configuration.
+Command-line dimensions override the persisted values:
+
+```text
+illumo.exe [-ww width] [-wh height] [-cw canvas-width] [-ch canvas-height]
+illumo.exe --help
+illumo.exe --version
+```
 
 ## Developer console commands
 

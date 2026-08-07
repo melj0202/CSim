@@ -1,11 +1,18 @@
 #pragma once
 #include "IEnvVars.h"
+#include <filesystem>
 
 class EnvVars : public IEnvVars
 {
 public:
-  EnvVars() { load(); }
+  explicit EnvVars(const std::filesystem::path& filePath = "envvars.json")
+    : m_filePath(filePath)
+  {
+    load();
+  }
   ~EnvVars() { save(); }
+
+  static std::filesystem::path ApplicationConfigPath();
 
   void load();
   void save();
@@ -27,5 +34,6 @@ public:
   };
 
 private:
+  std::filesystem::path m_filePath;
   std::unordered_map<std::string, EnvVar> m_vars;
 };

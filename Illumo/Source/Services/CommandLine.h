@@ -165,7 +165,7 @@ private:
   CommandRegistry* commandRegistry;
   Renderer* renderer;
 
-  // Chrome + text composed as GameVisual primitives (D-R12).
+  // Chrome + text composed as GameVisual primitives (D-R15).
   GameVisual visual;
   bool gpuReady;
 

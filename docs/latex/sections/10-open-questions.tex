@@ -21,7 +21,8 @@ decision log when resolved.
         \textbf{Resolved D-E5:} freeze bag; validate at Start; third module =
         explicit deps.
   \item \sout{\textbf{Canvas domain vs view?}}
-        \textbf{Resolved D-C1:} intentional monolith until scale forces split.
+        \textbf{Resolved D-C1 $\rightarrow$ D-C2:} CellGrid is the domain;
+        Canvas stays the presentation adapter until scale forces a further split.
   \item \sout{\textbf{String uniforms multi-API?}}
         \textbf{Resolved D-R9:} debt if second real GPU backend.
   \item \sout{\textbf{Canvas upload:} full texture rewrite each frame vs dirty rects?}
@@ -52,7 +53,7 @@ decision log when resolved.
         name as well as the existing runtime-host class.
   \item \sout{\textbf{CPU color fade?}}
         \textbf{Restored:} sparse \texttt{displayRgb}/\texttt{targetRgb} fade +
-        RGB dirty-rect upload (still float cost at large grids; D-C1).
+        RGB dirty-rect upload (still float cost at large grids; D-C1 refined by D-C2).
   \item \sout{\textbf{Wireworld stub?}}
         \textbf{Implemented:} full rule + console \texttt{ruleset WIREWORLD}.
         Rule 90 / 184 remain stubs. Product UX (head paint, seed) still open

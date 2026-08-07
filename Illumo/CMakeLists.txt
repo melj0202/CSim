@@ -66,15 +66,12 @@ set(ILLUMO_APP_SOURCES
     ${ILLUMO_SHARED_SOURCES}
     Source/Rulesets/Rule90RuleSet.cpp
     Source/Rulesets/Rule184RuleSet.cpp
-    Source/Foundation/SysInfo.cpp
-    Source/Assets/TTFLoader.cpp
     Source/Services/DebugAlloc.cpp
     Source/App/CellMain.cpp
     Source/Engine/Illumo.cpp
     Source/Rendering/RenderWindow.cpp
     Source/Rendering/OpenGL/CreateOpenGLBackend.cpp
     Source/Rendering/OpenGL/GLBackend.cpp
-    Source/Rendering/OpenGL/GLBuffer.cpp
     Source/Rendering/OpenGL/GLDevice.cpp
     thirdparty/tracy-0.13.1/public/TracyClient.cpp
 )
@@ -199,6 +196,10 @@ target_link_libraries(Illumo PRIVATE
 # distributable binaries. The source-tree inventory also documents vendored
 # packages that are not linked by the current targets.
 add_custom_command(TARGET Illumo POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+        "-DSOURCE=${CMAKE_CURRENT_SOURCE_DIR}/envvars.json"
+        "-DDESTINATION=$<TARGET_FILE_DIR:Illumo>/envvars.json"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CopyIfMissing.cmake"
     COMMAND ${CMAKE_COMMAND} -E make_directory
         "$<TARGET_FILE_DIR:Illumo>/licenses"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -231,7 +232,7 @@ add_custom_command(TARGET Illumo POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Fonts/Handjet/OFL.txt"
         "$<TARGET_FILE_DIR:Illumo>/licenses/Handjet-OFL.txt"
-    COMMENT "Copying third-party notices beside Illumo"
+    COMMENT "Copying runtime defaults and third-party notices beside Illumo"
 )
 
 if(UNIX AND NOT APPLE)

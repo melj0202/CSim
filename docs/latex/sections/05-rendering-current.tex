@@ -29,7 +29,7 @@ No second real GPU API.
         \symbolref{GLDevice::ExecuteCommandQueue} resolves handles and issues GL.
 \end{enumerate}
 
-\subsection{Layers, styles, and drawables (D-R11)}
+\subsection{Layers, styles, and drawables (D-R14)}
 \begin{itemize}
   \item \textbf{Layer} --- composition bucket / draw order on the default FB
         (not a multi-target GPU pass).
@@ -44,7 +44,7 @@ No second real GPU API.
         \texttt{DrawImpl} for the rare immediate path.
   \item Production emitters (Canvas, CommandLine, GLString/SplashText) use
         \texttt{AppendCommands} only; \texttt{DrawImpl} is empty/no-op.
-  \item \symbolref{GameVisual} (D-R12) hosts composed
+  \item \symbolref{GameVisual} (D-R15) hosts composed
         \texttt{ShapePrimitive}/\texttt{SpritePrimitive} value lists; other
         classes embed the host to build complex objects. Scene lists the host
         once, not each primitive.
@@ -114,5 +114,4 @@ GPU context is required. The Clang/LLVM \texttt{IllumoCoverage} target enforces
   \item \pathref{RenderWindow} still uses GLEW for context create / viewport
         (window bootstrap, not frame submission).
   \item Platform Linux/macOS render windows may still be older than the Windows path.
-  \item Incomplete experimental stubs (e.g.\ \texttt{GLBuffer}) may remain.
 \end{enumerate}

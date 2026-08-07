@@ -929,6 +929,11 @@ testCommandLineNumericAndDisplayCommands()
   testTrue(g,
            fixture.env.getVar("speedFactor").value == "2.5",
            "valid speed updates value");
+  executeConsoleText(fixture.console, "speed nan");
+  executeConsoleText(fixture.console, "speed inf");
+  testTrue(g,
+           fixture.env.getVar("speedFactor").value == "2.5",
+           "non-finite speed values are rejected");
 
   executeConsoleText(fixture.console, "fade");
   testTrue(g,
@@ -939,6 +944,11 @@ testCommandLineNumericAndDisplayCommands()
   testTrue(g,
            fixture.env.getVar("cellFadeSpeed").value == "12.25",
            "valid fade updates value");
+  executeConsoleText(fixture.console, "fade nan");
+  executeConsoleText(fixture.console, "fade -inf");
+  testTrue(g,
+           fixture.env.getVar("cellFadeSpeed").value == "12.25",
+           "non-finite fade values are rejected");
 
   executeConsoleText(fixture.console, "fps");
   testTrue(g,
@@ -1375,6 +1385,9 @@ registerUITokenTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.CommandLine.HistoryNavigation", []() {
     return runUITokenCase(testCommandLineHistoryNavigationAndLimits);
+  });
+  registry.add("Illumo.CommandLine.HistoryScrollTokens", []() {
+    return runUITokenCase(testCommandLineHistoryScrollTokens);
   });
   registry.add("Illumo.CommandLine.HistoryWrapAndScrollToStart", []() {
     return runUITokenCase(testCommandLineHistoryWrapAndScrollToStart);

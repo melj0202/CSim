@@ -13,6 +13,14 @@ Cross-cutting application services:
   every service
 - platform-neutral `SaveLoad` API (implementations live under `Platform/`)
 
+`Logger` is best-effort output to its available file and console sinks; its
+logging calls do not provide a success/failure result for callers to handle.
+
+`EnvVars` loads and saves the production configuration beside the executable,
+not in the process working directory. CMake seeds that location from
+`Illumo/envvars.json` only when no local configuration exists; explicit paths
+keep file-backed tests isolated.
+
 `CommandLine` owns general console commands and validated environment settings.
 Token draw uses shared `RenderStyleId::Console` on `Renderer` and is placed on
 the Scene `UI` layer by `DebugModule`.
