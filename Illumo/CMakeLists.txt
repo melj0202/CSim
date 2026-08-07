@@ -27,6 +27,7 @@ set(ILLUMO_SHARED_SOURCES
     Source/Rulesets/SeedsRuleSet.cpp
     Source/Rulesets/WireworldRuleSet.cpp
     Source/Game/Canvas.cpp
+    Source/Game/CellGrid.cpp
     Source/Services/CommandLine.cpp
     Source/Services/Logger.cpp
     Source/Services/EnvVars.cpp
@@ -69,6 +70,8 @@ set(ILLUMO_TEST_SOURCES
     Source/Tests/TestRuleSets.cpp
     Source/Tests/TestCellContext.cpp
     Source/Tests/TestCanvasDomain.cpp
+    Source/Tests/TestDomainBoundary.cpp
+    Source/Tests/TestSim.cpp
     Source/Tests/TestUITokens.cpp
     Source/Tests/TestServices.cpp
     Source/Tests/TestCellGameModule.cpp

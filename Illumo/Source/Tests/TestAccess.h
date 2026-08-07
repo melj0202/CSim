@@ -25,6 +25,16 @@ public:
   {
     return module.LoadCellGame(filename);
   }
+
+  static unsigned char getWireworldBrush(const CellGameModule& module)
+  {
+    return module.wireworldBrush;
+  }
+
+  static void setWireworldBrush(CellGameModule& module, unsigned char state)
+  {
+    module.wireworldBrush = state;
+  }
 };
 
 class InputManagerTestAccess

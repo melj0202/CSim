@@ -16,11 +16,11 @@ Canvas::Canvas(int width,
                IRenderWindow* window,
                Camera* camera,
                Renderer* renderer)
+  : CellGrid(width, height)
 {
   this->window = window;
   this->camera = camera;
   this->renderer = renderer;
-  lifeCanvas = nullptr;
   texCanvasBuffer = nullptr;
   displayRgb = nullptr;
   targetRgb = nullptr;
@@ -29,12 +29,8 @@ Canvas::Canvas(int width,
   shaderHandle = 0;
   displayTextureHandle = 0;
   gpuReady = false;
-  canvasWidth = 0;
-  canvasHeight = 0;
-  cellsDirty = true;
   fadeActive = false;
   textureUploadPending = true;
-  cellsDirtyRect.clear();
   fadeDirtyRect.clear();
   uploadDirtyRect.clear();
   std::memset(paletteRgb, 255, sizeof(paletteRgb));
@@ -90,12 +86,16 @@ Canvas::rebuildPalette(const RuleSet* rules)
 void
 Canvas::initCanvas(const int& width, const int& height)
 {
-  canvasWidth = width;
-  canvasHeight = height;
+  // Domain storage comes from CellGrid base; only (re)allocate presentation.
+  if (width != canvasWidth || height != canvasHeight || lifeCanvas == nullptr) {
+    allocateLifeStorage(width, height);
+  }
+
   fadeSpeed = 8.0f;
 
-  lifeCanvas = new unsigned char[static_cast<size_t>(width * height)];
-  memset(lifeCanvas, 1, static_cast<size_t>(width * height));
+  delete[] texCanvasBuffer;
+  delete[] displayRgb;
+  delete[] targetRgb;
 
   texCanvasBuffer = new unsigned char[static_cast<size_t>(width * height * 3)];
   memset(texCanvasBuffer, 255, static_cast<size_t>(width * height * 3));
@@ -120,15 +120,13 @@ Canvas::initCanvas(const int& width, const int& height)
   };
   indices = { 1, 2, 3, 0, 1, 3 };
 
-  cellsDirty = true;
-  cellsDirtyRect.setFull(width, height);
   fadeActive = false;
   fadeDirtyRect.clear();
   textureUploadPending = true;
   uploadDirtyRect.setFull(width, height);
 
   enrollGpuResources();
-  Logger::LogTrace("Canvas initialized (fade + RGB display texture)");
+  Logger::LogTrace("Canvas initialized (domain CellGrid + RGB presentation)");
 }
 
 void
@@ -136,7 +134,7 @@ Canvas::enrollGpuResources()
 {
   gpuReady = false;
   if (!renderer) {
-    Logger::LogError("Canvas: no Renderer — cannot enroll GPU resources");
+    // Domain-only / headless construction is valid (D-C2).
     return;
   }
 
@@ -167,53 +165,32 @@ void
 Canvas::freeCanvas()
 {
   delete[] texCanvasBuffer;
-  delete[] lifeCanvas;
   delete[] displayRgb;
   delete[] targetRgb;
   texCanvasBuffer = nullptr;
-  lifeCanvas = nullptr;
   displayRgb = nullptr;
   targetRgb = nullptr;
   gpuReady = false;
+  // lifeCanvas is owned by CellGrid base destructor / freeLifeStorage.
 }
 
 void
-Canvas::markCellsDirty()
+Canvas::clearCanvas()
 {
-  cellsDirty = true;
-  cellsDirtyRect.setFull(canvasWidth, canvasHeight);
-}
-
-void
-Canvas::markCellsDirtyRegion(int x0, int y0, int x1, int y1)
-{
-  if (x0 > x1) {
-    const int t = x0;
-    x0 = x1;
-    x1 = t;
+  clearCells();
+  if (texCanvasBuffer != nullptr && displayRgb != nullptr &&
+      targetRgb != nullptr) {
+    const int n = canvasWidth * canvasHeight * 3;
+    for (int i = 0; i < n; ++i) {
+      displayRgb[i] = 1.0f;
+      targetRgb[i] = 1.0f;
+      texCanvasBuffer[i] = 255;
+    }
   }
-  if (y0 > y1) {
-    const int t = y0;
-    y0 = y1;
-    y1 = t;
-  }
-  if (x0 < 0) {
-    x0 = 0;
-  }
-  if (y0 < 0) {
-    y0 = 0;
-  }
-  if (x1 >= canvasWidth) {
-    x1 = canvasWidth - 1;
-  }
-  if (y1 >= canvasHeight) {
-    y1 = canvasHeight - 1;
-  }
-  if (x0 > x1 || y0 > y1) {
-    return;
-  }
-  cellsDirty = true;
-  cellsDirtyRect.includeRect(x0, y0, x1, y1);
+  fadeActive = false;
+  fadeDirtyRect.clear();
+  textureUploadPending = true;
+  uploadDirtyRect.setFull(canvasWidth, canvasHeight);
 }
 
 void
@@ -242,19 +219,39 @@ Canvas::setTargetColor(int cellIndex,
   if (cellIndex < 0 || cellIndex >= canvasWidth * canvasHeight) {
     return;
   }
+  const int cellX = cellIndex % canvasWidth;
+  const int cellY = cellIndex / canvasWidth;
+  bool any = false;
+  setTargetColorRect(cellIndex, cellX, cellY, r, g, b, &any);
+  if (any) {
+    fadeActive = true;
+    fadeDirtyRect.include(cellX, cellY);
+  }
+}
+
+void
+Canvas::setTargetColorRect(int cellIndex,
+                           int cellX,
+                           int cellY,
+                           unsigned char r,
+                           unsigned char g,
+                           unsigned char b,
+                           bool* anyTargetChange)
+{
+  (void)cellX;
+  (void)cellY;
   const int base = cellIndex * 3;
-  const float rf = static_cast<float>(r) / 255.0f;
-  const float gf = static_cast<float>(g) / 255.0f;
-  const float bf = static_cast<float>(b) / 255.0f;
+  const float rf = static_cast<float>(r) * (1.0f / 255.0f);
+  const float gf = static_cast<float>(g) * (1.0f / 255.0f);
+  const float bf = static_cast<float>(b) * (1.0f / 255.0f);
   if (targetRgb[base + 0] != rf || targetRgb[base + 1] != gf ||
       targetRgb[base + 2] != bf) {
     targetRgb[base + 0] = rf;
     targetRgb[base + 1] = gf;
     targetRgb[base + 2] = bf;
-    fadeActive = true;
-    const int cellX = cellIndex % canvasWidth;
-    const int cellY = cellIndex / canvasWidth;
-    fadeDirtyRect.include(cellX, cellY);
+    if (anyTargetChange) {
+      *anyTargetChange = true;
+    }
   }
 }
 
@@ -267,24 +264,38 @@ Canvas::rebuildTargetsFromLife()
   }
 
   const int w = canvasWidth;
+  bool anyTargetChange = false;
+  int x0 = 0;
+  int y0 = 0;
+  int x1 = w - 1;
+  int y1 = canvasHeight - 1;
   if (cellsDirtyRect.valid()) {
-    for (int y = cellsDirtyRect.minY; y <= cellsDirtyRect.maxY; ++y) {
-      for (int x = cellsDirtyRect.minX; x <= cellsDirtyRect.maxX; ++x) {
-        const int i = y * w + x;
-        const unsigned char state = lifeCanvas[i];
-        const int p = static_cast<int>(state) * 3;
-        setTargetColor(
-          i, paletteRgb[p + 0], paletteRgb[p + 1], paletteRgb[p + 2]);
-      }
-    }
-  } else {
-    const int count = w * canvasHeight;
-    for (int i = 0; i < count; ++i) {
+    x0 = cellsDirtyRect.minX;
+    y0 = cellsDirtyRect.minY;
+    x1 = cellsDirtyRect.maxX;
+    y1 = cellsDirtyRect.maxY;
+  }
+
+  for (int y = y0; y <= y1; ++y) {
+    const int rowBase = y * w;
+    for (int x = x0; x <= x1; ++x) {
+      const int i = rowBase + x;
       const unsigned char state = lifeCanvas[i];
       const int p = static_cast<int>(state) * 3;
-      setTargetColor(
-        i, paletteRgb[p + 0], paletteRgb[p + 1], paletteRgb[p + 2]);
+      setTargetColorRect(i,
+                         x,
+                         y,
+                         paletteRgb[p + 0],
+                         paletteRgb[p + 1],
+                         paletteRgb[p + 2],
+                         &anyTargetChange);
     }
+  }
+
+  // One rectangular expand for the fade region instead of per-cell include.
+  if (anyTargetChange) {
+    fadeActive = true;
+    fadeDirtyRect.includeRect(x0, y0, x1, y1);
   }
   onTargetsRebuilt();
 }
@@ -308,11 +319,12 @@ Canvas::noteTexelChanged(int cellX, int cellY)
 }
 
 void
-Canvas::writeTexelFromDisplay(int cellIndex, bool* anyByteChange)
+Canvas::writeTexelFromDisplay(int cellIndex,
+                              int cellX,
+                              int cellY,
+                              bool* anyByteChange)
 {
   const int base = cellIndex * 3;
-  const int cellX = cellIndex % canvasWidth;
-  const int cellY = cellIndex / canvasWidth;
   bool changed = false;
   for (int c = 0; c < 3; ++c) {
     const float v = displayRgb[base + c] * 255.0f + 0.5f;
@@ -337,25 +349,26 @@ Canvas::snapVisualToTargets()
   ZoneScopedN("Canvas.snapVisualToTargets");
   bool anyByteChange = false;
 
+  int x0 = 0;
+  int y0 = 0;
+  int x1 = canvasWidth - 1;
+  int y1 = canvasHeight - 1;
   if (fadeDirtyRect.valid()) {
-    for (int y = fadeDirtyRect.minY; y <= fadeDirtyRect.maxY; ++y) {
-      for (int x = fadeDirtyRect.minX; x <= fadeDirtyRect.maxX; ++x) {
-        const int cellIndex = y * canvasWidth + x;
-        const int base = cellIndex * 3;
-        displayRgb[base + 0] = targetRgb[base + 0];
-        displayRgb[base + 1] = targetRgb[base + 1];
-        displayRgb[base + 2] = targetRgb[base + 2];
-        writeTexelFromDisplay(cellIndex, &anyByteChange);
-      }
-    }
-  } else {
-    const int count = canvasWidth * canvasHeight;
-    for (int i = 0; i < count; ++i) {
-      const int base = i * 3;
+    x0 = fadeDirtyRect.minX;
+    y0 = fadeDirtyRect.minY;
+    x1 = fadeDirtyRect.maxX;
+    y1 = fadeDirtyRect.maxY;
+  }
+
+  for (int y = y0; y <= y1; ++y) {
+    const int rowBase = y * canvasWidth;
+    for (int x = x0; x <= x1; ++x) {
+      const int cellIndex = rowBase + x;
+      const int base = cellIndex * 3;
       displayRgb[base + 0] = targetRgb[base + 0];
       displayRgb[base + 1] = targetRgb[base + 1];
       displayRgb[base + 2] = targetRgb[base + 2];
-      writeTexelFromDisplay(i, &anyByteChange);
+      writeTexelFromDisplay(cellIndex, x, y, &anyByteChange);
     }
   }
 
@@ -401,8 +414,9 @@ Canvas::tickVisual(float dt)
   const float eps = 0.002f;
 
   for (int y = y0; y <= y1; ++y) {
+    const int rowBase = y * canvasWidth;
     for (int x = x0; x <= x1; ++x) {
-      const int cellIndex = y * canvasWidth + x;
+      const int cellIndex = rowBase + x;
       const int base = cellIndex * 3;
       bool cellStill = false;
       for (int c = 0; c < 3; ++c) {
@@ -425,7 +439,7 @@ Canvas::tickVisual(float dt)
       if (cellStill) {
         stillFading = true;
       }
-      writeTexelFromDisplay(cellIndex, &anyByteChange);
+      writeTexelFromDisplay(cellIndex, x, y, &anyByteChange);
     }
   }
 

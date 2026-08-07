@@ -4,14 +4,14 @@
 class SeedsRuleSet : public RuleSet
 {
 public:
-  SeedsRuleSet(Canvas* targetCanvas)
+  SeedsRuleSet(CellGrid* targetCanvas)
     : RuleSet(targetCanvas)
   {
   }
   ~SeedsRuleSet() override = default;
 
   unsigned char nextState(unsigned char cell,
-                          unsigned char aliveNeighbors) const override;
+                          unsigned char aliveNeighbors) const override final;
   void evalCell(const unsigned char& target,
                 unsigned char dest[3]) const override;
   std::string getRuleTag() override { return "SEEDS"; }

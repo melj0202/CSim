@@ -220,7 +220,49 @@ console/FPS overlay was active.\\
 \textbf{Why:} Correct simultaneous update; faster than per-cell
 \texttt{getCanvasPixel}/in-place virtual writes; sparse dirty AABB for visuals.\\
 \textbf{Consequences:} All active rulesets override \texttt{nextState}; stubs
-use identity.
+use identity.\\
+\textbf{Refined by D-P5 (2026-08-06):} scratch lives on \symbolref{CellGrid}
+as a back buffer; promotion is pointer swap, not full-grid \texttt{memcpy}.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P5 --- Single-pass dirty AABB + buffer swap}
+\begin{decisionbox}[title={D-P5 \quad 2026-08-06}]
+\textbf{Decision:} Track changed-cell AABB during the eval pass; store next
+generation in \texttt{CellGrid} back buffer; on any change call
+\texttt{swapLifeBuffers()} and mark the sparse dirty region. Interior Moore
+counts skip toroidal wrap branches.\\
+\textbf{Why:} Second full-grid compare pass and full \texttt{memcpy} write-back
+dominated serial generation cost on large dense grids.\\
+\textbf{Consequences:} \texttt{lifeCanvas} always means current front; rules
+must not retain raw pointers across a swap; still life leaves domain clean.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P6 --- Fade loop + packed dirty PBO staging}
+\begin{decisionbox}[title={D-P6 \quad 2026-08-06}]
+\textbf{Decision:} Keep CPU RGB fade presentation. Hoist coordinates in
+\texttt{tickVisual}/\texttt{snapVisualToTargets}; rectangular target rebuild
+uses one \texttt{includeRect}. \texttt{GLTexture::UpdateSubImage} packs partial
+dirty rects tightly and maps only the staging range (no full-buffer orphan
+every frame).\\
+\textbf{Why:} Per-cell div/mod and full-texture PBO orphan were measurable on
+large dirty rects while fade quality must stay.\\
+\textbf{Consequences:} Fade math unchanged; MockBackend token path unaffected.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P7 --- Optional row-parallel generation}
+\begin{decisionbox}[title={D-P7 \quad 2026-08-06}]
+\textbf{Decision:} \texttt{RuleSet::calcGeneration} may partition rows across
+workers when cell count $\ge 512\times 512$ (auto) or when
+\texttt{setWorkerOverride(N)} forces $N$ workers. Results are bit-identical to
+serial. Presentation/fade stays main-thread.\\
+\textbf{Why:} Large dense grids are eval-bound after D-P5; spawn cost makes
+parallel unhelpful on default $80\times 60$.\\
+\textbf{Consequences:} Tests cover serial/parallel identity
+(\texttt{Illumo.Sim.SerialParallelIdentical}); micro-benches under
+\texttt{Illumo.Sim.MicroBench}. Persistent thread pool deferred.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -470,6 +512,100 @@ registration detail in D-R7 without changing the MockBackend decision.
 \textbf{Decision:} Extend \symbolref{CommandLine} to support dynamic window modes and resizable floating window geometry. Mode switching is driven by double-clicking the console title bar or executing \texttt{console\_mode [floating|mounted|toggle]}. In floating mode, left-clicking and dragging the title bar repositions the window across the screen, and dragging the bottom-right corner grip handle (or running \texttt{console\_size <W> <H> | reset}) resizes the console window dynamically with real-time viewport clipping and single-batch quad rendering.\\
 \textbf{Why:} Enhances Developer Console usability, allows moving and scaling the console UI away from active grid regions, and provides modular window layout flexibility.\\
 \textbf{Consequences:} \symbolref{CommandLine} geometry (chrome, history text, input trough, scrollbar, ghost text, selection highlight) is computed relative to dynamic floating bounds \texttt{panelX0}, \texttt{panelX1}, \texttt{panelY0}, \texttt{panelY1}; mouse press/drag event dispatch accounts for floating position offset and corner resize bounds.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R11 --- Backend constructed at composition root}
+\begin{decisionbox}[title={D-R11 \quad 2026-08-06}]
+\textbf{Decision:} Construct the concrete production backend
+(\symbolref{GLBackend}) in \symbolref{Illumo::Init} and inject it into
+\symbolref{Renderer} as \texttt{std::unique\_ptr<IBackend>}. \symbolref{Renderer}
+must not include or construct OpenGL types. Tests continue to inject
+\symbolref{MockBackend} through the same ownership path (or a non-owning raw
+pointer for stack fixtures).\\
+\textbf{Why:} Dependency inversion: \texttt{Renderer $\rightarrow$ IBackend},
+composition root $\rightarrow$ concrete backend. Production and headless test
+architectures become structurally identical.\\
+\textbf{Consequences:} \pathref{Renderer.h} no longer includes
+\pathref{OpenGL/GLBackend.h}; OpenGL coupling stays under
+\pathref{Rendering/OpenGL/} and the host composition file.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R12 --- CommandQueue overflow policy}
+\begin{decisionbox}[title={D-R12 \quad 2026-08-06}]
+\textbf{Decision:} Keep the fixed 2048-token \symbolref{CommandQueue} capacity.
+When full, drop additional tokens, count drops, and log an error once per
+frame (once per \texttt{Reset} interval) rather than failing silently or
+growing the buffer unbounded.\\
+\textbf{Why:} Silent loss hid runaway emitters; unbounded growth is not
+acceptable on the production frame path. One log per overflowing frame is
+visible without spamming every discarded command.\\
+\textbf{Consequences:} Callers can query drop counters in tests; capacity
+changes require profiling evidence, not opportunistic growth.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-WW1 --- Wireworld seed and edit brush}
+\begin{decisionbox}[title={D-WW1 \quad 2026-08-06}]
+\textbf{Decision:} Startup seeding is ruleset-aware. Binary life-like modes seed
+a centered Game-of-Life glider. Wireworld seeds a horizontal conductor line
+with a head+tail electron pair. In Wireworld edit mode, left-paint uses a
+sticky brush selected by keys \texttt{1}/\texttt{H} (head), \texttt{2} (empty),
+\texttt{3}/\texttt{T} (tail), \texttt{4} (conductor); right-click paints empty.\\
+\textbf{Why:} The previous GoL-only glider produced five heads under Wireworld,
+and mouse paint could not place heads without the console \texttt{setcell}
+command.\\
+\textbf{Consequences:} Wireworld is usable for circuit editing without leaving
+edit mode; focused tests cover seed cells and brush selection state.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-C2 --- CellGrid domain extracted from Canvas}
+\begin{decisionbox}[title={D-C2 \quad 2026-08-06}]
+\textbf{Decision:} Introduce \symbolref{CellGrid} as pure dense simulation
+storage (life buffer + dirty tracking) with no \symbolref{Renderer}, window, or
+camera dependency. \symbolref{Canvas} extends \symbolref{CellGrid} for
+presentation (RGB fade, texture upload) and GPU enrollment.
+\symbolref{RuleSet} operates on \texttt{CellGrid*} only.\\
+\textbf{Why:} The architecture assessment required a truthful domain boundary so
+simulation can be constructed, stepped, and read without a graphics stack.
+D-C1's intentional monolith is refined, not discarded: presentation still lives
+on \symbolref{Canvas}.\\
+\textbf{Consequences:} Headless domain tests construct \symbolref{CellGrid}
+(or a domain-only \symbolref{Canvas} with null render services) and drive
+shipped \symbolref{RuleSet} implementations. A further
+\texttt{CanvasRenderer} split remains optional.\\
+\textbf{Supersedes / refines:} D-C1 (monolith until pain).
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R13 --- Single production frame path}
+\begin{decisionbox}[title={D-R13 \quad 2026-08-06}]
+\textbf{Decision:} \symbolref{Illumo::Render} always rebuilds the per-frame
+drawable list and submits tokens through \symbolref{Renderer::RenderScene}.
+Remove the env \texttt{UseTokenProof} product bypass. Keep
+\symbolref{Renderer::RenderProofQuad} for headless token e2e tests only.
+Hybrid immediate \texttt{Draw()} remains only as a stub/test fallback when
+\texttt{AppendCommands} returns false.\\
+\textbf{Why:} Competing production frame paths create ambiguous ordering and
+test gaps.\\
+\textbf{Consequences:} One default product path; proof coverage stays in
+\texttt{IllumoTests} without affecting the live loop.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-OWN1 --- Module-owned mode splash}
+\begin{decisionbox}[title={D-OWN1 \quad 2026-08-06}]
+\textbf{Decision:} Own the EDIT/NORMAL splash label as
+\texttt{std::unique\_ptr<SplashText> modeSplash} on
+\symbolref{CellGameModule}. Delete the file-scope \texttt{stateSplash}
+mutable global.\\
+\textbf{Why:} File-scope mutable product UI hid ownership and complicated
+teardown and multi-instance reasoning.\\
+\textbf{Consequences:} Splash lifetime follows the game module; platform
+\texttt{SaveLoad} dialog entry points remain platform implementations without
+becoming a new engine singleton.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------

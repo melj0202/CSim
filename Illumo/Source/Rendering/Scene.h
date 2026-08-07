@@ -5,9 +5,13 @@
 
 class IRenderWindow;
 
-// Per-frame contribution list for Renderer::RenderScene.
-// Intentionally NOT a scene graph (node hierarchy removed — D-E4).
-// Owns no GPU resources; drawables are non-owning pointers for one frame.
+// FrameRenderList (kept as type name Scene for source stability).
+//
+// Role: ordered, non-owning list of drawables rebuilt every frame by modules
+// via IModule::DispatchDrawables. This is NOT a retained scene graph, spatial
+// hierarchy, or world container (D-E4). If a retained world model is added
+// later, extract into a separate type and keep this as the transient
+// submission list consumed by Renderer::RenderScene.
 class Scene
 {
 public:

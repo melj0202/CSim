@@ -175,6 +175,9 @@ testInvalidContextStartIsContained()
   testTrue(g,
            CellGameModuleTestAccess::getCellContext(module) == nullptr,
            "null context does not create game state");
+  // Failed Start must not crash on later frame hooks.
+  module.Update(0.016);
+  module.DispatchDrawables(nullptr);
   module.Exit();
 
   CellGameFixture fixture;
@@ -186,7 +189,60 @@ testInvalidContextStartIsContained()
            CellGameModuleTestAccess::getCellContext(incompleteModule) ==
              nullptr,
            "missing service rejects startup");
+  incompleteModule.Update(0.016);
+  incompleteModule.DispatchDrawables(&fixture.scene);
   incompleteModule.Exit();
+}
+
+static void
+testWireworldSeedAndBrush()
+{
+  testSection("CellGameModule: Wireworld seed and brush state");
+  CellGameFixture fixture(16, 12);
+  fixture.env.setVar("ModeString", "WIREWORLD");
+  // Restart under Wireworld so seedInitialPattern runs for that ruleset.
+  fixture.module.Exit();
+  fixture.started = false;
+  fixture.env.setVar("ModeString", "WIREWORLD");
+  fixture.module.Start(&fixture.context);
+  fixture.started =
+    CellGameModuleTestAccess::getCellContext(fixture.module) != nullptr;
+  testTrue(g, fixture.started, "Wireworld Start succeeds");
+
+  CellContext* cellContext =
+    CellGameModuleTestAccess::getCellContext(fixture.module);
+  testTrue(g, cellContext != nullptr, "Wireworld cellContext exists");
+  testTrue(
+    g, cellContext->getModeString() == "WIREWORLD", "ModeString is WIREWORLD");
+
+  Canvas* canvas = cellContext->getCellCanvas();
+  const int y = canvas->canvasHeight / 2;
+  const int startX = canvas->canvasWidth / 2 - 4;
+  testEqInt(g,
+            static_cast<int>(canvas->getCanvasPixel(startX, y)),
+            static_cast<int>(WireworldRuleSet::CELL_HEAD),
+            "seed places electron head");
+  testEqInt(g,
+            static_cast<int>(canvas->getCanvasPixel(startX + 1, y)),
+            static_cast<int>(WireworldRuleSet::CELL_TAIL),
+            "seed places electron tail");
+  testEqInt(g,
+            static_cast<int>(canvas->getCanvasPixel(startX + 2, y)),
+            static_cast<int>(WireworldRuleSet::CELL_CONDUCTOR),
+            "seed places conductor wire");
+
+  testEqInt(g,
+            static_cast<int>(
+              CellGameModuleTestAccess::getWireworldBrush(fixture.module)),
+            static_cast<int>(WireworldRuleSet::CELL_CONDUCTOR),
+            "default brush is conductor");
+  CellGameModuleTestAccess::setWireworldBrush(fixture.module,
+                                              WireworldRuleSet::CELL_HEAD);
+  testEqInt(g,
+            static_cast<int>(
+              CellGameModuleTestAccess::getWireworldBrush(fixture.module)),
+            static_cast<int>(WireworldRuleSet::CELL_HEAD),
+            "brush can select head for left-paint");
 }
 
 static void
@@ -506,6 +562,9 @@ registerCellGameModuleTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.CellGame.InvalidContext", []() {
     return runCellGameModuleCase(testInvalidContextStartIsContained);
+  });
+  registry.add("Illumo.CellGame.WireworldSeedAndBrush", []() {
+    return runCellGameModuleCase(testWireworldSeedAndBrush);
   });
   registry.add("Illumo.CellGame.SaveLoadRoundTrip",
                []() { return runCellGameModuleCase(testSaveLoadRoundTrip); });

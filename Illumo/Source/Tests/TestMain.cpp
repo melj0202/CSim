@@ -19,6 +19,10 @@ registerCellContextTests(IllumoTestRegistry& registry);
 void
 registerCanvasDomainTests(IllumoTestRegistry& registry);
 void
+registerDomainBoundaryTests(IllumoTestRegistry& registry);
+void
+registerSimTests(IllumoTestRegistry& registry);
+void
 registerUITokenTests(IllumoTestRegistry& registry);
 void
 registerServiceTests(IllumoTestRegistry& registry);
@@ -36,6 +40,8 @@ createRegistry()
   registerRuleSetTests(registry);
   registerCellContextTests(registry);
   registerCanvasDomainTests(registry);
+  registerDomainBoundaryTests(registry);
+  registerSimTests(registry);
   registerUITokenTests(registry);
   registerServiceTests(registry);
   registerCellGameModuleTests(registry);

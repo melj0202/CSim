@@ -2,6 +2,8 @@
 #include "CellContext.h"
 #include "Engine/IModule.h"
 #include "Rendering/Scene.h"
+#include "Rendering/SplashText.h"
+#include <memory>
 #include <tracy/Tracy.hpp>
 
 enum class CellState
@@ -37,9 +39,17 @@ private:
   void printStatus() const;
   void CameraPan();
   void CameraRotate();
+  void seedInitialPattern();
+  void updateWireworldBrushFromInput();
+  void showModeSplash(const char* label);
   CellContext* cellContext;
   CellState currentState;
   InputContext inputContext;
   double simAccum;
   double simStepSeconds;
+  // Wireworld left-paint state: 0 head, 1 empty, 2 tail, 3 conductor.
+  // Selected with keys 1/H, 2, 3/T, 4 while the console is closed.
+  unsigned char wireworldBrush;
+  // Module-owned mode label (EDIT/NORMAL); not a file-scope global.
+  std::unique_ptr<SplashText> modeSplash;
 };

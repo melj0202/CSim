@@ -1,5 +1,4 @@
 #include "CellGameModule.h"
-#include "Rendering/SplashText.h"
 #include "Rulesets/WireworldRuleSet.h"
 #include "Services/Logger.h"
 #include "Services/SaveLoad.h"
@@ -9,8 +8,6 @@
 #include <random>
 #include <sstream>
 #include <vector>
-
-SplashText* stateSplash = nullptr;
 
 static bool
 parseIntegerArgument(const std::string& text, int* value)
@@ -73,6 +70,8 @@ CellGameModule::CellGameModule()
   , currentState(CellState::EDIT)
   , simAccum(0.0)
   , simStepSeconds(1.0 / 30.0)
+  , wireworldBrush(WireworldRuleSet::CELL_CONDUCTOR)
+  , modeSplash(nullptr)
 {
   ic = nullptr;
 }
@@ -131,45 +130,97 @@ CellGameModule::Start(IllumoContext* context)
   ic->inputManager->setActiveInputContext(contextId);
 
   currentState = CellState::EDIT;
+  wireworldBrush = WireworldRuleSet::CELL_CONDUCTOR;
 
-  // Seed a classic glider near the canvas center (not fixed 50,40 — that OOB on
-  // small grids).
-  if (cellContext->getModeString() != "WIREWORLD") {
-    Canvas* canvas = cellContext->getCellCanvas();
-    const int w = canvas->canvasWidth;
-    const int h = canvas->canvasHeight;
-    if (w >= 5 && h >= 5) {
-      const int ox = w / 2 - 1;
-      const int oy = h / 2 - 1;
-      // Relative offsets for a standard GoL glider (pointing down-right).
-      canvas->setCanvasPixel(ox + 1, oy + 0, 0);
-      canvas->setCanvasPixel(ox + 2, oy + 1, 0);
-      canvas->setCanvasPixel(ox + 0, oy + 2, 0);
-      canvas->setCanvasPixel(ox + 1, oy + 2, 0);
-      canvas->setCanvasPixel(ox + 2, oy + 2, 0);
-    } else {
-      Logger::LogWarning(
-        "Canvas too small for glider seed; skipping initial pattern");
-    }
-  }
+  // Ruleset-aware startup seed (GoL glider, Wireworld electron-on-wire, …).
+  seedInitialPattern();
 
-  // Initial palette from active ruleset; glider cells already mark R8 upload
-  // dirty.
+  // Initial palette from active ruleset; seed cells already mark upload dirty.
   cellContext->getCellCanvas()->rebuildPalette(cellContext->getRuleSet());
   updateVisualTargets();
   registerConsoleCommands();
 
   // Mode splash label (top-left corner). Shown briefly when toggling
-  // EDIT/NORMAL with E. GLString::setRenderWindow is already set in
-  // Illumo::Init before modules Start.
-  if (stateSplash == nullptr && ic->renderer != nullptr) {
-    // Soft yellow, large enough to notice without covering the canvas.
-    stateSplash =
-      new SplashText("EDIT", 255, 230, 120, 255, 32, 16, 48, ic->renderer);
-    stateSplash->setVisible(false);
+  // EDIT/NORMAL with E. Owned by this module (not a translation-unit global).
+  if (modeSplash == nullptr && ic->renderer != nullptr) {
+    modeSplash = std::make_unique<SplashText>(
+      "EDIT", 255, 230, 120, 255, 32, 16, 48, ic->renderer);
+    modeSplash->setVisible(false);
   }
 
   return true;
+}
+
+void
+CellGameModule::showModeSplash(const char* label)
+{
+  if (modeSplash == nullptr || label == nullptr) {
+    return;
+  }
+  modeSplash->setContent(label);
+  modeSplash->Wake();
+}
+
+void
+CellGameModule::seedInitialPattern()
+{
+  Canvas* canvas = cellContext->getCellCanvas();
+  const int w = canvas->canvasWidth;
+  const int h = canvas->canvasHeight;
+  const int ox = w / 2 - 1;
+  const int oy = h / 2 - 1;
+
+  if (cellContext->getModeString() == "WIREWORLD") {
+    // Horizontal conductor with a head+tail pair so one electron travels right.
+    if (w < 8 || h < 3) {
+      Logger::LogWarning(
+        "Canvas too small for Wireworld seed; skipping initial pattern");
+      return;
+    }
+    const int y = h / 2;
+    const int startX = w / 2 - 4;
+    for (int i = 0; i < 8; ++i) {
+      canvas->setCanvasPixel(startX + i, y, WireworldRuleSet::CELL_CONDUCTOR);
+    }
+    canvas->setCanvasPixel(startX, y, WireworldRuleSet::CELL_HEAD);
+    canvas->setCanvasPixel(startX + 1, y, WireworldRuleSet::CELL_TAIL);
+    return;
+  }
+
+  // Classic Game-of-Life glider (pointing down-right). Works for most binary
+  // life-like rules as a visible non-empty startup.
+  if (w >= 5 && h >= 5) {
+    canvas->setCanvasPixel(ox + 1, oy + 0, 0);
+    canvas->setCanvasPixel(ox + 2, oy + 1, 0);
+    canvas->setCanvasPixel(ox + 0, oy + 2, 0);
+    canvas->setCanvasPixel(ox + 1, oy + 2, 0);
+    canvas->setCanvasPixel(ox + 2, oy + 2, 0);
+  } else {
+    Logger::LogWarning(
+      "Canvas too small for glider seed; skipping initial pattern");
+  }
+}
+
+void
+CellGameModule::updateWireworldBrushFromInput()
+{
+  if (ic == nullptr || ic->inputManager == nullptr ||
+      ic->commandLine == nullptr || ic->commandLine->isOpen) {
+    return;
+  }
+  // Sticky brush: last selected key wins until another is pressed.
+  // 1/H = head, 2 = empty, 3/T = tail, 4 = conductor (default).
+  if (ic->inputManager->isKeyPressed(KeyCode::Num1) ||
+      ic->inputManager->isKeyPressed(KeyCode::H)) {
+    wireworldBrush = WireworldRuleSet::CELL_HEAD;
+  } else if (ic->inputManager->isKeyPressed(KeyCode::Num2)) {
+    wireworldBrush = WireworldRuleSet::CELL_EMPTY;
+  } else if (ic->inputManager->isKeyPressed(KeyCode::Num3) ||
+             ic->inputManager->isKeyPressed(KeyCode::T)) {
+    wireworldBrush = WireworldRuleSet::CELL_TAIL;
+  } else if (ic->inputManager->isKeyPressed(KeyCode::Num4)) {
+    wireworldBrush = WireworldRuleSet::CELL_CONDUCTOR;
+  }
 }
 
 void
@@ -485,10 +536,7 @@ CellGameModule::setRunning(bool running)
 {
   currentState = running ? CellState::NORMAL : CellState::EDIT;
   simAccum = 0.0;
-  if (stateSplash != nullptr) {
-    stateSplash->setContent(running ? "NORMAL" : "EDIT");
-    stateSplash->Wake();
-  }
+  showModeSplash(running ? "NORMAL" : "EDIT");
   ic->commandLine->logSuccess(running ? "Simulation running"
                                       : "Simulation paused in edit mode");
 }
@@ -498,10 +546,7 @@ CellGameModule::stepSimulation(int generations)
 {
   currentState = CellState::EDIT;
   simAccum = 0.0;
-  if (stateSplash != nullptr) {
-    stateSplash->setContent("EDIT");
-    stateSplash->Wake();
-  }
+  showModeSplash("EDIT");
   Canvas* canvas = cellContext->getCellCanvas();
   for (int i = 0; i < generations; ++i) {
     cellContext->getRuleSet()->calcGeneration(
@@ -562,6 +607,11 @@ CellGameModule::Update(double dt)
 {
   ZoneNamed(CellGameModuleUpdateZone, "CellGameModule Update");
 
+  // Host erases modules that fail Start; still guard for incomplete fixtures.
+  if (cellContext == nullptr || ic == nullptr) {
+    return;
+  }
+
   // Apply ruleset changes from console (`ruleset SEEDS`) or env ModeString.
   {
     std::string wanted = ic->envVars->getVar("ModeString").value;
@@ -572,6 +622,9 @@ CellGameModule::Update(double dt)
         // Same life values, new colors → rebuild palette only (no cell
         // re-upload).
         cellContext->getCellCanvas()->rebuildPalette(cellContext->getRuleSet());
+        if (cellContext->getModeString() == "WIREWORLD") {
+          wireworldBrush = WireworldRuleSet::CELL_CONDUCTOR;
+        }
       }
     }
   }
@@ -597,18 +650,12 @@ CellGameModule::Update(double dt)
       ic->inputManager->isActionActive("ToggleState")) {
     if (currentState == CellState::NORMAL) {
       currentState = CellState::EDIT;
-      if (stateSplash) {
-        stateSplash->setContent("EDIT");
-        stateSplash->Wake();
-      }
+      showModeSplash("EDIT");
       Logger::LogInfo("State changed to EDIT");
     } else {
       currentState = CellState::NORMAL;
       simAccum = 0.0;
-      if (stateSplash) {
-        stateSplash->setContent("NORMAL");
-        stateSplash->Wake();
-      }
+      showModeSplash("NORMAL");
       Logger::LogInfo("State changed to NORMAL");
     }
   }
@@ -638,10 +685,7 @@ void
 CellGameModule::Exit()
 {
   unregisterConsoleCommands();
-  if (stateSplash != nullptr) {
-    delete stateSplash;
-    stateSplash = nullptr;
-  }
+  modeSplash.reset();
   delete cellContext;
   cellContext = nullptr;
 }
@@ -678,6 +722,7 @@ CellGameModule::Normal(double dt)
 
   // Drop leftover debt if we hit the cap so we don't forever "catch up".
   if (steps >= maxSteps && simAccum > simStepSeconds) {
+    FrameMarkNamed("Sim.debtDropped");
     simAccum = 0.0;
   }
 }
@@ -701,6 +746,10 @@ CellGameModule::Edit(double dt)
   int currentY = static_cast<int>(std::floor(worldPos.y / cellSize));
 
   if (!ic->commandLine->isOpen) {
+    if (cellContext->getModeString() == "WIREWORLD") {
+      updateWireworldBrushFromInput();
+    }
+
     bool isLeftPressed =
       ic->inputManager->isMouseButtonPressed(KeyCode::MouseLeft);
     bool isRightPressed =
@@ -708,12 +757,12 @@ CellGameModule::Edit(double dt)
 
     if (isLeftPressed || isRightPressed) {
       // Binary CAs: left = alive (0), right = dead (1).
-      // Wireworld: left = conductor, right = empty (heads are rare; place via
-      // state or tools).
+      // Wireworld: left = active brush (1/H head, 3/T tail, 4 conductor),
+      // right = empty.
       unsigned char colorVal = isLeftPressed ? 0 : 1;
       if (cellContext->getModeString() == "WIREWORLD") {
-        colorVal = isLeftPressed ? WireworldRuleSet::CELL_CONDUCTOR
-                                 : WireworldRuleSet::CELL_EMPTY;
+        colorVal =
+          isLeftPressed ? wireworldBrush : WireworldRuleSet::CELL_EMPTY;
       }
 
       if (wasPressed) {
@@ -912,10 +961,13 @@ CellGameModule::CameraRotate()
 void
 CellGameModule::DispatchDrawables(Scene* scene)
 {
+  if (cellContext == nullptr || scene == nullptr) {
+    return;
+  }
   scene->AddDrawable(this->cellContext->getCellCanvas());
   // Mode splash sits above the canvas (token UI path via
   // SplashText::AppendCommands).
-  if (stateSplash != nullptr && stateSplash->isVisible()) {
-    scene->AddDrawable(stateSplash);
+  if (modeSplash != nullptr && modeSplash->isVisible()) {
+    scene->AddDrawable(modeSplash.get());
   }
 }

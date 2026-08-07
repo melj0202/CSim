@@ -5,7 +5,7 @@
 class Rule184RuleSet : public RuleSet
 {
 public:
-  Rule184RuleSet(Canvas* targetCanvas)
+  Rule184RuleSet(CellGrid* targetCanvas)
     : RuleSet(targetCanvas)
   {
   }

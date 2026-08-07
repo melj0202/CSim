@@ -3,29 +3,50 @@
 This is a review snapshot, not proof that every item remains open. Reproduce or
 inspect an item against the live tree before fixing it.
 
-Last reviewed: 2026-08-04
+Last reviewed: 2026-08-06
 
 ## Open correctness issues
 
-| Priority | Issue | Evidence and consequence |
-|---|---|---|
-| 1 | Failed module startup is not gated | `CellGameModule::Start` can return without creating `cellContext`, while later `Update` and `DispatchDrawables` paths still assume it exists. `DebugModule` has the same class of lifecycle risk. |
-| 2 | Wireworld has no convenient head/tail mouse brush | `setcell` can place numeric states, but normal paint input still favors conductor/empty editing. |
-| 3 | Startup seed is not ruleset-aware | The default Game-of-Life glider becomes five electron heads under Wireworld rather than a useful wire. |
+No high-signal open product bugs at last review. Prefer re-checking against the
+live tree before treating historical notes as still open.
 
 ## Coverage gaps
 
 - Manually smoke-test native save/load dialogs, fullscreen transitions, and live
   OpenGL console presentation after relevant changes; MockBackend cannot prove
   those platform paths.
+- Smoke-test Wireworld edit mode: keys `1`/`H` head, `3`/`T` tail, `4`
+  conductor, left-paint, right-erase; startup electron-on-wire seed.
 
 ## Structural risks
 
-- `CommandQueue` has a fixed 2,048-command capacity and needs an explicit
-  overflow policy rather than silent loss.
+- `CommandQueue` fixed capacity 2,048: overflow now logs once per frame and
+  tracks drop counts (D-R12); still not growable.
 - Per-command token payload pointers must remain valid until submission returns.
-- Dense simulation still scans the full grid; visual dirty rectangles reduce
-  upload work, not simulation complexity.
+- Dense simulation still scans the full grid (O(W×H)); D-P5 single-pass dirty
+  AABB + buffer swap and D-P7 optional row-parallel reduce cost but do not
+  remove the dense scan. Visual dirty rectangles still gate upload/fade work.
+- `Canvas` still combines view + GPU enroll over `CellGrid` (D-C2); further
+  CanvasRenderer extraction is optional.
+- `IllumoContext` remains a frozen non-owning bag for the two shipped modules
+  (D-E5).
+
+## Resolved during the 2026-08-06 boundary-consolidation pass
+
+- Injected `IBackend` at `Illumo::Init` (`GLBackend` constructed outside
+  `Renderer`); removed OpenGL includes from `Renderer.h` (D-R11).
+- Command-queue overflow logs once per frame and exposes drop counters (D-R12).
+- Failed `Start` modules are erased by the host; module `Update` /
+  `DispatchDrawables` early-return when core state is missing.
+- Wireworld ruleset-aware seed (conductor + head/tail electron) and sticky
+  mouse brush for head/tail/conductor/empty.
+- Scene header documents its role as a per-frame FrameRenderList (name kept).
+- Extracted `CellGrid` domain; rulesets depend only on domain storage (D-C2);
+  domain-without-renderer headless tests (`Illumo.Domain.*`).
+- Removed `UseTokenProof` product frame bypass; `RenderProofQuad` is test-only
+  (D-R13).
+- Mode splash owned by `CellGameModule` (`modeSplash` unique_ptr), not a
+  file-scope global (D-OWN1).
 
 ## Resolved during the 2026-08-04 session
 
@@ -56,8 +77,8 @@ Last reviewed: 2026-08-04
 
 - Wireworld encodes head `0`, empty `1`, tail `2`, conductor `3`.
 - Binary rules encode alive as `0` and dead as `1`.
-- Canvas owns dense domain state, RGB targets/fade state, dirty tracking, and GPU
-  enrollment until scale or testability creates a concrete split trigger.
+- `CellGrid` owns dense domain state; `Canvas` adds RGB targets/fade and GPU
+  enrollment (D-C2).
 - Scene is a rebuilt, ordered drawable list—not a scene graph or ECS.
 - Production drawables use render tokens; immediate `Draw()` remains only for
   tests or incomplete stubs.

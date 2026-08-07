@@ -1,28 +1,28 @@
 #pragma once
-#include "Canvas.h"
+#include "Game/CellGrid.h"
 #include <string>
-#include <vector>
 
 constexpr auto MAX_RULETAG_SIZE = 128;
 
 // Base cellular-automaton ruleset.
-// Generation is double-buffered: neighbors are read from the current
-// lifeCanvas, next states are written to an internal buffer, then copied back
-// once.
+// Generation is double-buffered on CellGrid: neighbors are read from the
+// front lifeCanvas, next states are written to lifeCanvasBack, then buffers
+// are swapped (D-P5). Operates only on CellGrid domain storage — no
+// Renderer / OpenGL.
 class RuleSet
 {
 public:
-  Canvas* canvas;
+  CellGrid* canvas;
 
-  RuleSet(Canvas* targetCanvas)
+  RuleSet(CellGrid* targetCanvas)
     : canvas(targetCanvas)
   {
   }
 
   virtual ~RuleSet() = default;
 
-  // Advance one generation over [x_start,x_end) × [y_start,y_end).
-  // Normal path uses the full canvas (0,0,width,height).
+  // Advance one generation over the full canvas (rect args kept for API
+  // compatibility; toroidal full-grid is always evaluated).
   void calcGeneration(const int& x_start,
                       const int& y_start,
                       const int& x_end,
@@ -38,6 +38,12 @@ public:
 
   virtual std::string getRuleTag() { return "BASE_CLASS"; }
 
+  // Worker count for calcGeneration: 0 = auto (size threshold + HW), 1 =
+  // force serial, N = force up to N workers. Used by tests and optional
+  // parallel path (D-P7).
+  static void setWorkerOverride(int workers);
+  static int getWorkerOverride();
+
 protected:
   // Pure transition: old cell + Moore neighbor count of *alive* (value==0)
   // cells. Does not write the canvas. Override in each ruleset.
@@ -48,15 +54,38 @@ protected:
     return cell;
   }
 
-  // Fast toroidal Moore count of cells with value 0 (project "alive" encoding).
+  // Toroidal Moore count of cells with value 0 (project "alive" encoding).
   static int countAliveNeighbors(const unsigned char* grid,
                                  int w,
                                  int h,
                                  int x,
                                  int y);
 
+  // Interior Moore count (no wrap). Requires 0 < x < w-1 and 0 < y < h-1.
+  static int countAliveNeighborsInterior(const unsigned char* grid,
+                                         int w,
+                                         int x,
+                                         int y);
+
 private:
-  // Scratch next generation (mutable so calcGeneration can stay const like
-  // before).
-  mutable std::vector<unsigned char> nextGen;
+  // Auto-parallel threshold: grids at or above this cell count may use
+  // multiple workers when override is 0. Kept high enough that per-generation
+  // thread spawn is amortized (256² is still spawn-bound on typical CPUs).
+  static const int kParallelCellThreshold = 512 * 512;
+
+  static int workerOverride;
+
+  void evalRows(const unsigned char* src,
+                unsigned char* dst,
+                int width,
+                int height,
+                int yBegin,
+                int yEnd,
+                int* outMinX,
+                int* outMinY,
+                int* outMaxX,
+                int* outMaxY,
+                bool* outAnyChange) const;
+
+  int resolveWorkerCount(int width, int height) const;
 };

@@ -1,6 +1,7 @@
 // Phase 6: headless token/backend tests (no OpenGL, no window).
 // Exit 0 on success; non-zero on failure. Run via CTest target IllumoTests.
 
+#include "Rendering/CommandQueue.h"
 #include "Rendering/IMesh.h"
 #include "Rendering/IShaderProgram.h"
 #include "Rendering/Mock/MockBackend.h"
@@ -318,6 +319,40 @@ testCanvasLikeUpdateTexture()
              "data pointer preserved until submit");
 }
 
+static void
+testCommandQueueOverflowPolicy()
+{
+  std::printf("\n--- command queue overflow policy ---\n");
+  CommandQueue queue;
+  expectEqSize(queue.GetCapacity(), 2048u, "fixed capacity is 2048");
+
+  RenderCommand cmd;
+  cmd.commandType = CommandType::ClearScreen;
+  cmd.clear.r = 0.0f;
+  cmd.clear.g = 0.0f;
+  cmd.clear.b = 0.0f;
+  cmd.clear.a = 1.0f;
+
+  for (size_t i = 0; i < queue.GetCapacity(); ++i) {
+    queue.Submit(cmd);
+  }
+  expectEqSize(queue.GetCommandCount(), 2048u, "queue fills to capacity");
+  expectEqSize(queue.GetDroppedThisFrame(), 0u, "no drops while under cap");
+
+  queue.Submit(cmd);
+  queue.Submit(cmd);
+  expectEqSize(queue.GetCommandCount(), 2048u, "overflow does not grow queue");
+  expectEqSize(queue.GetDroppedThisFrame(), 2u, "two drops counted this frame");
+  expectEqSize(queue.GetTotalDropped(), 2u, "total dropped accumulates");
+  expectTrue(queue.HasOverflowedThisFrame(), "overflow flag set");
+
+  queue.Reset();
+  expectEqSize(queue.GetCommandCount(), 0u, "reset clears pending");
+  expectEqSize(queue.GetDroppedThisFrame(), 0u, "reset clears frame drops");
+  expectTrue(!queue.HasOverflowedThisFrame(), "overflow flag cleared on reset");
+  expectEqSize(queue.GetTotalDropped(), 2u, "lifetime drop count preserved");
+}
+
 static int
 runMockBackendCase(void (*testFunction)())
 {
@@ -339,5 +374,8 @@ registerMockBackendTests(IllumoTestRegistry& registry)
                []() { return runMockBackendCase(testProofLikeSequence); });
   registry.add("Illumo.MockBackend.CanvasLikeUpdateTexture", []() {
     return runMockBackendCase(testCanvasLikeUpdateTexture);
+  });
+  registry.add("Illumo.MockBackend.CommandQueueOverflow", []() {
+    return runMockBackendCase(testCommandQueueOverflowPolicy);
   });
 }

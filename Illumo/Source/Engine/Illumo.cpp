@@ -5,8 +5,10 @@
 #include "GLString.h"
 #include "IModule.h"
 #include "InputManager.h"
+#include "OpenGL/GLBackend.h"
 #include <AssetManager.h>
 #include <Camera.h>
+#include <IBackend.h>
 #include <RenderWindow.h>
 #include <Renderer.h>
 #include <Scene.h>
@@ -81,17 +83,13 @@ Illumo::Init()
   if (envVars->getVar("enableInfCanvas").valueAsBool == false) {
     envVars->setVar("enableInfCanvas", false);
   }
-  // Phase 1 token proof: when "1", skip normal Scene draw and render a
-  // textured quad entirely through IBackend / RenderCommand (see
-  // Renderer::RenderProofQuad).
-  if (envVars->getVar("UseTokenProof").value == "") {
-    envVars->setVar("UseTokenProof", "0");
-  }
-
   window = std::make_unique<RenderWindow>(1280, 720, "Illumo", envVars.get());
   camera = std::make_unique<Camera>(glm::vec2(0.0f, 0.0f), 1.0f, envVars.get());
-  renderer =
-    std::make_unique<Renderer>(window.get(), envVars.get(), camera.get());
+  // D-R11: construct the concrete backend at the composition root and inject
+  // it. Renderer only depends on IBackend — never on GLBackend.
+  std::unique_ptr<IBackend> backend = std::make_unique<GLBackend>(window.get());
+  renderer = std::make_unique<Renderer>(
+    window.get(), envVars.get(), camera.get(), std::move(backend));
   assetManager = std::make_unique<AssetManager>(renderer.get());
   commandRegistry = std::make_unique<CommandRegistry>();
   commandLine = std::make_unique<CommandLine>(
@@ -148,19 +146,9 @@ Illumo::Update(double dt)
 void
 Illumo::Render()
 {
-  // Dev-only pure-token path (env UseTokenProof=1): no drawables.
-  if (envVars && envVars->getVar("UseTokenProof").value == "1") {
-    if (renderer) {
-      renderer->BeginFrame();
-      renderer->RenderProofQuad();
-      // Proof already submitted; EndFrame submits empty queue then swaps.
-      renderer->EndFrame();
-    }
-    return;
-  }
-
-  // Production path (Phase 2): modules contribute drawables; Renderer owns
-  // token clear/viewport, hybrid immediate Draw, and swap via backend EndFrame.
+  // Single production frame path (D-R13): modules contribute drawables,
+  // Renderer emits tokens + optional hybrid immediate fallback for stubs.
+  // Token proof lives only as Renderer::RenderProofQuad for headless tests.
   context.scene->ClearDrawables();
   for (auto& module : modules) {
     module->DispatchDrawables(context.scene);

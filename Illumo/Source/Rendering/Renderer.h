@@ -4,13 +4,12 @@
 #include "IBackend.h"
 #include "IRenderWindow.h"
 #include "IShaderProgram.h"
-#include "OpenGL/GLBackend.h"
-#include "OpenGL/GLShaderProgram.h"
 #include "RenderCommand.h"
 #include "RenderPass.h"
 #include "Scene.h"
 #include <array>
 #include <cstring>
+#include <memory>
 #include <vector>
 
 struct FrameBuffer
@@ -29,8 +28,10 @@ struct Uniform
 class Renderer
 {
 private:
+  // Owned when constructed with unique_ptr or takeOwnership=true; null when the
+  // composition root or test fixture retains ownership of the backend.
+  std::unique_ptr<IBackend> _ownedBackend;
   IBackend* _backend;
-  bool _ownsBackend;
   IRenderWindow* _window;
   Camera* _camera;
   EnvVars* envVars;
@@ -64,19 +65,20 @@ private:
   }
 
 public:
-  // Production: owns a GLBackend.
-  Renderer(IRenderWindow* window, EnvVars* envVars, Camera* cam)
-    : _backend(nullptr)
-    , _ownsBackend(true)
+  // Composition-root path: backend is constructed outside Renderer (e.g.
+  // GLBackend in Illumo::Init) and ownership is transferred here (D-R11).
+  Renderer(IRenderWindow* window,
+           EnvVars* envVars,
+           Camera* cam,
+           std::unique_ptr<IBackend> backend)
+    : _ownedBackend(std::move(backend))
+    , _backend(_ownedBackend.get())
     , _window(window)
     , _camera(cam)
     , envVars(envVars)
     , currentScene(nullptr)
   {
     (void)envVars;
-    // Future: select backend from GraphicsAPI env; GL is the only real backend
-    // today.
-    _backend = new GLBackend(_window);
   }
 
   // Test / inject: use an existing IBackend (e.g. MockBackend).
@@ -87,8 +89,9 @@ public:
            Camera* cam,
            IBackend* backend,
            bool takeOwnership)
-    : _backend(backend)
-    , _ownsBackend(takeOwnership)
+    : _ownedBackend(takeOwnership ? std::unique_ptr<IBackend>(backend)
+                                  : std::unique_ptr<IBackend>())
+    , _backend(takeOwnership ? _ownedBackend.get() : backend)
     , _window(window)
     , _camera(cam)
     , envVars(envVars)
@@ -98,16 +101,16 @@ public:
 
   ~Renderer()
   {
-    if (_backend && _ownsBackend) {
-      _backend->Shutdown();
-      delete _backend;
+    if (_ownedBackend) {
+      _ownedBackend->Shutdown();
+      _ownedBackend.reset();
     }
     _backend = nullptr;
   }
 
   IBackend* getBackend() { return _backend; }
   const IBackend* getBackend() const { return _backend; }
-  bool ownsBackend() const { return _ownsBackend; }
+  bool ownsBackend() const { return _ownedBackend != nullptr; }
   IRenderWindow* getWindow() { return _window; }
   Camera* getCamera() { return _camera; }
 
@@ -443,7 +446,7 @@ public:
   }
 
   // =========================================================================
-  // Phase 1: token proof path (env UseTokenProof=1)
+  // Token proof helpers (test / sample only — not called by Illumo::Render)
   // =========================================================================
 
   void ensureProofResources()

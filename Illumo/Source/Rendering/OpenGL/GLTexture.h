@@ -70,7 +70,8 @@ public:
 
   // CPU → GPU subimage upload with optional row stride and PBO ping-pong (P4).
   // data is host pointer (not PBO). srcRowStride is in pixels (0 = tightly
-  // packed width).
+  // packed width). Small dirty rects pack tightly into a partial PBO region
+  // (D-P6) instead of re-orphaning a full-texture buffer every frame.
   void UpdateSubImage(int x,
                       int y,
                       int width,
@@ -89,18 +90,28 @@ public:
     const size_t bytesPerPixel = static_cast<size_t>(ch);
     const size_t fullBytes = static_cast<size_t>(m_size[0]) *
                              static_cast<size_t>(m_size[1]) * bytesPerPixel;
+    const size_t packedBytes =
+      static_cast<size_t>(width) * static_cast<size_t>(height) * bytesPerPixel;
+    const size_t srcRowBytes = static_cast<size_t>(rowStride) * bytesPerPixel;
+    const size_t copyRowBytes = static_cast<size_t>(width) * bytesPerPixel;
+    const unsigned char* srcBase = static_cast<const unsigned char*>(data);
+
+    // Prefer tight packing for partial rects (avoids full-texture map cost).
+    const bool usePacked = (width < m_size[0] || height < m_size[1]);
+    const size_t stageBytes = usePacked ? packedBytes : fullBytes;
 
     ensurePBOs(fullBytes);
 
-    // Ping-pong PBO: orphan previous, fill this one, then TexSubImage from it.
     m_pboIndex = 1 - m_pboIndex;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo[m_pboIndex]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER,
-                 static_cast<GLsizeiptr>(fullBytes),
-                 nullptr,
-                 GL_STREAM_DRAW);
 
-    void* mapped = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+    // Map only the staging range; invalidate to avoid GPU readback stalls.
+    // Reuses the existing PBO allocation (no glBufferData orphan each frame).
+    void* mapped =
+      glMapBufferRange(GL_PIXEL_UNPACK_BUFFER,
+                       0,
+                       static_cast<GLsizeiptr>(stageBytes),
+                       GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
     if (!mapped) {
       // Fallback: direct client upload without PBO.
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
@@ -117,45 +128,64 @@ public:
       return;
     }
 
-    // Copy dirty rows into the PBO at the same layout as the full texture so we
-    // can TexSubImage with UNPACK_ROW_LENGTH = full width and a byte offset.
     unsigned char* dstBase = static_cast<unsigned char*>(mapped);
-    const unsigned char* srcBase = static_cast<const unsigned char*>(data);
-    const size_t dstRowBytes = static_cast<size_t>(m_size[0]) * bytesPerPixel;
-    const size_t srcRowBytes = static_cast<size_t>(rowStride) * bytesPerPixel;
-    const size_t copyRowBytes = static_cast<size_t>(width) * bytesPerPixel;
-    const size_t dstOrigin =
-      (static_cast<size_t>(y) * static_cast<size_t>(m_size[0]) +
-       static_cast<size_t>(x)) *
-      bytesPerPixel;
-
-    for (int row = 0; row < height; ++row) {
-      unsigned char* dst =
-        dstBase + dstOrigin + static_cast<size_t>(row) * dstRowBytes;
-      const unsigned char* src =
-        srcBase + static_cast<size_t>(row) * srcRowBytes;
-      std::memcpy(dst, src, copyRowBytes);
+    if (usePacked) {
+      for (int row = 0; row < height; ++row) {
+        unsigned char* dst = dstBase + static_cast<size_t>(row) * copyRowBytes;
+        const unsigned char* src =
+          srcBase + static_cast<size_t>(row) * srcRowBytes;
+        std::memcpy(dst, src, copyRowBytes);
+      }
+    } else {
+      // Full-texture layout: copy dirty rows at their native offsets.
+      const size_t dstRowBytes = static_cast<size_t>(m_size[0]) * bytesPerPixel;
+      const size_t dstOrigin =
+        (static_cast<size_t>(y) * static_cast<size_t>(m_size[0]) +
+         static_cast<size_t>(x)) *
+        bytesPerPixel;
+      for (int row = 0; row < height; ++row) {
+        unsigned char* dst =
+          dstBase + dstOrigin + static_cast<size_t>(row) * dstRowBytes;
+        const unsigned char* src =
+          srcBase + static_cast<size_t>(row) * srcRowBytes;
+        std::memcpy(dst, src, copyRowBytes);
+      }
     }
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
     glBindTexture(GL_TEXTURE_2D, m_id);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    // Data pointer is offset into the bound PBO (layout matches full texture).
-    const GLvoid* pboOffset = reinterpret_cast<const GLvoid*>(dstOrigin);
-    if (m_size[0] != width) {
-      glPixelStorei(GL_UNPACK_ROW_LENGTH, m_size[0]);
-    }
-    glTexSubImage2D(GL_TEXTURE_2D,
-                    0,
-                    x,
-                    y,
-                    width,
-                    height,
-                    format,
-                    GL_UNSIGNED_BYTE,
-                    pboOffset);
-    if (m_size[0] != width) {
-      glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    if (usePacked) {
+      glTexSubImage2D(GL_TEXTURE_2D,
+                      0,
+                      x,
+                      y,
+                      width,
+                      height,
+                      format,
+                      GL_UNSIGNED_BYTE,
+                      reinterpret_cast<const GLvoid*>(0));
+    } else {
+      const size_t dstOrigin =
+        (static_cast<size_t>(y) * static_cast<size_t>(m_size[0]) +
+         static_cast<size_t>(x)) *
+        bytesPerPixel;
+      const GLvoid* pboOffset = reinterpret_cast<const GLvoid*>(dstOrigin);
+      if (m_size[0] != width) {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, m_size[0]);
+      }
+      glTexSubImage2D(GL_TEXTURE_2D,
+                      0,
+                      x,
+                      y,
+                      width,
+                      height,
+                      format,
+                      GL_UNSIGNED_BYTE,
+                      pboOffset);
+      if (m_size[0] != width) {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+      }
     }
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
   }

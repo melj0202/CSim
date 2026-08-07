@@ -351,7 +351,7 @@
   \node[card, pkgfill=pkgGame, minimum width=3.8cm, text width=3.4cm] (dlist) at (24.6,-3.5) {%
     \textbf{\rmfamily AddDrawable}\\[2pt]
     CellGame: Canvas\\
-    CellGame: stateSplash*\\
+    CellGame: modeSplash\\
     Debug: CommandLine\\
     Debug: fpsLabel
   };
@@ -370,8 +370,8 @@
   \draw[arr] (tok.south) -- ++(0,-0.4) -- (24.8,-9.5) -- node[below, font=\footnotesize\rmfamily, pos=0.35] {next frame} (1.2,-9.5) -- (1.2,-6.7) -- (s7.west);
 
   \node[stub, minimum width=5.5cm, text width=5.0cm, font=\scriptsize\ttfamily] (proof) at (12.5,-10.5) {%
-    UseTokenProof==1 $\rightarrow$ RenderProofQuad\\
-    (skips Scene path)
+    RenderProofQuad test-only\\
+    (not on product Render path)
   };
   \draw[arr, densely dotted] (u0.south east) -- ++(0.35,0) |- (proof.east);
 \ChartEnd
@@ -487,8 +487,8 @@
   \node[box, pkgfill=pkgGame, minimum width=3.8cm] (st) at (3.0,-3.4) {CellState\\NORMAL|EDIT|EXIT};
   \node[box, pkgfill=pkgSvc, minimum width=3.8cm] (inx) at (3.0,-4.5) {InputContext};
   \node[box, pkgfill=pkgRender, minimum width=3.8cm, font=\scriptsize\ttfamily] (spl) at (3.0,-5.7) {%
-    SplashText* stateSplash\\
-    {\rmfamily\scriptsize file-scope global}
+    unique\_ptr$<$SplashText$>$ modeSplash\\
+    {\rmfamily\scriptsize module-owned}
   };
   \node[box, pkgfill=pkgSvc, minimum width=3.8cm] (sv) at (3.0,-6.9) {SaveLoad};
   \node[box, pkgfill=pkgGame, minimum width=3.8cm, align=left, font=\scriptsize\ttfamily] (io) at (3.0,-8.1) {%

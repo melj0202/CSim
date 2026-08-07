@@ -51,7 +51,7 @@ Mode changes from console/env call \texttt{setRuleSet} and
 \begin{statusbox}
 \texttt{calcGeneration} always walks the \textbf{full} grid (rect args ignored).
 Neighbor counts are scalar Moore/toroidal. Change detection does a second full
-pass for a dirty AABB (good for sparse \emph{visual} updates, still $O(WH)$).
+pass for a dirty AABB during eval, then buffer-swap promote (D-P5; still $O(WH)$ scan).
 Per cell: 1\,B life + $\sim$24\,B float RGB + 3\,B display tex.
 Default $80\times 60$ is fine; large/infinite canvases need a redesign (chunking,
 bitboards, or dropping dual float fade).

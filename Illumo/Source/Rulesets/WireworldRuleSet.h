@@ -18,14 +18,14 @@ public:
   static const unsigned char CELL_TAIL = 2;
   static const unsigned char CELL_CONDUCTOR = 3;
 
-  WireworldRuleSet(Canvas* targetCanvas)
+  WireworldRuleSet(CellGrid* targetCanvas)
     : RuleSet(targetCanvas)
   {
   }
   ~WireworldRuleSet() override = default;
 
   unsigned char nextState(unsigned char cell,
-                          unsigned char headNeighbors) const override;
+                          unsigned char headNeighbors) const override final;
   void evalCell(const unsigned char& target,
                 unsigned char dest[3]) const override;
   std::string getRuleTag() override { return "WIREWORLD"; }

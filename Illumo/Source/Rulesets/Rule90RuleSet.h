@@ -6,7 +6,7 @@
 class Rule90RuleSet : public RuleSet
 {
 public:
-  Rule90RuleSet(Canvas* targetCanvas)
+  Rule90RuleSet(CellGrid* targetCanvas)
     : RuleSet(targetCanvas)
   {
   }

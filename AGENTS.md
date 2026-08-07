@@ -77,14 +77,13 @@ submission returns.
 
 Canvas truth (verify here before trusting older notes):
 
-- Domain: dense `lifeCanvas`, one byte per cell.
-- Presentation: a CPU palette produces `targetRgb`; `displayRgb` fades toward
-  it; `texCanvasBuffer` stores RGB bytes.
+- Domain: `CellGrid` owns dense front/back life buffers (one byte per cell
+  each) plus dirty tracking; generation promotes via buffer swap. No
+  Renderer/window/camera.
+- Presentation: `Canvas` extends `CellGrid`; a CPU palette produces `targetRgb`;
+  `displayRgb` fades toward it; `texCanvasBuffer` stores RGB bytes.
 - GPU: one RGB display texture updated through dirty rectangles; OpenGL uses a
-  PBO update path.
-- `Canvas` intentionally owns domain state, visual state, dirty tracking, and
-  GPU enrollment for now. Split it only when a concrete testability or scale
-  need justifies the change.
+  PBO update path. Null renderer skips GPU enroll (domain-only construction).
 - Historical R8/palette references in the decision log describe a superseded
   experiment. Current-state documentation must match the RGB-fade shader and
   `Canvas.cpp` path.
@@ -96,9 +95,11 @@ Ruleset truth:
 - Rule 90 and Rule 184 are stubs.
 - Binary rules encode `0` as alive and `1` as dead.
 - Wireworld encodes head `0`, empty `1`, tail `2`, conductor `3`.
-- `RuleSet::calcGeneration` is double-buffered and toroidal. It still scans the
-  full dense grid; dirty rectangles reduce visual upload work, not simulation
-  complexity.
+- `RuleSet` takes `CellGrid*` (no render types). `calcGeneration` is
+  double-buffered (back buffer + swap), toroidal, single-pass dirty AABB; it
+  still scans the full dense grid. Optional row-parallel above 512².
+  Visual dirty rectangles reduce fade/upload work, not sim complexity.
+  Headless benches: `Illumo.Sim.MicroBench`.
 
 ## Source map
 
@@ -107,8 +108,9 @@ Ruleset truth:
 | Composition and main loop | `Illumo/Source/App/CellMain.cpp` |
 | Host, services, modules | `Illumo/Source/Engine/Illumo.*`, `IModule.h`, `IllumoContext.h` |
 | CA modes and editor | `Illumo/Source/Game/CellGameModule.*`, `CellContext.h` |
-| Grid, fade, dirty upload | `Illumo/Source/Game/Canvas.*`, `Illumo/Shader/canvas_*` |
-| CA behavior | `Illumo/Source/Rulesets/*` |
+| Domain cell storage | `Illumo/Source/Game/CellGrid.*` |
+| Grid, fade, dirty upload | `Illumo/Source/Game/Canvas.*` (extends CellGrid), `Illumo/Shader/canvas_*` |
+| CA behavior | `Illumo/Source/Rulesets/*` (operate on `CellGrid*`) |
 | Renderer and tokens | `Illumo/Source/Rendering/Renderer.h`, `RenderCommand.h`, `CommandQueue.h` |
 | Real graphics execution | `Illumo/Source/Rendering/OpenGL/*` |
 | Headless backend | `Illumo/Source/Rendering/Mock/MockBackend.h` |

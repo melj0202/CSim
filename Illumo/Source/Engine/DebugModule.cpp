@@ -85,6 +85,12 @@ DebugModule::Update(double dt)
 {
   ZoneNamed(DebugModuleUpdateZone, "DebugModule Update");
 
+  // Host erases modules that fail Start; still guard for incomplete fixtures.
+  if (ic == nullptr || ic->inputManager == nullptr ||
+      ic->commandLine == nullptr) {
+    return;
+  }
+
   updateFpsCounter(dt);
 
   // 1. Process Key Queue from InputManager
@@ -194,7 +200,9 @@ DebugModule::Update(double dt)
   }
 
   // 4. Execute command queue
-  ic->commandRegistry->ExecuteQueue();
+  if (ic->commandRegistry != nullptr) {
+    ic->commandRegistry->ExecuteQueue();
+  }
 }
 
 void
@@ -209,6 +217,9 @@ DebugModule::Exit()
 void
 DebugModule::DispatchDrawables(Scene* scene)
 {
+  if (ic == nullptr || scene == nullptr) {
+    return;
+  }
   // Skip fully closed console (no anim) — avoids chrono/lerp + empty token
   // work.
   if (ic->commandLine && ic->commandLine->wantsDraw()) {

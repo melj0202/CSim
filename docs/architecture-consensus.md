@@ -1,7 +1,7 @@
 # Illumo — Architecture consensus (unified)
 
 **Status:** Single living document — **authoritative for later sessions**  
-**Last updated:** 2026-08-04
+**Last updated:** 2026-08-06
 
 This file **merges and supersedes** scattered design memory into one coherent story. Read this first; treat external PDFs and old agenda notes as **history** (§2).
 
@@ -48,7 +48,7 @@ Optional deeper reading (not required to resume work):
 
 ## 0. One-line summary
 
-**Illumo is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock), and Canvas is a dense grid with RGB fade display. Keep that shape. The project identity, command console, save/load display refresh, fullscreen restoration, and documentation tree are current; failed-Start gating and Wireworld editing remain the leading correctness work. Defer ECS, multi-pass pipelines, multi-backend, infinite chunks, and SYCL until product pain or learning goals demand them.**
+**Illumo is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock). Domain storage is `CellGrid`; `Canvas` extends it with RGB-fade presentation and GPU enroll (D-C2). The composition root injects `IBackend` (D-R11); production frame path is single-path module dispatch → tokens (D-R13); mode splash is module-owned; Wireworld seed/brush and Start gating are in place. Defer ECS, multipass graphs, multi-backend, infinite chunks, SYCL, multi-library CMake split, and IllumoContext bag explosion.**
 
 ---
 
@@ -254,19 +254,24 @@ neither compiles nor registers `DebugModule` (D-B1).
 
 ```
 CellMain
-  → Illumo::Init()                    // services only
+  → Illumo::Init()                    // services + GLBackend construction
+       backend = make_unique<GLBackend>(window)
+       renderer = make_unique<Renderer>(..., move(backend))
   → addModule(CellGameModule)
   → addModule(DebugModule)            // Debug builds
-  → StartModules()
+  → StartModules()                    // erase modules whose Start returns false
   loop:
     Update(dt)   // InputManager → Camera → modules.Update
-    Render()
-      scene.ClearDrawables()
+    Render()                            // single production path (D-R13)
+      scene.ClearDrawables()          // Scene = per-frame FrameRenderList (D-E4)
       modules.DispatchDrawables(scene)
       renderer.BeginFrame()
       renderer.RenderScene(scene, camera)   // tokens, then optional immediate fallback
       renderer.EndFrame()                   // swap (GL)
 ```
+
+There is **no** env-gated alternate product frame path. `Renderer::RenderProofQuad`
+remains for headless token e2e tests only.
 
 Typical combined draw order: game contributes canvas/splash; DebugModule
 contributes console/FPS in Debug builds.
@@ -296,10 +301,10 @@ IBackend::SubmitCommandQueue
 | **Modules** | Choose what should appear this frame. |
 | **Scene** | Ordered list of drawable pointers for this frame only. |
 | **Drawable** | Prefer `AppendCommands(Renderer*)` → tokens. Immediate `Draw()` only if AppendCommands returns false (tests/stubs). |
-| **Renderer** | Frame setup tokens; collect drawable tokens; submit; then hybrid immediate list. |
+| **Renderer** | Depends only on `IBackend`; frame setup tokens; collect drawable tokens; submit; then hybrid immediate list. Does **not** construct `GLBackend` (D-R11). |
 | **IBackend** | Create resources, queue, submit, begin/end frame. |
-| **GLBackend / GLDevice** | Real OpenGL: handle registries, execute tokens, PBO texture updates, bind-state tracking, blend-func-on-enable (D-R5). |
-| **MockBackend** | Headless: record creates + command order. |
+| **GLBackend / GLDevice** | Real OpenGL: constructed at the composition root (`Illumo::Init`), then ownership transferred into `Renderer`. |
+| **MockBackend** | Headless: same inject path as production; record creates + command order. |
 
 **Enroll (rare):** `enrollMesh` / `enrollShader` / `enrollTexture` → opaque `unsigned long` table IDs.  
 **Per frame:** `RenderCommand` tagged union (bind, uniform, update texture/buffer, draw, clear, viewport, pipeline).  
@@ -309,29 +314,33 @@ IBackend::SubmitCommandQueue
 
 **Token migration phases 0–6:** complete for planned scope (proof → Scene → Canvas → UI → dead-path cleanup → Mock inject).
 
-### 5.6 Canvas presentation model (canonical — code wins)
+### 5.6 Domain + Canvas presentation model (canonical — code wins)
 
-**Important history:** D-P4 briefly moved presentation to **GPU R8 state texture + 256×1 palette** (snap colors, drop CPU fade). Fade was later **restored**. Intermediate LaTeX notes that still describe “R8-only current” are **stale**.
+**Important history:** D-P4 briefly moved presentation to **GPU R8 state texture + 256×1 palette** (snap colors, drop CPU fade). Fade was later **restored**. Intermediate LaTeX notes that still describe “R8-only current” are **stale**. D-C1 kept Canvas as a monolith until a real boundary need; **D-C2** refined that with a minimal domain type.
 
-**Code truth after fade restore:**
+**Code truth:**
 
-| Layer | Contents |
-|-------|----------|
-| **Domain** | `lifeCanvas` — dense `unsigned char[width × height]` (**not** chunked) |
-| **View** | CPU palette → `targetRgb` / `displayRgb` fade; `texCanvasBuffer` RGB bytes |
-| **GPU** | RGB display texture; dirty-rect `UpdateTexture` (PBO); shader samples `uDisplayTexture` |
+| Layer | Type | Contents |
+|-------|------|----------|
+| **Domain** | `CellGrid` | dense `lifeCanvas` (`unsigned char[width × height]`), dirty-region tracking; **no** Renderer/window/camera |
+| **View** | `Canvas` (extends `CellGrid`) | CPU palette → `targetRgb` / `displayRgb` fade; `texCanvasBuffer` RGB bytes |
+| **GPU** | `Canvas` enroll + tokens | RGB display texture; dirty-rect `UpdateTexture` (PBO); shader samples `uDisplayTexture` |
+
+**Rulesets** take `CellGrid*` and never touch OpenGL or render tokens. Domain-only tests construct `CellGrid` (or `Canvas` with null render services) and step generations without a graphics stack.
 
 **What survived from D-P4:** dirty-rect uploads, PBO path in `GLTexture::UpdateSubImage`, bind-state tracker, dirty flags for idle frames (D-P1).  
 **What was rolled back:** exclusive R8+palette GPU path as the live presentation; dual float RGB staging + fade are back.
 
-**Decision D-C1:** Keep Canvas as intentional domain + view + GPU enroll **monolith** until pure-sim tests or large grids force `LifeGrid` / `CanvasView`.
+**Decision D-C1 → refined by D-C2:** Domain is extractable as `CellGrid`. `Canvas` remains the presentation+GPU adapter over that domain. A further split into a separate `CanvasRenderer` type is still optional.
 
-**Scale walls:**
+**Scale walls (updated 2026-08-06 performance pass):**
 
-- `calcGeneration` always walks the **full** grid (rect args ignored).  
-- Neighbor counts: scalar Moore/toroidal.  
-- Change detection may do a second full pass for dirty AABB (helps sparse **upload**, still O(W×H) sim).  
-- Per cell: 1 B life + ~24 B float RGB + 3 B display tex. Default 80×60 is fine; large/infinite needs redesign.
+- `calcGeneration` still walks the **full** dense grid (rect args ignored; toroidal).  
+- Neighbor counts: interior Moore without wrap + toroidal ring (D-P5).  
+- Dirty AABB is tracked **during** the eval pass (single pass); write-back is an O(1) **buffer swap** on `CellGrid` (no full-grid `memcpy`) (D-P5).  
+- Optional row-parallel eval above `512×512` (or forced via `RuleSet::setWorkerOverride`) (D-P7).  
+- Per cell: 1 B life front + 1 B life back + ~24 B float RGB + 3 B display tex. Default 80×60 is fine; sparse/chunk still deferred.  
+- Headless micro-benches: `Illumo.Sim.MicroBench` (gens/s + tickVisual ms).
 
 ### 5.7 Rules and encoding
 
@@ -354,11 +363,12 @@ class RuleSet {
 | Multi-state (e.g. Brian's Brain) | `≥2` additional states (e.g. dying = 2) |
 | **Wireworld** | `0` head, `1` empty, `2` tail, `3` conductor (head = 0 reuses head-neighbor counting) |
 
-**Generation path (D-P3):**
+**Generation path (D-P3 refined by D-P5 / D-P7):**
 
-1. Count neighbors from raw `lifeCanvas` (toroidal).  
-2. Write `nextState` into scratch `nextGen`.  
-3. If any cell changed: copy back, mark sparse dirty AABB for visuals. Still life → no dirty.
+1. Count neighbors from front `lifeCanvas` (interior fast path + toroidal edges).  
+2. Write `nextState` into `CellGrid` back buffer; track dirty AABB in the same pass.  
+3. If any cell changed: `swapLifeBuffers()` (O(1)), mark sparse dirty AABB for visuals. Still life → no swap, no dirty.  
+4. Large grids may partition rows across workers (bit-identical to serial).
 
 Rules stay free of rendering and input. `evalCell` supplies palette/RGB colors only.
 
@@ -466,10 +476,15 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-R5** | On blend enable, always set `glBlendFunc` (console panel transparency). |
 | **D-R6** | Archive dead render queue / SceneObject graph helpers; Scene + Renderer is the path. |
 | **D-R7** | MockBackend + headless tests; no Vulkan/Metal yet. |
-| **D-R8** | Inject `IBackend*` into Renderer for tests; production owns GLBackend. |
+| **D-R8** | Inject `IBackend*` into Renderer for tests; production owns a backend via unique_ptr. |
 | **D-R9** | String-named uniforms = debt if a second *real* GPU API appears. |
 | **D-R10** | Production drawables pure-token; hybrid `Draw()` for tests/stubs only. |
+| **D-R11** | Construct concrete backend at composition root (`Illumo::Init`); `Renderer` never includes OpenGL types. |
+| **D-R12** | CommandQueue fixed 2048 capacity; overflow drops + logs once per frame. |
+| **D-R13** | Single production frame path in `Illumo::Render`; `RenderProofQuad` is test-only. |
 | **D-007** | Enroll resources outside the per-frame stream (frame queue = bind/draw/update). |
+| **D-WW1** | Wireworld: ruleset-aware seed + sticky head/tail/conductor brush keys. |
+| **D-C2** | `CellGrid` domain + `Canvas` presentation; rulesets depend only on `CellGrid`. |
 
 ### 6.3 Performance (D-P\*)
 
@@ -477,8 +492,11 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 |----|----------|------|
 | **D-P1** | Dirty visual path — idle frames skip full recolor/upload. | Still current |
 | **D-P2** | UI batch: CommandLine one packed update; GLString geometry cache. | Still current |
-| **D-P3** | Double-buffer `calcGeneration` + sparse dirty AABB. | Still current |
+| **D-P3** | Double-buffer `calcGeneration` + sparse dirty AABB. | Still current; refined by D-P5 |
 | **D-P4** | Originally: R8 + palette + dirty-rect PBO; drop dual float RGB. | **Partially superseded:** dirty-rect PBO + bind tracker kept; **RGB fade display restored** as live presentation (see §5.6) |
+| **D-P5** | Single-pass dirty AABB + `CellGrid` front/back swap (no full memcpy). | 2026-08-06 |
+| **D-P6** | Fade loop hoists + packed dirty-rect PBO staging (keep CPU RGB fade). | 2026-08-06 |
+| **D-P7** | Optional row-parallel `calcGeneration` (≥512² auto, override for tests). | 2026-08-06 |
 
 ### 6.4 Engine shape (D-E\*, D-C\*, D-F\*)
 
@@ -490,6 +508,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-E4** | Scene is drawable list only (no graph). |
 | **D-E5** | Freeze IllumoContext; validate at Start; third module → explicit deps. |
 | **D-C1** | Canvas dual role intentional until scale forces split. |
+| **D-C2** | **Refines D-C1:** extract `CellGrid` domain; `Canvas` extends it for view/GPU. |
 | **D-F1** | MacroDefs / Windows.h include toxicity deferred until real pain. |
 
 ---
@@ -518,9 +537,9 @@ From local code review / `docs/current-issues.md` (fix when touching related cod
 
 | # | Severity | Issue |
 |---|----------|--------|
-| 1 | bug | **Partial Start still crashes later.** If `IllumoContextHasGameCore` fails, `Start` returns without `cellContext`, but `Update` / `DispatchDrawables` still use it → null deref. Same class of hole in DebugModule. |
-| 2 | bug | **Wireworld editor can’t place heads with the mouse.** Paint is conductor/empty only; `setcell` can place head/tail states but is not a brush workflow. |
-| 3 | bug | **Startup seed is always a GoL glider (value 0).** Under WIREWORLD that plants five electron heads, not a useful wire. |
+| 1 | ~~bug~~ | **Resolved 2026-08-06:** `StartModules` erases modules that fail `Start`; `CellGameModule` / `DebugModule` also early-return from `Update` / `DispatchDrawables` when core state is missing. |
+| 2 | ~~bug~~ | **Resolved 2026-08-06:** Wireworld left-paint uses a sticky brush selected with `1`/`H` (head), `2` (empty), `3`/`T` (tail), `4` (conductor); right-click still clears to empty. |
+| 3 | ~~bug~~ | **Resolved 2026-08-06:** Startup seed is ruleset-aware — GoL-family glider for binary rules; Wireworld plants a horizontal conductor with a head+tail electron. |
 
 ### 8.2 Closed test gaps
 
@@ -531,15 +550,19 @@ dialog cancellation. Native dialog UI still needs a platform smoke test.
 
 ### 8.3 Assessment-only risks (structural)
 
-From `gpt_illumo_arch_assessment.pdf`:
+From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 
-- Command queue **2048** capacity with **silent drop**; raw pointer payloads must stay alive until submit  
+- Command queue **2048** capacity: overflow now **logs once per frame** and tracks drop counts (D-R12); raw pointer payloads must still stay alive until submit  
 - CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; empty package CMake files remain
 - Docs historically described **R8+palette** while code used **RGB fade** — this consensus file + §5.6 is the resolution; keep LaTeX chapters aligned  
-- Renderer.h still includes GL types for production construction  
+- ~~Renderer.h constructed GLBackend~~ — **resolved D-R11:** composition root injects `IBackend`; `Renderer.h` no longer includes OpenGL types  
 - Hybrid token + immediate Draw path remains for stubs  
 - Native file dialogs and live OpenGL/fullscreen behavior still require manual
   smoke tests; headless MockBackend coverage does not prove them.
+- Deferred boundary work (do when it hurts): further Canvas→CanvasRenderer
+  extraction, capability-oriented module contexts instead of the frozen bag
+  (D-E5), rename `Scene` → `FrameRenderList` only if the name causes real
+  confusion, multi-library CMake split, logger/SaveLoad global removal.
 
 ### 8.4 Looks fine (do not “fix” as bugs)
 
@@ -557,10 +580,10 @@ From `gpt_illumo_arch_assessment.pdf`:
 |------|--------|
 | String uniforms | D-R9 — GL-shaped until second real backend |
 | Hybrid Draw path | Tests/stubs only; production is tokens |
-| Command queue silent overflow | Prefer log/assert if near cap |
+| Command queue overflow | **D-R12:** log once per frame + drop counters; capacity still fixed at 2048 |
 | CMake duplication | Resolved 2026-08-02 with shared source lists/settings; no forced package libraries |
-| Renderer.h includes GL types | Factory / pimpl later |
-| Full-grid sim + float fade memory | Scale wall for large canvases |
+| Renderer ↔ backend | **D-R11:** backend injected; Renderer is backend-interface only |
+| Full-grid sim + float fade memory | Still the dense-grid scale wall; D-P5/P6/P7 reduce cost but do not remove O(W×H) |
 | MacroDefs + Windows.h | D-F1 deferred |
 | IllumoContext growth | Frozen; third module = explicit deps |
 | Life-like JSON family collapse | Optional cleanup of repetitive RuleSet classes |
@@ -574,23 +597,30 @@ From `gpt_illumo_arch_assessment.pdf`:
 
 ### A. Correctness first
 
-1. Failed `Start` → do not run that module’s Update/Dispatch.
-2. Wireworld seed + mouse head-placement UX.
+1. Failed `Start` → do not run that module’s Update/Dispatch — **done 2026-08-06**.
+2. Wireworld seed + mouse head-placement UX — **done 2026-08-06**.
 3. Keep this file and LaTeX “current state” sections aligned with **RGB fade Canvas** (no stale “GPU R8 as current” claims).
 
-### B. Hygiene
+### B. Hygiene / boundary consolidation
 
 4. CMake source/config consolidation — **completed 2026-08-02**.
-5. Command-queue overflow policy (log/assert).
+5. Command-queue overflow policy (log once per frame) — **D-R12, done 2026-08-06**.
+6. Backend injection at composition root — **D-R11, done 2026-08-06**.
 
-### C. Only if product or learning goals require it
+### C. Boundary consolidation (2026-08-06 arc — done)
 
-6. Canvas split (`LifeGrid` / `CanvasView`).
-7. Chunked / infinite canvas (agenda 16×16 map).
-8. Threaded or SYCL simulation backend behind a narrow interface (serial benchmark first).
-9. Backend factory + non-string uniforms.
-10. Data-driven life-like rule family (JSON birth/survive).
-11. Focused controllers (camera / console) if input coupling becomes painful.
+7. `CellGrid` domain extraction + rulesets on domain only — **D-C2**.
+8. Single production frame path; remove `UseTokenProof` product bypass — **D-R13**.
+9. Mode splash module ownership (no file-scope `stateSplash` global).
+
+### D. Only if product or learning goals require it
+
+10. Further `CanvasRenderer` extraction / chunked infinite canvas.
+11. ~~Threaded simulation~~ — **D-P7 row-parallel done**; SYCL / sparse still deferred (serial + parallel benches via `Illumo.Sim.*`).
+12. Non-string uniforms / second real backend.
+13. Data-driven life-like rule family (JSON birth/survive).
+14. Focused controllers (camera / console) if input coupling becomes painful.
+15. Narrow `IllumoContext` into capability bags only when a third module needs different deps (D-E5).
 
 ### Explicitly deferred (engine PDF + consensus)
 
@@ -634,8 +664,11 @@ Resolved highlights (do not re-open without a new decision ID):
 - Who emits tokens → D-R2  
 - Scene graph leftovers → D-E4  
 - IllumoContext growth → D-E5  
-- Canvas domain vs view → D-C1  
+- Canvas domain vs view → D-C1 refined by D-C2 (`CellGrid` + `Canvas`)  
 - String uniforms → D-R9 debt  
+- Backend injection → D-R11  
+- Command queue overflow → D-R12  
+- Single production frame path → D-R13  
 - Canvas upload dirty rects → D-P1 / PBO path  
 - Module registration → D-E1  
 - InputManager Game deps → D-E2  
@@ -669,7 +702,8 @@ Resolved highlights (do not re-open without a new decision ID):
 | Frame loop / composition | `Source/App/CellMain.cpp` |
 | Host / services / modules | `Source/Engine/Illumo.*` |
 | CA module / modes | `Source/Game/CellGameModule.*`, `CellContext.*` |
-| Grid + fade + GPU enroll | `Source/Game/Canvas.*` |
+| Domain cell storage | `Source/Game/CellGrid.*` |
+| Grid + fade + GPU enroll | `Source/Game/Canvas.*` (extends CellGrid) |
 | Rules | `Source/Rulesets/*` |
 | Tokens / Renderer | `Source/Rendering/Renderer.*`, `RenderCommand.*` |
 | GL execute | `Source/Rendering/OpenGL/*` |

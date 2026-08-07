@@ -39,7 +39,7 @@ under `docs/`. Start with:
 - `docs/latex/illumo.tex` — the only current LaTeX/PDF entrypoint
 - `docs/output/illumo.pdf` — generated locally; not a source of truth
 
-**Current stack (short):** token renderer (`AppendCommands` → `IBackend`), Canvas as life grid + RGB fade display + dirty-rect upload, double-buffered CA `nextState`, headless `IllumoTests` with `MockBackend`.
+**Current stack (short):** token renderer (`AppendCommands` → `IBackend`), `CellGrid` domain + `Canvas` RGB-fade presentation + dirty-rect upload, double-buffered CA `nextState`, headless `IllumoTests` with `MockBackend`.
 
 **Architecture (single source for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — unified consensus (purpose, history of old plans, current renderer/sim truth, decisions, bugs, debt, work order).
 
