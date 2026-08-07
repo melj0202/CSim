@@ -682,6 +682,9 @@ CellGameModule::Update(double dt)
       break;
   }
 
+  // Hide in NORMAL (and while console is open); track mouse only in EDIT.
+  updateEditorCursor();
+
   // Map dirty life cells to palette target colors, then ease display toward
   // them.
   updateVisualTargets();
@@ -818,8 +821,6 @@ CellGameModule::Edit(double dt)
   } else {
     wasPressed = false;
   }
-
-  updateEditorCursor();
 }
 
 void
