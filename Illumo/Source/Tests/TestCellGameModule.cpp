@@ -154,9 +154,13 @@ testStartRegistersGameFeatures()
   fixture.scene.ClearDrawables();
   fixture.module.DispatchDrawables(&fixture.scene);
   testEqSize(g,
-             fixture.scene.drawables.size(),
+             fixture.scene.drawableCount(),
              1,
              "canvas is dispatched while splash is hidden");
+  testEqSize(g,
+             fixture.scene.drawablesIn(RenderLayerId::World).size(),
+             1,
+             "canvas is on the World layer");
 
   fixture.module.Exit();
   fixture.started = false;

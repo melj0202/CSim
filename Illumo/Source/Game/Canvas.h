@@ -2,6 +2,7 @@
 #include "CellGrid.h"
 #include "Foundation/MacroDefs.h"
 #include "Rendering/Drawable.h"
+#include "Rendering/Primitives/GameVisual.h"
 #include "Services/PoolAlloc.h"
 #include <array>
 #include <cstring>
@@ -15,9 +16,9 @@ class RuleSet;
 // Presentation + GPU adapter over CellGrid domain storage (D-C2).
 // Domain: inherited CellGrid (lifeCanvas, dirty tracking).
 // View: CPU palette → targetRgb; displayRgb eases toward targets; RGB texture.
-// GPU: enrolled mesh/shader/texture handles; AppendCommands (pure-token).
-// Render services are optional: null renderer/window/camera skips GPU enroll
-// so domain+rules can run headless without a graphics stack.
+// GPU: world-space sprite on embedded GameVisual + display texture
+// (D-R14/D-R15). Render services are optional: null renderer/window/camera
+// skips GPU enroll so domain+rules can run headless without a graphics stack.
 struct Canvas
   : public CellGrid
   , public Drawable<Canvas>
@@ -46,6 +47,11 @@ public:
 
   void DrawImpl();
   bool AppendCommands(Renderer* renderer) override;
+
+  // Scene-friendly host (world-space display sprite). Prefer adding this to
+  // Scene when composing; Canvas::AppendCommands still forwards for tests.
+  GameVisual& getVisual() { return visual; }
+  const GameVisual& getVisual() const { return visual; }
 
   // Map cell state → target display color via palette (used by
   // updateVisualTargets).
@@ -93,18 +99,16 @@ private:
                           unsigned char b,
                           bool* anyTargetChange);
 
-  std::array<float, 32> vertices;
-  std::array<unsigned int, 6> indices;
-
   unsigned char paletteRgb[kPaletteSize * 3];
   float* displayRgb;
   float* targetRgb;
   float fadeSpeed;
 
-  unsigned long meshHandle;
-  unsigned long shaderHandle;
+  GameVisual visual;
   unsigned long displayTextureHandle;
   bool gpuReady;
+  float worldWidth;
+  float worldHeight;
 
   bool fadeActive;
   bool textureUploadPending;

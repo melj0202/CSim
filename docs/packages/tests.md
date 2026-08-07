@@ -5,12 +5,14 @@ Executable target: **`IllumoTests`** (alias: `IllumoRenderTests`).
 | Suite | File | Covers |
 |-------|------|--------|
 | MockBackend | `TestMockBackend.cpp` | Token queue, create records, proof sequence |
-| Renderer E2E | `TestRendererE2E.cpp` | Inject mock into Renderer, Canvas RGB-display tokens, hybrid draw |
+| Renderer E2E | `TestRendererE2E.cpp` | Inject mock into Renderer, Scene World/UI/Debug layer order, built-in styles, Canvas RGB-display tokens, hybrid draw |
 | RuleSets | `TestRuleSets.cpp` | GoL block/blinker, Seeds, Brian's Brain, tags |
 | CellContext | `TestCellContext.cpp` | Mode normalize, factory, env canvas size |
-| Canvas domain | `TestCanvasDomain.cpp` | set/get, clear, palette/fade, dirty-rect RGB upload, enroll |
+| Canvas domain | `TestCanvasDomain.cpp` | set/get, clear, palette/fade, dirty-rect RGB upload, shared style enroll |
 | Simulation perf | `TestSim.cpp` | double-buffer still life, dirty AABB, serial/parallel identity, micro-bench gens/s |
 | UI tokens + console | `TestUITokens.cpp` | CommandLine editing/completion/validation/dispatch/help; command chaining and aliases; ghost text and parameter hints; repeat execution and history search; history wrap and scroll-to-start; open/closed/invisible tokens; full-help mesh-capacity regression; GLString empty/FPS; combined scene |
+| Allocators | `TestAllocators.cpp` | Arena / stack / pool / malloc; frame/parse helpers; SparseCellGrid pool chunks |
+| GameVisual | `TestGameVisual.cpp` | Shape/sprite/text primitive host, texture-sort batches, composition embed pattern |
 
 Shared helpers: `TestHelpers.h`, `TestHarness.h` (`NullRenderWindow`, `HeadlessCanvasFixture`).
 

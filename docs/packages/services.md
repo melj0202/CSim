@@ -6,10 +6,16 @@ Cross-cutting application services:
 - environment / config vars
 - input
 - command line / command registry
-- custom allocators
+- custom allocators (`ArenaAlloc`, `ChainedStackAlloc`, `ChainedPoolAlloc`,
+  `MallocAlloc` / `IAllocator`) with `Illumo.Alloc.*` tests; wired into
+  console parse/dispatch (`CommandLine`), frame scratch (`Renderer`), save
+  load buffers, and optional `SparseCellGrid` chunks — still not forced into
+  every service
 - platform-neutral `SaveLoad` API (implementations live under `Platform/`)
 
 `CommandLine` owns general console commands and validated environment settings.
+Token draw uses shared `RenderStyleId::Console` on `Renderer` and is placed on
+the Scene `UI` layer by `DebugModule`.
 Product modules add domain commands through `CommandRegistry`, including usage,
 description, and completion metadata. `CellGameModule` therefore owns simulation,
 canvas, camera, ruleset, and save/load commands without introducing Game types

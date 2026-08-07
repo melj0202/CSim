@@ -1,5 +1,6 @@
 #include "CellGameModule.h"
 #include "Rulesets/WireworldRuleSet.h"
+#include "Services/ArenaAlloc.h"
 #include "Services/Logger.h"
 #include "Services/SaveLoad.h"
 #include <algorithm>
@@ -147,6 +148,12 @@ CellGameModule::Start(IllumoContext* context)
       "EDIT", 255, 230, 120, 255, 32, 16, 48, ic->renderer);
     modeSplash->setVisible(false);
   }
+
+  editorCursor.init(ic->renderer, ic->window, ic->camera);
+  editorCursor.setCellSize(16.0f);
+  // Hidden until Edit() updates cell position (avoids extra Scene entry at
+  // Start before the first mouse sample).
+  editorCursor.setVisible(false);
 
   return true;
 }
@@ -811,6 +818,34 @@ CellGameModule::Edit(double dt)
   } else {
     wasPressed = false;
   }
+
+  updateEditorCursor();
+}
+
+void
+CellGameModule::updateEditorCursor()
+{
+  if (!ic || !ic->window || !ic->camera || !cellContext ||
+      !cellContext->getCellCanvas()) {
+    editorCursor.setVisible(false);
+    return;
+  }
+
+  const bool show = (currentState == CellState::EDIT) &&
+                    (ic->commandLine == nullptr || !ic->commandLine->isOpen);
+  editorCursor.setVisible(show);
+  if (!show) {
+    return;
+  }
+
+  std::array<double, 2> mouseCoords = ic->window->getMouseCoords();
+  glm::vec2 worldPos =
+    ic->camera->ScreenToWorld(glm::vec2(mouseCoords[0], mouseCoords[1]));
+  const float cellSize = 16.0f;
+  int cellX = static_cast<int>(std::floor(worldPos.x / cellSize));
+  int cellY = static_cast<int>(std::floor(worldPos.y / cellSize));
+  editorCursor.setCellSize(cellSize);
+  editorCursor.setFromCell(cellX, cellY);
 }
 
 bool
@@ -890,10 +925,18 @@ CellGameModule::LoadCellGame(std::string filename)
     return false;
   }
 
-  std::vector<unsigned char> loadedCells(
-    static_cast<std::size_t>(fileCellCount));
-  if (!file.read(reinterpret_cast<char*>(loadedCells.data()),
-                 static_cast<std::streamsize>(loadedCells.size()))) {
+  // Multi-stage load scratch: one arena chunk sized to the file payload so
+  // header parse + cell buffer share a single bulk free on scope exit.
+  const std::size_t cellBytes = static_cast<std::size_t>(fileCellCount);
+  ArenaAlloc loadArena(cellBytes + 64);
+  unsigned char* loadedCells =
+    static_cast<unsigned char*>(loadArena.AllocateBytes(cellBytes));
+  if (loadedCells == nullptr) {
+    ic->commandLine->logError("Failed to allocate load buffer");
+    return false;
+  }
+  if (!file.read(reinterpret_cast<char*>(loadedCells),
+                 static_cast<std::streamsize>(cellBytes))) {
     ic->commandLine->logError(
       "Save is truncated before all cell data was read");
     return false;
@@ -909,7 +952,7 @@ CellGameModule::LoadCellGame(std::string filename)
   const int copyHeight = std::min(fileHeight, canvas->canvasHeight);
   for (int y = 0; y < copyHeight; ++y) {
     const unsigned char* sourceRow =
-      loadedCells.data() +
+      loadedCells +
       static_cast<std::size_t>(y) * static_cast<std::size_t>(fileWidth);
     unsigned char* destinationRow =
       canvas->lifeCanvas + static_cast<std::size_t>(y) *
@@ -964,10 +1007,13 @@ CellGameModule::DispatchDrawables(Scene* scene)
   if (cellContext == nullptr || scene == nullptr) {
     return;
   }
-  scene->AddDrawable(this->cellContext->getCellCanvas());
-  // Mode splash sits above the canvas (token UI path via
-  // SplashText::AppendCommands).
+  // Owners implement AppendCommands (domain + GameVisual). Scene lists
+  // Drawable hosts by layer (World → UI → Debug).
+  scene->AddDrawable(this->cellContext->getCellCanvas(), RenderLayerId::World);
+  if (editorCursor.isVisible()) {
+    scene->AddDrawable(&editorCursor, RenderLayerId::UI);
+  }
   if (modeSplash != nullptr && modeSplash->isVisible()) {
-    scene->AddDrawable(modeSplash.get());
+    scene->AddDrawable(modeSplash.get(), RenderLayerId::UI);
   }
 }

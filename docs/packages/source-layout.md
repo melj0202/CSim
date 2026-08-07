@@ -8,7 +8,7 @@ Platform-independent application code lives here. OS-specific entry points and n
 | **Engine/** | Runtime host: module API, Illumo services/lifecycle, frozen context, Debug-only overlay |
 | **Game/** | Cellular-automata game domain (canvas, game module, editor tools) |
 | **Rulesets/** | CA rule implementations |
-| **Rendering/** | Scene/drawables, token command path, OpenGL backend, MockBackend |
+| **Rendering/** | Scene layers, drawables, built-in render styles, primitives/`GameVisual`, token command path, OpenGL backend, MockBackend |
 | **Services/** | Shared services: logging, env vars, input, CLI (token UI), allocators, save/load API |
 | **Foundation/** | Low-level shared bits: macros, build info, sysinfo, math helpers |
 | **Assets/** | Asset loaders (fonts, etc.) |

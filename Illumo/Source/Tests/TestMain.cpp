@@ -30,6 +30,10 @@ void
 registerCellGameModuleTests(IllumoTestRegistry& registry);
 void
 registerRuntimeUtilityTests(IllumoTestRegistry& registry);
+void
+registerAllocatorTests(IllumoTestRegistry& registry);
+void
+registerGameVisualTests(IllumoTestRegistry& registry);
 
 static IllumoTestRegistry
 createRegistry()
@@ -46,6 +50,8 @@ createRegistry()
   registerServiceTests(registry);
   registerCellGameModuleTests(registry);
   registerRuntimeUtilityTests(registry);
+  registerAllocatorTests(registry);
+  registerGameVisualTests(registry);
   return registry;
 }
 

@@ -14,8 +14,14 @@ Cellular-automata **game domain**: cell grid, canvas presentation, game module
 
 - **Extends `CellGrid`:** inherits domain storage.
 - **View:** a CPU palette maps cell state into `targetRgb`; `displayRgb` eases toward those targets and packs the result into `texCanvasBuffer` (fade model kept; D-P6 tightens the hot loops).
-- **GPU:** token path enrolls a mesh, canvas shader, and **RGB display texture**; changed texels upload through dirty rectangles (PBO path packs partial rects tightly — D-P6). Optional: null renderer skips GPU enroll (domain-only construction).
+- **GPU:** world-space **sprite** on an embedded `GameVisual` plus RGB display texture; dirty-rect `UpdateTexture` (PBO). Optional: null renderer skips GPU enroll (domain-only construction).
+- **Scene layer:** `CellGameModule` places Canvas on `RenderLayerId::World` (splash/cursor on `UI`).
 - `rebuildPalette(RuleSet*)` refreshes visual targets when the active ruleset changes.
+
+## SparseCellGrid (optional)
+
+Pool-backed 8×8 chunks (`ChainedPoolAlloc`) for sparse / large worlds. Does **not**
+replace dense Canvas in the live product path. Covered by `Illumo.Alloc.SparseCellGridPool`.
 
 ## Simulation performance notes
 
@@ -28,8 +34,9 @@ See `docs/latex/sections/07-game-and-rules.tex` and
 
 ## CellGameModule
 
-EDIT / NORMAL; sim rate from `tps` × `speedFactor`; dispatches Canvas + module-owned
-mode splash (`std::unique_ptr<SplashText>` — not a file-scope global).
+EDIT / NORMAL; sim rate from `tps` × `speedFactor`; dispatches Canvas (World),
+editor cursor (UI), and module-owned mode splash (`std::unique_ptr<SplashText>` —
+not a file-scope global).
 Save/load, simulation, canvas, ruleset, and camera commands are registered here
 through `CommandRegistry` rather than modeled as frame states.
 

@@ -5,6 +5,9 @@
 #include "IEnvVars.h"
 #include "InputContext.h"
 #include "Rendering/IRenderWindow.h"
+#include "Rendering/Primitives/GameVisual.h"
+#include "Services/ArenaAlloc.h"
+#include "Services/ChainedStackAlloc.h"
 #include <chrono>
 #include <cstdint>
 #include <memory>
@@ -53,6 +56,8 @@ public:
   void HandleScroll(double yOffset);
   void DrawImpl();
   bool AppendCommands(Renderer* renderer) override;
+  GameVisual& getVisual() { return visual; }
+  const GameVisual& getVisual() const { return visual; }
   bool isOpen;
   // True while open or still sliding (avoid dispatch when fully closed).
   bool wantsDraw() const
@@ -100,12 +105,6 @@ public:
   void setFloatingSize(float w, float h);
 
 private:
-  struct ConsoleVertex
-  {
-    float x, y, z;
-    uint8_t color[4];
-  };
-
   // Shared panel metrics so scroll handlers, hit tests, and draw agree.
   struct PanelLayout
   {
@@ -166,22 +165,17 @@ private:
   CommandRegistry* commandRegistry;
   Renderer* renderer;
 
-  unsigned long meshHandle;
-  unsigned long shaderHandle;
+  // Chrome + text composed as GameVisual primitives (D-R12).
+  GameVisual visual;
   bool gpuReady;
 
   // Animation (was static in DrawImpl)
   float animationProgress;
   std::chrono::high_resolution_clock::time_point lastAnimTime;
 
-  // Batched UI verts for one UpdateBuffer + DrawIndexed (valid until Submit).
-  // Easy-font glyphs use several quads each; wrapped history can fill a full
-  // viewport of long lines, so the cap must leave headroom above chrome.
-  // Heap-allocated: a stack-resident CommandLine must stay small for tests and
-  // nested fixtures (two instances used to overflow the default stack).
+  // Approximate capacity tracking for chrome/text emission via GameVisual.
   static const unsigned int kUiQuadCap = 8000;
   static const unsigned int kUiVertCap = kUiQuadCap * 4;
-  std::unique_ptr<ConsoleVertex[]> uiVerts;
 
   friend void CellMain(const std::string&);
   void enrollGpuResources();
@@ -201,4 +195,17 @@ private:
                                   int* maxScroll,
                                   float* historyWidth) const;
   void clampScrollOffset();
+
+  // Scratch for one parse/complete/dispatch session (cleared at entry).
+  // mutable so const helpers (completion / hints) can reuse the same pool.
+  mutable ArenaAlloc parseArena;
+  // Nested alias expansion temps: push expanded text, recurse, LIFO free.
+  mutable ChainedStackAlloc aliasExpandStack;
+
+  // Arena-backed token helpers. Pointers are valid until parseArena.Clear().
+  // Falls back to heap std::string copies when the arena is exhausted.
+  bool parseArgsInto(const std::string& text,
+                     std::vector<std::string>& outArgs) const;
+  bool splitChainInto(const std::string& text,
+                      std::vector<std::string>& outCommands) const;
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "CellContext.h"
+#include "Cursor.h"
 #include "Engine/IModule.h"
 #include "Rendering/Scene.h"
 #include "Rendering/SplashText.h"
@@ -42,6 +43,7 @@ private:
   void seedInitialPattern();
   void updateWireworldBrushFromInput();
   void showModeSplash(const char* label);
+  void updateEditorCursor();
   CellContext* cellContext;
   CellState currentState;
   InputContext inputContext;
@@ -52,4 +54,5 @@ private:
   unsigned char wireworldBrush;
   // Module-owned mode label (EDIT/NORMAL); not a file-scope global.
   std::unique_ptr<SplashText> modeSplash;
+  Cursor editorCursor;
 };

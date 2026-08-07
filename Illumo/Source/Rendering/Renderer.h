@@ -5,8 +5,11 @@
 #include "IRenderWindow.h"
 #include "IShaderProgram.h"
 #include "RenderCommand.h"
+#include "RenderLayerId.h"
 #include "RenderPass.h"
+#include "RenderStyle.h"
 #include "Scene.h"
+#include "Services/ArenaAlloc.h"
 #include <array>
 #include <cstring>
 #include <memory>
@@ -41,12 +44,22 @@ private:
   std::vector<FrameBuffer> frameBuffers;
   std::vector<Uniform> uniforms;
 
+  // Built-in render styles (shader handle + pipeline defaults). GPU programs
+  // still live in the backend registry; Renderer owns the style table (D-R11).
+  std::array<RenderStyle, static_cast<size_t>(RenderStyleId::Count)> _styles{};
+  bool _builtinStylesReady = false;
+
   // Phase 1 proof-quad resources (handles are table IDs)
   bool _proofReady = false;
   unsigned long _proofMeshHandle = 0;
   unsigned long _proofShaderHandle = 0;
   unsigned long _proofTextureHandle = 0;
   unsigned long _nextHandleId = 1;
+
+  // Per-frame scratch (immediate-draw pointer list, etc.). Cleared at the
+  // start of RenderScene and again after submission so token payload pointers
+  // that live only for the frame never outlive the submit window by design.
+  ArenaAlloc frameArena{ 8 * 1024 };
 
   static void copyUniformName(char* dest, size_t destSize, const char* name)
   {
@@ -195,6 +208,14 @@ public:
 
   // Opaque table IDs for enroll* (v1: monotonic, never recycled).
   unsigned long allocateHandle() { return _nextHandleId++; }
+
+  // Built-in styles: enroll shaders once; bind emits pipeline + SetShader.
+  // Implemented in RendererStyles.cpp.
+  void ensureBuiltinStyles();
+  const RenderStyle* getStyle(RenderStyleId id) const;
+  RenderStyle* getStyle(RenderStyleId id);
+  bool bindStyle(RenderStyleId id);
+  bool builtinStylesReady() const { return _builtinStylesReady; }
 
   unsigned long enrollRenderPass(const RenderPass& renderPass)
   {
@@ -405,7 +426,9 @@ public:
       _camera = camera;
     }
 
-    // Historical clear color (0.1, 0.1, 0.1).
+    frameArena.Clear();
+
+    // Single main pass (default FB): clear once, then World → UI → Debug.
     std::array<int, 2> dims = _window->getWindowDimensions();
     pushViewport(0, 0, dims[0], dims[1]);
 
@@ -418,18 +441,32 @@ public:
 
     pushClearScreen(0.1f, 0.1f, 0.1f, 1.0f);
 
-    std::vector<DrawableBase*> immediateList;
+    DrawableBase** immediateList = nullptr;
+    size_t immediateCount = 0;
+    size_t immediateCap = 0;
     if (scene) {
-      const std::vector<DrawableBase*>& list = scene->drawables;
-      for (size_t i = 0; i < list.size(); ++i) {
-        DrawableBase* drawable = list[i];
-        if (!drawable) {
-          continue;
-        }
-        // Pure-token: returns true. Immediate fallback if false (tests /
-        // stubs).
-        if (!drawable->AppendCommands(this)) {
-          immediateList.push_back(drawable);
+      immediateCap = scene->drawableCount();
+      if (immediateCap > 0) {
+        immediateList = static_cast<DrawableBase**>(
+          frameArena.AllocateBytes(sizeof(DrawableBase*) * immediateCap));
+      }
+      for (unsigned layerIndex = 0; layerIndex < renderLayerCount();
+           ++layerIndex) {
+        const RenderLayerId layer = static_cast<RenderLayerId>(layerIndex);
+        const std::vector<DrawableBase*>& list = scene->drawablesIn(layer);
+        for (size_t i = 0; i < list.size(); ++i) {
+          DrawableBase* drawable = list[i];
+          if (!drawable) {
+            continue;
+          }
+          // Pure-token: returns true. Immediate fallback if false (tests /
+          // stubs).
+          if (!drawable->AppendCommands(this)) {
+            if (immediateList != nullptr && immediateCount < immediateCap) {
+              immediateList[immediateCount] = drawable;
+              immediateCount += 1;
+            }
+          }
         }
       }
     }
@@ -438,9 +475,13 @@ public:
     _backend->SubmitCommandQueue();
     _backend->ClearCommandQueue();
 
-    for (size_t i = 0; i < immediateList.size(); ++i) {
+    for (size_t i = 0; i < immediateCount; ++i) {
       immediateList[i]->Draw();
     }
+
+    // Immediate draws finished; release frame scratch (not used as token
+    // payload storage — command queue owns those pointers until submit).
+    frameArena.Clear();
   }
 
   // =========================================================================

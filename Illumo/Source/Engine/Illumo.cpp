@@ -90,6 +90,8 @@ Illumo::Init()
   IBackend* productionBackend = CreateOpenGLBackend(window.get());
   renderer = std::make_unique<Renderer>(
     window.get(), envVars.get(), camera.get(), productionBackend, true);
+  // Enroll built-in World/UI/Console styles once (shader + pipeline defaults).
+  renderer->ensureBuiltinStyles();
   assetManager = std::make_unique<AssetManager>(renderer.get());
   commandRegistry = std::make_unique<CommandRegistry>();
   commandLine = std::make_unique<CommandLine>(

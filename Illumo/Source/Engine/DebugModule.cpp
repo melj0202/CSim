@@ -221,11 +221,11 @@ DebugModule::DispatchDrawables(Scene* scene)
     return;
   }
   // Skip fully closed console (no anim) — avoids chrono/lerp + empty token
-  // work.
+  // work. Owners rebuild GameVisual primitives inside AppendCommands.
   if (ic->commandLine && ic->commandLine->wantsDraw()) {
-    scene->AddDrawable(ic->commandLine);
+    scene->AddDrawable(ic->commandLine, RenderLayerId::UI);
   }
   if (fpsLabel && isShowFpsEnabled()) {
-    scene->AddDrawable(fpsLabel);
+    scene->AddDrawable(fpsLabel, RenderLayerId::Debug);
   }
 }

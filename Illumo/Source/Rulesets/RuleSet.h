@@ -44,9 +44,9 @@ public:
   static void setWorkerOverride(int workers);
   static int getWorkerOverride();
 
-protected:
   // Pure transition: old cell + Moore neighbor count of *alive* (value==0)
-  // cells. Does not write the canvas. Override in each ruleset.
+  // cells. Does not write the canvas. Public so sparse / alternate domains can
+  // evaluate the same rules without going through dense Canvas.
   virtual unsigned char nextState(unsigned char cell,
                                   unsigned char aliveNeighbors) const
   {
@@ -54,6 +54,7 @@ protected:
     return cell;
   }
 
+protected:
   // Toroidal Moore count of cells with value 0 (project "alive" encoding).
   static int countAliveNeighbors(const unsigned char* grid,
                                  int w,

@@ -206,6 +206,7 @@ testAssetManagerEnrollment()
   testSection("AssetManager: enroll assets and track counts");
   HeadlessCanvasFixture fixture(4, 4);
   AssetManager assets(&fixture.renderer);
+  const size_t createsAfterCanvas = fixture.mock.getCreateCount();
   const std::vector<float> vertices = { 0.0f, 1.0f, 2.0f };
   const unsigned char pixels[] = { 255, 0, 0, 255 };
   ShaderPaths paths;
@@ -277,9 +278,10 @@ testAssetManagerEnrollment()
             static_cast<int>(assets.GetShaderCount()),
             4,
             "shader count tracks all enrollments");
+  // 4 mesh + 4 texture + 4 shader = 12 backend creates after canvas baseline.
   testEqSize(g,
-             fixture.mock.getCreateCount(),
-             15,
+             fixture.mock.getCreateCount() - createsAfterCanvas,
+             12,
              "renderer receives every asset enrollment after canvas setup");
 }
 

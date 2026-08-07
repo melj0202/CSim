@@ -389,6 +389,52 @@ where unmigrated types exist.\\
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-R11 --- Scene layers and built-in render styles}
+\begin{decisionbox}[title={D-R11 \quad 2026-08-07}]
+\textbf{Decision:} Introduce \textbf{Phase A} composition without multi-pass
+GPU targets:
+\begin{itemize}
+  \item \symbolref{Scene} buckets drawables into ordered layers
+        (\texttt{World}, \texttt{UI}, \texttt{Debug}) within one main pass
+        (default framebuffer, single clear).
+  \item \symbolref{Renderer} owns built-in \symbolref{RenderStyle} entries
+        (\texttt{Canvas}, \texttt{UiText}, \texttt{Console}): each holds a
+        shader table handle plus \texttt{PipelineState} defaults.
+  \item Production drawables keep content handles (mesh/texture/domain data)
+        and call \texttt{bindStyle} before content tokens.
+\end{itemize}
+Layers are not the same as \symbolref{RenderPass} (targets/load-store). A
+layer may later feed multiple passes if targets diverge; that is deferred.\\
+\textbf{Why:} World/UI/debug stacking and shared draw policy should not live
+as duplicated per-drawable shader enrollment and ad-hoc pipeline structs.\\
+\textbf{Consequences:} \pathref{RenderLayerId.h}, \pathref{RenderStyle.h},
+\pathref{RendererStyles.cpp}; modules pass a layer to
+\texttt{Scene::AddDrawable}; docs distinguish layer vs pass.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R12 --- Render primitives and GameVisual host}
+\begin{decisionbox}[title={D-R12 \quad 2026-08-07}]
+\textbf{Decision:} Introduce value-type \textbf{render primitives}
+(\symbolref{ShapePrimitive}, \symbolref{SpritePrimitive}) composed on a
+\symbolref{GameVisual} \texttt{Drawable} host.
+\begin{itemize}
+  \item Primitives are not Scene entries; the host is.
+  \item Game/editor objects \textbf{embed} \symbolref{GameVisual} (or multiple)
+        and add primitives to build complex visuals without hand-rolling
+        enroll/bind/draw tokens.
+  \item Built-in styles \texttt{Shape} and \texttt{Sprite} live on
+        \symbolref{Renderer}; GPU mesh/texture/shader objects stay in the
+        backend registries.
+  \item Coordinate space is host policy (\texttt{Pixels} or \texttt{World}).
+\end{itemize}
+\textbf{Why:} Composition over per-primitive drawables keeps Scene traffic low
+and matches D-R11 style ownership.\\
+\textbf{Consequences:} \pathref{Rendering/Primitives/}; headless tests
+\texttt{Illumo.GameVisual.*}; Canvas/UI paths unchanged.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
 \subsection*{D-F1 --- MacroDefs Windows include deferred}
 \begin{decisionbox}[title={D-F1 \quad 2026-07-30}]
 \textbf{Decision:} Do \textbf{not} split \pathref{MacroDefs.h} /

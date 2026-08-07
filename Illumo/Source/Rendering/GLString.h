@@ -1,44 +1,28 @@
-// Screen-space string drawn via stb_easy_font + token renderer.
+// Screen-space string composed as TextPrimitive on an embedded GameVisual.
 #pragma once
 
 #include "Drawable.h"
+#include "Rendering/Primitives/GameVisual.h"
 #include <cstdint>
 #include <string>
-
-struct VertexData
-{
-  float x, y, z;
-  uint8_t color[4];
-};
 
 class IRenderWindow;
 class Renderer;
 
 class GLString : public Drawable<GLString>
 {
-
 private:
   std::string content;
   int r, g, b, a;
   float size_pt;
   int x, y;
-  VertexData vertices[2000 * 4];
-  unsigned int cachedNumQuads;
-  bool geometryDirty;
-  bool gpuUploadPending;
+  bool contentDirty;
 
   Renderer* renderer;
-  unsigned long meshHandle;
-  unsigned long shaderHandle;
-  bool gpuReady;
+  GameVisual visual;
 
-  void enrollGpuResources();
-  void rebuildGeometry();
-  void markGeometryDirty()
-  {
-    geometryDirty = true;
-    gpuUploadPending = true;
-  }
+  void syncVisual();
+  void markContentDirty() { contentDirty = true; }
 
 public:
   static inline IRenderWindow* s_window = nullptr;
@@ -67,6 +51,9 @@ public:
   void setY(int newY);
   void DrawImpl();
   bool AppendCommands(Renderer* renderer) override;
+
+  GameVisual& getVisual() { return visual; }
+  const GameVisual& getVisual() const { return visual; }
 
   std::string getContent();
   int getR();

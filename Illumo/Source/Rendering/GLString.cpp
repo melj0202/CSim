@@ -1,41 +1,7 @@
 #include "GLString.h"
-#include "IMesh.h"
 #include "IRenderWindow.h"
-#include "IShaderProgram.h"
 #include "Logger.h"
-#include "PipelineState.h"
 #include "Renderer.h"
-#include "thirdparty/stb/stb_easy_font.h"
-#include <array>
-#include <vector>
-
-namespace {
-const char* kUiVertexShader = R"(
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec4 aColor;
-out vec4 ourColor;
-uniform vec2 u_resolution;
-uniform vec2 u_scale;
-uniform vec2 u_position;
-void main() {
-    vec2 pos = aPos.xy * u_scale + u_position;
-    float x = (pos.x / u_resolution.x) * 2.0 - 1.0;
-    float y = 1.0 - (pos.y / u_resolution.y) * 2.0;
-    gl_Position = vec4(x, y, aPos.z, 1.0);
-    ourColor = aColor;
-}
-)";
-
-const char* kUiFragmentShader = R"(
-#version 330 core
-in vec4 ourColor;
-out vec4 FragColor;
-void main() {
-    FragColor = ourColor;
-}
-)";
-}
 
 GLString::GLString()
   : content("")
@@ -46,14 +12,11 @@ GLString::GLString()
   , size_pt(12.0f)
   , x(0)
   , y(0)
-  , cachedNumQuads(0)
-  , geometryDirty(true)
-  , gpuUploadPending(true)
+  , contentDirty(true)
   , renderer(nullptr)
-  , meshHandle(0)
-  , shaderHandle(0)
-  , gpuReady(false)
 {
+  visual.setSpace(PrimitiveSpace::Pixels);
+  visual.setLayerHint(RenderLayerId::UI);
 }
 
 GLString::GLString(std::string content,
@@ -73,75 +36,47 @@ GLString::GLString(std::string content,
   , size_pt(static_cast<float>(size_pt))
   , x(x)
   , y(y)
-  , cachedNumQuads(0)
-  , geometryDirty(true)
-  , gpuUploadPending(true)
+  , contentDirty(true)
   , renderer(renderer)
-  , meshHandle(0)
-  , shaderHandle(0)
-  , gpuReady(false)
 {
-  enrollGpuResources();
+  visual.setSpace(PrimitiveSpace::Pixels);
+  visual.setLayerHint(RenderLayerId::UI);
+  if (renderer) {
+    visual.setRenderer(renderer);
+    visual.prepare(renderer);
+  }
+  if (s_window) {
+    visual.setWindow(s_window);
+  }
+  syncVisual();
 }
 
-GLString::~GLString()
-{
-  gpuReady = false;
-}
+GLString::~GLString() = default;
 
 void
 GLString::setRenderer(Renderer* rend)
 {
   renderer = rend;
-  if (!gpuReady && renderer) {
-    enrollGpuResources();
+  visual.setRenderer(rend);
+  if (renderer) {
+    visual.prepare(renderer);
   }
+  markContentDirty();
 }
 
 void
-GLString::enrollGpuResources()
+GLString::syncVisual()
 {
-  gpuReady = false;
-  if (!renderer) {
-    return;
+  visual.clearPrimitives();
+  if (!content.empty()) {
+    ColorRgba color{ static_cast<unsigned char>(r),
+                     static_cast<unsigned char>(g),
+                     static_cast<unsigned char>(b),
+                     static_cast<unsigned char>(a) };
+    visual.addText(
+      content, static_cast<float>(x), static_cast<float>(y), size_pt, color);
   }
-
-  const int maxQuads = 2000;
-  std::vector<unsigned int> indices(static_cast<size_t>(maxQuads * 6));
-  for (int i = 0; i < maxQuads; ++i) {
-    indices[static_cast<size_t>(i * 6 + 0)] =
-      static_cast<unsigned int>(i * 4 + 0);
-    indices[static_cast<size_t>(i * 6 + 1)] =
-      static_cast<unsigned int>(i * 4 + 1);
-    indices[static_cast<size_t>(i * 6 + 2)] =
-      static_cast<unsigned int>(i * 4 + 2);
-    indices[static_cast<size_t>(i * 6 + 3)] =
-      static_cast<unsigned int>(i * 4 + 2);
-    indices[static_cast<size_t>(i * 6 + 4)] =
-      static_cast<unsigned int>(i * 4 + 3);
-    indices[static_cast<size_t>(i * 6 + 5)] =
-      static_cast<unsigned int>(i * 4 + 0);
-  }
-
-  const size_t vboBytes =
-    static_cast<size_t>(maxQuads) * 4 * sizeof(VertexData);
-  meshHandle = renderer->allocateHandle();
-  renderer->enrollDynamicMesh(vboBytes,
-                              indices.data(),
-                              indices.size() * sizeof(unsigned int),
-                              meshHandle,
-                              MeshVertexLayout::Pos3Color4U8);
-
-  ShaderSources sources;
-  sources.vertexSource = kUiVertexShader;
-  sources.fragmentSource = kUiFragmentShader;
-  shaderHandle = renderer->allocateHandle();
-  renderer->enrollShader(sources, shaderHandle);
-
-  gpuReady = true;
-  geometryDirty = true;
-  gpuUploadPending = true;
-  Logger::LogTrace("GLString enrolled (token path)");
+  contentDirty = false;
 }
 
 void
@@ -149,7 +84,7 @@ GLString::setContent(std::string newContent)
 {
   if (content != newContent) {
     content = newContent;
-    markGeometryDirty();
+    markContentDirty();
   }
 }
 
@@ -158,7 +93,7 @@ GLString::setR(int newR)
 {
   if (r != newR) {
     r = newR;
-    markGeometryDirty();
+    markContentDirty();
   }
 }
 void
@@ -166,7 +101,7 @@ GLString::setG(int newG)
 {
   if (g != newG) {
     g = newG;
-    markGeometryDirty();
+    markContentDirty();
   }
 }
 void
@@ -174,7 +109,7 @@ GLString::setB(int newB)
 {
   if (b != newB) {
     b = newB;
-    markGeometryDirty();
+    markContentDirty();
   }
 }
 void
@@ -182,30 +117,33 @@ GLString::setA(int newA)
 {
   if (a != newA) {
     a = newA;
-    // Alpha is baked into vertex colors — rebuild when it changes (splash
-    // fade).
-    markGeometryDirty();
+    markContentDirty();
   }
 }
 void
 GLString::setSize(int newSize)
 {
-  const float s = static_cast<float>(newSize);
+  float s = static_cast<float>(newSize);
   if (size_pt != s) {
     size_pt = s;
-    // Scale is a uniform; mesh stays the same for stb output at fixed unit
-    // size. size_pt only affects u_scale, not verts — no geometry dirty.
+    markContentDirty();
   }
 }
 void
 GLString::setX(int newX)
 {
-  this->x = newX;
+  if (x != newX) {
+    x = newX;
+    markContentDirty();
+  }
 }
 void
 GLString::setY(int newY)
 {
-  this->y = newY;
+  if (y != newY) {
+    y = newY;
+    markContentDirty();
+  }
 }
 
 std::string
@@ -250,37 +188,6 @@ GLString::getY()
 }
 
 void
-GLString::rebuildGeometry()
-{
-  cachedNumQuads = 0;
-  if (content.empty()) {
-    geometryDirty = false;
-    gpuUploadPending = false;
-    return;
-  }
-
-  unsigned char color[4] = { static_cast<unsigned char>(this->r),
-                             static_cast<unsigned char>(this->g),
-                             static_cast<unsigned char>(this->b),
-                             static_cast<unsigned char>(this->a) };
-  int numQuads = stb_easy_font_print(0.0f,
-                                     0.0f,
-                                     const_cast<char*>(content.c_str()),
-                                     color,
-                                     vertices,
-                                     sizeof(vertices));
-  if (numQuads < 0) {
-    numQuads = 0;
-  }
-  if (numQuads > 2000) {
-    numQuads = 2000;
-  }
-  cachedNumQuads = static_cast<unsigned int>(numQuads);
-  geometryDirty = false;
-  gpuUploadPending = (cachedNumQuads > 0);
-}
-
-void
 GLString::DrawImpl()
 {
 }
@@ -294,49 +201,21 @@ GLString::AppendCommands(Renderer* rend)
   if (content.empty()) {
     return true;
   }
-  if (!gpuReady || !rend) {
+  if (!rend) {
     return false;
   }
   if (!s_window) {
     return true;
   }
 
-  if (geometryDirty) {
-    rebuildGeometry();
-  }
-  if (cachedNumQuads == 0) {
-    return true;
+  if (contentDirty || renderer != rend) {
+    renderer = rend;
+    syncVisual();
   }
 
-  std::array<int, 2> dims = s_window->getWindowDimensions();
-  float width = static_cast<float>(dims[0]);
-  float height = static_cast<float>(dims[1]);
-  float scale = size_pt / 12.0f;
-
-  PipelineState ps;
-  ps.depthTestEnabled = false;
-  ps.blendEnabled = true;
-  ps.blendSrc = BlendFactor::SrcAlpha;
-  ps.blendDst = BlendFactor::OneMinusSrcAlpha;
-  ps.faceCullingEnabled = false;
-  ps.primitives = Primitives::Triangles;
-  rend->pushPipelineState(ps);
-
-  rend->pushSetShader(shaderHandle);
-  rend->pushSetMesh(meshHandle);
-
-  if (gpuUploadPending) {
-    const unsigned int uploadBytes =
-      static_cast<unsigned int>(cachedNumQuads * 4 * sizeof(VertexData));
-    rend->pushUpdateBuffer(meshHandle, 0, uploadBytes, vertices);
-    gpuUploadPending = false;
-  }
-
-  rend->pushUniformVec2("u_resolution", width, height);
-  rend->pushUniformVec2(
-    "u_position", static_cast<float>(x), static_cast<float>(y));
-  rend->pushUniformVec2("u_scale", scale, scale);
-  rend->pushDrawIndexed(cachedNumQuads * 6, 0);
-
-  return true;
+  visual.setRenderer(rend);
+  visual.setWindow(s_window);
+  visual.setSpace(PrimitiveSpace::Pixels);
+  visual.setVisible(true);
+  return visual.AppendCommands(rend);
 }

@@ -11,6 +11,8 @@ public:
   static const unsigned int kCanvasStrideBytes =
     kCanvasFloatsPerVertex * sizeof(float);
   static const unsigned int kUiStrideBytes = 16; // pos3 float + color4 ubyte
+  static const unsigned int kSpriteStrideBytes =
+    24; // pos3 float + color4 ubyte + uv2 float
 
   // Static mesh (Canvas / proof). Default layout Pos3Color3Uv2.
   GLMesh(const void* vertices,
@@ -171,6 +173,29 @@ private:
                             GL_TRUE,
                             kUiStrideBytes,
                             reinterpret_cast<void*>(12));
+    } else if (_layout == MeshVertexLayout::Pos3Color4U8Uv2) {
+      // Sprites: location 0 pos3, 1 color4 ubyte, 2 uv2
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0,
+                            3,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            kSpriteStrideBytes,
+                            reinterpret_cast<void*>(0));
+      glEnableVertexAttribArray(1);
+      glVertexAttribPointer(1,
+                            4,
+                            GL_UNSIGNED_BYTE,
+                            GL_TRUE,
+                            kSpriteStrideBytes,
+                            reinterpret_cast<void*>(12));
+      glEnableVertexAttribArray(2);
+      glVertexAttribPointer(2,
+                            2,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            kSpriteStrideBytes,
+                            reinterpret_cast<void*>(16));
     } else {
       // Canvas: location 0 pos3, location 2 uv2
       glEnableVertexAttribArray(0);

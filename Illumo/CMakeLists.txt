@@ -50,12 +50,16 @@ set(ILLUMO_SHARED_SOURCES
     Source/Rulesets/WireworldRuleSet.cpp
     Source/Game/Canvas.cpp
     Source/Game/CellGrid.cpp
+    Source/Game/Cursor.cpp
+    Source/Game/SparseCellGrid.cpp
     Source/Services/CommandLine.cpp
     Source/Services/Logger.cpp
     Source/Services/EnvVars.cpp
     Source/Services/InputManager.cpp
     Source/Rendering/GLString.cpp
     Source/Rendering/Camera.cpp
+    Source/Rendering/RendererStyles.cpp
+    Source/Rendering/Primitives/GameVisual.cpp
 )
 
 set(ILLUMO_APP_SOURCES
@@ -99,6 +103,8 @@ set(ILLUMO_TEST_SOURCES
     Source/Tests/TestServices.cpp
     Source/Tests/TestCellGameModule.cpp
     Source/Tests/TestRuntimeUtilities.cpp
+    Source/Tests/TestAllocators.cpp
+    Source/Tests/TestGameVisual.cpp
 )
 
 # Settings that truly are common to production and test targets. Application-

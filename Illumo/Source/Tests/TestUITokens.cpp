@@ -268,7 +268,7 @@ testCommandLineClosedEmitsNoDraws()
   testTrue(g, !console.isOpen, "starts closed");
 
   Scene scene(&window, &camera);
-  scene.AddDrawable(&console);
+  scene.AddDrawable(&console, RenderLayerId::UI);
 
   renderer.BeginFrame();
   renderer.RenderScene(&scene, &camera);
@@ -305,7 +305,8 @@ testCommandLineOpenEmitsPanelTokens()
   CommandLine console(&env, &registry, &window, &renderer);
 
   // Enroll happened in ctor
-  testTrue(g, mock.getCreateCount() >= 2u, "console enrolled mesh+shader");
+  testTrue(
+    g, mock.getCreateCount() >= 2u, "console enrolled mesh + shared styles");
 
   // Advance open animation without recording those pumps on the mock frame
   // we care about — use a private pump that does not submit.
@@ -318,7 +319,7 @@ testCommandLineOpenEmitsPanelTokens()
 
   // Full scene frame
   Scene scene(&window, &camera);
-  scene.AddDrawable(&console);
+  scene.AddDrawable(&console, RenderLayerId::UI);
 
   mock.resetCounters();
   // Keep creates from enroll; resetCounters wipes creates — re-check only
@@ -384,7 +385,7 @@ testCommandLineInvisibleSkipsTokens()
   console.setVisible(false);
 
   Scene scene(&window, &camera);
-  scene.AddDrawable(&console);
+  scene.AddDrawable(&console, RenderLayerId::UI);
   mock.resetCounters();
 
   renderer.BeginFrame();
@@ -432,7 +433,7 @@ testCommandLineHistoryScrollTokens()
   }
 
   Scene scene(&window, &camera);
-  scene.AddDrawable(&console);
+  scene.AddDrawable(&console, RenderLayerId::UI);
   mock.resetCounters();
 
   renderer.BeginFrame();
@@ -480,7 +481,7 @@ testGLStringEmptyAndInvisible()
   GLString emptyLabel("FPS: 0", 80, 255, 120, 255, 18, 12, 12, &renderer);
   emptyLabel.setContent("");
   Scene scene(&window, &camera);
-  scene.AddDrawable(&emptyLabel);
+  scene.AddDrawable(&emptyLabel, RenderLayerId::UI);
 
   renderer.BeginFrame();
   renderer.RenderScene(&scene, &camera);
@@ -517,10 +518,11 @@ testGLStringEmitsTextTokens()
   GLString::setRenderWindow(&window);
 
   GLString label("FPS: 60", 80, 255, 120, 255, 18, 12, 12, &renderer);
-  testTrue(g, mock.getCreateCount() >= 2u, "GLString enrolled mesh+shader");
+  testTrue(
+    g, mock.getCreateCount() >= 2u, "GLString enrolled mesh + shared styles");
 
   Scene scene(&window, &camera);
-  scene.AddDrawable(&label);
+  scene.AddDrawable(&label, RenderLayerId::UI);
 
   mock.resetCounters();
   renderer.BeginFrame();
@@ -544,10 +546,10 @@ testGLStringEmitsTextTokens()
   testEqSize(
     g, mock.countNonEmptyOfType(CommandType::SetMesh), 1u, "GLString SetMesh");
 
-  // Uniforms: resolution, position, scale
+  // Shape-style text uses u_resolution (position baked into verts).
   testTrue(g,
-           mock.countNonEmptyOfType(CommandType::SetUniformVec2) >= 3u,
-           "GLString at least 3 vec2 uniforms");
+           mock.countNonEmptyOfType(CommandType::SetUniformVec2) >= 1u,
+           "GLString resolution uniform");
 
   bool foundBlend = false;
   bool foundDrawElems = false;
@@ -591,8 +593,8 @@ testGLStringAndCommandLineTogether()
   }
 
   Scene scene(&window, &camera);
-  scene.AddDrawable(&console);
-  scene.AddDrawable(&fps);
+  scene.AddDrawable(&console, RenderLayerId::UI);
+  scene.AddDrawable(&fps, RenderLayerId::Debug);
 
   mock.resetCounters();
   renderer.BeginFrame();
@@ -629,7 +631,7 @@ testGLStringCachesGeometry()
 
   GLString label("FPS: 12", 80, 255, 120, 255, 18, 12, 12, &renderer);
   Scene scene(&window, &camera);
-  scene.AddDrawable(&label);
+  scene.AddDrawable(&label, RenderLayerId::UI);
 
   renderer.BeginFrame();
   renderer.RenderScene(&scene, &camera);

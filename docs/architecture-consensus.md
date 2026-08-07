@@ -87,11 +87,24 @@ That growth is **acceptable**. Architecture should reflect **actual families of 
 
 Retain arena / stack / pool allocators as learning code and optional utilities. Do **not** force them into every service. Appropriate uses:
 
-| Allocator | Fit |
-|-----------|-----|
-| Arena | Frame scratch, transient command data, parsers, load buffers |
-| Stack | Nested temporary lifetimes (LIFO free) |
-| Pool | Many same-sized objects with stable slots |
+| Allocator | Type | Fit |
+|-----------|------|-----|
+| `ArenaAlloc` | bump + chained chunks, bulk `Clear` | Frame scratch, transient command data, parsers, load buffers |
+| `ChainedStackAlloc` | bump + LIFO `Deallocate` (destructor runs) | Nested temporary lifetimes |
+| `ChainedPoolAlloc<T>` | fixed-size free list, up to 4 chunks | Many same-sized objects with stable slots |
+| `MallocAlloc` / `IAllocator` | thin `malloc`/`free` | Baseline interchangeable heap |
+
+Headless coverage lives in `Illumo/Source/Tests/TestAllocators.cpp` (`Illumo.Alloc.*` CTest cases).
+
+Live consumers (dense Canvas remains the production domain path):
+
+| Site | Allocator | Role |
+|------|-----------|------|
+| `CommandLine` parse / complete / dispatch | `ArenaAlloc parseArena` | Token and chain staging for one command session |
+| Nested alias expansion | `ChainedStackAlloc aliasExpandStack` | LIFO expanded text frames |
+| `Renderer::RenderScene` | `ArenaAlloc frameArena` | Immediate-drawable pointer list per frame |
+| `CellGameModule::LoadCellGame` | stack `ArenaAlloc loadArena` | File cell payload scratch |
+| `SparseCellGrid` | `ChainedPoolAlloc<SparseChunk>` | 8×8 sparse chunks (optional domain) |
 
 A general-purpose allocator (mimalloc-class) is a different product; do not reinvent it.
 
@@ -273,8 +286,8 @@ CellMain
 There is **no** env-gated alternate product frame path. `Renderer::RenderProofQuad`
 remains for headless token e2e tests only.
 
-Typical combined draw order: game contributes canvas/splash; DebugModule
-contributes console/FPS in Debug builds.
+Typical combined draw order (Scene layers, one main pass): World canvas;
+UI splash + console + editor cursor; Debug FPS (Debug builds via DebugModule).
 
 ### 5.5 Rendering architecture (shipped)
 
@@ -298,16 +311,20 @@ IBackend::SubmitCommandQueue
 
 | Piece | Job |
 |-------|-----|
-| **Modules** | Choose what should appear this frame. |
-| **Scene** | Ordered list of drawable pointers for this frame only. |
-| **Drawable** | Prefer `AppendCommands(Renderer*)` → tokens. Immediate `Draw()` only if AppendCommands returns false (tests/stubs). |
-| **Renderer** | Backend-neutral: frame setup tokens; collect drawable tokens; submit; hybrid immediate list. Depends only on `IBackend*` (D-R11). |
-| **IBackend** | Create resources, queue, submit, begin/end frame. |
-| **Composition (Illumo::Init)** | Constructs the production backend via `CreateOpenGLBackend` and injects it into `Renderer` with `takeOwnership=true`. Backend choice is not hard-wired in `Renderer.h`. |
+| **Modules** | Choose what should appear this frame; place drawables into Scene layers. |
+| **Scene** | Per-frame non-owning drawable pointers in ordered layers (World → UI → Debug). One main pass. |
+| **RenderStyle** | Built-in style table on `Renderer`: shader handle + `PipelineState` defaults (Canvas, UiText, Console, Shape, Sprite). |
+| **Primitives / GameVisual** | Value-type shapes/sprites/text on a `GameVisual` host (D-R15). **Canvas**, **CommandLine**, **GLString**/SplashText, and **Cursor** embed/compose via `GameVisual`. |
+| **Drawable** | Content handles; `bindStyle` then content tokens via `AppendCommands`. Immediate `Draw()` only if AppendCommands returns false (tests/stubs). |
+| **Renderer** | Backend-neutral: owns style table; frame setup; walk layers; submit. Depends only on `IBackend*` (D-R11). |
+| **IBackend** | Create resources, queue, submit, begin/end frame. GPU programs live in backend registries. |
+| **Composition (Illumo::Init)** | Constructs the production backend via `CreateOpenGLBackend` and injects it into `Renderer` with `takeOwnership=true`; calls `ensureBuiltinStyles()`. |
 | **GLBackend / GLDevice** | Real OpenGL under `Rendering/OpenGL/`: handle registries, execute tokens, PBO texture updates, bind-state tracking, blend-func-on-enable (D-R5). |
 | **MockBackend** | Headless under `Rendering/Mock/`: record creates + command order; injected for tests. |
 
-**Enroll (rare):** `enrollMesh` / `enrollShader` / `enrollTexture` → opaque `unsigned long` table IDs.  
+**Layers vs passes (Phase A):** layers are composition buckets on the default framebuffer (single clear). They are not multi-target GPU render passes. A future pass object would own FBO/load-store when targets diverge.
+
+**Enroll (rare):** `enrollMesh` / `enrollShader` / `enrollTexture` → opaque `unsigned long` table IDs; built-in styles enroll their shaders once via `ensureBuiltinStyles`.  
 **Per frame:** `RenderCommand` tagged union (bind, uniform, update texture/buffer, draw, clear, viewport, pipeline).  
 **Not current (old engine PDF):** separate Opaque/Transparent/UI pass *objects*, MeshDrawCommand-only world draws, entity mesh tables.
 
@@ -480,9 +497,11 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-R8** | Inject `IBackend*` into Renderer always; production composition owns backend via `CreateOpenGLBackend` + ownership transfer; tests inject MockBackend. |
 | **D-R9** | String-named uniforms = debt if a second *real* GPU API appears. |
 | **D-R10** | Production drawables pure-token; hybrid `Draw()` for tests/stubs only. |
-| **D-R11** | Construct concrete backend at composition root (`Illumo::Init`); `Renderer` never includes OpenGL types. |
+| **D-R11** | Construct concrete backend at composition root (`Illumo::Init` / `CreateOpenGLBackend`); `Renderer` never includes OpenGL types. |
 | **D-R12** | CommandQueue fixed 2048 capacity; overflow drops + logs once per frame. |
 | **D-R13** | Single production frame path in `Illumo::Render`; `RenderProofQuad` is test-only. |
+| **D-R14** | Scene layers (World/UI/Debug) + Renderer-owned built-in `RenderStyle` table. One main pass; layers ≠ GPU render passes. |
+| **D-R15** | Render primitives (`Shape`/`Sprite`/`Text`) composed on a `GameVisual` host; product drawables embed/compose via GameVisual. |
 | **D-007** | Enroll resources outside the per-frame stream (frame queue = bind/draw/update). |
 | **D-WW1** | Wireworld: ruleset-aware seed + sticky head/tail/conductor brush keys. |
 | **D-C2** | `CellGrid` domain + `Canvas` presentation; rulesets depend only on `CellGrid`. |

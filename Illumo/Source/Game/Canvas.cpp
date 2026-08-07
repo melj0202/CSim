@@ -2,7 +2,6 @@
 #include "IRenderWindow.h"
 #include "Logger.h"
 #include "Rendering/Camera.h"
-#include "Rendering/IShaderProgram.h"
 #include "Rendering/Renderer.h"
 #include "Rulesets/RuleSet.h"
 #include <array>
@@ -25,10 +24,10 @@ Canvas::Canvas(int width,
   displayRgb = nullptr;
   targetRgb = nullptr;
   fadeSpeed = 8.0f;
-  meshHandle = 0;
-  shaderHandle = 0;
   displayTextureHandle = 0;
   gpuReady = false;
+  worldWidth = 0.0f;
+  worldHeight = 0.0f;
   fadeActive = false;
   textureUploadPending = true;
   fadeDirtyRect.clear();
@@ -111,14 +110,8 @@ Canvas::initCanvas(const int& width, const int& height)
   rebuildDefaultPalette();
 
   const float cellSize = 16.0f;
-  const float worldW = static_cast<float>(width) * cellSize;
-  const float worldH = static_cast<float>(height) * cellSize;
-  vertices = {
-    worldW, worldH, 0.0f, 1.0f,   0.0f, 0.0f, 1.0f, 1.0f, worldW, 0.0f, 0.0f,
-    0.0f,   1.0f,   0.0f, 1.0f,   0.0f, 0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
-    0.0f,   0.0f,   0.0f, worldH, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,   1.0f,
-  };
-  indices = { 1, 2, 3, 0, 1, 3 };
+  worldWidth = static_cast<float>(width) * cellSize;
+  worldHeight = static_cast<float>(height) * cellSize;
 
   fadeActive = false;
   fadeDirtyRect.clear();
@@ -138,23 +131,25 @@ Canvas::enrollGpuResources()
     return;
   }
 
-  meshHandle = renderer->allocateHandle();
-  renderer->enrollMesh(vertices.data(),
-                       vertices.size() * sizeof(float),
-                       indices.data(),
-                       indices.size() * sizeof(unsigned int),
-                       meshHandle);
-
-  ShaderPaths paths;
-  paths.vertexPath = "Shader/canvas_vertex.glsl";
-  paths.fragmentPath = "Shader/canvas_frag.glsl";
-  shaderHandle = renderer->allocateHandle();
-  renderer->enrollShader(paths, shaderHandle);
+  // Display is a world-space sprite on GameVisual (D-R12).
+  renderer->ensureBuiltinStyles();
+  visual.setRenderer(renderer);
+  visual.setWindow(window);
+  visual.setCamera(camera);
+  visual.setSpace(PrimitiveSpace::World);
+  visual.setLayerHint(RenderLayerId::World);
+  visual.prepare(renderer);
 
   // RGB display texture (faded colors). Domain remains lifeCanvas on CPU.
   displayTextureHandle = renderer->allocateHandle();
   renderer->enrollTexture(
     texCanvasBuffer, canvasWidth, canvasHeight, 3, displayTextureHandle);
+
+  ColorRgba white{ 255, 255, 255, 255 };
+  visual.clearPrimitives();
+  // Origin bottom-left in world space (matches historical Canvas mesh).
+  visual.addSprite(
+    displayTextureHandle, 0.0f, 0.0f, worldWidth, worldHeight, white);
 
   gpuReady = true;
   textureUploadPending = true;
@@ -515,23 +510,10 @@ Canvas::AppendCommands(Renderer* r)
     uploadDirtyRect.clear();
   }
 
-  PipelineState ps;
-  ps.depthTestEnabled = false;
-  ps.blendEnabled = false;
-  ps.faceCullingEnabled = false;
-  ps.primitives = Primitives::Triangles;
-  r->pushPipelineState(ps);
-
-  r->pushSetShader(shaderHandle);
-  r->pushSetMesh(meshHandle);
-  r->pushSetTexture(displayTextureHandle, 0);
-
-  std::array<int, 2> dims = window->getWindowDimensions();
-  float aspect = static_cast<float>(dims[0]) / static_cast<float>(dims[1]);
-  glm::mat4 mvp = camera->GetMVPMatrix(aspect);
-  r->pushUniformMat4("uMVP", &mvp[0][0]);
-  r->pushUniformInt("uDisplayTexture", 0);
-  r->pushDrawIndexed(6, 0);
-
-  return true;
+  visual.setRenderer(r);
+  visual.setWindow(window);
+  visual.setCamera(camera);
+  visual.setSpace(PrimitiveSpace::World);
+  visual.setVisible(isVisible());
+  return visual.AppendCommands(r);
 }

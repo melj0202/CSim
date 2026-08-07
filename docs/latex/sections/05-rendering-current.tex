@@ -15,27 +15,39 @@ No second real GPU API.
 \subsection{What actually draws frames today}
 \begin{enumerate}
   \item Modules call \symbolref{DispatchDrawables} and add \symbolref{DrawableBase*}
-        pointers to \symbolref{Scene} (order preserved: canvas, console, FPS, splash).
+        pointers to \symbolref{Scene} \textbf{layers}
+        (\texttt{World} canvas, \texttt{UI} console/splash, \texttt{Debug} FPS).
   \item \symbolref{Illumo::Render} drives \symbolref{Renderer}:
         \texttt{BeginFrame} $\rightarrow$ \texttt{RenderScene} $\rightarrow$
         \texttt{EndFrame} (swap).
   \item \symbolref{Renderer::RenderScene}:
-        clear + viewport tokens; each drawable \texttt{AppendCommands}; if a
-        drawable returns false, legacy immediate \texttt{Draw()} still runs
-        (hybrid fallback; production drawables return true).
+        one main pass --- clear + viewport tokens; walk layers
+        World $\rightarrow$ UI $\rightarrow$ Debug; each drawable
+        \texttt{AppendCommands}; if a drawable returns false, legacy immediate
+        \texttt{Draw()} still runs (hybrid fallback; production drawables return true).
   \item \symbolref{IBackend::SubmitCommandQueue} $\rightarrow$
         \symbolref{GLDevice::ExecuteCommandQueue} resolves handles and issues GL.
 \end{enumerate}
 
-\subsection{Drawable design (current)}
+\subsection{Layers, styles, and drawables (D-R11)}
 \begin{itemize}
+  \item \textbf{Layer} --- composition bucket / draw order on the default FB
+        (not a multi-target GPU pass).
+  \item \textbf{RenderStyle} --- Renderer-owned table: shader handle +
+        \texttt{PipelineState} defaults (\texttt{Canvas}, \texttt{UiText},
+        \texttt{Console}). GPU programs still live in backend registries.
   \item \symbolref{DrawableBase} --- type-erased list entry; virtual
         \texttt{Draw} + virtual \texttt{AppendCommands} (default returns false).
-        \textbf{No GL handle ownership} on the base (D-R6).
+        \textbf{No GL handle ownership} on the base (D-R6). Content handles
+        only; call \texttt{bindStyle} then emit content tokens.
   \item \symbolref{Drawable<Derived>} --- CRTP: \texttt{Draw} $\rightarrow$
         \texttt{DrawImpl} for the rare immediate path.
   \item Production emitters (Canvas, CommandLine, GLString/SplashText) use
         \texttt{AppendCommands} only; \texttt{DrawImpl} is empty/no-op.
+  \item \symbolref{GameVisual} (D-R12) hosts composed
+        \texttt{ShapePrimitive}/\texttt{SpritePrimitive} value lists; other
+        classes embed the host to build complex objects. Scene lists the host
+        once, not each primitive.
 \end{itemize}
 
 \subsection{Canvas presentation (RGB fade + dirty rects)}

@@ -95,10 +95,14 @@ testFadeTowardTarget()
 static void
 testEnrollCreatesGpuHandles()
 {
-  testSection("Canvas: init enrolls mesh/shader/display texture");
+  testSection("Canvas: init enrolls mesh/display + shared styles");
   HeadlessCanvasFixture f(4, 4);
-  // mesh + shader + RGB display
-  testTrue(g, f.mock.getCreateCount() >= 3u, "at least 3 create records");
+  // built-in styles + GameVisual meshes + RGB display
+  testTrue(g, f.mock.getCreateCount() >= 8u, "at least 8 create records");
+  testTrue(g, f.renderer.builtinStylesReady(), "builtin styles enrolled");
+  testTrue(g,
+           f.renderer.getStyle(RenderStyleId::Canvas) != nullptr,
+           "Canvas style ready");
 }
 
 static void

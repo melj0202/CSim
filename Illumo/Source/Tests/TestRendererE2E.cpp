@@ -163,6 +163,25 @@ public:
   void Draw() override { ++drawCount; }
 };
 
+// Records AppendCommands order for layer-bucket tests.
+class OrderProbeDrawable : public DrawableBase
+{
+public:
+  int id = 0;
+  static std::vector<int> appendOrder;
+
+  void Draw() override {}
+
+  bool AppendCommands(Renderer* renderer) override
+  {
+    (void)renderer;
+    appendOrder.push_back(id);
+    return true;
+  }
+};
+
+std::vector<int> OrderProbeDrawable::appendOrder;
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -188,6 +207,64 @@ testRendererInjectsMockBackend()
   e2eEqSize(static_cast<size_t>(mock.getCreate(0).tableID),
             static_cast<size_t>(h),
             "create tableID matches handle");
+}
+
+static void
+testRenderSceneLayerOrder()
+{
+  std::printf("\n--- e2e: Scene World/UI/Debug layer order ---\n");
+  E2ENullRenderWindow window(640, 480);
+  EnvVars env;
+  env.setVar("WinX", 640);
+  env.setVar("WinY", 480);
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  MockBackend mock;
+  mock.Initialize();
+  Renderer renderer(&window, &env, &camera, &mock, false);
+  Scene scene(&window, &camera);
+
+  OrderProbeDrawable worldA;
+  worldA.id = 1;
+  OrderProbeDrawable debugA;
+  debugA.id = 3;
+  OrderProbeDrawable uiA;
+  uiA.id = 2;
+  OrderProbeDrawable worldB;
+  worldB.id = 10;
+
+  // Intentionally add out of visual order; layer buckets must restore World →
+  // UI → Debug, preserving within-layer insertion order.
+  scene.AddDrawable(&debugA, RenderLayerId::Debug);
+  scene.AddDrawable(&uiA, RenderLayerId::UI);
+  scene.AddDrawable(&worldB, RenderLayerId::World);
+  scene.AddDrawable(&worldA, RenderLayerId::World);
+
+  e2eEqSize(scene.drawableCount(), 4u, "four drawables across layers");
+  e2eEqSize(
+    scene.drawablesIn(RenderLayerId::World).size(), 2u, "two World drawables");
+  e2eEqSize(scene.drawablesIn(RenderLayerId::UI).size(), 1u, "one UI drawable");
+  e2eEqSize(
+    scene.drawablesIn(RenderLayerId::Debug).size(), 1u, "one Debug drawable");
+
+  OrderProbeDrawable::appendOrder.clear();
+  renderer.BeginFrame();
+  renderer.RenderScene(&scene, &camera);
+  renderer.EndFrame();
+
+  e2eEqSize(OrderProbeDrawable::appendOrder.size(), 4u, "all layers visited");
+  e2eEqInt(OrderProbeDrawable::appendOrder[0], 10, "World first (insertion)");
+  e2eEqInt(OrderProbeDrawable::appendOrder[1], 1, "World second");
+  e2eEqInt(OrderProbeDrawable::appendOrder[2], 2, "UI after World");
+  e2eEqInt(OrderProbeDrawable::appendOrder[3], 3, "Debug last");
+
+  renderer.ensureBuiltinStyles();
+  e2eTrue(renderer.builtinStylesReady(), "builtin styles enroll");
+  e2eTrue(renderer.getStyle(RenderStyleId::Canvas) != nullptr, "Canvas style");
+  e2eTrue(renderer.getStyle(RenderStyleId::UiText) != nullptr, "UiText style");
+  e2eTrue(renderer.getStyle(RenderStyleId::Console) != nullptr,
+          "Console style");
+  e2eTrue(renderer.getStyle(RenderStyleId::Shape) != nullptr, "Shape style");
+  e2eTrue(renderer.getStyle(RenderStyleId::Sprite) != nullptr, "Sprite style");
 }
 
 static void
@@ -308,8 +385,9 @@ testRenderSceneCanvasTokens()
   e2eEqSize(
     mock.countNonEmptyOfType(CommandType::ClearScreen), 1u, "frame clear once");
 
-  // Canvas enroll: mesh + shader + RGB display
-  e2eTrue(mock.getCreateCount() >= 3u, "Canvas enroll create records");
+  // Built-in styles + canvas mesh + RGB display
+  e2eTrue(mock.getCreateCount() >= 8u, "Canvas + style enroll create records");
+  e2eTrue(renderer.builtinStylesReady(), "builtin styles ready after Canvas");
 
   bool foundRgbUpdate = false;
   for (size_t i = 0; i < mock.getLastNonEmptySubmittedCount(); ++i) {
@@ -440,6 +518,8 @@ registerRendererE2ETests(IllumoTestRegistry& registry)
   registry.add("Illumo.Renderer.HeaderBackendNeutral", []() {
     return runRendererE2ECase(testRendererHeaderIsBackendNeutral);
   });
+  registry.add("Illumo.Renderer.SceneLayerOrder",
+               []() { return runRendererE2ECase(testRenderSceneLayerOrder); });
   registry.add("Illumo.Renderer.SceneTokenDrawable", []() {
     return runRendererE2ECase(testRenderSceneTokenDrawable);
   });
