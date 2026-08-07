@@ -46,7 +46,7 @@ Platform entry
   -> IModule implementations      CellGameModule; DebugModule in Debug builds
   -> Game + Rulesets              CA state, editor, simulation
   -> Rendering                    Scene list, Renderer, command tokens
-  -> IBackend                     GLBackend in production, MockBackend in tests
+  -> IBackend                     CreateOpenGLBackend at Illumo::Init; MockBackend in tests
 ```
 
 Ownership and lifecycle:
@@ -111,7 +111,8 @@ Ruleset truth:
 | Domain cell storage | `Illumo/Source/Game/CellGrid.*` |
 | Grid, fade, dirty upload | `Illumo/Source/Game/Canvas.*` (extends CellGrid), `Illumo/Shader/canvas_*` |
 | CA behavior | `Illumo/Source/Rulesets/*` (operate on `CellGrid*`) |
-| Renderer and tokens | `Illumo/Source/Rendering/Renderer.h`, `RenderCommand.h`, `CommandQueue.h` |
+| Renderer and tokens | `Illumo/Source/Rendering/Renderer.h` (IBackend* only), `RenderCommand.h`, `CommandQueue.h` |
+| Production backend factory | `Illumo/Source/Rendering/OpenGL/CreateOpenGLBackend.*` (composed in `Engine/Illumo.cpp`) |
 | Real graphics execution | `Illumo/Source/Rendering/OpenGL/*` |
 | Headless backend | `Illumo/Source/Rendering/Mock/MockBackend.h` |
 | Input, console, env, logging | `Illumo/Source/Services/*` |

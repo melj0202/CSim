@@ -68,8 +68,10 @@ CommandQueue<RenderCommand>   // tagged union payloads
     v
 IBackend::SubmitCommandQueue
     |
-    +-- GLBackend + GLDevice   (handle resolve, PBO upload, bind tracker)
-    +-- MockBackend            (tests)
+    +-- GLBackend + GLDevice   (production: CreateOpenGLBackend at Illumo::Init)
+    +-- MockBackend            (tests inject; takeOwnership=false)
+
+Renderer.h depends only on IBackend*; OpenGL types stay under Rendering/OpenGL/.
 \end{lstlisting}
 
 \subsection{Drawable meaning}

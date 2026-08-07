@@ -179,15 +179,21 @@ remains future work after more production needs appear.
 
 %----------------------------------------------------------------------------
 \subsection*{D-R8 --- Inject IBackend into Renderer}
-\begin{decisionbox}[title={D-R8 \quad 2026-07-28}]
-\textbf{Decision:} \symbolref{Renderer} accepts an injected \symbolref{IBackend*}
-via constructor (\texttt{takeOwnership} flag). Production still owns a
-\symbolref{GLBackend}. Tests inject \texttt{MockBackend} with
-\texttt{takeOwnership=false}.\\
+\begin{decisionbox}[title={D-R8 \quad 2026-07-28, refined 2026-08-07}]
+\textbf{Decision:} \symbolref{Renderer} is backend-neutral: its only constructor
+takes an injected \symbolref{IBackend*} and a \texttt{takeOwnership} flag.
+Production composition (\symbolref{Illumo}\texttt{::Init}) constructs the real
+backend via \texttt{CreateOpenGLBackend} under \pathref{Rendering/OpenGL/} and
+injects it with \texttt{takeOwnership=true}. Tests inject \texttt{MockBackend}
+with \texttt{takeOwnership=false}. \texttt{Renderer.h} must not include or
+construct concrete OpenGL types.\\
 \textbf{Why:} End-to-end drawable $\rightarrow$ enroll/token $\rightarrow$ submit
-without a GPU; keeps production construction unchanged.\\
-\textbf{Consequences:} \texttt{TestRendererE2E} covers \texttt{RenderScene},
-Canvas tokens, hybrid immediate drawables, and \texttt{RenderProofQuad}.
+without a GPU; second platforms can supply a different \symbolref{IBackend}
+without touching the generic frame-submit surface.\\
+\textbf{Consequences:} \texttt{TestRendererE2E} covers inject, owned-backend
+composition style, header neutrality, \texttt{RenderScene}, Canvas tokens,
+hybrid immediate drawables, and \texttt{RenderProofQuad}. OpenGL sources stay
+under \pathref{Rendering/OpenGL/}; Mock under \pathref{Rendering/Mock/}.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------

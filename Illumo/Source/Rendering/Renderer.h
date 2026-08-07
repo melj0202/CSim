@@ -65,8 +65,7 @@ private:
   }
 
 public:
-  // Composition-root path: backend is constructed outside Renderer (e.g.
-  // GLBackend in Illumo::Init) and ownership is transferred here (D-R11).
+  // Composition-root path: ownership transferred via unique_ptr (D-R11).
   Renderer(IRenderWindow* window,
            EnvVars* envVars,
            Camera* cam,
@@ -81,9 +80,8 @@ public:
     (void)envVars;
   }
 
-  // Test / inject: use an existing IBackend (e.g. MockBackend).
-  // takeOwnership=false keeps the caller's backend alive (typical for stack
-  // MockBackend).
+  // Backend-neutral inject: production uses CreateOpenGLBackend +
+  // takeOwnership=true; tests inject stack MockBackend with takeOwnership=false.
   Renderer(IRenderWindow* window,
            EnvVars* envVars,
            Camera* cam,

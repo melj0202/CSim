@@ -5,7 +5,7 @@
 #include "GLString.h"
 #include "IModule.h"
 #include "InputManager.h"
-#include "OpenGL/GLBackend.h"
+#include "Rendering/OpenGL/CreateOpenGLBackend.h"
 #include <AssetManager.h>
 #include <Camera.h>
 #include <IBackend.h>
@@ -85,11 +85,11 @@ Illumo::Init()
   }
   window = std::make_unique<RenderWindow>(1280, 720, "Illumo", envVars.get());
   camera = std::make_unique<Camera>(glm::vec2(0.0f, 0.0f), 1.0f, envVars.get());
-  // D-R11: construct the concrete backend at the composition root and inject
-  // it. Renderer only depends on IBackend — never on GLBackend.
-  std::unique_ptr<IBackend> backend = std::make_unique<GLBackend>(window.get());
+  // D-R11: construct the concrete backend at composition root via factory.
+  // Renderer depends only on IBackend — never on GLBackend types.
+  IBackend* productionBackend = CreateOpenGLBackend(window.get());
   renderer = std::make_unique<Renderer>(
-    window.get(), envVars.get(), camera.get(), std::move(backend));
+    window.get(), envVars.get(), camera.get(), productionBackend, true);
   assetManager = std::make_unique<AssetManager>(renderer.get());
   commandRegistry = std::make_unique<CommandRegistry>();
   commandLine = std::make_unique<CommandLine>(
