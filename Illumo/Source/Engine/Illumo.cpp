@@ -5,6 +5,7 @@
 #include "GLString.h"
 #include "IModule.h"
 #include "InputManager.h"
+#include "Rendering/OpenGL/CreateOpenGLBackend.h"
 #include <AssetManager.h>
 #include <Camera.h>
 #include <RenderWindow.h>
@@ -90,8 +91,11 @@ Illumo::Init()
 
   window = std::make_unique<RenderWindow>(1280, 720, "Illumo", envVars.get());
   camera = std::make_unique<Camera>(glm::vec2(0.0f, 0.0f), 1.0f, envVars.get());
-  renderer =
-    std::make_unique<Renderer>(window.get(), envVars.get(), camera.get());
+  // OpenGL backend is chosen and constructed here (composition), not inside
+  // the backend-neutral Renderer header surface.
+  IBackend* productionBackend = CreateOpenGLBackend(window.get());
+  renderer = std::make_unique<Renderer>(
+    window.get(), envVars.get(), camera.get(), productionBackend, true);
   assetManager = std::make_unique<AssetManager>(renderer.get());
   commandRegistry = std::make_unique<CommandRegistry>();
   commandLine = std::make_unique<CommandLine>(

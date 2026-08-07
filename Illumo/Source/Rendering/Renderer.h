@@ -4,8 +4,6 @@
 #include "IBackend.h"
 #include "IRenderWindow.h"
 #include "IShaderProgram.h"
-#include "OpenGL/GLBackend.h"
-#include "OpenGL/GLShaderProgram.h"
 #include "RenderCommand.h"
 #include "RenderPass.h"
 #include "Scene.h"
@@ -64,24 +62,10 @@ private:
   }
 
 public:
-  // Production: owns a GLBackend.
-  Renderer(IRenderWindow* window, EnvVars* envVars, Camera* cam)
-    : _backend(nullptr)
-    , _ownsBackend(true)
-    , _window(window)
-    , _camera(cam)
-    , envVars(envVars)
-    , currentScene(nullptr)
-  {
-    (void)envVars;
-    // Future: select backend from GraphicsAPI env; GL is the only real backend
-    // today.
-    _backend = new GLBackend(_window);
-  }
-
-  // Test / inject: use an existing IBackend (e.g. MockBackend).
-  // takeOwnership=false keeps the caller's backend alive (typical for stack
-  // MockBackend).
+  // Backend-neutral: operates only on IBackend*. Production composition
+  // constructs the concrete backend (e.g. GLBackend via CreateOpenGLBackend)
+  // and injects it with takeOwnership=true. Tests inject MockBackend with
+  // takeOwnership=false so the caller's stack backend stays alive.
   Renderer(IRenderWindow* window,
            EnvVars* envVars,
            Camera* cam,

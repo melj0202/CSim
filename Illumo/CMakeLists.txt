@@ -12,7 +12,29 @@ find_package(OpenGL REQUIRED)
 add_subdirectory("thirdparty/glfw-3.4" SYSTEM)
 add_subdirectory("thirdparty/glm" SYSTEM)
 add_subdirectory("thirdparty/freetype-2.13.3" SYSTEM)
-add_subdirectory("thirdparty/glew-2.1.0/build/cmake" SYSTEM)
+
+# Static GLEW from vendored sources. Prefer this over the upstream
+# thirdparty/glew-2.1.0/build/cmake tree, which is not always present in the
+# sparse/vendor checkout used by this repository.
+if(NOT TARGET glew_s)
+    add_library(glew_s STATIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glew-2.1.0/src/glew.c"
+    )
+    target_include_directories(glew_s PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glew-2.1.0/include"
+    )
+    target_compile_definitions(glew_s PUBLIC GLEW_STATIC)
+    target_compile_definitions(glew_s PRIVATE GLEW_NO_GLU)
+    if(MSVC)
+        target_compile_definitions(glew_s PRIVATE VC_EXTRALEAN)
+        target_compile_options(glew_s PRIVATE /GS-)
+    endif()
+    target_link_libraries(glew_s PUBLIC OpenGL::GL)
+    set_target_properties(glew_s PROPERTIES
+        OUTPUT_NAME "libglew32"
+        FOLDER "thirdparty"
+    )
+endif()
 
 # Sources compiled by both the application and the headless test executable.
 # Keep this as a source list instead of a static library: Illumo enables Tracy in
@@ -45,6 +67,7 @@ set(ILLUMO_APP_SOURCES
     Source/App/CellMain.cpp
     Source/Engine/Illumo.cpp
     Source/Rendering/RenderWindow.cpp
+    Source/Rendering/OpenGL/CreateOpenGLBackend.cpp
     Source/Rendering/OpenGL/GLBackend.cpp
     Source/Rendering/OpenGL/GLBuffer.cpp
     Source/Rendering/OpenGL/GLDevice.cpp

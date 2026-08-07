@@ -1,7 +1,7 @@
 # Illumo — Architecture consensus (unified)
 
 **Status:** Single living document — **authoritative for later sessions**  
-**Last updated:** 2026-08-04
+**Last updated:** 2026-08-07
 
 This file **merges and supersedes** scattered design memory into one coherent story. Read this first; treat external PDFs and old agenda notes as **history** (§2).
 
@@ -160,7 +160,7 @@ Agreement across reviews:
 - Layered modular monolith is **appropriate**  
 - App owns modules; token path + MockBackend are real strengths  
 - Scene-as-list is correct; dead graph/EntityTable should stay gone  
-- Main risks: incomplete module Start handling, Canvas dual role, partial backend neutrality, and command-queue overflow
+- Main risks: incomplete module Start handling, Canvas dual role, and command-queue overflow
 - Highest value: product correctness + one canonical Canvas model in docs — **not** ECS or multi-pass  
 
 ---
@@ -295,10 +295,11 @@ IBackend::SubmitCommandQueue
 | **Modules** | Choose what should appear this frame. |
 | **Scene** | Ordered list of drawable pointers for this frame only. |
 | **Drawable** | Prefer `AppendCommands(Renderer*)` → tokens. Immediate `Draw()` only if AppendCommands returns false (tests/stubs). |
-| **Renderer** | Frame setup tokens; collect drawable tokens; submit; then hybrid immediate list. |
+| **Renderer** | Backend-neutral: frame setup tokens; collect drawable tokens; submit; hybrid immediate list. Depends only on `IBackend*`. |
 | **IBackend** | Create resources, queue, submit, begin/end frame. |
-| **GLBackend / GLDevice** | Real OpenGL: handle registries, execute tokens, PBO texture updates, bind-state tracking, blend-func-on-enable (D-R5). |
-| **MockBackend** | Headless: record creates + command order. |
+| **Composition (Illumo::Init)** | Constructs the production backend via `CreateOpenGLBackend` and injects it into `Renderer` with `takeOwnership=true`. Backend choice is not hard-wired in `Renderer.h`. |
+| **GLBackend / GLDevice** | Real OpenGL under `Rendering/OpenGL/`: handle registries, execute tokens, PBO texture updates, bind-state tracking, blend-func-on-enable (D-R5). |
+| **MockBackend** | Headless under `Rendering/Mock/`: record creates + command order; injected for tests. |
 
 **Enroll (rare):** `enrollMesh` / `enrollShader` / `enrollTexture` → opaque `unsigned long` table IDs.  
 **Per frame:** `RenderCommand` tagged union (bind, uniform, update texture/buffer, draw, clear, viewport, pipeline).  
@@ -465,7 +466,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-R5** | On blend enable, always set `glBlendFunc` (console panel transparency). |
 | **D-R6** | Archive dead render queue / SceneObject graph helpers; Scene + Renderer is the path. |
 | **D-R7** | MockBackend + headless tests; no Vulkan/Metal yet. |
-| **D-R8** | Inject `IBackend*` into Renderer for tests; production owns GLBackend. |
+| **D-R8** | Inject `IBackend*` into Renderer always; production composition owns GLBackend (factory); tests inject MockBackend. |
 | **D-R9** | String-named uniforms = debt if a second *real* GPU API appears. |
 | **D-R10** | Production drawables pure-token; hybrid `Draw()` for tests/stubs only. |
 | **D-007** | Enroll resources outside the per-frame stream (frame queue = bind/draw/update). |
@@ -535,7 +536,6 @@ From `gpt_illumo_arch_assessment.pdf`:
 - Command queue **2048** capacity with **silent drop**; raw pointer payloads must stay alive until submit  
 - CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; empty package CMake files remain
 - Docs historically described **R8+palette** while code used **RGB fade** — this consensus file + §5.6 is the resolution; keep LaTeX chapters aligned  
-- Renderer.h still includes GL types for production construction  
 - Hybrid token + immediate Draw path remains for stubs  
 - Native file dialogs and live OpenGL/fullscreen behavior still require manual
   smoke tests; headless MockBackend coverage does not prove them.
@@ -558,7 +558,7 @@ From `gpt_illumo_arch_assessment.pdf`:
 | Hybrid Draw path | Tests/stubs only; production is tokens |
 | Command queue silent overflow | Prefer log/assert if near cap |
 | CMake duplication | Resolved 2026-08-02 with shared source lists/settings; no forced package libraries |
-| Renderer.h includes GL types | Factory / pimpl later |
+| Renderer/backend isolation | **Resolved:** `Renderer` is `IBackend*`-only; production uses `CreateOpenGLBackend` at composition (`Illumo::Init`); Mock inject for tests |
 | Full-grid sim + float fade memory | Scale wall for large canvases |
 | MacroDefs + Windows.h | D-F1 deferred |
 | IllumoContext growth | Frozen; third module = explicit deps |
@@ -587,7 +587,7 @@ From `gpt_illumo_arch_assessment.pdf`:
 6. Canvas split (`LifeGrid` / `CanvasView`).
 7. Chunked / infinite canvas (agenda 16×16 map).
 8. Threaded or SYCL simulation backend behind a narrow interface (serial benchmark first).
-9. Backend factory + non-string uniforms.
+9. Non-string uniforms (backend factory for OpenGL already at composition).
 10. Data-driven life-like rule family (JSON birth/survive).
 11. Focused controllers (camera / console) if input coupling becomes painful.
 

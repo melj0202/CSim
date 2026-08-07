@@ -12,6 +12,10 @@
 #include "Tests/TestRegistry.h"
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <string>
 #include <vector>
 
 // Test helpers shared with TestMockBackend.cpp (same TU linkage: each file is
@@ -351,6 +355,71 @@ testRenderProofQuadOnMock()
   e2eTrue(mock.getCreateCount() >= 3u, "proof enrolls mesh/shader/texture");
 }
 
+// Production composition model without OpenGL: heap IBackend + takeOwnership.
+// Mirrors Illumo::Init (CreateOpenGLBackend + inject true) using MockBackend.
+static void
+testRendererOwnsInjectedBackend()
+{
+  std::printf(
+    "\n--- e2e: Renderer owns injected IBackend (composition style) ---\n");
+  E2ENullRenderWindow window(640, 480);
+  EnvVars env;
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  MockBackend* mock = new MockBackend();
+  mock->Initialize();
+
+  Renderer* renderer = new Renderer(&window, &env, &camera, mock, true);
+  e2eTrue(renderer->getBackend() == mock, "getBackend is owned mock");
+  e2eTrue(renderer->ownsBackend(), "ownsBackend true for composition inject");
+
+  unsigned long handle = renderer->allocateHandle();
+  renderer->enrollMesh(nullptr, 32, nullptr, 0, handle);
+  e2eEqSize(mock->getCreateCount(), 1u, "enroll hits owned mock CreateMesh");
+
+  renderer->BeginFrame();
+  renderer->pushClearScreen(0.0f, 0.0f, 0.0f, 1.0f);
+  renderer->SubmitOnly();
+  e2eEqSize(mock->countSubmittedOfType(CommandType::ClearScreen),
+            1u,
+            "submit through owned backend");
+
+  // Renderer dtor must Shutdown + delete the owned backend (no OpenGL).
+  delete renderer;
+}
+
+// Structural gate: backend-neutral Renderer.h must not include concrete GL
+// types. Path is derived from this test TU so CTest isolation working dirs
+// still work.
+static void
+testRendererHeaderIsBackendNeutral()
+{
+  std::printf("\n--- e2e: Renderer.h backend-neutral include surface ---\n");
+  const std::filesystem::path thisFile(__FILE__);
+  const std::filesystem::path rendererHeader =
+    thisFile.parent_path().parent_path() / "Rendering" / "Renderer.h";
+
+  std::ifstream input(rendererHeader);
+  e2eTrue(input.is_open(), "located shipped Renderer.h via test source path");
+  if (!input.is_open()) {
+    std::printf("  missing: %s\n", rendererHeader.string().c_str());
+    return;
+  }
+
+  std::string contents;
+  contents.assign(std::istreambuf_iterator<char>(input),
+                  std::istreambuf_iterator<char>());
+  std::printf("  read: %s\n", rendererHeader.string().c_str());
+
+  e2eTrue(contents.find("OpenGL/GLBackend") == std::string::npos,
+          "Renderer.h does not include OpenGL/GLBackend");
+  e2eTrue(contents.find("OpenGL/GLShaderProgram") == std::string::npos,
+          "Renderer.h does not include OpenGL/GLShaderProgram");
+  e2eTrue(contents.find("new GLBackend") == std::string::npos,
+          "Renderer.h does not construct GLBackend");
+  e2eTrue(contents.find("IBackend") != std::string::npos,
+          "Renderer.h still depends on IBackend");
+}
+
 static int
 runRendererE2ECase(void (*testFunction)())
 {
@@ -364,6 +433,12 @@ registerRendererE2ETests(IllumoTestRegistry& registry)
 {
   registry.add("Illumo.Renderer.InjectsMockBackend", []() {
     return runRendererE2ECase(testRendererInjectsMockBackend);
+  });
+  registry.add("Illumo.Renderer.OwnsInjectedBackend", []() {
+    return runRendererE2ECase(testRendererOwnsInjectedBackend);
+  });
+  registry.add("Illumo.Renderer.HeaderBackendNeutral", []() {
+    return runRendererE2ECase(testRendererHeaderIsBackendNeutral);
   });
   registry.add("Illumo.Renderer.SceneTokenDrawable", []() {
     return runRendererE2ECase(testRenderSceneTokenDrawable);
