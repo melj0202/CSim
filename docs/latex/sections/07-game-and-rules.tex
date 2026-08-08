@@ -15,48 +15,53 @@ class-per-state hierarchy (archived under \pathref{archive/old-states/}).
 Save/load, pause/run/step, canvas, ruleset, and camera behavior is exposed as
 registered console commands rather than artificial frame states.
 Simulation rate: env \texttt{tps} $\times$ \texttt{speedFactor}, with
-accumulator + step cap.
+accumulator + step cap. Painting and simulation operate on signed world
+coordinates; there is no finite or toroidal production canvas.
 \end{statusbox}
 
 \subsection{Domain console commands and persistence}
 \symbolref{CellGameModule} registers domain commands through
-\symbolref{CommandRegistry}; Services remains free of Game types. Save writes a
-bounded ruleset tag, dimensions, and dense cell bytes. Load validates the full
-payload before mutation, activates the saved ruleset, copies the overlapping
-region row-by-row, marks the Canvas dirty, rebuilds palette targets, and snaps
-the display to the loaded state. Native picker variants route through the
-platform \symbolref{SaveLoad} API. See D-CLI1 and
+\symbolref{CommandRegistry}; Services remains free of Game types. Save always
+writes version 2 sparse files with magic/version, ruleset, camera metadata, and
+sorted 16$\times$16 chunk records. Load validates temporary state before
+mutation, accepts both version 2 and the prior dense format, imports legacy
+cells around the origin, restores ruleset/camera metadata, and snaps the
+bounded view. Native picker variants route through the platform
+\symbolref{SaveLoad} API. See D-CLI1 and
 \cref{sec:session-2026-08-04}.
 
 \subsection{CellContext}
-Constructs \symbolref{Canvas} from env vars (\texttt{CanvasX}, \texttt{CanvasY})
-and selects a \symbolref{RuleSet} from a mode string
+Constructs \symbolref{SparseCellGrid} and bounded \symbolref{CanvasView} from
+env vars (\texttt{CanvasX}, \texttt{CanvasY}) and selects a \symbolref{RuleSet}
+from a mode string
 (\texttt{GAME\_OF\_LIFE}, \texttt{BRIANS\_BRAIN}, \texttt{SEEDS}, \ldots).
 Mode changes from console/env call \texttt{setRuleSet} and
-\texttt{Canvas::rebuildPalette}.
+\texttt{CanvasView::rebuildPalette}.
 
-\subsection{Canvas (domain + view + GPU --- D-C2)}
+\subsection{SparseCellGrid (domain) and CanvasView (view --- D-C3)}
 \begin{itemize}
-  \item CPU grid: \symbolref{CellGrid} owns \symbolref{lifeCanvas} (one byte
-        per cell), dense rectangle (not chunked); \symbolref{Canvas} extends
-        it for presentation.
-  \item View: CPU palette $\rightarrow$ \texttt{targetRgb}; \texttt{displayRgb}
-        eases toward targets; \texttt{texCanvasBuffer} RGB bytes for upload.
-  \item Token view: enrolled mesh/shader/display texture; dirty-rect
-        \texttt{UpdateTexture} (PBO path).
-  \item D-C2 refines D-C1's intentional monolith: \symbolref{Canvas} remains
-        the presentation/GPU adapter, and a further view split waits for a real
-        scale or product need.
+  \item Domain: signed 64-bit cell addresses map through floor division into
+        non-background 16$\times$16 byte chunks. Negative coordinates and all
+        multi-state values are preserved; no fixed chunk pool cap exists.
+  \item Simulation: active chunks plus their neighbors are read through a
+        temporary 18$\times$18 halo and stepped serially with stateless
+        \texttt{RuleSet::nextState}; empty space is implicit and non-toroidal.
+  \item View: \symbolref{CanvasView} samples the camera-visible region into a
+        bounded RGB staging buffer, fades palette colors, and snaps newly
+        revealed cells.
+  \item GPU: one reusable RGB display texture and one screen-space
+        \symbolref{GameVisual} quad; at most one dirty texture update per view
+        submission.
+  \item Dense \symbolref{CellGrid}/\symbolref{Canvas} remains only for
+        compatibility tests and legacy import, not as a second runtime path.
 \end{itemize}
 
 \subsection{Scale walls (simulation / memory)}
 \begin{statusbox}
-\texttt{calcGeneration} always walks the \textbf{full} grid (rect args ignored).
-Neighbor counts are scalar Moore/toroidal. Change detection does a second full
-pass for a dirty AABB during eval, then buffer-swap promote (D-P5; still $O(WH)$ scan).
-Per cell: 1\,B life + $\sim$24\,B float RGB + 3\,B display tex.
-Default $80\times 60$ is fine; large/infinite canvases need a redesign (chunking,
-bitboards, or dropping dual float fade).
+Simulation cost follows allocated chunks and their eight-neighbor halo set,
+not a fixed world rectangle. Presentation cost follows the bounded
+\texttt{CanvasX}$\times$\texttt{CanvasY} view. GPU resources do not scale with
+chunk count.
 \end{statusbox}
 
 \subsection{Rulesets}
@@ -71,16 +76,15 @@ class RuleSet {
                                   unsigned char aliveNeighbors) const;
   virtual void evalCell(const unsigned char& target,
                         unsigned char dest[3]) const; // palette colors
-  void calcGeneration(...); // double-buffer: nextGen then memcpy
 };
 \end{lstlisting}
 
-\textbf{Generation (perf):}
+\textbf{Generation:}
 \begin{enumerate}
-  \item Count-alive neighbors from raw \texttt{lifeCanvas} (toroidal, fast wrap).
-  \item Write \texttt{nextState} into a scratch \texttt{nextGen} buffer.
-  \item If any cell changed: \texttt{memcpy} back, mark sparse dirty AABB for
-        visual/GPU upload. Still life: no dirty.
+  \item Collect every allocated chunk and its eight neighboring chunk
+        addresses.
+  \item Fill a temporary 18$\times$18 read-only halo for each target chunk.
+  \item Evaluate the 16$\times$16 core and install only non-background chunks.
 \end{enumerate}
 
 \begin{decisionbox}[title={Keep rules pure}]

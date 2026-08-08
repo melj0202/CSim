@@ -60,13 +60,13 @@ OpenGL-context recreation requires complete resource re-enrollment.
 
 The registered file commands now call real game behavior:
 \begin{itemize}
-  \item Save writes a bounded, zero-filled ruleset tag, dimensions, and dense
-        cell bytes and reports stream failure.
-  \item Load validates the header, ruleset, dimensions, allocation limit, and
-        complete payload before mutating the current canvas.
-  \item A valid load activates its ruleset, clears the canvas, copies the
-        overlap row-by-row, marks cells dirty, rebuilds targets, and snaps the
-        visible display to the loaded state.
+  \item Save writes version 2 sparse metadata and deterministic chunk records,
+        and reports stream failure.
+  \item Load validates temporary sparse state before mutation, accepts both
+        version 2 and the prior dense format, and rejects malformed payloads.
+  \item A valid load activates its ruleset, replaces the sparse grid, restores
+        saved camera metadata, rebuilds palette targets, and snaps the bounded
+        display to the loaded state.
   \item Native picker variants use the platform \symbolref{SaveLoad} API.
 \end{itemize}
 Native dialogs still require a manual Windows smoke test.

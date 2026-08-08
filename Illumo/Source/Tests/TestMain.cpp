@@ -34,6 +34,8 @@ void
 registerAllocatorTests(IllumoTestRegistry& registry);
 void
 registerGameVisualTests(IllumoTestRegistry& registry);
+void
+registerCanvasInfTests(IllumoTestRegistry& registry);
 
 static IllumoTestRegistry
 createRegistry()
@@ -52,6 +54,7 @@ createRegistry()
   registerRuntimeUtilityTests(registry);
   registerAllocatorTests(registry);
   registerGameVisualTests(registry);
+  registerCanvasInfTests(registry);
   return registry;
 }
 

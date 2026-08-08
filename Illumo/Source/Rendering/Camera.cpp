@@ -15,19 +15,6 @@ Camera::Camera(const glm::vec2& initialPos,
   , projectionType(ProjectonType::ORTOGRAPHIC)
   , smoothingSpeed(15.0f) // default interpolation speed
 {
-  if (initialPos == glm::vec2(0.0f, 0.0f)) {
-    long canvasX = 80;
-    long canvasY = 60;
-
-    if (envVars) {
-      canvasX = envVars->getVar("CanvasX").valueAsLong;
-      canvasY = envVars->getVar("CanvasY").valueAsLong;
-    }
-    float cellSize = 16.0f;
-    position =
-      glm::vec2((canvasX * cellSize) / 2.0f, (canvasY * cellSize) / 2.0f);
-    targetPosition = position;
-  }
 }
 
 void
@@ -39,7 +26,7 @@ Camera::Update(float deltaTime)
   // Prevent large deltas from blowing up the interpolation
   float t = std::min(1.0f, deltaTime * smoothingSpeed);
 
-  position = glm::mix(position, targetPosition, t);
+  position += (targetPosition - position) * static_cast<double>(t);
   zoom = glm::mix(zoom, targetZoom, t);
   rotation = glm::mix(rotation, targetRotation, t);
 }
@@ -47,9 +34,15 @@ Camera::Update(float deltaTime)
 void
 Camera::Pan(const glm::vec2& offset)
 {
+  Pan(glm::dvec2(static_cast<double>(offset.x), static_cast<double>(offset.y)));
+}
+
+void
+Camera::Pan(const glm::dvec2& offset)
+{
   // Panning offset in pixels is proportional to zoom level (more zoom = slower
   // panning)
-  targetPosition += offset / targetZoom;
+  targetPosition += offset / static_cast<double>(targetZoom);
 }
 
 void
@@ -61,28 +54,30 @@ Camera::Rotate(float angle)
 void
 Camera::ZoomAt(float zoomFactor, const glm::vec2& zoomCenter)
 {
+  ZoomAt(zoomFactor,
+         glm::dvec2(static_cast<double>(zoomCenter.x),
+                    static_cast<double>(zoomCenter.y)));
+}
+
+void
+Camera::ZoomAt(float zoomFactor, const glm::dvec2& zoomCenter)
+{
   float oldTargetZoom = targetZoom;
   targetZoom = std::clamp(targetZoom * zoomFactor, 0.1f, 100.0f);
 
   // Zoom center is in pixels (screen space)
   targetPosition =
-    zoomCenter - (zoomCenter - targetPosition) * (oldTargetZoom / targetZoom);
+    zoomCenter - (zoomCenter - targetPosition) *
+                   static_cast<double>(oldTargetZoom / targetZoom);
 }
 
 void
 Camera::Reset()
 {
-  long canvasX = 80;
-  long canvasY = 60;
-
-  if (envVars) {
-    canvasX = envVars->getVar("CanvasX").valueAsLong;
-    canvasY = envVars->getVar("CanvasY").valueAsLong;
-  }
-  float cellSize = 16.0f;
-  targetPosition =
-    glm::vec2((canvasX * cellSize) / 2.0f, (canvasY * cellSize) / 2.0f);
+  targetPosition = glm::dvec2(0.0, 0.0);
+  position = targetPosition;
   targetZoom = 1.0f;
+  zoom = targetZoom;
 }
 
 std::array<int, 2>
@@ -118,7 +113,10 @@ Camera::GetViewMatrix() const
   // 2. Scale
   view = glm::scale(view, glm::vec3(zoom, zoom, 1.0f));
   // 3. Move relative to camera target position
-  view = glm::translate(view, glm::vec3(-position, 0.0f));
+  view = glm::translate(view,
+                        glm::vec3(static_cast<float>(-position.x),
+                                  static_cast<float>(-position.y),
+                                  0.0f));
   // 4. Rotate
   return view;
 }
@@ -153,22 +151,30 @@ Camera::GetMVPMatrix(float aspectRatio) const
 glm::vec2
 Camera::ScreenToWorld(const glm::vec2& screenPos) const
 {
+  const glm::dvec2 world = ScreenToWorldPrecise(glm::dvec2(
+    static_cast<double>(screenPos.x), static_cast<double>(screenPos.y)));
+  return glm::vec2(static_cast<float>(world.x), static_cast<float>(world.y));
+}
+
+glm::dvec2
+Camera::ScreenToWorldPrecise(const glm::dvec2& screenPos) const
+{
   std::array<int, 2> winDims = GetWinDims();
-  float halfW = winDims[0] / 2.0f;
-  float halfH = winDims[1] / 2.0f;
+  const double halfW = static_cast<double>(winDims[0]) / 2.0;
+  const double halfH = static_cast<double>(winDims[1]) / 2.0;
 
-  float dx = screenPos.x - halfW;
-  float dy = halfH - screenPos.y;
+  const double dx = screenPos.x - halfW;
+  const double dy = halfH - screenPos.y;
 
-  float rad = glm::radians(rotation);
-  float cosRad = std::cos(rad);
-  float sinRad = std::sin(rad);
+  const double rad = glm::radians(static_cast<double>(rotation));
+  const double cosRad = std::cos(rad);
+  const double sinRad = std::sin(rad);
 
-  float rotatedX = dx * cosRad - dy * sinRad;
-  float rotatedY = dx * sinRad + dy * cosRad;
+  const double rotatedX = dx * cosRad - dy * sinRad;
+  const double rotatedY = dx * sinRad + dy * cosRad;
 
-  float worldX = rotatedX / zoom + position.x;
-  float worldY = rotatedY / zoom + position.y;
+  const double worldX = rotatedX / static_cast<double>(zoom) + position.x;
+  const double worldY = rotatedY / static_cast<double>(zoom) + position.y;
 
-  return glm::vec2(worldX, worldY);
+  return glm::dvec2(worldX, worldY);
 }

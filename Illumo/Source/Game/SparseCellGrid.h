@@ -1,36 +1,65 @@
 #pragma once
 
-#include "Services/PoolAlloc.h"
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 class RuleSet;
 
-// Integer cell coordinate in infinite (sparse) space.
+// Signed world-space cell coordinate.
 struct CellAddress
 {
-  int x = 0;
-  int y = 0;
+  std::int64_t x = 0;
+  std::int64_t y = 0;
 
   bool operator==(const CellAddress& other) const
   {
     return x == other.x && y == other.y;
   }
-
-  bool operator!=(const CellAddress& other) const { return !(*this == other); }
 };
 
-// Sparse CA domain backed by fixed-size chunks from ChainedPoolAlloc.
-// Background cells are not stored; non-background cells live in 8x8 chunks.
-// Does not replace dense Canvas — optional path for large / sparse worlds.
+struct ChunkAddress
+{
+  std::int64_t x = 0;
+  std::int64_t y = 0;
+
+  bool operator==(const ChunkAddress& other) const
+  {
+    return x == other.x && y == other.y;
+  }
+};
+
+struct SparseChunkRecord
+{
+  std::int64_t chunkX = 0;
+  std::int64_t chunkY = 0;
+  std::array<unsigned char, 16 * 16> cells{};
+};
+
+struct CellAddressHash
+{
+  std::size_t operator()(const CellAddress& address) const noexcept;
+};
+
+struct ChunkAddressHash
+{
+  std::size_t operator()(const ChunkAddress& address) const noexcept;
+};
+
+// Sparse cellular-automata domain. Only chunks containing a non-background
+// state are stored. Each generation reads authoritative chunks through an
+// 18x18 temporary halo and writes a new set of 16x16 authoritative chunks.
 class SparseCellGrid
 {
 public:
   static constexpr unsigned char BackgroundState = 1;
   static constexpr unsigned char CountedNeighborState = 0;
-  static constexpr int kChunkDim = 8;
-  static constexpr size_t kBlocksPerPoolChunk = 16;
+  static constexpr int kChunkDim = 16;
+  static constexpr int kHaloDim = 18;
+  static constexpr std::size_t kChunkCellCount = 16u * 16u;
 
   SparseCellGrid();
   ~SparseCellGrid() = default;
@@ -39,36 +68,37 @@ public:
   SparseCellGrid& operator=(const SparseCellGrid&) = delete;
 
   unsigned char getCell(const CellAddress& address) const;
-  // Returns false if a new chunk was required and the pool was exhausted.
   bool setCell(const CellAddress& address, unsigned char state);
   void clear();
-
-  // One generation using ruleSet.nextState. Returns false if a next-state
-  // write needed a chunk and the pool was exhausted (grid may be partial).
   bool advance(const RuleSet& ruleSet);
 
+  void swap(SparseCellGrid& other) noexcept;
+  bool assignChunk(const SparseChunkRecord& record);
+  std::vector<SparseChunkRecord> collectChunkRecords() const;
+  void collectChunkRecords(std::vector<SparseChunkRecord>* records) const;
+
+  static std::int64_t floorDivide(std::int64_t value, std::int64_t divisor);
+  static std::int64_t floorModulo(std::int64_t value, std::int64_t divisor);
+  static ChunkAddress chunkAddressForCell(const CellAddress& address);
+  static int localIndexForCell(const CellAddress& address);
+
   std::uint64_t getRevision() const { return revision; }
-  std::size_t getAllocatedChunkCount() const { return activeChunks.size(); }
-  std::size_t getPoolChunks() const { return chunkPool.getNumChunks(); }
-  std::size_t getBlocksFree() const { return chunkPool.getBlocksFree(); }
+  std::size_t getAllocatedChunkCount() const { return chunks.size(); }
+  // Compatibility name for old diagnostics; this is the live map size, not
+  // a fixed allocator pool or capacity limit.
+  std::size_t getPoolChunks() const { return chunks.size(); }
 
 private:
-  struct SparseChunk
-  {
-    int chunkX = 0;
-    int chunkY = 0;
-    // Dense 8x8 storage; BackgroundState means empty for this implementation.
-    unsigned char cells[kChunkDim * kChunkDim];
-  };
+  using CellArray = std::array<unsigned char, kChunkCellCount>;
+  using ChunkMap =
+    std::unordered_map<ChunkAddress, CellArray, ChunkAddressHash>;
 
-  ChainedPoolAlloc<SparseChunk> chunkPool;
-  std::vector<SparseChunk*> activeChunks;
+  ChunkMap chunks;
   std::uint64_t revision = 0;
 
-  static void chunkCoords(int cellX, int cellY, int* outChunkX, int* outChunkY);
-  static int localIndex(int cellX, int cellY);
-  SparseChunk* findChunk(int chunkX, int chunkY) const;
-  SparseChunk* findOrCreateChunk(int chunkX, int chunkY);
-  bool chunkHasNonBackground(const SparseChunk& chunk) const;
-  unsigned char countAliveNeighbors(int x, int y) const;
+  CellArray* findChunk(const ChunkAddress& address);
+  const CellArray* findChunk(const ChunkAddress& address) const;
+  CellArray* findOrCreateChunk(const ChunkAddress& address);
+  static bool hasNonBackgroundState(const CellArray& cells);
+  static std::int64_t cellCoordinate(std::int64_t chunk, int localCoordinate);
 };

@@ -16,9 +16,11 @@ Quick index for chats that need to open the right files. Not exhaustive.
 \pathref{Engine/IModule.h} & Module API \\
 \pathref{Engine/DebugModule.*} & Debug overlay module (Debug builds) \\
 \pathref{Game/CellGameModule.*} & Modes, input, sim tick, palette rebuild \\
-\pathref{Game/CellContext.h} & Canvas + ruleset factory \\
-\pathref{Game/Canvas.*} & Grid, CPU palette/fade, dirty RGB-display uploads \\
-\pathref{Rulesets/RuleSet.*} & Double-buffer generation + nextState \\
+\pathref{Game/CellContext.h} & Sparse grid, bounded view + ruleset factory \\
+\pathref{Game/SparseCellGrid.*} & Signed-coordinate 16$\times$16 chunks and halo stepping \\
+\pathref{Game/CanvasView.*} & Bounded sampling, CPU palette/fade, dirty RGB uploads \\
+\pathref{Game/Canvas.*} & Dense compatibility view and legacy-import support \\
+\pathref{Rulesets/RuleSet.*} & Stateless nextState/palette behavior \\
 \pathref{Rulesets/*RuleSet.*} & Concrete CA rules + evalCell colors \\
 \pathref{Rendering/Scene.h} & Drawable list + camera + window (no scene graph) \\
 \pathref{Rendering/Drawable.*} & Token emitter base (no GL ownership) \\

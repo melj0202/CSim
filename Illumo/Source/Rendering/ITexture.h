@@ -2,6 +2,12 @@
 #include <array>
 #include <string>
 
+enum class TextureFilter
+{
+  Nearest,
+  Linear
+};
+
 class ITexture
 {
 public:

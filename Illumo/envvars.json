@@ -4,7 +4,6 @@
  "ModeString": "GAME_OF_LIFE",
  "WinX": "1280",
  "WinY": "720",
- "enableInfCanvas": "0",
  "fps": "60",
  "fullscreen": "0",
  "logLevel": "3",

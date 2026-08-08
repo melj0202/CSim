@@ -4,9 +4,15 @@
 \begin{description}[style=nextline, leftmargin=0pt]
   \item[Backend]
     Implementation of \symbolref{IBackend} for a graphics API (or mock).
+  \item[SparseCellGrid]
+    Unbounded signed-coordinate simulation storage using non-background
+    16$\times$16 chunks and temporary 18$\times$18 halos.
+  \item[CanvasView]
+    Bounded camera-visible presentation with CPU palette targets, display fade,
+    one RGB texture, and one screen-space quad.
   \item[Canvas]
-    Cell grid domain (\texttt{lifeCanvas}) plus CPU palette targets,
-    \texttt{displayRgb} fade, and a token-based RGB display-texture view.
+    Retained dense compatibility presentation and legacy-import fixture; not a
+    second production runtime path.
   \item[Command / token]
     One entry in the render command queue describing a GPU operation.
   \item[CRTP]

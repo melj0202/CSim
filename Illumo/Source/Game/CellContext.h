@@ -1,11 +1,12 @@
 #pragma once
-#include "Canvas.h"
+#include "CanvasView.h"
 #include "Rendering/Camera.h"
 #include "Rendering/IRenderWindow.h"
 #include "Rulesets/AllSets.h"
 #include "Services/CommandLine.h"
 #include "Services/IEnvVars.h"
 #include "Services/Logger.h"
+#include "SparseCellGrid.h"
 #include <cctype>
 #include <string>
 #include <vector>
@@ -37,8 +38,13 @@ public:
       if (cy < 1)
         cy = 60;
     }
-    canvas = new Canvas(
-      static_cast<int>(cx), static_cast<int>(cy), window, camera, renderer);
+    grid = new SparseCellGrid();
+    canvasView = new CanvasView(static_cast<int>(cx),
+                                static_cast<int>(cy),
+                                grid,
+                                window,
+                                camera,
+                                renderer);
     ruleSet = nullptr;
     ModeString = "";
     setRuleSet(modeString);
@@ -46,7 +52,8 @@ public:
   ~CellContext()
   {
     delete ruleSet;
-    delete canvas;
+    delete canvasView;
+    delete grid;
   }
 
   static std::string NormalizeModeString(std::string modeString)
@@ -89,22 +96,22 @@ public:
     ruleSet = nullptr;
 
     if (modeString == "GAME_OF_LIFE") {
-      ruleSet = new GameOfLifeRuleSet(canvas);
+      ruleSet = new GameOfLifeRuleSet(nullptr);
     } else if (modeString == "BRIANS_BRAIN") {
-      ruleSet = new BrainsBrainRuleSet(canvas);
+      ruleSet = new BrainsBrainRuleSet(nullptr);
     } else if (modeString == "DAY_AND_NIGHT") {
-      ruleSet = new DayAndNightRuleSet(canvas);
+      ruleSet = new DayAndNightRuleSet(nullptr);
     } else if (modeString == "HIGHLIFE") {
-      ruleSet = new HighlifeRuleSet(canvas);
+      ruleSet = new HighlifeRuleSet(nullptr);
     } else if (modeString == "LIFE_WITHOUT_DEATH") {
-      ruleSet = new LifeWithoutDeathRuleSet(canvas);
+      ruleSet = new LifeWithoutDeathRuleSet(nullptr);
     } else if (modeString == "SEEDS") {
-      ruleSet = new SeedsRuleSet(canvas);
+      ruleSet = new SeedsRuleSet(nullptr);
     } else if (modeString == "WIREWORLD") {
-      ruleSet = new WireworldRuleSet(canvas);
+      ruleSet = new WireworldRuleSet(nullptr);
     } else {
       Logger::LogError("Invalid rule set name: " + modeString);
-      ruleSet = new GameOfLifeRuleSet(canvas);
+      ruleSet = new GameOfLifeRuleSet(nullptr);
       modeString = "GAME_OF_LIFE";
     }
 
@@ -115,15 +122,18 @@ public:
     return true;
   }
 
-  Canvas* getCanvas() const { return canvas; }
-  Canvas* getCellCanvas() const { return canvas; }
+  CanvasView* getCanvas() const { return canvasView; }
+  CanvasView* getCellCanvas() const { return canvasView; }
+  CanvasView* getCanvasView() const { return canvasView; }
+  SparseCellGrid* getGrid() const { return grid; }
   RuleSet* getRuleSet() const { return ruleSet; }
   std::string getModeString() const { return ModeString; }
   CommandLine* getCommandLine() const { return commandLine; }
 
 private:
   RuleSet* ruleSet;
-  Canvas* canvas;
+  SparseCellGrid* grid;
+  CanvasView* canvasView;
   std::string ModeString;
   CommandLine* commandLine;
   IEnvVars* envVars;

@@ -65,6 +65,12 @@ public:
                               const int height,
                               int channels,
                               unsigned long tableID) override;
+  unsigned long CreateTexture(const unsigned char* data,
+                              const int width,
+                              const int height,
+                              int channels,
+                              unsigned long tableID,
+                              TextureFilter filter) override;
   unsigned long CreateTexture(const std::string& filePath,
                               unsigned long tableID) override;
   unsigned long CreateDescriptorSet() override { return 0; }

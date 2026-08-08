@@ -28,6 +28,7 @@ public:
     int width = 0;
     int height = 0;
     int channels = 0;
+    TextureFilter filter = TextureFilter::Nearest;
     MeshVertexLayout layout = MeshVertexLayout::Pos3Color3Uv2;
     bool dynamic = false;
     std::string pathOrNote;
@@ -182,6 +183,17 @@ public:
                               int channels,
                               unsigned long tableID) override
   {
+    return CreateTexture(
+      data, width, height, channels, tableID, TextureFilter::Nearest);
+  }
+
+  unsigned long CreateTexture(const unsigned char* data,
+                              const int width,
+                              const int height,
+                              int channels,
+                              unsigned long tableID,
+                              TextureFilter filter) override
+  {
     (void)data;
     CreateRecord rec;
     rec.kind = CreateRecord::Kind::TextureData;
@@ -189,6 +201,7 @@ public:
     rec.width = width;
     rec.height = height;
     rec.channels = channels;
+    rec.filter = filter;
     creates.push_back(rec);
     return tableID;
   }

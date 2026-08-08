@@ -2,6 +2,7 @@
 #include "CommandQueue.h"
 #include "IMesh.h"
 #include "IShaderProgram.h"
+#include "ITexture.h"
 #include "PipelineState.h"
 #include <string>
 
@@ -50,6 +51,16 @@ public:
                                       const int height,
                                       int channels,
                                       unsigned long tableID) = 0;
+  virtual unsigned long CreateTexture(const unsigned char* data,
+                                      const int width,
+                                      const int height,
+                                      int channels,
+                                      unsigned long tableID,
+                                      TextureFilter filter)
+  {
+    (void)filter;
+    return CreateTexture(data, width, height, channels, tableID);
+  }
   virtual unsigned long CreateTexture(const std::string& filePath,
                                       unsigned long tableID) = 0;
   virtual unsigned long CreateDescriptorSet() = 0;

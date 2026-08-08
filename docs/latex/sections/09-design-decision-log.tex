@@ -632,6 +632,28 @@ shipped \symbolref{RuleSet} implementations. A further
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-C3 --- Sparse infinite production canvas}
+\begin{decisionbox}[title={D-C3 \quad 2026-08-07}]
+\textbf{Decision:} Replace the finite dense production path with
+\symbolref{SparseCellGrid}: signed 64-bit world coordinates, non-background
+16$\times$16 chunks, temporary 18$\times$18 read-only halos, and serial
+non-toroidal stepping. Present it through a bounded \symbolref{CanvasView}
+with one reusable RGB staging texture and one screen-space quad. Always write
+version 2 sparse saves; read both version 2 and the prior dense format after
+validating temporary state.\\
+\textbf{Why:} The finite canvas was the remaining product-scale boundary:
+editing, simulation, camera, rendering, and persistence all needed one
+coherent world-coordinate model rather than a dormant capped prototype.\\
+\textbf{Consequences:} Empty space is implicit, negative coordinates are
+first-class, far-apart chunks are not capped, and newly revealed view cells
+snap before visible-area fading. Dense \texttt{CellGrid}/\texttt{Canvas} code
+remains only for compatibility tests and legacy import; it is not a second
+runtime path.\\
+\textbf{Supersedes:} D-C1 and D-C2 for the production game path; their dense
+domain remains compatibility material.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
 \subsection*{D-R13 --- Single production frame path}
 \begin{decisionbox}[title={D-R13 \quad 2026-08-06}]
 \textbf{Decision:} \symbolref{Illumo::Render} always rebuilds the per-frame

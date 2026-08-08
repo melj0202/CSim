@@ -81,9 +81,6 @@ Illumo::Init()
   if (envVars->getVar("fullscreen").value == "") {
     envVars->setVar("fullscreen", false);
   }
-  if (envVars->getVar("enableInfCanvas").valueAsBool == false) {
-    envVars->setVar("enableInfCanvas", false);
-  }
   // Command-line dimensions override persisted configuration and defaults.
   SysCmdLine::ParseCommandLine(commandLineArgc, commandLineArgv, envVars.get());
   const int initialWindowWidth =

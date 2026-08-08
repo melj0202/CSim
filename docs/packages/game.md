@@ -1,48 +1,44 @@
 # Game
 
-Cellular-automata **game domain**: cell grid, canvas presentation, game module
-(modes), and editor-facing tools (brush/cursor).
+The live game path is an unbounded sparse cellular-automata world plus a
+bounded presentation view.
 
-## CellGrid (domain)
+## SparseCellGrid (simulation domain)
 
-- Pure dense storage: one byte per cell on the **front** buffer, plus a same-sized **back** buffer for generation write (D-P5).
-- Dirty-region tracking for visual rebuild / upload.
-- No `Renderer`, window, camera, or render tokens.
-- Rulesets take `CellGrid*`, write the next generation into the back buffer, track the dirty AABB in one pass, then `swapLifeBuffers()` when anything changed.
+- Authoritative signed 64-bit cell coordinates.
+- Hash-map storage of non-background 16x16 chunks; there is no fixed chunk
+  count or allocator-pool cap.
+- Negative coordinates use centralized floor division/modulo. All byte states
+  are preserved, including Brian's Brain and Wireworld values.
+- Each serial generation evaluates active chunks and their neighbors through a
+  temporary read-only 18x18 halo, then installs deterministic sorted output.
+- Rulesets supply pure `nextState` and `evalCell` behavior. The old dense
+  `CellGrid`/`Canvas` implementation remains only for compatibility coverage.
 
-## Canvas (presentation over domain)
+## CanvasView (presentation)
 
-- **Extends `CellGrid`:** inherits domain storage.
-- **View:** a CPU palette maps cell state into `targetRgb`; `displayRgb` eases toward those targets and packs the result into `texCanvasBuffer` (fade model kept; D-P6 tightens the hot loops).
-- **GPU:** world-space **sprite** on an embedded `GameVisual` plus RGB display texture; dirty-rect `UpdateTexture` (PBO). Optional: null renderer skips GPU enroll (domain-only construction).
-- **Scene layer:** `CellGameModule` places Canvas on `RenderLayerId::World` (splash/cursor on `UI`).
-- `rebuildPalette(RuleSet*)` refreshes visual targets when the active ruleset changes.
-
-## SparseCellGrid (optional)
-
-Pool-backed 8×8 chunks (`ChainedPoolAlloc`) for sparse / large worlds. Does **not**
-replace dense Canvas in the live product path. Covered by `Illumo.Alloc.SparseCellGridPool`.
-
-## Simulation performance notes
-
-- Default canvas size remains small (80×60); full-grid eval is still O(W×H).
-- Auto multi-thread row eval engages at ≥512×512 (`RuleSet` worker override for tests).
-- Headless benches: `Illumo.Sim.MicroBench`, plus correctness cases under `Illumo.Sim.*`.
-
-See `docs/latex/sections/07-game-and-rules.tex` and
-`docs/latex/sections/05-rendering-current.tex`.
+- Samples the camera-visible world into the configured `CanvasX` x `CanvasY`
+  bounded RGB staging buffer.
+- Owns one reusable RGB texture and one screen-space quad through `GameVisual`.
+- Requests linear sampling for the display texture so zoomed-out views do not
+  become nearest-neighbor blocks.
+- CPU palette targets fade through `displayRgb`; newly revealed cells snap to
+  their current color. Texture updates are dirty and bounded to at most one
+  update per drawable submission.
+- `CellGameModule` dispatches the view on the World layer and the cursor/splash
+  on UI.
 
 ## CellGameModule
 
-EDIT / NORMAL; sim rate from `tps` × `speedFactor`; dispatches Canvas (World),
-editor cursor (UI), and module-owned mode splash (`std::unique_ptr<SplashText>` —
-not a file-scope global).
-Save/load, simulation, canvas, ruleset, and camera commands are registered here
-through `CommandRegistry` rather than modeled as frame states.
+EDIT / NORMAL; simulation uses `tps` x `speedFactor`. Painting, Bresenham
+strokes, `setcell`, randomization, and clearing operate directly on signed
+world coordinates. Startup patterns are centered around `(0, 0)` and
+simulation is non-toroidal.
 
-Startup seeds are ruleset-aware: binary life-like rules get a centered glider;
-Wireworld gets a horizontal conductor with a head+tail electron. In Wireworld
-edit mode the left-paint brush is sticky (`1`/`H` head, `2` empty, `3`/`T`
-tail, `4` conductor); right-click paints empty.
+Save always writes version 2 sparse files containing the ruleset, camera, and
+deterministically sorted chunks. Load validates temporary state first, reads
+both version 2 and the prior dense format, imports legacy cells around the
+world origin, and restores saved ruleset/camera metadata.
 
-This package is not a generic “stdlib.” Prefer engine host code in `Engine/` and shared utilities in `Services/` or `Foundation/`.
+Wireworld retains the sticky head/empty/tail/conductor brush (`1`/`H`, `2`,
+`3`/`T`, `4`).

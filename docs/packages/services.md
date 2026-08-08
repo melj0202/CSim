@@ -7,10 +7,10 @@ Cross-cutting application services:
 - input
 - command line / command registry
 - custom allocators (`ArenaAlloc`, `ChainedStackAlloc`, `ChainedPoolAlloc`,
-  `MallocAlloc` / `IAllocator`) with `Illumo.Alloc.*` tests; wired into
-  console parse/dispatch (`CommandLine`), frame scratch (`Renderer`), save
-  load buffers, and optional `SparseCellGrid` chunks — still not forced into
-  every service
+  `MallocAlloc` / `IAllocator`) with `Illumo.Alloc.*` tests; used for console
+  parse/dispatch (`CommandLine`), frame scratch (`Renderer`), and other
+  bounded transient work. Sparse simulation storage uses the standard hash
+  map and does not depend on the old fixed pool cap.
 - platform-neutral `SaveLoad` API (implementations live under `Platform/`)
 
 `Logger` is best-effort output to its available file and console sinks; its

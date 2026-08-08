@@ -6,9 +6,10 @@
 path is enroll + tokens + submit via \symbolref{Renderer}/\symbolref{IBackend}.
 Drawables emit tokens through \texttt{AppendCommands}; GL draw submission is
 confined to \pathref{Rendering/OpenGL/} (plus window bootstrap). Headless
-\pathref{Rendering/Mock/MockBackend.h} powers \texttt{IllumoTests}. Canvas
-presentation is \textbf{CPU RGB fade + RGB display texture} with dirty-rect
-PBO uploads (see canonical note in \pathref{docs/architecture-consensus.md}).
+\pathref{Rendering/Mock/MockBackend.h} powers \texttt{IllumoTests}. CanvasView
+presentation is \textbf{bounded CPU RGB fade + one RGB display texture/quad}
+with dirty-rect PBO uploads (see canonical note in
+\pathref{docs/architecture-consensus.md}).
 No second real GPU API.
 \end{statusbox}
 
@@ -16,7 +17,7 @@ No second real GPU API.
 \begin{enumerate}
   \item Modules call \symbolref{DispatchDrawables} and add \symbolref{DrawableBase*}
         pointers to \symbolref{Scene} \textbf{layers}
-        (\texttt{World} canvas, \texttt{UI} console/splash, \texttt{Debug} FPS).
+        (\texttt{World} CanvasView, \texttt{UI} console/splash, \texttt{Debug} FPS).
   \item \symbolref{Illumo::Render} drives \symbolref{Renderer}:
         \texttt{BeginFrame} $\rightarrow$ \texttt{RenderScene} $\rightarrow$
         \texttt{EndFrame} (swap).
@@ -42,7 +43,7 @@ No second real GPU API.
         only; call \texttt{bindStyle} then emit content tokens.
   \item \symbolref{Drawable<Derived>} --- CRTP: \texttt{Draw} $\rightarrow$
         \texttt{DrawImpl} for the rare immediate path.
-  \item Production emitters (Canvas, CommandLine, GLString/SplashText) use
+  \item Production emitters (CanvasView, CommandLine, GLString/SplashText) use
         \texttt{AppendCommands} only; \texttt{DrawImpl} is empty/no-op.
   \item \symbolref{GameVisual} (D-R15) hosts composed
         \texttt{ShapePrimitive}/\texttt{SpritePrimitive} value lists; other
@@ -50,18 +51,19 @@ No second real GPU API.
         once, not each primitive.
 \end{itemize}
 
-\subsection{Canvas presentation (RGB fade + dirty rects)}
+\subsection{CanvasView presentation (bounded RGB fade + dirty rects)}
 \label{sec:canvas-rgb-fade}
 \begin{itemize}
-  \item Domain buffer: \symbolref{lifeCanvas} --- one \texttt{unsigned char}
-        per cell (state encoding: $0$ = alive, $1$ = dead for binary CAs;
-        multi-state rules use additional values, e.g.\ Brian's Brain dying $=2$;
-        Wireworld: head $=0$, empty $=1$, tail $=2$, conductor $=3$).
+  \item Domain: \symbolref{SparseCellGrid} stores signed-coordinate
+        16$\times$16 chunks; the view samples only the camera-visible
+        \texttt{CanvasX}$\times$\texttt{CanvasY} cells.
   \item View: CPU palette via \texttt{evalCell} $\rightarrow$ \texttt{targetRgb};
-        \texttt{displayRgb} eases toward targets; packed RGB
-        \texttt{texCanvasBuffer} for upload.
-  \item GPU: RGB display texture, updated via dirty-rect \texttt{UpdateTexture}
-        tokens (PBO path; optional \texttt{srcRowStride}).
+        \texttt{displayRgb} eases toward targets, newly revealed cells snap,
+        and packed RGB is staged for upload.
+  \item GPU: one reusable RGB display texture and one screen-space quad,
+        using linear sampling when stretched to the window, and updated via
+        at most one dirty-rect \texttt{UpdateTexture} token per submission
+        (PBO path; optional \texttt{srcRowStride}).
   \item Shaders: \pathref{Shader/canvas\_vertex.glsl},
         \pathref{Shader/canvas\_frag.glsl} --- sample \texttt{uDisplayTexture}.
   \item History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
@@ -97,8 +99,9 @@ viewport within a submit); uniform location cache; blend-func-on-enable (D-R5).
 \subsection{Tests (headless)}
 Target \texttt{IllumoTests} (alias \texttt{IllumoRenderTests}) is one shared
 binary for compile efficiency, but CTest invokes one exact logical case per
-process (D-T1). The 80 entries cover mock/Renderer flow, assets, rulesets,
-CellContext, CellGameModule commands and file-backed save/load, Canvas,
+process (D-T1). The sparse-canvas entries cover mock/Renderer flow, assets,
+rulesets, CellContext, CellGameModule commands and file-backed save/load,
+CanvasView,
 input/services, and UI tokens. Each case has an isolated working directory; no
 GPU context is required. The Clang/LLVM \texttt{IllumoCoverage} target enforces
 85\% line coverage over headless-testable first-party production code.

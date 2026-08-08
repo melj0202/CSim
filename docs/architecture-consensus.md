@@ -48,7 +48,7 @@ Optional deeper reading (not required to resume work):
 
 ## 0. One-line summary
 
-**Illumo is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock). Domain storage is `CellGrid`; `Canvas` extends it with RGB-fade presentation and GPU enroll (D-C2). The composition root injects `IBackend` (D-R11); production frame path is single-path module dispatch → tokens (D-R13); mode splash is module-owned; Wireworld seed/brush and Start gating are in place. Defer ECS, multipass graphs, multi-backend, infinite chunks, SYCL, multi-library CMake split, and IllumoContext bag explosion.**
+**Illumo is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock). Production state is an unbounded signed-coordinate `SparseCellGrid`; `CanvasView` presents a bounded camera region with RGB fade and one reusable texture/quad. The composition root injects `IBackend`; the production frame path is module dispatch → tokens; mode splash is module-owned. Dense `CellGrid`/`Canvas` remain compatibility fixtures only.**
 
 ---
 
@@ -80,7 +80,7 @@ That growth is **acceptable**. Architecture should reflect **actual families of 
 - Scene/World graph as the primary cell path  
 - Second real graphics API (Vulkan/Metal) as a near-term deliverable  
 - Perfect Linux/macOS parity before Windows remains solid  
-- Infinite canvas + SYCL **before** dense-grid product paths are correct and documented  
+- SYCL or a second compute backend before the sparse product path is correct and documented  
 - Aggressive batching/instancing/render graphs without profiling evidence  
 
 ### 1.4 Allocators (from CA design PDF — retained policy)
@@ -96,15 +96,15 @@ Retain arena / stack / pool allocators as learning code and optional utilities. 
 
 Headless coverage lives in `Illumo/Source/Tests/TestAllocators.cpp` (`Illumo.Alloc.*` CTest cases).
 
-Live consumers (dense Canvas remains the production domain path):
+Live consumers:
 
 | Site | Allocator | Role |
 |------|-----------|------|
 | `CommandLine` parse / complete / dispatch | `ArenaAlloc parseArena` | Token and chain staging for one command session |
 | Nested alias expansion | `ChainedStackAlloc aliasExpandStack` | LIFO expanded text frames |
 | `Renderer::RenderScene` | `ArenaAlloc frameArena` | Immediate-drawable pointer list per frame |
-| `CellGameModule::LoadCellGame` | stack `ArenaAlloc loadArena` | File cell payload scratch |
-| `SparseCellGrid` | `ChainedPoolAlloc<SparseChunk>` | 8×8 sparse chunks (optional domain) |
+| `CellGameModule::LoadCellGame` | standard temporary vectors | Validated sparse/legacy load state |
+| `SparseCellGrid` | standard hash map | Unbounded 16×16 sparse chunks |
 
 A general-purpose allocator (mimalloc-class) is a different product; do not reinvent it.
 
@@ -128,7 +128,7 @@ Early product wishlist:
 | Mouse drag pan | UX |
 | SYCL (or similar) for large cell counts | Scale / learning |
 
-**Outcome today:** UI/tools/pan/most rulesets largely done. **Chunk infinite canvas + SYCL not done** (deliberately deferred). Full scorecard → §7.
+**Outcome today:** UI/tools/pan/most rulesets and the sparse chunk canvas are done. **SYCL remains deliberately deferred.** Full scorecard → §7.
 
 ### 2.2 CA design review (`Illumo_Architecture_Decisions.pdf`)
 
@@ -337,33 +337,27 @@ IBackend::SubmitCommandQueue
 
 **Token migration phases 0–6:** complete for planned scope (proof → Scene → Canvas → UI → dead-path cleanup → Mock inject).
 
-### 5.6 Domain + Canvas presentation model (canonical — code wins)
+### 5.6 Sparse domain + bounded view (canonical — code wins)
 
-**Important history:** D-P4 briefly moved presentation to **GPU R8 state texture + 256×1 palette** (snap colors, drop CPU fade). Fade was later **restored**. Intermediate LaTeX notes that still describe “R8-only current” are **stale**. D-C1 kept Canvas as a monolith until a real boundary need; **D-C2** refined that with a minimal domain type.
-
-**Code truth:**
+The live path is intentionally a full replacement of the finite dense runtime:
 
 | Layer | Type | Contents |
 |-------|------|----------|
-| **Domain** | `CellGrid` | dense `lifeCanvas` (`unsigned char[width × height]`), dirty-region tracking; **no** Renderer/window/camera |
-| **View** | `Canvas` (extends `CellGrid`) | CPU palette → `targetRgb` / `displayRgb` fade; `texCanvasBuffer` RGB bytes |
-| **GPU** | `Canvas` enroll + tokens | RGB display texture; dirty-rect `UpdateTexture` (PBO); shader samples `uDisplayTexture` |
+| **Domain** | `SparseCellGrid` | signed 64-bit cells in a hash map of non-background 16×16 chunks |
+| **Simulation** | `SparseCellGrid::advance` | serial evaluation of active chunks plus neighbors through temporary 18×18 read-only halos; no toroidal wrapping |
+| **View** | `CanvasView` | camera-visible `CanvasX`×`CanvasY` sampling, CPU palette, RGB fade, newly revealed-cell snapping |
+| **GPU** | `CanvasView` + `GameVisual` | one reusable RGB staging texture update and one screen-space quad; linear display sampling avoids nearest-neighbor blockiness when zoomed out |
 
-**Rulesets** take `CellGrid*` and never touch OpenGL or render tokens. Domain-only tests construct `CellGrid` (or `Canvas` with null render services) and step generations without a graphics stack.
+Rulesets provide stateless `nextState` and `evalCell` functions. Production
+does not depend on `CellGrid*`; the old dense `CellGrid`/`Canvas` and their
+toroidal `calcGeneration` entry remain only for compatibility tests during the
+transition. The sparse map has no fixed chunk-count cap and preserves all
+multi-state byte values.
 
-**What survived from D-P4:** dirty-rect uploads, PBO path in `GLTexture::UpdateSubImage`, bind-state tracker, dirty flags for idle frames (D-P1).  
-**What was rolled back:** exclusive R8+palette GPU path as the live presentation; dual float RGB staging + fade are back.
-
-**Decision D-C1 → refined by D-C2:** Domain is extractable as `CellGrid`. `Canvas` remains the presentation+GPU adapter over that domain. A further split into a separate `CanvasRenderer` type is still optional.
-
-**Scale walls (updated 2026-08-06 performance pass):**
-
-- `calcGeneration` still walks the **full** dense grid (rect args ignored; toroidal).  
-- Neighbor counts: interior Moore without wrap + toroidal ring (D-P5).  
-- Dirty AABB is tracked **during** the eval pass (single pass); write-back is an O(1) **buffer swap** on `CellGrid` (no full-grid `memcpy`) (D-P5).  
-- Optional row-parallel eval above `512×512` (or forced via `RuleSet::setWorkerOverride`) (D-P7).  
-- Per cell: 1 B life front + 1 B life back + ~24 B float RGB + 3 B display tex. Default 80×60 is fine; sparse/chunk still deferred.  
-- Headless micro-benches: `Illumo.Sim.MicroBench` (gens/s + tickVisual ms).
+Negative chunk coordinates use centralized floor division/modulo. Chunk output
+is sorted by `(chunkY, chunkX)` for deterministic saves and tests. Rendering
+never creates per-chunk GPU resources: only the bounded view texture and quad
+enter the token stream.
 
 ### 5.7 Rules and encoding
 
@@ -376,7 +370,6 @@ class RuleSet {
                                   unsigned char aliveNeighbors) const;
   virtual void evalCell(const unsigned char& target,
                         unsigned char dest[3]) const; // palette colors
-  void calcGeneration(...); // double-buffer: nextGen then write-back
 };
 ```
 
@@ -386,12 +379,13 @@ class RuleSet {
 | Multi-state (e.g. Brian's Brain) | `≥2` additional states (e.g. dying = 2) |
 | **Wireworld** | `0` head, `1` empty, `2` tail, `3` conductor (head = 0 reuses head-neighbor counting) |
 
-**Generation path (D-P3 refined by D-P5 / D-P7):**
+**Generation path:**
 
-1. Count neighbors from front `lifeCanvas` (interior fast path + toroidal edges).  
-2. Write `nextState` into `CellGrid` back buffer; track dirty AABB in the same pass.  
-3. If any cell changed: `swapLifeBuffers()` (O(1)), mark sparse dirty AABB for visuals. Still life → no swap, no dirty.  
-4. Large grids may partition rows across workers (bit-identical to serial).
+1. Collect each allocated chunk and its eight neighboring chunk addresses.  
+2. Read the target chunk plus one-cell border into a temporary 18×18 halo.  
+3. Apply `nextState` to the 16×16 core and retain only non-background chunks.  
+4. Install the complete next map serially. Empty space is implicit, so births
+   never wrap from one far edge to another.
 
 Rules stay free of rendering and input. `evalCell` supplies palette/RGB colors only.
 
@@ -436,9 +430,10 @@ The Debug-only console separates general tooling from product behavior:
   commands through `CommandRegistry`; registry metadata drives help and Tab
   completion.
 - Registered commands execute from the queue without falling through as unknown.
-- Save/load uses the dense legacy format with safer validation; loading activates
-  the saved ruleset, copies row-by-row into the current canvas, and rebuilds the
-  visible state immediately.
+- Save always writes version 2 sparse records (magic/version, ruleset, camera,
+  deterministic sorted chunks). Load validates into temporary state, accepts
+  both version 2 and the prior dense format, imports legacy cells centered at
+  the origin, then restores ruleset/camera and rebuilds the bounded view.
 - `vid_restart` is not advertised: safely recreating an OpenGL context requires a
   complete resource re-enrollment design, so the old no-op now reports that limit.
 - Editing supports measured caret placement, selection, Home/End, Delete,
@@ -512,6 +507,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-007** | Enroll resources outside the per-frame stream (frame queue = bind/draw/update). |
 | **D-WW1** | Wireworld: ruleset-aware seed + sticky head/tail/conductor brush keys. |
 | **D-C2** | `CellGrid` domain + `Canvas` presentation; rulesets depend only on `CellGrid`. |
+| **D-C3** | Replace the finite production path with signed-coordinate `SparseCellGrid` chunks plus bounded `CanvasView`; retain dense types only as compatibility fixtures. |
 
 ### 6.3 Performance (D-P\*)
 
@@ -548,7 +544,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | Command line | **Done** (validated built-ins plus module-registered simulation, canvas, camera, ruleset, and file commands) |
 | Console on GL screen | **Done** (token UI, advanced editing, measured caret, scrolling, full-help capacity test) |
 | More rulesets | **Partly** — Wireworld live; 90/184 stubs |
-| Infinite 16×16 chunk canvas | **Not done** — dense grid by design for now |
+| Infinite 16×16 chunk canvas | **Done** — sparse signed-coordinate chunks, 18×18 halos, bounded view, editing, camera, persistence, and tests |
 | Mouse pan | **Done** (camera controls) |
 | SYCL / large-grid parallel | **Not done** — serial full-grid; deferred |
 
@@ -613,11 +609,11 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 | Command queue overflow | **D-R12:** log once per frame + drop counters; capacity still fixed at 2048 |
 | CMake duplication | Resolved 2026-08-02 with shared source lists/settings; no forced package libraries |
 | Renderer ↔ backend | **D-R11:** `CreateOpenGLBackend` at composition; Renderer is `IBackend*`-only; Mock inject for tests |
-| Full-grid sim + float fade memory | Still the dense-grid scale wall; D-P5/P6/P7 reduce cost but do not remove O(W×H) |
+| Sparse sim + bounded view memory | Simulation scales with allocated chunks and halo neighbors; presentation scales with the configured visible view |
 | MacroDefs + Windows.h | D-F1 deferred |
 | IllumoContext growth | Frozen; third module = explicit deps |
 | Life-like JSON family collapse | Optional cleanup of repetitive RuleSet classes |
-| Chunk + SYCL | Optional after serial benchmark / product need |
+| GPU/SYCL acceleration | Optional after serial benchmark / product need; CPU sparse serial stepping is the production baseline |
 | Resource destroy/reload | Shutdown-only for v1 (D-R4); hot-reload later |
 
 ---
@@ -628,7 +624,7 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 
 1. Failed `Start` → do not run that module’s Update/Dispatch — **done 2026-08-06**.
 2. Wireworld seed + mouse head-placement UX — **done 2026-08-06**.
-3. Keep this file and LaTeX “current state” sections aligned with **RGB fade Canvas** (no stale “GPU R8 as current” claims).
+3. Keep this file and LaTeX “current state” sections aligned with **RGB fade CanvasView** (no stale dense-production or GPU-R8 claims).
 
 ### B. Hygiene / boundary consolidation
 
@@ -636,16 +632,16 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 5. Command-queue overflow policy (log once per frame) — **D-R12, done 2026-08-06**.
 6. Backend injection at composition root — **D-R11, done 2026-08-06**.
 
-### C. Boundary consolidation (2026-08-06 arc — done)
+### C. Boundary consolidation (2026-08-07 arc — done)
 
-7. `CellGrid` domain extraction + rulesets on domain only — **D-C2**.
+7. `SparseCellGrid` domain + bounded `CanvasView` production migration — **D-C3**.
 8. Single production frame path; remove `UseTokenProof` product bypass — **D-R13**.
 9. Mode splash module ownership (no file-scope `stateSplash` global).
 
 ### D. Only if product or learning goals require it
 
-10. Further `CanvasRenderer` extraction / chunked infinite canvas.
-11. ~~Threaded simulation~~ — **D-P7 row-parallel done**; SYCL / sparse still deferred (serial + parallel benches via `Illumo.Sim.*`).
+10. Further renderer slimming or sparse stepping acceleration if profiling requires it.
+11. ~~Threaded simulation~~ — serial sparse stepping is the baseline; parallel/GPU work remains optional.
 12. Non-string uniforms / second real backend (OpenGL factory already at composition).
 13. Data-driven life-like rule family (JSON birth/survive).
 14. Focused controllers (camera / console) if input coupling becomes painful.
@@ -663,10 +659,10 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 
 1. **CA learning sandbox first** — not a general engine product.  
 2. **Ownership explicit** — Illumo owns services; App owns module set; context does not own.  
-3. **Boundaries over cleverness** — abstract volatility (GLFW, GL, future compute); hard-code stable structure (module loop, dense grid for now).  
+3. **Boundaries over cleverness** — abstract volatility (GLFW, GL, future compute); keep the stable sparse-domain/bounded-view split explicit.
 4. **Sim produces complete state; render observes** — double-buffer; no draw mid-generation.  
 5. **Tokens for draw submission** — enroll once, emit commands, backend executes.  
-6. **Parallelize data transformations last** — serial correctness first; chunks/SYCL optional.  
+6. **Parallelize data transformations last** — serial halo correctness first; acceleration is optional.
 7. **Archive experiments** — don’t leave half-live ECS/graph/passes in the hot path.  
 8. **Simplest architecture that preserves the boundaries you care about** (engine PDF principle, applied to the CA product).  
 9. **Code wins over docs** — update this file when consensus shifts.  
@@ -731,8 +727,9 @@ Resolved highlights (do not re-open without a new decision ID):
 | Frame loop / composition | `Source/App/CellMain.cpp` |
 | Host / services / modules | `Source/Engine/Illumo.*` |
 | CA module / modes | `Source/Game/CellGameModule.*`, `CellContext.*` |
-| Domain cell storage | `Source/Game/CellGrid.*` |
-| Grid + fade + GPU enroll | `Source/Game/Canvas.*` (extends CellGrid) |
+| Sparse domain cell storage | `Source/Game/SparseCellGrid.*` |
+| Bounded view + fade + GPU enroll | `Source/Game/CanvasView.*` |
+| Compatibility dense storage | `Source/Game/CellGrid.*`, `Source/Game/Canvas.*` |
 | Rules | `Source/Rulesets/*` |
 | Tokens / Renderer | `Source/Rendering/Renderer.*`, `RenderCommand.*` |
 | GL execute | `Source/Rendering/OpenGL/*` |

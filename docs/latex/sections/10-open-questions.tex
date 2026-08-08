@@ -21,8 +21,9 @@ decision log when resolved.
         \textbf{Resolved D-E5:} freeze bag; validate at Start; third module =
         explicit deps.
   \item \sout{\textbf{Canvas domain vs view?}}
-        \textbf{Resolved D-C1 $\rightarrow$ D-C2:} CellGrid is the domain;
-        Canvas stays the presentation adapter until scale forces a further split.
+        \textbf{Resolved D-C3:} SparseCellGrid is the production domain;
+        CanvasView is the bounded presentation adapter. Dense Canvas remains
+        compatibility-only.
   \item \sout{\textbf{String uniforms multi-API?}}
         \textbf{Resolved D-R9:} debt if second real GPU backend.
   \item \sout{\textbf{Canvas upload:} full texture rewrite each frame vs dirty rects?}

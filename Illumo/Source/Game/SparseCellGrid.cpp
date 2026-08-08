@@ -1,84 +1,120 @@
 #include "SparseCellGrid.h"
 #include "Rulesets/RuleSet.h"
+#include <algorithm>
+#include <cmath>
 #include <cstring>
+#include <limits>
+#include <new>
 
-SparseCellGrid::SparseCellGrid()
-  : chunkPool(kBlocksPerPoolChunk)
+static std::size_t
+mixAddress(std::uint64_t value)
 {
+  value += 0x9e3779b97f4a7c15ULL;
+  value = (value ^ (value >> 30)) * 0xbf58476d1ce4e5b9ULL;
+  value = (value ^ (value >> 27)) * 0x94d049bb133111ebULL;
+  return static_cast<std::size_t>(value ^ (value >> 31));
 }
 
-void
-SparseCellGrid::chunkCoords(int cellX,
-                            int cellY,
-                            int* outChunkX,
-                            int* outChunkY)
+SparseCellGrid::SparseCellGrid() = default;
+
+std::size_t
+CellAddressHash::operator()(const CellAddress& address) const noexcept
 {
-  // Floor division that works for negatives.
-  int cx = cellX / kChunkDim;
-  int cy = cellY / kChunkDim;
-  if (cellX < 0 && (cellX % kChunkDim) != 0) {
-    cx -= 1;
+  const std::size_t hx = mixAddress(static_cast<std::uint64_t>(address.x));
+  const std::size_t hy = mixAddress(static_cast<std::uint64_t>(address.y));
+  return hx ^
+         (hy + static_cast<std::size_t>(0x9e3779b9) + (hx << 6) + (hx >> 2));
+}
+
+std::size_t
+ChunkAddressHash::operator()(const ChunkAddress& address) const noexcept
+{
+  const std::size_t hx = mixAddress(static_cast<std::uint64_t>(address.x));
+  const std::size_t hy = mixAddress(static_cast<std::uint64_t>(address.y));
+  return hx ^
+         (hy + static_cast<std::size_t>(0x9e3779b9) + (hx << 6) + (hx >> 2));
+}
+
+std::int64_t
+SparseCellGrid::floorDivide(std::int64_t value, std::int64_t divisor)
+{
+  if (divisor <= 0) {
+    return 0;
   }
-  if (cellY < 0 && (cellY % kChunkDim) != 0) {
-    cy -= 1;
+  const std::int64_t quotient = value / divisor;
+  const std::int64_t remainder = value % divisor;
+  if (remainder < 0) {
+    return quotient - 1;
   }
-  *outChunkX = cx;
-  *outChunkY = cy;
+  return quotient;
+}
+
+std::int64_t
+SparseCellGrid::floorModulo(std::int64_t value, std::int64_t divisor)
+{
+  if (divisor <= 0) {
+    return 0;
+  }
+  const std::int64_t remainder = value % divisor;
+  return remainder < 0 ? remainder + divisor : remainder;
+}
+
+ChunkAddress
+SparseCellGrid::chunkAddressForCell(const CellAddress& address)
+{
+  ChunkAddress result;
+  result.x = floorDivide(address.x, kChunkDim);
+  result.y = floorDivide(address.y, kChunkDim);
+  return result;
 }
 
 int
-SparseCellGrid::localIndex(int cellX, int cellY)
+SparseCellGrid::localIndexForCell(const CellAddress& address)
 {
-  int lx = cellX % kChunkDim;
-  int ly = cellY % kChunkDim;
-  if (lx < 0) {
-    lx += kChunkDim;
-  }
-  if (ly < 0) {
-    ly += kChunkDim;
-  }
-  return ly * kChunkDim + lx;
+  const int localX = static_cast<int>(floorModulo(address.x, kChunkDim));
+  const int localY = static_cast<int>(floorModulo(address.y, kChunkDim));
+  return localY * kChunkDim + localX;
 }
 
-SparseCellGrid::SparseChunk*
-SparseCellGrid::findChunk(int chunkX, int chunkY) const
+std::int64_t
+SparseCellGrid::cellCoordinate(std::int64_t chunk, int localCoordinate)
 {
-  for (std::size_t i = 0; i < activeChunks.size(); ++i) {
-    SparseChunk* chunk = activeChunks[i];
-    if (chunk != nullptr && chunk->chunkX == chunkX &&
-        chunk->chunkY == chunkY) {
-      return chunk;
-    }
-  }
-  return nullptr;
+  return chunk * static_cast<std::int64_t>(kChunkDim) + localCoordinate;
 }
 
-SparseCellGrid::SparseChunk*
-SparseCellGrid::findOrCreateChunk(int chunkX, int chunkY)
+SparseCellGrid::CellArray*
+SparseCellGrid::findChunk(const ChunkAddress& address)
 {
-  SparseChunk* existing = findChunk(chunkX, chunkY);
-  if (existing != nullptr) {
-    return existing;
+  ChunkMap::iterator found = chunks.find(address);
+  return found == chunks.end() ? nullptr : &found->second;
+}
+
+const SparseCellGrid::CellArray*
+SparseCellGrid::findChunk(const ChunkAddress& address) const
+{
+  ChunkMap::const_iterator found = chunks.find(address);
+  return found == chunks.end() ? nullptr : &found->second;
+}
+
+SparseCellGrid::CellArray*
+SparseCellGrid::findOrCreateChunk(const ChunkAddress& address)
+{
+  ChunkMap::iterator found = chunks.find(address);
+  if (found != chunks.end()) {
+    return &found->second;
   }
 
-  SparseChunk* storage = chunkPool.Allocate();
-  if (storage == nullptr) {
-    return nullptr;
-  }
-
-  SparseChunk* chunk = ::new (storage) SparseChunk();
-  chunk->chunkX = chunkX;
-  chunk->chunkY = chunkY;
-  std::memset(chunk->cells, BackgroundState, sizeof(chunk->cells));
-  activeChunks.push_back(chunk);
-  return chunk;
+  CellArray blank;
+  blank.fill(BackgroundState);
+  std::pair<ChunkMap::iterator, bool> inserted = chunks.emplace(address, blank);
+  return &inserted.first->second;
 }
 
 bool
-SparseCellGrid::chunkHasNonBackground(const SparseChunk& chunk) const
+SparseCellGrid::hasNonBackgroundState(const CellArray& cells)
 {
-  for (int i = 0; i < kChunkDim * kChunkDim; ++i) {
-    if (chunk.cells[i] != BackgroundState) {
+  for (unsigned char state : cells) {
+    if (state != BackgroundState) {
       return true;
     }
   }
@@ -88,169 +124,191 @@ SparseCellGrid::chunkHasNonBackground(const SparseChunk& chunk) const
 unsigned char
 SparseCellGrid::getCell(const CellAddress& address) const
 {
-  int chunkX = 0;
-  int chunkY = 0;
-  chunkCoords(address.x, address.y, &chunkX, &chunkY);
-  const SparseChunk* chunk = findChunk(chunkX, chunkY);
+  const ChunkAddress chunkAddress = chunkAddressForCell(address);
+  const CellArray* chunk = findChunk(chunkAddress);
   if (chunk == nullptr) {
     return BackgroundState;
   }
-  return chunk->cells[localIndex(address.x, address.y)];
+  return (*chunk)[static_cast<std::size_t>(localIndexForCell(address))];
 }
 
 bool
 SparseCellGrid::setCell(const CellAddress& address, unsigned char state)
 {
-  int chunkX = 0;
-  int chunkY = 0;
-  chunkCoords(address.x, address.y, &chunkX, &chunkY);
+  const ChunkAddress chunkAddress = chunkAddressForCell(address);
+  const int index = localIndexForCell(address);
+  CellArray* chunk = findChunk(chunkAddress);
 
   if (state == BackgroundState) {
-    SparseChunk* chunk = findChunk(chunkX, chunkY);
     if (chunk == nullptr) {
       return true;
     }
-    chunk->cells[localIndex(address.x, address.y)] = BackgroundState;
-    if (!chunkHasNonBackground(*chunk)) {
-      for (std::size_t i = 0; i < activeChunks.size(); ++i) {
-        if (activeChunks[i] == chunk) {
-          activeChunks[i] = activeChunks.back();
-          activeChunks.pop_back();
-          break;
-        }
-      }
-      chunk->~SparseChunk();
-      chunkPool.Deallocate(chunk);
+    if ((*chunk)[static_cast<std::size_t>(index)] == BackgroundState) {
+      return true;
+    }
+    (*chunk)[static_cast<std::size_t>(index)] = BackgroundState;
+    if (!hasNonBackgroundState(*chunk)) {
+      chunks.erase(chunkAddress);
     }
     revision += 1;
     return true;
   }
 
-  SparseChunk* chunk = findOrCreateChunk(chunkX, chunkY);
+  try {
+    chunk = findOrCreateChunk(chunkAddress);
+  } catch (const std::bad_alloc&) {
+    return false;
+  }
   if (chunk == nullptr) {
     return false;
   }
-  chunk->cells[localIndex(address.x, address.y)] = state;
-  revision += 1;
+  if ((*chunk)[static_cast<std::size_t>(index)] != state) {
+    (*chunk)[static_cast<std::size_t>(index)] = state;
+    revision += 1;
+  }
   return true;
 }
 
 void
 SparseCellGrid::clear()
 {
-  for (std::size_t i = 0; i < activeChunks.size(); ++i) {
-    SparseChunk* chunk = activeChunks[i];
-    if (chunk != nullptr) {
-      chunk->~SparseChunk();
-      chunkPool.Deallocate(chunk);
-    }
+  if (!chunks.empty()) {
+    chunks.clear();
+    revision += 1;
   }
-  activeChunks.clear();
-  chunkPool.Clear();
-  revision += 1;
 }
 
-unsigned char
-SparseCellGrid::countAliveNeighbors(int x, int y) const
+bool
+SparseCellGrid::assignChunk(const SparseChunkRecord& record)
 {
-  unsigned char count = 0;
-  for (int dy = -1; dy <= 1; ++dy) {
-    for (int dx = -1; dx <= 1; ++dx) {
-      if (dx == 0 && dy == 0) {
-        continue;
-      }
-      CellAddress neighbor;
-      neighbor.x = x + dx;
-      neighbor.y = y + dy;
-      if (getCell(neighbor) == CountedNeighborState) {
-        count = static_cast<unsigned char>(count + 1);
-      }
-    }
+  if (!hasNonBackgroundState(record.cells)) {
+    return true;
   }
-  return count;
+  try {
+    chunks[ChunkAddress{ record.chunkX, record.chunkY }] = record.cells;
+  } catch (const std::bad_alloc&) {
+    return false;
+  }
+  revision += 1;
+  return true;
+}
+
+std::vector<SparseChunkRecord>
+SparseCellGrid::collectChunkRecords() const
+{
+  std::vector<SparseChunkRecord> records;
+  records.reserve(chunks.size());
+  for (ChunkMap::const_reference entry : chunks) {
+    SparseChunkRecord record;
+    record.chunkX = entry.first.x;
+    record.chunkY = entry.first.y;
+    record.cells = entry.second;
+    records.push_back(record);
+  }
+  std::sort(records.begin(),
+            records.end(),
+            [](const SparseChunkRecord& left, const SparseChunkRecord& right) {
+              if (left.chunkY != right.chunkY) {
+                return left.chunkY < right.chunkY;
+              }
+              return left.chunkX < right.chunkX;
+            });
+  return records;
+}
+
+void
+SparseCellGrid::collectChunkRecords(
+  std::vector<SparseChunkRecord>* records) const
+{
+  if (records == nullptr) {
+    return;
+  }
+  *records = collectChunkRecords();
+}
+
+void
+SparseCellGrid::swap(SparseCellGrid& other) noexcept
+{
+  chunks.swap(other.chunks);
+  const std::uint64_t oldRevision = revision;
+  revision = other.revision;
+  other.revision = oldRevision;
 }
 
 bool
 SparseCellGrid::advance(const RuleSet& ruleSet)
 {
-  // Collect candidate cells: all stored cells plus their Moore neighbors.
-  struct Candidate
-  {
-    int x;
-    int y;
-  };
-  std::vector<Candidate> candidates;
-  candidates.reserve(activeChunks.size() * kChunkDim * kChunkDim * 2);
+  std::unordered_set<ChunkAddress, ChunkAddressHash> targets;
+  std::vector<SparseChunkRecord> nextRecords;
 
-  auto pushUnique = [&candidates](int x, int y) {
-    for (std::size_t i = 0; i < candidates.size(); ++i) {
-      if (candidates[i].x == x && candidates[i].y == y) {
-        return;
+  try {
+    targets.reserve(chunks.size() * 9u + 1u);
+    for (ChunkMap::const_reference entry : chunks) {
+      for (int offsetY = -1; offsetY <= 1; ++offsetY) {
+        for (int offsetX = -1; offsetX <= 1; ++offsetX) {
+          targets.insert(
+            ChunkAddress{ entry.first.x + offsetX, entry.first.y + offsetY });
+        }
       }
     }
-    Candidate c;
-    c.x = x;
-    c.y = y;
-    candidates.push_back(c);
-  };
+    nextRecords.reserve(targets.size());
 
-  for (std::size_t ci = 0; ci < activeChunks.size(); ++ci) {
-    SparseChunk* chunk = activeChunks[ci];
-    if (chunk == nullptr) {
-      continue;
-    }
-    for (int ly = 0; ly < kChunkDim; ++ly) {
-      for (int lx = 0; lx < kChunkDim; ++lx) {
-        const int cellX = chunk->chunkX * kChunkDim + lx;
-        const int cellY = chunk->chunkY * kChunkDim + ly;
-        const unsigned char state = chunk->cells[ly * kChunkDim + lx];
-        if (state == BackgroundState) {
-          continue;
+    for (const ChunkAddress& target : targets) {
+      std::array<unsigned char, kHaloDim * kHaloDim> halo;
+      for (int haloY = 0; haloY < kHaloDim; ++haloY) {
+        for (int haloX = 0; haloX < kHaloDim; ++haloX) {
+          const CellAddress address{ cellCoordinate(target.x, haloX - 1),
+                                     cellCoordinate(target.y, haloY - 1) };
+          halo[static_cast<std::size_t>(haloY * kHaloDim + haloX)] =
+            getCell(address);
         }
-        for (int dy = -1; dy <= 1; ++dy) {
-          for (int dx = -1; dx <= 1; ++dx) {
-            pushUnique(cellX + dx, cellY + dy);
+      }
+
+      SparseChunkRecord next;
+      next.chunkX = target.x;
+      next.chunkY = target.y;
+      next.cells.fill(BackgroundState);
+      for (int localY = 0; localY < kChunkDim; ++localY) {
+        for (int localX = 0; localX < kChunkDim; ++localX) {
+          const int haloIndex = (localY + 1) * kHaloDim + localX + 1;
+          unsigned char aliveNeighbors = 0;
+          for (int neighborY = -1; neighborY <= 1; ++neighborY) {
+            for (int neighborX = -1; neighborX <= 1; ++neighborX) {
+              if (neighborX == 0 && neighborY == 0) {
+                continue;
+              }
+              const unsigned char neighbor = halo[static_cast<std::size_t>(
+                haloIndex + neighborY * kHaloDim + neighborX)];
+              if (neighbor == CountedNeighborState) {
+                aliveNeighbors = static_cast<unsigned char>(aliveNeighbors + 1);
+              }
+            }
           }
+          const unsigned char current =
+            halo[static_cast<std::size_t>(haloIndex)];
+          next.cells[static_cast<std::size_t>(localY * kChunkDim + localX)] =
+            ruleSet.nextState(current, aliveNeighbors);
         }
       }
+      if (hasNonBackgroundState(next.cells)) {
+        nextRecords.push_back(next);
+      }
     }
+  } catch (const std::bad_alloc&) {
+    return false;
   }
 
-  struct Change
-  {
-    int x;
-    int y;
-    unsigned char next;
-  };
-  std::vector<Change> changes;
-  changes.reserve(candidates.size());
-
-  for (std::size_t i = 0; i < candidates.size(); ++i) {
-    const int x = candidates[i].x;
-    const int y = candidates[i].y;
-    CellAddress address;
-    address.x = x;
-    address.y = y;
-    const unsigned char current = getCell(address);
-    const unsigned char neighbors = countAliveNeighbors(x, y);
-    const unsigned char next = ruleSet.nextState(current, neighbors);
-    if (next != current) {
-      Change change;
-      change.x = x;
-      change.y = y;
-      change.next = next;
-      changes.push_back(change);
+  ChunkMap nextChunks;
+  try {
+    nextChunks.reserve(nextRecords.size());
+    for (const SparseChunkRecord& record : nextRecords) {
+      nextChunks.emplace(ChunkAddress{ record.chunkX, record.chunkY },
+                         record.cells);
     }
+  } catch (const std::bad_alloc&) {
+    return false;
   }
-
-  bool ok = true;
-  for (std::size_t i = 0; i < changes.size(); ++i) {
-    CellAddress address;
-    address.x = changes[i].x;
-    address.y = changes[i].y;
-    if (!setCell(address, changes[i].next)) {
-      ok = false;
-    }
-  }
-  return ok;
+  chunks.swap(nextChunks);
+  revision += 1;
+  return true;
 }

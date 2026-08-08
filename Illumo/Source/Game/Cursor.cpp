@@ -49,7 +49,7 @@ Cursor::setWorldPosition(float x, float y)
 }
 
 void
-Cursor::setFromCell(int cellX, int cellY)
+Cursor::setFromCell(std::int64_t cellX, std::int64_t cellY)
 {
   worldX = static_cast<float>(cellX) * cellSize;
   worldY = static_cast<float>(cellY) * cellSize;

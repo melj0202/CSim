@@ -192,8 +192,20 @@ GLBackend::CreateTexture(const unsigned char* data,
                          int channels,
                          unsigned long tableID)
 {
+  return CreateTexture(
+    data, width, height, channels, tableID, TextureFilter::Nearest);
+}
+
+unsigned long
+GLBackend::CreateTexture(const unsigned char* data,
+                         const int width,
+                         const int height,
+                         int channels,
+                         unsigned long tableID,
+                         TextureFilter filter)
+{
   _textureRegistryLookup[tableID] =
-    std::make_unique<GLTexture>(data, width, height, channels);
+    std::make_unique<GLTexture>(data, width, height, channels, filter);
   return tableID;
 }
 

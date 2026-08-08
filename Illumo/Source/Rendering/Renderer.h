@@ -94,7 +94,8 @@ public:
   }
 
   // Backend-neutral inject: production uses CreateOpenGLBackend +
-  // takeOwnership=true; tests inject stack MockBackend with takeOwnership=false.
+  // takeOwnership=true; tests inject stack MockBackend with
+  // takeOwnership=false.
   Renderer(IRenderWindow* window,
            EnvVars* envVars,
            Camera* cam,
@@ -204,6 +205,17 @@ public:
                               unsigned long tableID)
   {
     return _backend->CreateTexture(data, width, height, channels, tableID);
+  }
+
+  unsigned long enrollTexture(const unsigned char* data,
+                              const int width,
+                              const int height,
+                              int channels,
+                              unsigned long tableID,
+                              TextureFilter filter)
+  {
+    return _backend->CreateTexture(
+      data, width, height, channels, tableID, filter);
   }
 
   // Opaque table IDs for enroll* (v1: monotonic, never recycled).

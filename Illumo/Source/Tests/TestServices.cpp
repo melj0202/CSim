@@ -44,11 +44,11 @@ testCameraInitializationAndControls()
 
   Camera centered(glm::vec2(0.0f, 0.0f), 1.0f, &env);
   testTrue(g,
-           nearlyEqual(centered.GetPosition().x, 800.0f),
-           "zero position centers on canvas x");
+           nearlyEqual(centered.GetPosition().x, 0.0f),
+           "zero position is the world origin x");
   testTrue(g,
-           nearlyEqual(centered.GetPosition().y, 480.0f),
-           "zero position centers on canvas y");
+           nearlyEqual(centered.GetPosition().y, 0.0f),
+           "zero position is the world origin y");
 
   Camera camera(glm::vec2(12.0f, 34.0f), 2.0f, &env);
   testTrue(g,
@@ -111,20 +111,20 @@ testCameraInitializationAndControls()
   camera.Reset();
   camera.Update(1.0f);
   testTrue(g,
-           nearlyEqual(camera.GetPosition().x, 800.0f),
-           "reset restores canvas center x");
+           nearlyEqual(camera.GetPosition().x, 0.0f),
+           "reset restores world origin x");
   testTrue(g,
-           nearlyEqual(camera.GetPosition().y, 480.0f),
-           "reset restores canvas center y");
+           nearlyEqual(camera.GetPosition().y, 0.0f),
+           "reset restores world origin y");
   testTrue(g, nearlyEqual(camera.GetZoom(), 1.0f), "reset restores zoom");
 
   Camera defaultCentered(glm::vec2(0.0f, 0.0f), 1.0f, nullptr);
   testTrue(g,
-           nearlyEqual(defaultCentered.GetPosition().x, 640.0f),
-           "no-env camera uses default canvas width");
+           nearlyEqual(defaultCentered.GetPosition().x, 0.0f),
+           "no-env camera uses world origin x");
   testTrue(g,
-           nearlyEqual(defaultCentered.GetPosition().y, 480.0f),
-           "no-env camera uses default canvas height");
+           nearlyEqual(defaultCentered.GetPosition().y, 0.0f),
+           "no-env camera uses world origin y");
 }
 
 static void

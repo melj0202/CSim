@@ -79,11 +79,15 @@ Renderer.h depends only on IBackend*; OpenGL types stay under Rendering/OpenGL/.
 back to immediate \texttt{Draw}). GL objects live in backend registries, not on
 \symbolref{DrawableBase}.
 
-Canvas end state (shipped):
+CanvasView end state (shipped):
 \begin{itemize}
-  \item Domain: \texttt{lifeCanvas}, dims, get/set, dirty rects.
-  \item View: mesh + RGB fade buffers + RGB display texture + canvas shaders;
-        dirty-rect \texttt{UpdateTexture} (PBO); draw with MVP.
+  \item Domain: \texttt{SparseCellGrid}, signed coordinates, 16$\times$16
+        chunks, and serial 18$\times$18 halo stepping.
+  \item View: bounded camera sampling + RGB fade buffers + one RGB display
+        texture and one screen-space quad; linear display sampling avoids
+        nearest-neighbor blockiness when zoomed out, while dirty-rect
+        \texttt{UpdateTexture} remains the only per-frame texture upload
+        (PBO).
   \item See \pathref{docs/architecture-consensus.md} for the single canonical
         presentation model (R8-only notes are historical).
 \end{itemize}

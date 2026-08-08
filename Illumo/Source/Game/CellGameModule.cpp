@@ -1,14 +1,15 @@
 #include "CellGameModule.h"
 #include "Rulesets/WireworldRuleSet.h"
-#include "Services/ArenaAlloc.h"
 #include "Services/Logger.h"
 #include "Services/SaveLoad.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
+#include <new>
 #include <random>
-#include <sstream>
 #include <vector>
 
 static bool
@@ -25,6 +26,25 @@ parseIntegerArgument(const std::string& text, int* value)
       return false;
     }
     *value = static_cast<int>(parsed);
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
+
+static bool
+parseWorldCoordinate(const std::string& text, std::int64_t* value)
+{
+  if (value == nullptr || text.empty()) {
+    return false;
+  }
+  try {
+    std::size_t consumed = 0;
+    const long long parsed = std::stoll(text, &consumed);
+    if (consumed != text.size()) {
+      return false;
+    }
+    *value = static_cast<std::int64_t>(parsed);
     return true;
   } catch (...) {
     return false;
@@ -138,7 +158,7 @@ CellGameModule::Start(IllumoContext* context)
   seedInitialPattern();
 
   // Initial palette from active ruleset; seed cells already mark upload dirty.
-  cellContext->getCellCanvas()->rebuildPalette(cellContext->getRuleSet());
+  cellContext->getCanvasView()->rebuildPalette(cellContext->getRuleSet());
   updateVisualTargets();
   registerConsoleCommands();
 
@@ -172,41 +192,28 @@ CellGameModule::showModeSplash(const char* label)
 void
 CellGameModule::seedInitialPattern()
 {
-  Canvas* canvas = cellContext->getCellCanvas();
-  const int w = canvas->canvasWidth;
-  const int h = canvas->canvasHeight;
-  const int ox = w / 2 - 1;
-  const int oy = h / 2 - 1;
+  SparseCellGrid* grid = cellContext->getGrid();
 
   if (cellContext->getModeString() == "WIREWORLD") {
     // Horizontal conductor with a head+tail pair so one electron travels right.
-    if (w < 8 || h < 3) {
-      Logger::LogWarning(
-        "Canvas too small for Wireworld seed; skipping initial pattern");
-      return;
-    }
-    const int y = h / 2;
-    const int startX = w / 2 - 4;
+    const std::int64_t y = 0;
+    const std::int64_t startX = -4;
     for (int i = 0; i < 8; ++i) {
-      canvas->setCanvasPixel(startX + i, y, WireworldRuleSet::CELL_CONDUCTOR);
+      grid->setCell(CellAddress{ startX + i, y },
+                    WireworldRuleSet::CELL_CONDUCTOR);
     }
-    canvas->setCanvasPixel(startX, y, WireworldRuleSet::CELL_HEAD);
-    canvas->setCanvasPixel(startX + 1, y, WireworldRuleSet::CELL_TAIL);
+    grid->setCell(CellAddress{ startX, y }, WireworldRuleSet::CELL_HEAD);
+    grid->setCell(CellAddress{ startX + 1, y }, WireworldRuleSet::CELL_TAIL);
     return;
   }
 
   // Classic Game-of-Life glider (pointing down-right). Works for most binary
   // life-like rules as a visible non-empty startup.
-  if (w >= 5 && h >= 5) {
-    canvas->setCanvasPixel(ox + 1, oy + 0, 0);
-    canvas->setCanvasPixel(ox + 2, oy + 1, 0);
-    canvas->setCanvasPixel(ox + 0, oy + 2, 0);
-    canvas->setCanvasPixel(ox + 1, oy + 2, 0);
-    canvas->setCanvasPixel(ox + 2, oy + 2, 0);
-  } else {
-    Logger::LogWarning(
-      "Canvas too small for glider seed; skipping initial pattern");
-  }
+  grid->setCell(CellAddress{ 1, 0 }, 0);
+  grid->setCell(CellAddress{ 2, 1 }, 0);
+  grid->setCell(CellAddress{ 0, 2 }, 0);
+  grid->setCell(CellAddress{ 1, 2 }, 0);
+  grid->setCell(CellAddress{ 2, 2 }, 0);
 }
 
 void
@@ -237,7 +244,7 @@ CellGameModule::updateVisualTargets()
   ZoneScopedN("Visual.updateTargets");
   // life → palette target colors (sparse); tickVisual eases displayRgb toward
   // them.
-  cellContext->getCellCanvas()->rebuildTargetsFromLife();
+  cellContext->getCanvasView()->rebuildTargetsFromGrid();
 }
 
 void
@@ -268,7 +275,7 @@ CellGameModule::registerConsoleCommands()
     }
 
     if (cellContext->setRuleSet(mode)) {
-      cellContext->getCellCanvas()->rebuildPalette(cellContext->getRuleSet());
+      cellContext->getCanvasView()->rebuildPalette(cellContext->getRuleSet());
       updateVisualTargets();
     }
     ic->commandLine->logSuccess("Ruleset: " + cellContext->getModeString());
@@ -405,7 +412,9 @@ CellGameModule::registerConsoleCommands()
         ic->commandLine->logError("Usage: clear_canvas");
         return;
       }
-      cellContext->getCellCanvas()->clearCanvas();
+      cellContext->getGrid()->clear();
+      updateVisualTargets();
+      cellContext->getCanvasView()->snapVisualToTargets();
       ic->commandLine->logSuccess("Canvas cleared");
     },
     "clear_canvas",
@@ -422,19 +431,19 @@ CellGameModule::registerConsoleCommands()
         return;
       }
 
-      Canvas* canvas = cellContext->getCellCanvas();
+      CanvasView* canvas = cellContext->getCanvasView();
       std::mt19937 generator(std::random_device{}());
       std::uniform_real_distribution<double> distribution(0.0, 100.0);
       const bool wireworld = cellContext->getModeString() == "WIREWORLD";
-      for (int y = 0; y < canvas->canvasHeight; ++y) {
-        for (int x = 0; x < canvas->canvasWidth; ++x) {
+      for (int y = 0; y < canvas->getViewHeight(); ++y) {
+        for (int x = 0; x < canvas->getViewWidth(); ++x) {
           const bool selected = distribution(generator) < density;
           const unsigned char state =
             wireworld ? (selected ? WireworldRuleSet::CELL_CONDUCTOR
                                   : WireworldRuleSet::CELL_EMPTY)
                       : (selected ? static_cast<unsigned char>(0)
                                   : static_cast<unsigned char>(1));
-          canvas->setCanvasPixel(x, y, state);
+          cellContext->getGrid()->setCell(canvas->getVisibleCell(x, y), state);
         }
       }
       ic->commandLine->logSuccess("Randomized canvas at " +
@@ -446,20 +455,17 @@ CellGameModule::registerConsoleCommands()
   ic->commandRegistry->RegisterCommand(
     "setcell",
     [this](const std::vector<std::string>& args) {
-      int x = 0;
-      int y = 0;
+      std::int64_t x = 0;
+      std::int64_t y = 0;
       int state = 0;
-      if (args.size() != 3 || !parseIntegerArgument(args[0], &x) ||
-          !parseIntegerArgument(args[1], &y) ||
+      if (args.size() != 3 || !parseWorldCoordinate(args[0], &x) ||
+          !parseWorldCoordinate(args[1], &y) ||
           !parseIntegerArgument(args[2], &state) || state < 0 || state > 255) {
         ic->commandLine->logError("Usage: setcell <x> <y> <state 0..255>");
         return;
       }
-      if (!cellContext->getCellCanvas()->setCanvasPixel(
-            x, y, static_cast<unsigned char>(state))) {
-        ic->commandLine->logError("Cell coordinates are outside the canvas");
-        return;
-      }
+      cellContext->getGrid()->setCell(CellAddress{ x, y },
+                                      static_cast<unsigned char>(state));
       ic->commandLine->logSuccess("Cell (" + std::to_string(x) + ", " +
                                   std::to_string(y) +
                                   ") = " + std::to_string(state));
@@ -484,7 +490,7 @@ CellGameModule::registerConsoleCommands()
     "camera",
     [this](const std::vector<std::string>& args) {
       if (args.empty()) {
-        glm::vec2 position = ic->camera->GetPosition();
+        glm::dvec2 position = ic->camera->GetPositionPrecise();
         ic->commandLine->logNormal(
           "Camera: x=" + std::to_string(position.x) +
           " y=" + std::to_string(position.y) +
@@ -502,8 +508,7 @@ CellGameModule::registerConsoleCommands()
         ic->commandLine->logError("Usage: camera <x> <y> [zoom 0.1..100]");
         return;
       }
-      ic->camera->SetPosition(
-        glm::vec2(static_cast<float>(x), static_cast<float>(y)));
+      ic->camera->SetPositionPrecise(x, y);
       ic->camera->SetZoom(static_cast<float>(zoom));
       ic->commandLine->logSuccess("Camera updated");
     },
@@ -555,25 +560,38 @@ CellGameModule::stepSimulation(int generations)
   currentState = CellState::EDIT;
   simAccum = 0.0;
   showModeSplash("EDIT");
-  Canvas* canvas = cellContext->getCellCanvas();
   for (int i = 0; i < generations; ++i) {
-    cellContext->getRuleSet()->calcGeneration(
-      0, 0, canvas->canvasWidth, canvas->canvasHeight);
+    cellContext->getGrid()->advance(*cellContext->getRuleSet());
   }
   updateVisualTargets();
+}
+
+static std::string
+boundedRuleTag(const char* tag, std::size_t capacity)
+{
+  if (tag == nullptr) {
+    return std::string();
+  }
+  std::size_t length = 0;
+  while (length < capacity && tag[length] != '\0') {
+    length += 1;
+  }
+  return std::string(tag, length);
 }
 
 void
 CellGameModule::printStatus() const
 {
-  const Canvas* canvas = cellContext->getCellCanvas();
+  const CanvasView* canvas = cellContext->getCanvasView();
   const glm::vec2 cameraPosition = ic->camera->GetPosition();
   ic->commandLine->logNormal(
     std::string("State: ") +
     (currentState == CellState::NORMAL ? "RUNNING" : "PAUSED/EDIT"));
   ic->commandLine->logNormal("Ruleset: " + cellContext->getModeString());
-  ic->commandLine->logNormal("Canvas: " + std::to_string(canvas->canvasWidth) +
-                             " x " + std::to_string(canvas->canvasHeight));
+  ic->commandLine->logNormal(
+    "View: " + std::to_string(canvas->getViewWidth()) + " x " +
+    std::to_string(canvas->getViewHeight()) + "; chunks: " +
+    std::to_string(cellContext->getGrid()->getAllocatedChunkCount()));
   ic->commandLine->logNormal("Rate: " + ic->envVars->getVar("tps").value +
                              " tps x " +
                              ic->envVars->getVar("speedFactor").value);
@@ -607,7 +625,7 @@ CellGameModule::syncSimRateFromEnv()
   }
   if (fadeSpeed < 0.0f)
     fadeSpeed = 0.0f;
-  cellContext->getCellCanvas()->setFadeSpeed(fadeSpeed);
+  cellContext->getCanvasView()->setFadeSpeed(fadeSpeed);
 }
 
 void
@@ -629,7 +647,7 @@ CellGameModule::Update(double dt)
         Logger::LogInfo(msg.c_str());
         // Same life values, new colors → rebuild palette only (no cell
         // re-upload).
-        cellContext->getCellCanvas()->rebuildPalette(cellContext->getRuleSet());
+        cellContext->getCanvasView()->rebuildPalette(cellContext->getRuleSet());
         if (cellContext->getModeString() == "WIREWORLD") {
           wireworldBrush = WireworldRuleSet::CELL_CONDUCTOR;
         }
@@ -643,8 +661,8 @@ CellGameModule::Update(double dt)
 
     // Zoom behavior using scroll offset
     std::array<double, 2> mouseCoords = ic->window->getMouseCoords();
-    glm::vec2 worldMouse =
-      ic->camera->ScreenToWorld(glm::vec2(mouseCoords[0], mouseCoords[1]));
+    glm::dvec2 worldMouse = ic->camera->ScreenToWorldPrecise(
+      glm::dvec2(mouseCoords[0], mouseCoords[1]));
     double* scroll = ic->inputManager->getMouseScrollOffset();
     if (*scroll != 0.0f) {
       double zoomFactor = (*scroll > 0.0f) ? 1.15 : 0.85;
@@ -689,7 +707,7 @@ CellGameModule::Update(double dt)
   // Map dirty life cells to palette target colors, then ease display toward
   // them.
   updateVisualTargets();
-  cellContext->getCellCanvas()->tickVisual(static_cast<float>(dt));
+  cellContext->getCanvasView()->tickVisual(static_cast<float>(dt));
 }
 
 void
@@ -704,9 +722,6 @@ CellGameModule::Exit()
 void
 CellGameModule::Normal(double dt)
 {
-  int width = this->cellContext->getCellCanvas()->canvasWidth;
-  int height = this->cellContext->getCellCanvas()->canvasHeight;
-
   // Pick up tps / speedFactor changes from envvars.json or console (`tps 60`).
   syncSimRateFromEnv();
 
@@ -726,7 +741,7 @@ CellGameModule::Normal(double dt)
   const int maxSteps = 64;
   int steps = 0;
   while (simAccum >= simStepSeconds && steps < maxSteps) {
-    this->cellContext->getRuleSet()->calcGeneration(0, 0, width, height);
+    this->cellContext->getGrid()->advance(*this->cellContext->getRuleSet());
     simAccum -= simStepSeconds;
     steps += 1;
   }
@@ -742,19 +757,19 @@ void
 CellGameModule::Edit(double dt)
 {
   (void)dt;
-  int width = cellContext->getCellCanvas()->canvasWidth;
-  int height = cellContext->getCellCanvas()->canvasHeight;
   static bool wasPressed = false;
-  static int lastMouseX = -1;
-  static int lastMouseY = -1;
+  static std::int64_t lastMouseX = 0;
+  static std::int64_t lastMouseY = 0;
 
   std::array<double, 2> mouseCoords = ic->window->getMouseCoords();
-  glm::vec2 worldPos =
-    ic->camera->ScreenToWorld(glm::vec2(mouseCoords[0], mouseCoords[1]));
+  glm::dvec2 worldPos = ic->camera->ScreenToWorldPrecise(
+    glm::dvec2(mouseCoords[0], mouseCoords[1]));
 
-  float cellSize = 16.0f;
-  int currentX = static_cast<int>(std::floor(worldPos.x / cellSize));
-  int currentY = static_cast<int>(std::floor(worldPos.y / cellSize));
+  const float cellSize = 16.0f;
+  const std::int64_t currentX = static_cast<std::int64_t>(
+    std::floor(worldPos.x / static_cast<double>(cellSize) + 0.5));
+  const std::int64_t currentY = static_cast<std::int64_t>(
+    std::floor(worldPos.y / static_cast<double>(cellSize) + 0.5));
 
   if (!ic->commandLine->isOpen) {
     if (cellContext->getModeString() == "WIREWORLD") {
@@ -777,24 +792,22 @@ CellGameModule::Edit(double dt)
       }
 
       if (wasPressed) {
-        int x0 = lastMouseX;
-        int y0 = lastMouseY;
-        int x1 = currentX;
-        int y1 = currentY;
-        int dx = abs(x1 - x0);
-        int dy = abs(y1 - y0);
-        int sx = (x0 < x1) ? 1 : -1;
-        int sy = (y0 < y1) ? 1 : -1;
-        int err = dx - dy;
+        std::int64_t x0 = lastMouseX;
+        std::int64_t y0 = lastMouseY;
+        const std::int64_t x1 = currentX;
+        const std::int64_t y1 = currentY;
+        const std::int64_t dx = std::llabs(x1 - x0);
+        const std::int64_t dy = std::llabs(y1 - y0);
+        const std::int64_t sx = (x0 < x1) ? 1 : -1;
+        const std::int64_t sy = (y0 < y1) ? 1 : -1;
+        std::int64_t err = dx - dy;
 
         while (true) {
-          if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height) {
-            this->cellContext->getCellCanvas()->setCanvasPixel(
-              x0, y0, colorVal);
-          }
+          this->cellContext->getGrid()->setCell(CellAddress{ x0, y0 },
+                                                colorVal);
           if (x0 == x1 && y0 == y1)
             break;
-          int e2 = 2 * err;
+          const std::int64_t e2 = 2 * err;
           if (e2 > -dy) {
             err -= dy;
             x0 += sx;
@@ -805,11 +818,8 @@ CellGameModule::Edit(double dt)
           }
         }
       } else {
-        if (currentX >= 0 && currentX < width && currentY >= 0 &&
-            currentY < height) {
-          this->cellContext->getCellCanvas()->setCanvasPixel(
-            currentX, currentY, colorVal);
-        }
+        this->cellContext->getGrid()->setCell(CellAddress{ currentX, currentY },
+                                              colorVal);
       }
       wasPressed = true;
       lastMouseX = currentX;
@@ -817,7 +827,7 @@ CellGameModule::Edit(double dt)
     } else {
       wasPressed = false;
       if (ic->inputManager->isKeyPressed(KeyCode::C))
-        this->cellContext->getCellCanvas()->clearCanvas();
+        this->cellContext->getGrid()->clear();
     }
   } else {
     wasPressed = false;
@@ -828,7 +838,7 @@ void
 CellGameModule::updateEditorCursor()
 {
   if (!ic || !ic->window || !ic->camera || !cellContext ||
-      !cellContext->getCellCanvas()) {
+      !cellContext->getCanvasView()) {
     editorCursor.setVisible(false);
     return;
   }
@@ -841,11 +851,13 @@ CellGameModule::updateEditorCursor()
   }
 
   std::array<double, 2> mouseCoords = ic->window->getMouseCoords();
-  glm::vec2 worldPos =
-    ic->camera->ScreenToWorld(glm::vec2(mouseCoords[0], mouseCoords[1]));
+  glm::dvec2 worldPos = ic->camera->ScreenToWorldPrecise(
+    glm::dvec2(mouseCoords[0], mouseCoords[1]));
   const float cellSize = 16.0f;
-  int cellX = static_cast<int>(std::floor(worldPos.x / cellSize));
-  int cellY = static_cast<int>(std::floor(worldPos.y / cellSize));
+  const std::int64_t cellX = static_cast<std::int64_t>(
+    std::floor(worldPos.x / static_cast<double>(cellSize) + 0.5));
+  const std::int64_t cellY = static_cast<std::int64_t>(
+    std::floor(worldPos.y / static_cast<double>(cellSize) + 0.5));
   editorCursor.setCellSize(cellSize);
   editorCursor.setFromCell(cellX, cellY);
 }
@@ -864,22 +876,37 @@ CellGameModule::SaveCellGame(std::string filename)
     return false;
   }
 
+  const char magic[8] = { 'I', 'L', 'L', 'U', 'M', 'O', '2', '\0' };
+  const std::uint32_t version = 2;
   char ruleTag[MAX_RULETAG_SIZE] = {};
   const std::string activeTag = cellContext->getRuleSet()->getRuleTag();
   const std::size_t tagBytes =
     std::min(activeTag.size(), static_cast<std::size_t>(MAX_RULETAG_SIZE - 1));
   std::memcpy(ruleTag, activeTag.data(), tagBytes);
 
-  Canvas* canvas = cellContext->getCellCanvas();
-  const int width = canvas->canvasWidth;
-  const int height = canvas->canvasHeight;
-  const std::size_t cellCount =
-    static_cast<std::size_t>(width) * static_cast<std::size_t>(height);
-  file.write(ruleTag, MAX_RULETAG_SIZE);
-  file.write(reinterpret_cast<const char*>(&width), sizeof(width));
-  file.write(reinterpret_cast<const char*>(&height), sizeof(height));
-  file.write(reinterpret_cast<const char*>(canvas->lifeCanvas),
-             static_cast<std::streamsize>(cellCount));
+  const glm::dvec2 cameraPosition = ic->camera->GetPositionPrecise();
+  const double cameraX = cameraPosition.x;
+  const double cameraY = cameraPosition.y;
+  const double cameraZoom = static_cast<double>(ic->camera->GetZoom());
+  const std::vector<SparseChunkRecord> records =
+    cellContext->getGrid()->collectChunkRecords();
+  const std::uint64_t chunkCount = static_cast<std::uint64_t>(records.size());
+
+  file.write(magic, sizeof(magic));
+  file.write(reinterpret_cast<const char*>(&version), sizeof(version));
+  file.write(ruleTag, sizeof(ruleTag));
+  file.write(reinterpret_cast<const char*>(&cameraX), sizeof(cameraX));
+  file.write(reinterpret_cast<const char*>(&cameraY), sizeof(cameraY));
+  file.write(reinterpret_cast<const char*>(&cameraZoom), sizeof(cameraZoom));
+  file.write(reinterpret_cast<const char*>(&chunkCount), sizeof(chunkCount));
+  for (const SparseChunkRecord& record : records) {
+    file.write(reinterpret_cast<const char*>(&record.chunkX),
+               sizeof(record.chunkX));
+    file.write(reinterpret_cast<const char*>(&record.chunkY),
+               sizeof(record.chunkY));
+    file.write(reinterpret_cast<const char*>(record.cells.data()),
+               static_cast<std::streamsize>(record.cells.size()));
+  }
   const bool succeeded = file.good();
   file.close();
   if (!succeeded) {
@@ -902,76 +929,153 @@ CellGameModule::LoadCellGame(std::string filename)
     return false;
   }
 
-  char ruleTag[MAX_RULETAG_SIZE + 1] = {};
-  int fileWidth = 0;
-  int fileHeight = 0;
-  if (!file.read(ruleTag, MAX_RULETAG_SIZE) ||
-      !file.read(reinterpret_cast<char*>(&fileWidth), sizeof(fileWidth)) ||
-      !file.read(reinterpret_cast<char*>(&fileHeight), sizeof(fileHeight))) {
+  const char expectedMagic[8] = { 'I', 'L', 'L', 'U', 'M', 'O', '2', '\0' };
+  char magic[sizeof(expectedMagic)] = {};
+  if (!file.read(magic, sizeof(magic))) {
     ic->commandLine->logError("Invalid or truncated Illumo save header");
     return false;
   }
 
-  const std::string ruleString(ruleTag);
+  std::string ruleString;
+  SparseCellGrid loadedGrid;
+  bool restoreCamera = false;
+  double savedCameraX = 0.0;
+  double savedCameraY = 0.0;
+  double savedCameraZoom = 1.0;
+
+  if (std::memcmp(magic, expectedMagic, sizeof(magic)) == 0) {
+    std::uint32_t version = 0;
+    char ruleTag[MAX_RULETAG_SIZE] = {};
+    std::uint64_t chunkCount = 0;
+    if (!file.read(reinterpret_cast<char*>(&version), sizeof(version)) ||
+        !file.read(ruleTag, sizeof(ruleTag)) ||
+        !file.read(reinterpret_cast<char*>(&savedCameraX),
+                   sizeof(savedCameraX)) ||
+        !file.read(reinterpret_cast<char*>(&savedCameraY),
+                   sizeof(savedCameraY)) ||
+        !file.read(reinterpret_cast<char*>(&savedCameraZoom),
+                   sizeof(savedCameraZoom)) ||
+        !file.read(reinterpret_cast<char*>(&chunkCount), sizeof(chunkCount))) {
+      ic->commandLine->logError("Invalid or truncated sparse save header");
+      return false;
+    }
+    if (version != 2 || chunkCount > 10000000ULL ||
+        !std::isfinite(savedCameraX) || !std::isfinite(savedCameraY) ||
+        !std::isfinite(savedCameraZoom) || savedCameraZoom < 0.1 ||
+        savedCameraZoom > 100.0) {
+      ic->commandLine->logError("Sparse save contains invalid metadata");
+      return false;
+    }
+    ruleString = boundedRuleTag(ruleTag, sizeof(ruleTag));
+    bool havePreviousChunk = false;
+    std::int64_t previousChunkX = 0;
+    std::int64_t previousChunkY = 0;
+    for (std::uint64_t i = 0; i < chunkCount; ++i) {
+      SparseChunkRecord record{};
+      if (!file.read(reinterpret_cast<char*>(&record.chunkX),
+                     sizeof(record.chunkX)) ||
+          !file.read(reinterpret_cast<char*>(&record.chunkY),
+                     sizeof(record.chunkY)) ||
+          !file.read(reinterpret_cast<char*>(record.cells.data()),
+                     static_cast<std::streamsize>(record.cells.size()))) {
+        ic->commandLine->logError("Sparse save is truncated");
+        return false;
+      }
+      bool hasCell = false;
+      for (unsigned char state : record.cells) {
+        if (state != SparseCellGrid::BackgroundState) {
+          hasCell = true;
+          break;
+        }
+      }
+      if (!hasCell) {
+        ic->commandLine->logError("Sparse save contains an empty chunk");
+        return false;
+      }
+      if (havePreviousChunk && (record.chunkY < previousChunkY ||
+                                (record.chunkY == previousChunkY &&
+                                 record.chunkX <= previousChunkX))) {
+        ic->commandLine->logError(
+          "Sparse save chunk records are not strictly sorted");
+        return false;
+      }
+      havePreviousChunk = true;
+      previousChunkX = record.chunkX;
+      previousChunkY = record.chunkY;
+      if (!loadedGrid.assignChunk(record)) {
+        ic->commandLine->logError("Sparse save contains an invalid chunk");
+        return false;
+      }
+    }
+    restoreCamera = true;
+  } else {
+    file.clear();
+    file.seekg(0, std::ios::beg);
+    char legacyRuleTag[MAX_RULETAG_SIZE] = {};
+    int fileWidth = 0;
+    int fileHeight = 0;
+    if (!file.read(legacyRuleTag, sizeof(legacyRuleTag)) ||
+        !file.read(reinterpret_cast<char*>(&fileWidth), sizeof(fileWidth)) ||
+        !file.read(reinterpret_cast<char*>(&fileHeight), sizeof(fileHeight))) {
+      ic->commandLine->logError("Invalid or truncated legacy save header");
+      return false;
+    }
+    ruleString = boundedRuleTag(legacyRuleTag, sizeof(legacyRuleTag));
+    const long long fileCellCount =
+      static_cast<long long>(fileWidth) * static_cast<long long>(fileHeight);
+    if (fileWidth < 1 || fileHeight < 1 || fileCellCount < 1 ||
+        fileCellCount > 100000000LL) {
+      ic->commandLine->logError("Legacy save contains invalid dimensions");
+      return false;
+    }
+    const std::size_t cellBytes = static_cast<std::size_t>(fileCellCount);
+    std::vector<unsigned char> loadedCells;
+    try {
+      loadedCells.resize(cellBytes);
+    } catch (const std::bad_alloc&) {
+      ic->commandLine->logError("Legacy save is too large to load");
+      return false;
+    }
+    if (!file.read(reinterpret_cast<char*>(loadedCells.data()),
+                   static_cast<std::streamsize>(cellBytes))) {
+      ic->commandLine->logError("Legacy save is truncated");
+      return false;
+    }
+    const std::int64_t originX = static_cast<std::int64_t>(fileWidth / 2);
+    const std::int64_t originY = static_cast<std::int64_t>(fileHeight / 2);
+    for (int y = 0; y < fileHeight; ++y) {
+      for (int x = 0; x < fileWidth; ++x) {
+        const unsigned char state =
+          loadedCells[static_cast<std::size_t>(y) *
+                        static_cast<std::size_t>(fileWidth) +
+                      static_cast<std::size_t>(x)];
+        if (state != SparseCellGrid::BackgroundState) {
+          loadedGrid.setCell(
+            CellAddress{ static_cast<std::int64_t>(x) - originX,
+                         static_cast<std::int64_t>(y) - originY },
+            state);
+        }
+      }
+    }
+  }
+
   if (!CellContext::IsKnownModeString(ruleString)) {
     ic->commandLine->logError("Save uses unsupported ruleset: " + ruleString);
     return false;
   }
 
-  const long long fileCellCount =
-    static_cast<long long>(fileWidth) * static_cast<long long>(fileHeight);
-  const long long maxLoadCells = 100000000LL;
-  if (fileWidth < 1 || fileHeight < 1 || fileCellCount < 1 ||
-      fileCellCount > maxLoadCells) {
-    ic->commandLine->logError("Save contains invalid canvas dimensions");
-    return false;
+  // All parsing and allocation above completed against temporary state.
+  cellContext->setRuleSet(ruleString);
+  cellContext->getGrid()->swap(loadedGrid);
+  cellContext->getCanvasView()->rebuildPalette(cellContext->getRuleSet());
+  if (restoreCamera) {
+    ic->camera->SetPositionPrecise(savedCameraX, savedCameraY);
+    ic->camera->SetZoom(static_cast<float>(savedCameraZoom));
+  } else {
+    ic->camera->Reset();
   }
-
-  // Multi-stage load scratch: one arena chunk sized to the file payload so
-  // header parse + cell buffer share a single bulk free on scope exit.
-  const std::size_t cellBytes = static_cast<std::size_t>(fileCellCount);
-  ArenaAlloc loadArena(cellBytes + 64);
-  unsigned char* loadedCells =
-    static_cast<unsigned char*>(loadArena.AllocateBytes(cellBytes));
-  if (loadedCells == nullptr) {
-    ic->commandLine->logError("Failed to allocate load buffer");
-    return false;
-  }
-  if (!file.read(reinterpret_cast<char*>(loadedCells),
-                 static_cast<std::streamsize>(cellBytes))) {
-    ic->commandLine->logError(
-      "Save is truncated before all cell data was read");
-    return false;
-  }
-
-  if (cellContext->setRuleSet(ruleString)) {
-    cellContext->getCellCanvas()->rebuildPalette(cellContext->getRuleSet());
-  }
-
-  Canvas* canvas = cellContext->getCellCanvas();
-  canvas->clearCanvas();
-  const int copyWidth = std::min(fileWidth, canvas->canvasWidth);
-  const int copyHeight = std::min(fileHeight, canvas->canvasHeight);
-  for (int y = 0; y < copyHeight; ++y) {
-    const unsigned char* sourceRow =
-      loadedCells +
-      static_cast<std::size_t>(y) * static_cast<std::size_t>(fileWidth);
-    unsigned char* destinationRow =
-      canvas->lifeCanvas + static_cast<std::size_t>(y) *
-                             static_cast<std::size_t>(canvas->canvasWidth);
-    std::memcpy(destinationRow, sourceRow, static_cast<std::size_t>(copyWidth));
-  }
-  canvas->markCellsDirty();
-  canvas->rebuildTargetsFromLife();
-  canvas->snapVisualToTargets();
-
-  if (fileWidth != canvas->canvasWidth || fileHeight != canvas->canvasHeight) {
-    ic->commandLine->logWarning(
-      "Loaded overlap from " + std::to_string(fileWidth) + " x " +
-      std::to_string(fileHeight) + " save into " +
-      std::to_string(canvas->canvasWidth) + " x " +
-      std::to_string(canvas->canvasHeight) + " canvas");
-  }
+  updateVisualTargets();
+  cellContext->getCanvasView()->snapVisualToTargets();
   return true;
 }
 
@@ -979,9 +1083,9 @@ void
 CellGameModule::CameraPan()
 {
   std::array<double, 2> mousePos = ic->inputManager->getMousePosition();
-  glm::vec2 worldMouse =
-    ic->camera->ScreenToWorld(glm::vec2(mousePos[0], mousePos[1]));
-  static glm::vec2 lastMousePos = worldMouse;
+  glm::dvec2 worldMouse =
+    ic->camera->ScreenToWorldPrecise(glm::dvec2(mousePos[0], mousePos[1]));
+  static glm::dvec2 lastMousePos = worldMouse;
   static bool wasPressed = false;
 
   if (ic->inputManager->isMouseButtonPressed(KeyCode::MouseMiddle)) {
@@ -989,9 +1093,10 @@ CellGameModule::CameraPan()
       lastMousePos = worldMouse;
       wasPressed = true;
     }
-    glm::vec2 delta = lastMousePos - worldMouse;
-    ic->camera->Pan(delta * ic->camera->GetZoom());
-    worldMouse = ic->camera->ScreenToWorld(glm::vec2(mousePos[0], mousePos[1]));
+    glm::dvec2 delta = lastMousePos - worldMouse;
+    ic->camera->Pan(delta * static_cast<double>(ic->camera->GetZoom()));
+    worldMouse =
+      ic->camera->ScreenToWorldPrecise(glm::dvec2(mousePos[0], mousePos[1]));
   } else {
     wasPressed = false;
   }
@@ -1011,7 +1116,7 @@ CellGameModule::DispatchDrawables(Scene* scene)
   }
   // Owners implement AppendCommands (domain + GameVisual). Scene lists
   // Drawable hosts by layer (World → UI → Debug).
-  scene->AddDrawable(this->cellContext->getCellCanvas(), RenderLayerId::World);
+  scene->AddDrawable(this->cellContext->getCanvasView(), RenderLayerId::World);
   if (editorCursor.isVisible()) {
     scene->AddDrawable(&editorCursor, RenderLayerId::UI);
   }

@@ -27,13 +27,13 @@ Do not rely on chat history as the source of truth.
 
 Illumo is a C++23 cellular-automata learning sandbox with a small modular-monolith
 shell. It is an engine-shaped application, not a general-purpose game engine.
-Windows, OpenGL, GLFW, and the dense-grid simulation are the current production
-path. Linux and macOS contain older port scaffolding and should not be assumed
-to compile or match Windows without fresh verification.
+Windows, OpenGL, GLFW, and the sparse infinite-canvas simulation are the current
+production path. Linux and macOS contain older port scaffolding and should not
+be assumed to compile or match Windows without fresh verification.
 
 Near-term priorities are correctness, clarity, and useful CA behavior. Do not
 introduce an ECS, render graph, generalized scene graph, multiple graphics
-backends, infinite chunks, or SYCL merely for architectural completeness.
+backends, or SYCL merely for architectural completeness.
 
 ## Current architecture
 
@@ -77,16 +77,17 @@ submission returns.
 
 Canvas truth (verify here before trusting older notes):
 
-- Domain: `CellGrid` owns dense front/back life buffers (one byte per cell
-  each) plus dirty tracking; generation promotes via buffer swap. No
-  Renderer/window/camera.
-- Presentation: `Canvas` extends `CellGrid`; a CPU palette produces `targetRgb`;
-  `displayRgb` fades toward it; `texCanvasBuffer` stores RGB bytes.
-- GPU: one RGB display texture updated through dirty rectangles; OpenGL uses a
-  PBO update path. Null renderer skips GPU enroll (domain-only construction).
-- Historical R8/palette references in the decision log describe a superseded
-  experiment. Current-state documentation must match the RGB-fade shader and
-  `Canvas.cpp` path.
+- Production domain: `SparseCellGrid` owns signed 64-bit world cells in a
+  hash map of non-background 16x16 chunks. Serial advancement reads temporary
+  18x18 halos and is non-toroidal.
+- Production presentation: `CanvasView` samples the camera-visible region into
+  a bounded RGB staging buffer, fades visible colors, snaps newly revealed
+  cells, and owns one reusable RGB texture plus one screen-space quad. Its
+  display texture uses linear filtering when stretched to the window so
+  zoomed-out views do not use nearest-neighbor block sampling.
+- Persistence always writes sparse version 2 and reads both that format and the
+  prior dense format. Legacy `CellGrid`/`Canvas` remain compatibility fixtures,
+  not a second production runtime path.
 
 Ruleset truth:
 
@@ -95,10 +96,9 @@ Ruleset truth:
 - Rule 90 and Rule 184 are stubs.
 - Binary rules encode `0` as alive and `1` as dead.
 - Wireworld encodes head `0`, empty `1`, tail `2`, conductor `3`.
-- `RuleSet` takes `CellGrid*` (no render types). `calcGeneration` is
-  double-buffered (back buffer + swap), toroidal, single-pass dirty AABB; it
-  still scans the full dense grid. Optional row-parallel above 512².
-  Visual dirty rectangles reduce fade/upload work, not sim complexity.
+- `RuleSet` transitions (`nextState`) and palette evaluation (`evalCell`) are
+  used by `SparseCellGrid`; production stepping is serial halo evaluation.
+  Dense `calcGeneration` support remains only for compatibility tests.
   Headless benches: `Illumo.Sim.MicroBench`.
 
 ## Source map
@@ -108,9 +108,10 @@ Ruleset truth:
 | Composition and main loop | `Illumo/Source/App/CellMain.cpp` |
 | Host, services, modules | `Illumo/Source/Engine/Illumo.*`, `IModule.h`, `IllumoContext.h` |
 | CA modes and editor | `Illumo/Source/Game/CellGameModule.*`, `CellContext.h` |
-| Domain cell storage | `Illumo/Source/Game/CellGrid.*` |
-| Grid, fade, dirty upload | `Illumo/Source/Game/Canvas.*` (extends CellGrid), `Illumo/Shader/canvas_*` |
-| CA behavior | `Illumo/Source/Rulesets/*` (operate on `CellGrid*`) |
+| Domain cell storage | `Illumo/Source/Game/SparseCellGrid.*` |
+| Bounded view, fade, dirty upload | `Illumo/Source/Game/CanvasView.*`, `Illumo/Shader/canvas_*` |
+| Compatibility dense storage | `Illumo/Source/Game/CellGrid.*`, `Canvas.*` |
+| CA behavior | `Illumo/Source/Rulesets/*` (`nextState`/palette) |
 | Renderer and tokens | `Illumo/Source/Rendering/Renderer.h` (IBackend* only), `RenderCommand.h`, `CommandQueue.h` |
 | Production backend factory | `Illumo/Source/Rendering/OpenGL/CreateOpenGLBackend.*` (composed in `Engine/Illumo.cpp`) |
 | Real graphics execution | `Illumo/Source/Rendering/OpenGL/*` |

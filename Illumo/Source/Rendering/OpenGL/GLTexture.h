@@ -22,7 +22,11 @@ public:
   }
 
   // channels: 1 = R8, 3 = RGB, 4 = RGBA (default)
-  GLTexture(const unsigned char* data, int width, int height, int channels = 4)
+  GLTexture(const unsigned char* data,
+            int width,
+            int height,
+            int channels = 4,
+            TextureFilter filter = TextureFilter::Nearest)
     : m_path("")
     , m_id(0)
     , m_size({ width, height })
@@ -31,7 +35,7 @@ public:
     , m_pboIndex(0)
     , m_pboBytes(0)
   {
-    UploadToGPU(data, width, height, m_channels);
+    UploadToGPU(data, width, height, m_channels, filter);
   }
 
   GLTexture(const std::string& path)
@@ -51,7 +55,7 @@ public:
     if (data) {
       m_size = { width, height };
       m_channels = 4;
-      UploadToGPU(data, width, height, 4);
+      UploadToGPU(data, width, height, 4, TextureFilter::Nearest);
       stbi_image_free(data);
     }
   }
@@ -267,7 +271,8 @@ private:
   void UploadToGPU(const unsigned char* data,
                    int width,
                    int height,
-                   int channels)
+                   int channels,
+                   TextureFilter filter)
   {
     glGenTextures(1, &m_id);
     glBindTexture(GL_TEXTURE_2D, m_id);
@@ -285,8 +290,10 @@ private:
                  GL_UNSIGNED_BYTE,
                  data);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    const GLint glFilter =
+      (filter == TextureFilter::Linear) ? GL_LINEAR : GL_NEAREST;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glFilter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 

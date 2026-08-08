@@ -49,6 +49,7 @@ set(ILLUMO_SHARED_SOURCES
     Source/Rulesets/SeedsRuleSet.cpp
     Source/Rulesets/WireworldRuleSet.cpp
     Source/Game/Canvas.cpp
+    Source/Game/CanvasView.cpp
     Source/Game/CellGrid.cpp
     Source/Game/Cursor.cpp
     Source/Game/SparseCellGrid.cpp
@@ -102,6 +103,7 @@ set(ILLUMO_TEST_SOURCES
     Source/Tests/TestRuntimeUtilities.cpp
     Source/Tests/TestAllocators.cpp
     Source/Tests/TestGameVisual.cpp
+    Source/Tests/TestCanvasInf.cpp
 )
 
 # Settings that truly are common to production and test targets. Application-

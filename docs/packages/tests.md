@@ -4,38 +4,20 @@ Executable target: **`IllumoTests`** (alias: `IllumoRenderTests`).
 
 | Suite | File | Covers |
 |-------|------|--------|
-| MockBackend | `TestMockBackend.cpp` | Token queue, create records, proof sequence |
-| Renderer E2E | `TestRendererE2E.cpp` | Inject mock into Renderer, Scene World/UI/Debug layer order, built-in styles, Canvas RGB-display tokens, hybrid draw |
-| RuleSets | `TestRuleSets.cpp` | GoL block/blinker, Seeds, Brian's Brain, tags |
-| CellContext | `TestCellContext.cpp` | Mode normalize, factory, env canvas size |
-| Canvas domain | `TestCanvasDomain.cpp` | set/get, clear, palette/fade, dirty-rect RGB upload, shared style enroll |
-| Simulation perf | `TestSim.cpp` | double-buffer still life, dirty AABB, serial/parallel identity, micro-bench gens/s |
-| UI tokens + console | `TestUITokens.cpp` | CommandLine editing/completion/validation/dispatch/help; command chaining and aliases; ghost text and parameter hints; repeat execution and history search; history wrap and scroll-to-start; open/closed/invisible tokens; full-help mesh-capacity regression; GLString empty/FPS; combined scene |
-| Allocators | `TestAllocators.cpp` | Arena / stack / pool / malloc; frame/parse helpers; SparseCellGrid pool chunks |
-| GameVisual | `TestGameVisual.cpp` | Shape/sprite/text primitive host, texture-sort batches, composition embed pattern |
+| MockBackend / Renderer | `TestMockBackend.cpp`, `TestRendererE2E.cpp` | Token queue, backend injection, styles, scene layers, texture updates |
+| RuleSets | `TestRuleSets.cpp` | Pure transitions, palettes, tags, active modes |
+| CellContext | `TestCellContext.cpp` | Sparse view construction, mode factory, env view size |
+| Sparse canvas | `TestCanvasInf.cpp` | Signed negative mapping, chunk boundaries, unbounded chunks, serial halos, multi-state transitions, bounded view, linear display filtering, fade and camera reveal |
+| CellGameModule | `TestCellGameModule.cpp` | Editing/commands, centered seeds, sparse v2 save/load, legacy import, validation, camera restoration |
+| Compatibility domain | `TestCanvasDomain.cpp`, `TestDomainBoundary.cpp`, `TestSim.cpp` | Retained dense compatibility and legacy ruleset behavior |
+| Services / UI / allocators | `TestServices.cpp`, `TestUITokens.cpp`, `TestAllocators.cpp`, `TestGameVisual.cpp` | Input, camera, console, allocators, primitive composition |
 
-Shared helpers: `TestHelpers.h`, `TestHarness.h` (`NullRenderWindow`, `HeadlessCanvasFixture`).
+CTest invokes one exact logical `Illumo.*` case per process with no OpenGL
+context. The suite does not replace a manual Windows/OpenGL smoke test.
 
 ## Build & run
 
-From the repository root, a normal default build now builds and runs the
-current suite automatically:
-
-```bat
+```powershell
 cmake --build build --config Release
+ctest --test-dir build -C Release -L Illumo --output-on-failure
 ```
-
-From the CMake build directory (repo `build/`), the explicit commands remain:
-
-```bat
-cmake --build . --config Release --target IllumoTests
-ctest -C Release -R IllumoTests --output-on-failure
-```
-
-Or:
-
-```bat
-Release\IllumoTests.exe
-```
-
-Exit code `0` = all checks passed. No OpenGL context is required for these tests (`MockBackend`).

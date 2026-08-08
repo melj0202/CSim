@@ -8,9 +8,11 @@
 #include "Tests/TestHarness.h"
 #include "Tests/TestHelpers.h"
 #include "Tests/TestRegistry.h"
+#include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -134,6 +136,14 @@ writeSaveFile(const std::filesystem::path& path,
   }
 }
 
+static std::vector<char>
+readFileBytes(const std::filesystem::path& path)
+{
+  std::ifstream input(path, std::ios::binary);
+  return std::vector<char>(std::istreambuf_iterator<char>(input),
+                           std::istreambuf_iterator<char>());
+}
+
 static void
 testStartRegistersGameFeatures()
 {
@@ -229,9 +239,9 @@ testWireworldSeedAndBrush()
   testTrue(
     g, cellContext->getModeString() == "WIREWORLD", "ModeString is WIREWORLD");
 
-  Canvas* canvas = cellContext->getCellCanvas();
-  const int y = canvas->canvasHeight / 2;
-  const int startX = canvas->canvasWidth / 2 - 4;
+  CanvasView* canvas = cellContext->getCanvasView();
+  const std::int64_t y = 0;
+  const std::int64_t startX = -4;
   testEqInt(g,
             static_cast<int>(canvas->getCanvasPixel(startX, y)),
             static_cast<int>(WireworldRuleSet::CELL_HEAD),
@@ -266,19 +276,25 @@ testSaveLoadRoundTrip()
   CellGameFixture fixture(5, 4);
   CellContext* cellContext =
     CellGameModuleTestAccess::getCellContext(fixture.module);
-  Canvas* canvas = cellContext->getCellCanvas();
+  CanvasView* canvas = cellContext->getCanvasView();
   cellContext->setRuleSet("WIREWORLD");
   canvas->clearCanvas();
   canvas->setCanvasPixel(0, 0, WireworldRuleSet::CELL_HEAD);
   canvas->setCanvasPixel(2, 1, WireworldRuleSet::CELL_TAIL);
   canvas->setCanvasPixel(4, 3, WireworldRuleSet::CELL_CONDUCTOR);
+  canvas->setCanvasPixel(-20, 4, WireworldRuleSet::CELL_CONDUCTOR);
+  fixture.camera.SetPositionPrecise(123456789.25, -987654321.5);
+  fixture.camera.SetZoom(2.5f);
 
   const std::filesystem::path savePath = "roundtrip.illumo";
   testTrue(g,
            CellGameModuleTestAccess::save(fixture.module, savePath.string()),
            "valid canvas saves");
+  const std::vector<char> firstSave = readFileBytes(savePath);
   canvas->clearCanvas();
   cellContext->setRuleSet("SEEDS");
+  fixture.camera.SetPositionPrecise(1.0, 2.0);
+  fixture.camera.SetZoom(1.0f);
   testTrue(g,
            CellGameModuleTestAccess::load(fixture.module, savePath.string()),
            "saved canvas loads");
@@ -297,10 +313,25 @@ testSaveLoadRoundTrip()
               canvas->getCanvasPixel(4, 3),
               WireworldRuleSet::CELL_CONDUCTOR,
               "conductor state round-trips");
+  testEqUChar(g,
+              canvas->getCanvasPixel(-20, 4),
+              WireworldRuleSet::CELL_CONDUCTOR,
+              "far chunk state round-trips");
+  testTrue(g,
+           fixture.camera.GetPositionPrecise() ==
+             glm::dvec2(123456789.25, -987654321.5),
+           "saved camera position round-trips precisely");
+  testTrue(g, fixture.camera.GetZoom() == 2.5f, "saved camera zoom round-trips");
+
+  testTrue(g,
+           CellGameModuleTestAccess::save(fixture.module, "roundtrip-again.illumo"),
+           "same sparse state saves again");
+  const std::vector<char> secondSave = readFileBytes("roundtrip-again.illumo");
+  testTrue(g, firstSave == secondSave, "sparse save output is deterministic");
   testEqSize(g,
              std::filesystem::file_size(savePath),
-             static_cast<std::size_t>(MAX_RULETAG_SIZE + sizeof(int) * 2 + 20),
-             "save has the expected dense binary size");
+             static_cast<std::size_t>(172 + 2 * (16 * 16 + 16)),
+             "save contains the sparse header and two chunk records");
 }
 
 static void
@@ -319,6 +350,40 @@ testLoadRejectsInvalidFiles()
   testTrue(g,
            !CellGameModuleTestAccess::load(fixture.module, "short.illumo"),
            "truncated header rejected");
+
+  const char sparseMagic[8] = { 'I', 'L', 'L', 'U', 'M', 'O', '2', '\0' };
+  const std::uint32_t sparseVersion = 2;
+  char sparseTag[MAX_RULETAG_SIZE] = {};
+  std::memcpy(sparseTag, "SEEDS", 5);
+  const double sparseCameraX = 0.0;
+  const double sparseCameraY = 0.0;
+  const double sparseZoom = 1.0;
+  const std::uint64_t sparseChunks = 1;
+  {
+    std::ofstream output("short-v2.illumo", std::ios::binary | std::ios::trunc);
+    output.write(sparseMagic, sizeof(sparseMagic));
+    output.write(reinterpret_cast<const char*>(&sparseVersion),
+                 sizeof(sparseVersion));
+    output.write(sparseTag, sizeof(sparseTag));
+    output.write(reinterpret_cast<const char*>(&sparseCameraX),
+                 sizeof(sparseCameraX));
+    output.write(reinterpret_cast<const char*>(&sparseCameraY),
+                 sizeof(sparseCameraY));
+    output.write(reinterpret_cast<const char*>(&sparseZoom),
+                 sizeof(sparseZoom));
+    output.write(reinterpret_cast<const char*>(&sparseChunks),
+                 sizeof(sparseChunks));
+  }
+  CellContext* liveContext =
+    CellGameModuleTestAccess::getCellContext(fixture.module);
+  liveContext->getGrid()->setCell(CellAddress{ 77, 88 }, 0);
+  testTrue(g,
+           !CellGameModuleTestAccess::load(fixture.module, "short-v2.illumo"),
+           "truncated sparse record rejected");
+  testEqUChar(g,
+              liveContext->getGrid()->getCell(CellAddress{ 77, 88 }),
+              0,
+              "malformed sparse load does not mutate live state");
 
   writeSaveFile("unknown-rule.illumo", "NOT_A_RULE", 2, 2, { 1, 1, 1, 1 });
   testTrue(
@@ -358,17 +423,20 @@ testLoadCopiesOverlap()
   testTrue(g,
            CellGameModuleTestAccess::load(fixture.module, "small.illumo"),
            "different-size valid save loads");
-  Canvas* canvas =
-    CellGameModuleTestAccess::getCellContext(fixture.module)->getCellCanvas();
-  testEqUChar(g, canvas->getCanvasPixel(0, 0), 0, "overlap row zero copied");
+  CanvasView* canvas =
+    CellGameModuleTestAccess::getCellContext(fixture.module)->getCanvasView();
   testEqUChar(
-    g, canvas->getCanvasPixel(1, 0), 1, "overlap row zero width preserved");
-  testEqUChar(g, canvas->getCanvasPixel(1, 1), 0, "overlap row one copied");
+    g, canvas->getCanvasPixel(-1, -1), 0, "legacy origin row zero copied");
+  testEqUChar(
+    g, canvas->getCanvasPixel(0, -1), 1, "legacy row zero width preserved");
+  testEqUChar(g, canvas->getCanvasPixel(0, 0), 0, "legacy row one copied");
   testEqUChar(
     g, canvas->getCanvasPixel(3, 2), 1, "outside overlap remains empty");
   testTrue(g,
-           historyContains(fixture.console, "Loaded overlap from 2 x 2"),
-           "size mismatch is reported");
+           CellGameModuleTestAccess::getCellContext(fixture.module)
+               ->getGrid()
+               ->getAllocatedChunkCount() == 2,
+           "legacy cells are imported sparsely");
 }
 
 static void
@@ -388,15 +456,13 @@ testConsoleSimulationCommands()
            "unknown mode is reported");
 
   fixture.execute("setcell", { "1", "2", "0" });
-  Canvas* canvas =
-    CellGameModuleTestAccess::getCellContext(fixture.module)->getCellCanvas();
+  CanvasView* canvas =
+    CellGameModuleTestAccess::getCellContext(fixture.module)->getCanvasView();
   testEqUChar(
     g, canvas->getCanvasPixel(1, 2), 0, "setcell writes a valid cell");
-  fixture.execute("setcell", { "99", "2", "0" });
+  fixture.execute("setcell", { "-99", "2", "0" });
   fixture.execute("setcell", { "1", "2", "999" });
-  testTrue(g,
-           historyContains(fixture.console, "outside the canvas"),
-           "setcell bounds error is reported");
+  testEqUChar(g, canvas->getCanvasPixel(-99, 2), 0, "far setcell is accepted");
   testTrue(g,
            historyContains(fixture.console, "Usage: setcell"),
            "setcell state validation is reported");
@@ -405,13 +471,16 @@ testConsoleSimulationCommands()
   testEqUChar(
     g, canvas->getCanvasPixel(1, 2), 1, "clear command empties cells");
   fixture.execute("randomize", { "100" });
+  const CellAddress visibleOrigin = canvas->getVisibleCell(0, 0);
   testEqUChar(g,
-              canvas->getCanvasPixel(0, 0),
+              canvas->getCanvasPixel(visibleOrigin.x, visibleOrigin.y),
               0,
               "100 percent binary randomize fills alive cells");
   fixture.execute("randomize", { "0" });
-  testEqUChar(
-    g, canvas->getCanvasPixel(0, 0), 1, "zero percent randomize empties cells");
+  testEqUChar(g,
+              canvas->getCanvasPixel(visibleOrigin.x, visibleOrigin.y),
+              1,
+              "zero percent randomize empties cells");
   fixture.execute("randomize", { "101" });
   testTrue(g,
            historyContains(fixture.console, "percentage from 0 to 100"),
@@ -518,7 +587,7 @@ testUpdateStateAndTiming()
   CellGameFixture fixture(5, 5);
   CellContext* cellContext =
     CellGameModuleTestAccess::getCellContext(fixture.module);
-  Canvas* canvas = cellContext->getCellCanvas();
+  CanvasView* canvas = cellContext->getCanvasView();
   canvas->clearCanvas();
   canvas->setCanvasPixel(1, 2, 0);
   canvas->setCanvasPixel(2, 2, 0);

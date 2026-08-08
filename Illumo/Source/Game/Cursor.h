@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Rendering/Primitives/GameVisual.h"
+#include <cstdint>
 
 // Editor/game cursor composed of shape primitives on a GameVisual host.
 // Modules add getVisual() (or the Cursor if used as DrawableBase*) to Scene.
@@ -13,7 +14,7 @@ public:
   void setCellSize(float size);
   void setColor(ColorRgba color);
   void setWorldPosition(float worldX, float worldY);
-  void setFromCell(int cellX, int cellY);
+  void setFromCell(std::int64_t cellX, std::int64_t cellY);
   void rebuild();
 
 private:
