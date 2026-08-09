@@ -1,4 +1,3 @@
-#define STB_IMAGE_IMPLEMENTATION
 #include "GLBackend.h"
 #include "GLDevice.h"
 #include "GLShaderProgram.h"
@@ -9,7 +8,6 @@
 #include <GLFW/glfw3.h>
 #include <IRenderWindow.h>
 #include <IShaderProgram.h>
-#include <RenderPass.h>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -86,36 +84,38 @@ GLBackend::ClearCommandQueue()
 void
 GLBackend::Shutdown()
 {
-  for (std::unordered_map<unsigned long, std::unique_ptr<GLMesh>>::iterator it =
+  for (std::unordered_map<uint32_t, GLMeshResourceEntry>::iterator it =
          _vaoRegistryLookup.begin();
        it != _vaoRegistryLookup.end();
        ++it) {
-    if (it->second) {
-      it->second->Destroy();
+    if (it->second.resource) {
+      it->second.resource->Destroy();
     }
   }
   _vaoRegistryLookup.clear();
+  meshHandles.clear();
 
-  for (std::unordered_map<unsigned long,
-                          std::unique_ptr<GLShaderProgram>>::iterator it =
+  for (std::unordered_map<uint32_t, GLShaderResourceEntry>::iterator it =
          _programRegistryLookup.begin();
        it != _programRegistryLookup.end();
        ++it) {
-    if (it->second) {
-      it->second->Destroy();
+    if (it->second.resource) {
+      it->second.resource->Destroy();
     }
   }
   _programRegistryLookup.clear();
+  shaderHandles.clear();
 
-  for (std::unordered_map<unsigned long, std::unique_ptr<GLTexture>>::iterator
-         it = _textureRegistryLookup.begin();
+  for (std::unordered_map<uint32_t, GLTextureResourceEntry>::iterator it =
+         _textureRegistryLookup.begin();
        it != _textureRegistryLookup.end();
        ++it) {
-    if (it->second) {
-      it->second->Destroy();
+    if (it->second.resource) {
+      it->second.resource->Destroy();
     }
   }
   _textureRegistryLookup.clear();
+  textureHandles.clear();
 
   delete device;
   device = nullptr;
@@ -123,95 +123,266 @@ GLBackend::Shutdown()
   commandQueue = nullptr;
 }
 
-unsigned long
+MeshHandle
 GLBackend::CreateMesh(const void* vertices,
                       size_t vertexSize,
                       const void* indices,
-                      size_t indexSize,
-                      unsigned long tableID)
+                      size_t indexSize)
 {
   return CreateMesh(vertices,
                     vertexSize,
                     indices,
                     indexSize,
-                    tableID,
                     MeshVertexLayout::Pos3Color3Uv2,
                     false);
 }
 
-unsigned long
+MeshHandle
 GLBackend::CreateMesh(const void* vertices,
                       size_t vertexSize,
                       const void* indices,
                       size_t indexSize,
-                      unsigned long tableID,
                       MeshVertexLayout layout,
                       bool dynamic)
 {
-  _vaoRegistryLookup[tableID] = std::make_unique<GLMesh>(
+  MeshHandle handle = meshHandles.allocate();
+  GLMeshResourceEntry entry;
+  entry.generation = handle.generation;
+  entry.resource = std::make_unique<GLMesh>(
     vertices, vertexSize, indices, indexSize, layout, dynamic);
-  return tableID;
+  _vaoRegistryLookup[handle.slot] = std::move(entry);
+  return handle;
 }
 
-unsigned long
-GLBackend::CreateMesh(std::string filePath, unsigned long tableID)
+bool
+GLBackend::ReplaceMesh(MeshHandle handle,
+                       const void* vertices,
+                       size_t vertexSize,
+                       const void* indices,
+                       size_t indexSize,
+                       MeshVertexLayout layout,
+                       bool dynamic)
 {
-  (void)filePath;
-  Logger::LogWarning("CreateMesh(filePath) is not implemented");
-  return tableID;
+  std::unordered_map<uint32_t, GLMeshResourceEntry>::iterator it =
+    _vaoRegistryLookup.find(handle.slot);
+  if (it == _vaoRegistryLookup.end() ||
+      it->second.generation != handle.generation) {
+    Logger::LogWarning("ReplaceMesh: stale mesh handle ignored");
+    return false;
+  }
+  std::unique_ptr<GLMesh> replacement = std::make_unique<GLMesh>(
+    vertices, vertexSize, indices, indexSize, layout, dynamic);
+  if (it->second.resource) {
+    it->second.resource->Destroy();
+  }
+  it->second.resource = std::move(replacement);
+  return true;
 }
 
-unsigned long
-GLBackend::CreateShaderProgram(const ShaderPaths& paths, unsigned long tableID)
+bool
+GLBackend::DestroyMesh(MeshHandle handle)
 {
-  _programRegistryLookup[tableID] = std::make_unique<GLShaderProgram>(paths);
-  return tableID;
+  std::unordered_map<uint32_t, GLMeshResourceEntry>::iterator it =
+    _vaoRegistryLookup.find(handle.slot);
+  if (it == _vaoRegistryLookup.end() ||
+      it->second.generation != handle.generation) {
+    Logger::LogWarning("DestroyMesh: stale mesh handle ignored");
+    return false;
+  }
+  if (it->second.resource) {
+    it->second.resource->Destroy();
+  }
+  _vaoRegistryLookup.erase(it);
+  return meshHandles.release(handle);
 }
 
-unsigned long
-GLBackend::CreateShaderProgram(const ShaderSources& sources,
-                               unsigned long tableID)
+bool
+GLBackend::IsMeshValid(MeshHandle handle) const
 {
-  _programRegistryLookup[tableID] = std::make_unique<GLShaderProgram>(sources);
-  return tableID;
+  std::unordered_map<uint32_t, GLMeshResourceEntry>::const_iterator it =
+    _vaoRegistryLookup.find(handle.slot);
+  return meshHandles.isCurrent(handle) && it != _vaoRegistryLookup.end() &&
+         it->second.generation == handle.generation;
 }
 
-unsigned long
+ShaderHandle
+GLBackend::CreateShaderProgram(const ShaderPaths& paths)
+{
+  ShaderHandle handle = shaderHandles.allocate();
+  GLShaderResourceEntry entry;
+  entry.generation = handle.generation;
+  entry.resource = std::make_unique<GLShaderProgram>(paths);
+  if (!entry.resource->isValid()) {
+    shaderHandles.release(handle);
+    return ShaderHandle{};
+  }
+  _programRegistryLookup[handle.slot] = std::move(entry);
+  return handle;
+}
+
+ShaderHandle
+GLBackend::CreateShaderProgram(const ShaderSources& sources)
+{
+  ShaderHandle handle = shaderHandles.allocate();
+  GLShaderResourceEntry entry;
+  entry.generation = handle.generation;
+  entry.resource = std::make_unique<GLShaderProgram>(sources);
+  if (!entry.resource->isValid()) {
+    shaderHandles.release(handle);
+    return ShaderHandle{};
+  }
+  _programRegistryLookup[handle.slot] = std::move(entry);
+  return handle;
+}
+
+bool
+GLBackend::ReplaceShaderProgram(ShaderHandle handle,
+                                const ShaderSources& sources)
+{
+  std::unordered_map<uint32_t, GLShaderResourceEntry>::iterator it =
+    _programRegistryLookup.find(handle.slot);
+  if (it == _programRegistryLookup.end() ||
+      it->second.generation != handle.generation) {
+    Logger::LogWarning("ReplaceShaderProgram: stale shader handle ignored");
+    return false;
+  }
+  std::unique_ptr<GLShaderProgram> replacement =
+    std::make_unique<GLShaderProgram>(sources);
+  if (!replacement->isValid()) {
+    replacement->Destroy();
+    return false;
+  }
+  if (it->second.resource) {
+    it->second.resource->Destroy();
+  }
+  it->second.resource = std::move(replacement);
+  return true;
+}
+
+bool
+GLBackend::DestroyShaderProgram(ShaderHandle handle)
+{
+  std::unordered_map<uint32_t, GLShaderResourceEntry>::iterator it =
+    _programRegistryLookup.find(handle.slot);
+  if (it == _programRegistryLookup.end() ||
+      it->second.generation != handle.generation) {
+    Logger::LogWarning("DestroyShaderProgram: stale shader handle ignored");
+    return false;
+  }
+  if (it->second.resource) {
+    it->second.resource->Destroy();
+  }
+  _programRegistryLookup.erase(it);
+  return shaderHandles.release(handle);
+}
+
+bool
+GLBackend::IsShaderValid(ShaderHandle handle) const
+{
+  std::unordered_map<uint32_t, GLShaderResourceEntry>::const_iterator it =
+    _programRegistryLookup.find(handle.slot);
+  return shaderHandles.isCurrent(handle) &&
+         it != _programRegistryLookup.end() &&
+         it->second.generation == handle.generation && it->second.resource &&
+         it->second.resource->isValid();
+}
+
+TextureHandle
 GLBackend::CreateTexture(const unsigned char* data,
                          const int width,
-                         const int height,
-                         unsigned long tableID)
+                         const int height)
 {
-  return CreateTexture(data, width, height, 4, tableID);
+  TextureOptions options;
+  return CreateTexture(data, width, height, 4, options);
 }
 
-unsigned long
+TextureHandle
 GLBackend::CreateTexture(const unsigned char* data,
                          const int width,
                          const int height,
                          int channels,
-                         unsigned long tableID)
+                         const TextureOptions& options)
 {
-  return CreateTexture(
-    data, width, height, channels, tableID, TextureFilter::Nearest);
+  if (data == nullptr || width <= 0 || height <= 0) {
+    return TextureHandle{};
+  }
+  TextureHandle handle = textureHandles.allocate();
+  GLTextureResourceEntry entry;
+  entry.generation = handle.generation;
+  entry.resource =
+    std::make_unique<GLTexture>(data, width, height, channels, options);
+  _textureRegistryLookup[handle.slot] = std::move(entry);
+  return handle;
 }
 
-unsigned long
-GLBackend::CreateTexture(const unsigned char* data,
-                         const int width,
-                         const int height,
-                         int channels,
-                         unsigned long tableID,
-                         TextureFilter filter)
+bool
+GLBackend::ReplaceTexture(TextureHandle handle,
+                          const unsigned char* data,
+                          int width,
+                          int height,
+                          int channels,
+                          const TextureOptions& options)
 {
-  _textureRegistryLookup[tableID] =
-    std::make_unique<GLTexture>(data, width, height, channels, filter);
-  return tableID;
+  std::unordered_map<uint32_t, GLTextureResourceEntry>::iterator it =
+    _textureRegistryLookup.find(handle.slot);
+  if (it == _textureRegistryLookup.end() ||
+      it->second.generation != handle.generation) {
+    Logger::LogWarning("ReplaceTexture: stale texture handle ignored");
+    return false;
+  }
+  if (data == nullptr || width <= 0 || height <= 0) {
+    Logger::LogWarning("ReplaceTexture: invalid texture data ignored");
+    return false;
+  }
+  std::unique_ptr<GLTexture> replacement =
+    std::make_unique<GLTexture>(data, width, height, channels, options);
+  if (it->second.resource) {
+    it->second.resource->Destroy();
+  }
+  it->second.resource = std::move(replacement);
+  return true;
 }
 
-unsigned long
-GLBackend::CreateTexture(const std::string& filePath, unsigned long tableID)
+bool
+GLBackend::DestroyTexture(TextureHandle handle)
 {
-  _textureRegistryLookup[tableID] = std::make_unique<GLTexture>(filePath);
-  return tableID;
+  std::unordered_map<uint32_t, GLTextureResourceEntry>::iterator it =
+    _textureRegistryLookup.find(handle.slot);
+  if (it == _textureRegistryLookup.end() ||
+      it->second.generation != handle.generation) {
+    Logger::LogWarning("DestroyTexture: stale texture handle ignored");
+    return false;
+  }
+  if (it->second.resource) {
+    it->second.resource->Destroy();
+  }
+  _textureRegistryLookup.erase(it);
+  return textureHandles.release(handle);
+}
+
+bool
+GLBackend::IsTextureValid(TextureHandle handle) const
+{
+  std::unordered_map<uint32_t, GLTextureResourceEntry>::const_iterator it =
+    _textureRegistryLookup.find(handle.slot);
+  return textureHandles.isCurrent(handle) &&
+         it != _textureRegistryLookup.end() &&
+         it->second.generation == handle.generation;
+}
+
+TextureInfo
+GLBackend::GetTextureInfo(TextureHandle handle) const
+{
+  TextureInfo info;
+  std::unordered_map<uint32_t, GLTextureResourceEntry>::const_iterator it =
+    _textureRegistryLookup.find(handle.slot);
+  if (!textureHandles.isCurrent(handle) || it == _textureRegistryLookup.end() ||
+      it->second.generation != handle.generation || !it->second.resource) {
+    return info;
+  }
+  const std::array<int, 2> size = it->second.resource->getSize();
+  info.width = size[0];
+  info.height = size[1];
+  info.channels = it->second.resource->getChannels();
+  return info;
 }

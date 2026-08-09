@@ -162,6 +162,9 @@ Illumo::Render()
   }
 
   if (renderer) {
+    if (assetManager) {
+      assetManager->pump();
+    }
     renderer->BeginFrame();
     renderer->RenderScene(context.scene, context.camera);
     renderer->EndFrame();

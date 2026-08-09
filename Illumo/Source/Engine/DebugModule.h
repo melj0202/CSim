@@ -2,6 +2,8 @@
 #include "CommandLine.h"
 #include "IModule.h"
 #include "Rendering/GLString.h"
+#include "Rendering/Primitives/GameVisual.h"
+#include "Rendering/Primitives/SpriteAnimation.h"
 #include <tracy/Tracy.hpp>
 
 class DebugModule : public IModule
@@ -17,8 +19,21 @@ public:
 private:
   bool isShowFpsEnabled() const;
   void updateFpsCounter(double dt);
+  void registerRendererCommands();
+  void unregisterRendererCommands();
+  void createRendererDemo();
 
   GLString* fpsLabel;
+  GameVisual* rendererDemo;
+  TextureHandle rendererDemoTexture{};
+  ShaderHandle rendererDemoShader{};
+  RenderStyleHandle rendererDemoStyle{};
+  SpriteAnimationClip rendererDemoClip;
+  SpriteAnimator rendererDemoAnimator;
+  size_t animatedSpriteIndex;
+  size_t rotatingSpriteIndex;
+  bool rendererDemoEnabled;
+  double rendererDemoRotation;
   double fpsAccum;
   int fpsFrames;
   int fpsDisplay;

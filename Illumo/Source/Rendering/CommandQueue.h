@@ -1,57 +1,73 @@
 #pragma once
-#include "Foundation/ArrayQueue.h"
 #include "RenderCommand.h"
 #include "Services/Logger.h"
+#include <algorithm>
+#include <vector>
 
-// Fixed-capacity per-frame command buffer. Overflow drops new commands and
-// logs once per Reset() interval so a runaway emitter is visible without
-// spamming every discarded token (D-R12).
+// Growable per-frame command buffer with an explicit safety ceiling. Typical
+// frames stay inside the initial reserve; pathological emitters cannot grow
+// memory without bound.
 class CommandQueue
 {
 private:
-  static const size_t MAX_DRAW_COMMANDS = 2048;
-  ArrayQueue<RenderCommand>* commandQueue;
-  size_t m_CommandCount = 0;
-  size_t m_DroppedThisFrame = 0;
-  size_t m_TotalDropped = 0;
-  bool m_OverflowLoggedThisFrame = false;
+  static const size_t INITIAL_CAPACITY = 2048;
+  static const size_t DEFAULT_MAX_COMMANDS = 65536;
+  std::vector<RenderCommand> commandQueue;
+  size_t maxCommands;
+  size_t rejectedThisFrame = 0;
+  size_t totalRejected = 0;
+  size_t highWaterMark = 0;
+  bool rejectionLoggedThisFrame = false;
 
 public:
-  CommandQueue()
+  explicit CommandQueue(size_t safetyCeiling = DEFAULT_MAX_COMMANDS)
+    : maxCommands(safetyCeiling < INITIAL_CAPACITY ? INITIAL_CAPACITY
+                                                   : safetyCeiling)
   {
-    commandQueue = new ArrayQueue<RenderCommand>(MAX_DRAW_COMMANDS);
+    commandQueue.reserve(INITIAL_CAPACITY);
   }
-  ~CommandQueue() { delete commandQueue; }
+  ~CommandQueue() = default;
 
   void Reset()
   {
-    m_CommandCount = 0;
-    m_DroppedThisFrame = 0;
-    m_OverflowLoggedThisFrame = false;
+    commandQueue.clear();
+    rejectedThisFrame = 0;
+    rejectionLoggedThisFrame = false;
   }
 
-  void Submit(RenderCommand command)
+  bool Submit(RenderCommand command)
   {
-    if (m_CommandCount < MAX_DRAW_COMMANDS) {
-      (*commandQueue)[m_CommandCount] = command;
-      m_CommandCount++;
-      return;
+    if (commandQueue.size() < maxCommands) {
+      if (commandQueue.size() == commandQueue.capacity()) {
+        const size_t doubled = commandQueue.capacity() * 2;
+        const size_t nextCapacity =
+          std::min(maxCommands, std::max(commandQueue.size() + 1, doubled));
+        commandQueue.reserve(nextCapacity);
+      }
+      commandQueue.push_back(command);
+      if (commandQueue.size() > highWaterMark) {
+        highWaterMark = commandQueue.size();
+      }
+      return true;
     }
 
-    m_DroppedThisFrame++;
-    m_TotalDropped++;
-    if (!m_OverflowLoggedThisFrame) {
-      m_OverflowLoggedThisFrame = true;
+    rejectedThisFrame++;
+    totalRejected++;
+    if (!rejectionLoggedThisFrame) {
+      rejectionLoggedThisFrame = true;
       Logger::LogError(
-        "CommandQueue full (2048 commands); dropping overflow tokens until "
-        "Clear/Reset. Raise capacity only after profiling the emitter.");
+        "CommandQueue reached its safety ceiling; rejecting tokens until "
+        "Clear/Reset.");
     }
+    return false;
   }
 
-  size_t GetCommandCount() const { return m_CommandCount; }
-  size_t GetCapacity() const { return MAX_DRAW_COMMANDS; }
-  size_t GetDroppedThisFrame() const { return m_DroppedThisFrame; }
-  size_t GetTotalDropped() const { return m_TotalDropped; }
-  bool HasOverflowedThisFrame() const { return m_DroppedThisFrame > 0; }
-  RenderCommand& GetCommand(size_t index) { return (*commandQueue)[index]; }
+  size_t GetCommandCount() const { return commandQueue.size(); }
+  size_t GetCapacity() const { return commandQueue.capacity(); }
+  size_t GetSafetyCeiling() const { return maxCommands; }
+  size_t GetRejectedThisFrame() const { return rejectedThisFrame; }
+  size_t GetTotalRejected() const { return totalRejected; }
+  size_t GetHighWaterMark() const { return highWaterMark; }
+  bool HasRejectedThisFrame() const { return rejectedThisFrame > 0; }
+  RenderCommand& GetCommand(size_t index) { return commandQueue[index]; }
 };

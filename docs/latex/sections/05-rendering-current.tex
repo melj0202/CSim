@@ -2,8 +2,9 @@
 \label{sec:rendering-current}
 
 \begin{statusbox}
-\textbf{Token migration Phases 1--6 are complete for planned scope.} Live frame
-path is enroll + tokens + submit via \symbolref{Renderer}/\symbolref{IBackend}.
+\textbf{The reusable 2D renderer foundation is shipped inside Illumo.} Live
+frame path is acquire/enroll + tokens + submit via
+\symbolref{Renderer}/\symbolref{IBackend}.
 Drawables emit tokens through \texttt{AppendCommands}; GL draw submission is
 confined to \pathref{Rendering/OpenGL/} (plus window bootstrap). Headless
 \pathref{Rendering/Mock/MockBackend.h} powers \texttt{IllumoTests}. CanvasView
@@ -18,7 +19,8 @@ No second real GPU API.
   \item Modules call \symbolref{DispatchDrawables} and add \symbolref{DrawableBase*}
         pointers to \symbolref{Scene} \textbf{layers}
         (\texttt{World} CanvasView, \texttt{UI} console/splash, \texttt{Debug} FPS).
-  \item \symbolref{Illumo::Render} drives \symbolref{Renderer}:
+  \item \symbolref{Illumo::Render} pumps completed managed asset work, then
+        drives \symbolref{Renderer}:
         \texttt{BeginFrame} $\rightarrow$ \texttt{RenderScene} $\rightarrow$
         \texttt{EndFrame} (swap).
   \item \symbolref{Renderer::RenderScene}:
@@ -30,26 +32,43 @@ No second real GPU API.
         \symbolref{GLDevice::ExecuteCommandQueue} resolves handles and issues GL.
 \end{enumerate}
 
-\subsection{Layers, styles, and drawables (D-R14)}
+\subsection{Layers, styles, and drawables (D-R14, D-R18)}
 \begin{itemize}
   \item \textbf{Layer} --- composition bucket / draw order on the default FB
         (not a multi-target GPU pass).
-  \item \textbf{RenderStyle} --- Renderer-owned table: shader handle +
+  \item \textbf{RenderStyle} --- Renderer-owned generational registry: shader handle +
         \texttt{PipelineState} defaults (\texttt{Canvas}, \texttt{UiText},
-        \texttt{Console}). GPU programs still live in backend registries.
+        \texttt{Console}, \texttt{Shape}, \texttt{Sprite}). Custom 2D styles
+        use the same camera, texture, and resolution binding conventions. GPU
+        programs still live in backend registries.
   \item \symbolref{DrawableBase} --- type-erased list entry; virtual
         \texttt{Draw} + virtual \texttt{AppendCommands} (default returns false).
         \textbf{No GL handle ownership} on the base (D-R6). Content handles
         only; call \texttt{bindStyle} then emit content tokens.
   \item \symbolref{Drawable<Derived>} --- CRTP: \texttt{Draw} $\rightarrow$
-        \texttt{DrawImpl} for the rare immediate path.
-  \item Production emitters (CanvasView, CommandLine, GLString/SplashText) use
+        \texttt{DrawImpl} for the rare immediate path. Production emitters
+        (CanvasView, CommandLine, GLString/SplashText) use
         \texttt{AppendCommands} only; \texttt{DrawImpl} is empty/no-op.
   \item \symbolref{GameVisual} (D-R15) hosts composed
-        \texttt{ShapePrimitive}/\texttt{SpritePrimitive} value lists; other
-        classes embed the host to build complex objects. Scene lists the host
-        once, not each primitive.
+        shape/sprite/text values. Parent and local \texttt{Transform2D},
+        normalized pivots, atlas regions/flips, and integer draw order build one
+        stable cross-type stream. Only adjacent compatible items batch, so
+        transparent painter order is never changed by a global texture sort.
+        Dynamic buffers reserve 1,024 quads, double as needed, and stop at a
+        configurable 65,536 default ceiling.
 \end{itemize}
+
+\subsection{Managed texture and shader assets (D-R17)}
+\symbolref{AssetManager} caches canonical file paths plus loading options and
+returns stable typed handles. Duplicate acquisition increments a reference
+count; the final release destroys the backend resource. Initial pending or
+failed requests retain a checkerboard texture or a fallback shader that follows
+the documented custom-2D binding contract. One owned worker performs file reads
+and stb decoding; \texttt{pump} applies GPU
+replacement on the render thread before frame submission. Failed reloads keep
+the last good object and record an error. Debug builds poll timestamps every
+500\,ms and coalesce requests; explicit reload is available in all builds.
+Shutdown cancels obsolete results and joins the worker before backend teardown.
 
 \subsection{CanvasView presentation (bounded RGB fade + dirty rects)}
 \label{sec:canvas-rgb-fade}
@@ -70,10 +89,10 @@ No second real GPU API.
         world-space quad aligned to the same 16$\times$16 cell bounds as the
         editor cursor, updated via at most one dirty-rect
         \texttt{UpdateTexture} token per submission (PBO path; optional
-        \texttt{srcRowStride}).
-  \item Shaders: \pathref{Shader/canvas\_vertex.glsl},
+        \texttt{srcRowStride}). Shaders:
+        \pathref{Shader/canvas\_vertex.glsl},
         \pathref{Shader/canvas\_frag.glsl} --- sample \texttt{uDisplayTexture}.
-  \item History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
+        History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
         Fade was restored; dirty-rect PBO + bind-state tracker from that work
         remain. Canonical write-up:
         \pathref{docs/architecture-consensus.md} \S5.6.
@@ -81,12 +100,18 @@ No second real GPU API.
 
 \subsection{Backend surface}
 \symbolref{IBackend}: lifecycle and command-queue push/submit/clear. Resource
-enrollment is \texttt{CreateMesh}, \texttt{CreateShaderProgram}, and
-\texttt{CreateTexture} (handles = \texttt{unsigned long} table IDs).
+creation returns non-convertible slot+generation \texttt{MeshHandle},
+\texttt{ShaderHandle}, and \texttt{TextureHandle} values. Validated
+replace/destroy/query operations and command resolution reject stale handles
+with a warning and safe no-op.
+
+\symbolref{CommandQueue}: vector storage reserves 2,048 tokens, grows to a
+configurable 65,536 default safety ceiling, and reports high-water and rejected
+counts. Rejection logs once per reset interval.
 
 \symbolref{RenderCommand}: tagged union (\texttt{CommandType} + POD payload)
 including pipeline, bind, uniforms, \texttt{UpdateTexture}, \texttt{UpdateBuffer},
-clear, draw (D-R1).
+clear, draw, and explicit enabled/disabled scissor state (D-R1).
 
 \symbolref{GLTexture::UpdateSubImage}: PBO ping-pong + dirty-rect packing;
 fallback to client \texttt{glTexSubImage2D} if map fails.
@@ -101,6 +126,10 @@ viewport within a submit); uniform location cache; blend-func-on-enable (D-R5).
   \item \symbolref{GLString}: geometry cache --- skip VBO re-upload if
         content/style unchanged (FPS $\sim$1\,Hz rebuilds).
   \item \symbolref{SplashText}: mode label built on GLString; woken on EDIT/NORMAL.
+  \item \symbolref{DebugModule}: \texttt{renderer\_demo}, \texttt{assets}, and
+        \texttt{asset\_reload} prove managed atlas/shader loading, atlas
+        animation, transforms, tint, alpha order, async load, state inspection,
+        and reload in Debug builds only.
 \end{itemize}
 
 \subsection{Tests (headless)}
@@ -119,9 +148,9 @@ GPU context is required. The Clang/LLVM \texttt{IllumoCoverage} target enforces
         production drawables are pure-token (D-R10).
   \item String-named uniforms are GL-shaped debt if a second real GPU API appears
         (D-R9).
-  \item \symbolref{Renderer.h} still includes GL backend headers for production
-        construction (test injection uses \symbolref{IBackend*}).
   \item \pathref{RenderWindow} still uses GLEW for context create / viewport
         (window bootstrap, not frame submission).
   \item Platform Linux/macOS render windows may still be older than the Windows path.
+  \item Font atlases/UTF-8 layout, tilemaps/particles, and offscreen compositing
+        are follow-on features, not hidden scaffolding in the current renderer.
 \end{enumerate}

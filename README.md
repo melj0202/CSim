@@ -39,7 +39,9 @@ under `docs/`. Start with:
 - `docs/latex/illumo.tex` — the only current LaTeX/PDF entrypoint
 - `docs/output/illumo.pdf` — generated locally; not a source of truth
 
-**Current stack (short):** token renderer (`AppendCommands` → `IBackend`),
+**Current stack (short):** reusable 2D token renderer (`AppendCommands` →
+`IBackend`) with typed generational handles, painter-correct primitives,
+dynamic quad buffers, and asynchronous texture/shader assets,
 `SparseCellGrid` domain + revision-gated `CanvasView` RGB-fade presentation +
 dirty-rect upload, retained flat-indexed chunk-local cell-candidate scratch /
 per-target candidate-or-halo CA `nextState`, separate stored/counting masks,
@@ -148,6 +150,7 @@ builds only. Type `help` for the live list or `help <command>` for details.
 | Canvas | `clear_canvas`, `randomize [percent]`, `setcell <x> <y> <state>` |
 | Rules and files | `ruleset [name]`, `save <file>`, `load <file>`, `save_dialog`, `load_dialog` |
 | Camera and display | `camera [x y [zoom]]`, `camera_reset`, `fullscreen`, `fps` |
+| Renderer diagnostics | `renderer_demo [on|off]`, `assets`, `asset_reload <all|path>` |
 | Timing | `tps`, `speed`, `fade` |
 | Environment | `get`, `set`, `toggle`, `vars [filter]` |
 | Console/app | `help`, `echo`, `clear`, `close`, `quit` |

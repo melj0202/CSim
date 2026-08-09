@@ -10,6 +10,8 @@
 #include "Tests/TestRegistry.h"
 #include <GLFW/glfw3.h>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -203,126 +205,206 @@ testBackendConfigTokens()
 static void
 testAssetManagerEnrollment()
 {
-  testSection("AssetManager: enroll assets and track counts");
+  testSection("AssetManager: cache, fallback, and reference counts");
   HeadlessCanvasFixture fixture(4, 4);
-  AssetManager assets(&fixture.renderer);
-  const size_t createsAfterCanvas = fixture.mock.getCreateCount();
-  const std::vector<float> vertices = { 0.0f, 1.0f, 2.0f };
-  const unsigned char pixels[] = { 255, 0, 0, 255 };
-  ShaderPaths paths;
-  paths.vertexPath = "vertex.glsl";
-  paths.fragmentPath = "fragment.glsl";
-  ShaderSources sources;
-  sources.vertexSource = "void main(){}";
-  sources.fragmentSource = "void main(){}";
+  AssetManager assets(&fixture.renderer, false);
+  const std::filesystem::path path =
+    std::filesystem::current_path() / "asset-cache-test.ppm";
+  {
+    std::ofstream file(path, std::ios::binary);
+    file << "P6\n1 1\n255\n";
+    const unsigned char pixel[3] = { 255, 32, 16 };
+    file.write(reinterpret_cast<const char*>(pixel), 3);
+  }
 
+  TextureHandle first = assets.acquireTexture(
+    path.string(), TextureOptions{}, AssetLoadMode::Synchronous);
+  TextureHandle duplicate =
+    assets.acquireTexture((path.parent_path() / "." / path.filename()).string(),
+                          TextureOptions{},
+                          AssetLoadMode::Async);
+  testTrue(g, first == duplicate, "canonical duplicate returns same handle");
+  AssetStatus status = assets.getState(first);
+  testTrue(g, status.state == AssetState::Ready, "synchronous load is ready");
   testEqInt(g,
-            static_cast<int>(assets.LoadMeshToGlobal("global.mesh")),
-            0,
-            "global mesh path gets first id");
-  testEqInt(g,
-            static_cast<int>(assets.LoadMeshToScene("scene.mesh")),
-            1,
-            "scene mesh path gets second id");
-  testEqInt(g,
-            static_cast<int>(assets.LoadMeshToGlobal(vertices)),
+            static_cast<int>(status.referenceCount),
             2,
-            "global memory mesh gets third id");
-  testEqInt(g,
-            static_cast<int>(assets.LoadMeshToScene(vertices)),
-            3,
-            "scene memory mesh gets fourth id");
-  testEqInt(g,
-            static_cast<int>(assets.GetMeshCount()),
-            4,
-            "mesh count tracks all enrollments");
+            "duplicate acquisition increments reference count");
+  TextureInfo info = assets.getTextureInfo(first);
+  testEqInt(g, info.width, 1, "decoded width replaces fallback metadata");
+  testTrue(g, assets.releaseTexture(first), "first release succeeds");
+  testTrue(g,
+           fixture.mock.IsTextureValid(first),
+           "resource survives while one reference remains");
+  testTrue(g, assets.releaseTexture(first), "last release succeeds");
+  testTrue(g,
+           !fixture.mock.IsTextureValid(first),
+           "last release destroys backend resource");
 
+  TextureHandle missing = assets.acquireTexture(
+    "missing-asset.png", TextureOptions{}, AssetLoadMode::Synchronous);
+  AssetStatus missingStatus = assets.getState(missing);
+  testTrue(g,
+           missingStatus.state == AssetState::Failed,
+           "missing texture enters failed state");
+  testTrue(g,
+           fixture.mock.IsTextureValid(missing),
+           "failed initial load keeps stable fallback texture");
   testEqInt(g,
-            static_cast<int>(assets.LoadTextureToGlobal("global.png")),
-            0,
-            "global texture path gets first id");
-  testEqInt(g,
-            static_cast<int>(assets.LoadTextureToScene("scene.png")),
-            1,
-            "scene texture path gets second id");
-  testEqInt(g,
-            static_cast<int>(assets.LoadTextureToGlobal(pixels, 1, 1)),
+            assets.getTextureInfo(missing).width,
             2,
-            "global memory texture gets third id");
-  testEqInt(g,
-            static_cast<int>(assets.LoadTextureToScene(pixels, 1, 1)),
-            3,
-            "scene memory texture gets fourth id");
-  testEqInt(g,
-            static_cast<int>(assets.GetTextureCount()),
-            4,
-            "texture count tracks all enrollments");
+            "fallback texture info remains available");
 
-  testEqInt(g,
-            static_cast<int>(assets.LoadShaderToGlobal(paths)),
-            0,
-            "global shader paths get first id");
-  testEqInt(g,
-            static_cast<int>(assets.LoadShaderToScene(paths)),
-            1,
-            "scene shader paths get second id");
-  testEqInt(g,
-            static_cast<int>(assets.LoadShaderToGlobal(sources)),
-            2,
-            "global shader sources get third id");
-  testEqInt(g,
-            static_cast<int>(assets.LoadShaderToScene(sources)),
-            3,
-            "scene shader sources get fourth id");
-  testEqInt(g,
-            static_cast<int>(assets.GetShaderCount()),
-            4,
-            "shader count tracks all enrollments");
-  // 4 mesh + 4 texture + 4 shader = 12 backend creates after canvas baseline.
-  testEqSize(g,
-             fixture.mock.getCreateCount() - createsAfterCanvas,
-             12,
-             "renderer receives every asset enrollment after canvas setup");
+  const std::filesystem::path atlasPath =
+    std::filesystem::path(__FILE__).parent_path().parent_path().parent_path() /
+    "Assets" / "RendererDemo" / "showcase-atlas.ppm";
+  TextureHandle atlas = assets.acquireTexture(
+    atlasPath.string(), TextureOptions{}, AssetLoadMode::Synchronous);
+  testTrue(g,
+           assets.getState(atlas).state == AssetState::Ready,
+           "first-party renderer atlas decodes successfully");
+  TextureInfo atlasInfo = assets.getTextureInfo(atlas);
+  testTrue(g,
+           atlasInfo.width == 8 && atlasInfo.height == 2,
+           "first-party renderer atlas has expected dimensions");
 }
 
 static void
 testAssetManagerLookupAndShutdown()
 {
-  testSection("AssetManager: lookup misses, frees, and shutdown");
+  testSection("AssetManager: reload retention and pending cancellation");
   HeadlessCanvasFixture fixture(4, 4);
-  AssetManager assets(&fixture.renderer);
-  assets.LoadMeshToGlobal("mesh");
-  assets.LoadTextureToGlobal("texture");
-  ShaderSources sources;
-  sources.vertexSource = "vertex";
-  sources.fragmentSource = "fragment";
-  assets.LoadShaderToGlobal(sources);
+  AssetManager assets(&fixture.renderer, false);
+  const std::filesystem::path path =
+    std::filesystem::current_path() / "asset-reload-test.ppm";
+  {
+    std::ofstream file(path, std::ios::binary);
+    file << "P6\n1 1\n255\n";
+    const unsigned char pixel[3] = { 8, 16, 32 };
+    file.write(reinterpret_cast<const char*>(pixel), 3);
+  }
+
+  TextureHandle handle = assets.acquireTexture(
+    path.string(), TextureOptions{}, AssetLoadMode::Synchronous);
+  testEqSize(
+    g, assets.getState(handle).revision, 1u, "initial revision is one");
+  {
+    std::ofstream file(path, std::ios::binary | std::ios::trunc);
+    file << "P6\n2 1\n255\n";
+    const unsigned char pixels[6] = { 8, 16, 32, 64, 128, 255 };
+    file.write(reinterpret_cast<const char*>(pixels), 6);
+  }
+  testTrue(g, assets.reload(handle), "explicit reload is queued");
   testTrue(
-    g, assets.GetMesh(99) == nullptr, "missing mesh lookup returns null");
-  testTrue(
-    g, assets.GetTexture(99) == nullptr, "missing texture lookup returns null");
-  testTrue(
-    g, assets.GetShader(99) == nullptr, "missing shader lookup returns null");
-  testTrue(g, assets.FreeMesh(99), "null mesh lookup entry can be removed");
-  testTrue(
-    g, assets.FreeTexture(99), "null texture lookup entry can be removed");
-  testTrue(g, assets.FreeShader(99), "null shader lookup entry can be removed");
-  testTrue(g, !assets.FreeMesh(99), "removed mesh entry is then absent");
-  testTrue(g, !assets.FreeTexture(99), "removed texture entry is then absent");
-  testTrue(g, !assets.FreeShader(99), "removed shader entry is then absent");
-  assets.Shutdown();
+    g, !assets.reload(handle), "duplicate reload is coalesced while pending");
+  assets.completePendingForTests();
+  testEqSize(
+    g, assets.getState(handle).revision, 2u, "reload increments revision");
   testEqInt(g,
-            static_cast<int>(assets.GetMeshCount()),
-            0,
-            "shutdown resets mesh count");
+            assets.getTextureInfo(handle).width,
+            2,
+            "reload replaces texture metadata");
+
+  fixture.mock.setRejectNextTextureReplacement(true);
+  testTrue(g, assets.reload(handle), "failed upload reload is queued");
+  assets.completePendingForTests();
+  AssetStatus failedReload = assets.getState(handle);
+  testTrue(g,
+           failedReload.state == AssetState::Ready,
+           "failed reload retains last ready state");
+  testEqSize(g, failedReload.revision, 2u, "failed reload retains revision");
+  testTrue(g, !failedReload.lastError.empty(), "failed reload records error");
+
+  TextureHandle pending = assets.acquireTexture(
+    "release-while-pending.png", TextureOptions{}, AssetLoadMode::Async);
+  testTrue(g,
+           assets.getState(pending).state == AssetState::Pending,
+           "async request starts pending with fallback");
+  testTrue(g, assets.releaseTexture(pending), "pending asset can be released");
+  assets.completePendingForTests();
+  testTrue(g,
+           !fixture.mock.IsTextureValid(pending),
+           "obsolete pending result cannot resurrect released handle");
+
+  {
+    AssetManager workerAssets(&fixture.renderer);
+    workerAssets.acquireTexture(
+      "worker-cancel.png", TextureOptions{}, AssetLoadMode::Async);
+  }
+  testTrue(g, true, "worker joins cleanly with pending work");
+}
+
+static void
+testAssetManagerShaderLifecycle()
+{
+  testSection("AssetManager: shader cache and failed reload retention");
+  HeadlessCanvasFixture fixture(4, 4);
+  AssetManager assets(&fixture.renderer, false);
+  const std::filesystem::path vertexPath =
+    std::filesystem::current_path() / "asset-test.vert";
+  const std::filesystem::path fragmentPath =
+    std::filesystem::current_path() / "asset-test.frag";
+  {
+    std::ofstream vertex(vertexPath, std::ios::binary);
+    std::ofstream fragment(fragmentPath, std::ios::binary);
+    vertex << "#version 330 core\nvoid main(){gl_Position=vec4(0.0);}";
+    fragment << "#version 330 core\nout vec4 c;void main(){c=vec4(1.0);}";
+  }
+  ShaderPaths paths;
+  paths.vertexPath = vertexPath.string();
+  paths.fragmentPath = fragmentPath.string();
+  ShaderHandle shader = assets.acquireShader(paths, AssetLoadMode::Synchronous);
+  ShaderHandle duplicate = assets.acquireShader(paths, AssetLoadMode::Async);
+  testTrue(g, shader == duplicate, "shader cache returns same typed handle");
+  AssetStatus status = assets.getState(shader);
+  testTrue(g, status.state == AssetState::Ready, "shader becomes ready");
   testEqInt(g,
-            static_cast<int>(assets.GetTextureCount()),
-            0,
-            "shutdown resets texture count");
-  testEqInt(g,
-            static_cast<int>(assets.GetShaderCount()),
-            0,
-            "shutdown resets shader count");
+            static_cast<int>(status.referenceCount),
+            2,
+            "shader cache increments reference count");
+
+  fixture.mock.setRejectNextShaderReplacement(true);
+  testTrue(g, assets.reload(shader), "explicit shader reload queues");
+  assets.completePendingForTests();
+  AssetStatus failedReload = assets.getState(shader);
+  testTrue(g,
+           failedReload.state == AssetState::Ready,
+           "failed shader reload keeps last good program");
+  testEqSize(g,
+             failedReload.revision,
+             1u,
+             "failed shader reload keeps last good revision");
+  testTrue(g,
+           !failedReload.lastError.empty(),
+           "failed shader reload records compile/link error");
+  const std::vector<std::string> descriptions = assets.describeAssets();
+  bool foundVisibleError = false;
+  for (const std::string& description : descriptions) {
+    if (description.find("shader state=ready refs=2 rev=1 error=") == 0) {
+      foundVisibleError = true;
+      break;
+    }
+  }
+  testTrue(g,
+           foundVisibleError,
+           "asset diagnostics place retained shader error before long paths");
+  testTrue(g, assets.releaseShader(shader), "first shader release succeeds");
+  testTrue(g, assets.releaseShader(shader), "last shader release succeeds");
+  testTrue(g,
+           !fixture.mock.IsShaderValid(shader),
+           "last shader release destroys backend program");
+
+  ShaderPaths missingPaths;
+  missingPaths.vertexPath = "missing.vert";
+  missingPaths.fragmentPath = "missing.frag";
+  ShaderHandle missing =
+    assets.acquireShader(missingPaths, AssetLoadMode::Synchronous);
+  testTrue(g,
+           assets.getState(missing).state == AssetState::Failed,
+           "missing shader files enter failed state");
+  testTrue(g,
+           fixture.mock.IsShaderValid(missing),
+           "failed initial shader retains stable fallback program");
 }
 
 static void
@@ -364,8 +446,8 @@ testSystemArgumentParsing()
   char cw[] = "-cw";
   char wh[] = "-wh";
   char height[] = "768";
-  char* arguments[] = { executable, ch, canvasHeight, ww, width,
-                        cw,         canvasWidth, wh, height };
+  char* arguments[] = { executable, ch,          canvasHeight, ww,    width,
+                        cw,         canvasWidth, wh,           height };
   SysCmdLine::ParseCommandLine(9, arguments, &env);
   testTrue(g, env.getVar("WinX").value == "1024", "window width parsed");
   testTrue(g, env.getVar("WinY").value == "768", "window height parsed");
@@ -383,12 +465,13 @@ testContextRequirementChecks()
   MockBackend mock;
   mock.Initialize();
   Renderer renderer(&window, &env, &camera, &mock, false);
+  AssetManager assetManager(&renderer, false);
   CommandRegistry registry;
   CommandLine console(&env, &registry, &window, &renderer);
   InputManager input(nullptr);
   Scene scene(&window, &camera);
-  IllumoContext context{ &scene,  &window, &console, &input,   &renderer,
-                         nullptr, &env,    &camera,  &registry };
+  IllumoContext context{ &scene,        &window, &console, &input,   &renderer,
+                         &assetManager, &env,    &camera,  &registry };
   testTrue(g,
            IllumoContextHasGameCore(&context),
            "game core accepts the interface-based window fixture");
@@ -400,6 +483,11 @@ testContextRequirementChecks()
   testTrue(g,
            IllumoContextHasDebugCore(&context),
            "debug core does not require scene");
+  context.assetManager = nullptr;
+  testTrue(g,
+           !IllumoContextHasDebugCore(&context),
+           "debug core requires managed assets");
+  context.assetManager = &assetManager;
   context.commandLine = nullptr;
   testTrue(g,
            !IllumoContextHasDebugCore(&context),
@@ -473,6 +561,9 @@ registerRuntimeUtilityTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.AssetManager.LookupAndShutdown", []() {
     return runRuntimeUtilityCase(testAssetManagerLookupAndShutdown);
+  });
+  registry.add("Illumo.AssetManager.ShaderLifecycle", []() {
+    return runRuntimeUtilityCase(testAssetManagerShaderLifecycle);
   });
   registry.add("Illumo.SysCmdLine.Validators", []() {
     return runRuntimeUtilityCase(testSystemArgumentValidators);

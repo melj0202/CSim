@@ -24,7 +24,7 @@ Canvas::Canvas(int width,
   displayRgb = nullptr;
   targetRgb = nullptr;
   fadeSpeed = 8.0f;
-  displayTextureHandle = 0;
+  displayTextureHandle = TextureHandle{};
   gpuReady = false;
   worldWidth = 0.0f;
   worldHeight = 0.0f;
@@ -38,6 +38,10 @@ Canvas::Canvas(int width,
 
 Canvas::~Canvas()
 {
+  if (renderer != nullptr && displayTextureHandle.isValid()) {
+    renderer->destroyTexture(displayTextureHandle);
+    displayTextureHandle = TextureHandle{};
+  }
   freeCanvas();
 }
 
@@ -141,9 +145,8 @@ Canvas::enrollGpuResources()
   visual.prepare(renderer);
 
   // RGB display texture (faded colors). Domain remains lifeCanvas on CPU.
-  displayTextureHandle = renderer->allocateHandle();
-  renderer->enrollTexture(
-    texCanvasBuffer, canvasWidth, canvasHeight, 3, displayTextureHandle);
+  displayTextureHandle =
+    renderer->enrollTexture(texCanvasBuffer, canvasWidth, canvasHeight, 3);
 
   ColorRgba white{ 255, 255, 255, 255 };
   visual.clearPrimitives();

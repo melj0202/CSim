@@ -14,10 +14,10 @@ Source lives under \pathref{Illumo/Source/}. Package names describe
 \pathref{Engine/} & Host: \symbolref{Illumo}, \symbolref{IModule}, context bag, Debug-only module. \\
 \pathref{Game/} & Domain: canvas, cell game module, editor tools (brush/cursor). \\
 \pathref{Rulesets/} & Polymorphic CA rules; \pathref{AllSets.h} umbrella for active sets. \\
-\pathref{Rendering/} & Window, camera, drawables, scene, RHI-ish interfaces, OpenGL backend, Mock. \\
+\pathref{Rendering/} & Typed resources, managed texture/shader assets, painter-correct 2D primitives, Scene/tokens, OpenGL, Mock. \\
 \pathref{Services/} & Log, env vars, input, CLI (token UI), allocators, \symbolref{SaveLoad} API. \\
 \pathref{Foundation/} & Macros, build/sys info, math type aliases, small containers. \\
-\pathref{Assets/} & Asset loaders (e.g.\ TTF). \\
+\pathref{Assets/} & First-party runtime data copied beside the executable. \\
 \pathref{Platform/} & OS entry points + native dialogs / save-load. \\
 \pathref{Tests/} & Granular headless suite (\texttt{IllumoTests}): game/save-load, input/services, assets, mock backend, rules, canvas, UI tokens. \\
 \bottomrule
@@ -28,7 +28,8 @@ Source lives under \pathref{Illumo/Source/}. Package names describe
 \begin{itemize}
   \item \pathref{Illumo/Shader/} --- GLSL assets copied to the build tree
         (\texttt{canvas\_*.glsl}, \texttt{triangle\_*.glsl}, UI shaders).
-  \item \pathref{Illumo/Assets/} --- runtime files (fonts).
+  \item \pathref{Illumo/Assets/} --- runtime files (fonts and the Debug
+        renderer-demo atlas/shader).
   \item \pathref{Illumo/thirdparty/} --- vendored deps (GLFW, GLEW, GLM, FreeType, Tracy, \ldots).
   \item \pathref{archive/} --- historical code (old State pattern, dead render stacks). Not built.
   \item \pathref{docs/} --- all first-party documentation: current Markdown,

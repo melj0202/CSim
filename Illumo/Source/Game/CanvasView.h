@@ -100,7 +100,7 @@ private:
   float fadeSpeed;
 
   GameVisual visual;
-  unsigned long displayTextureHandle;
+  TextureHandle displayTextureHandle{};
   bool gpuReady;
   bool fadeActive;
   bool textureUploadPending;

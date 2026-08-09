@@ -1,7 +1,9 @@
 #pragma once
 #include "Rendering/CommandQueue.h"
 #include "Rendering/IBackend.h"
+#include "Rendering/ResourceHandlePool.h"
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 // Headless IBackend for automated tests (Phase 6).
@@ -18,11 +20,16 @@ public:
       ShaderPaths,
       ShaderSources,
       TextureData,
-      TextureFile,
-      DescriptorSet
+      ReplaceMesh,
+      ReplaceShader,
+      ReplaceTexture,
+      DestroyMesh,
+      DestroyShader,
+      DestroyTexture
     };
     Kind kind = Kind::Mesh;
-    unsigned long tableID = 0;
+    uint32_t slot = 0;
+    uint32_t generation = 0;
     size_t vertexSize = 0;
     size_t indexSize = 0;
     int width = 0;
@@ -48,6 +55,34 @@ private:
   int fps = 0;
   bool initialized = false;
   bool shutDown = false;
+  size_t rejectedStaleCommands = 0;
+  bool rejectNextShaderReplacement = false;
+  bool rejectNextTextureReplacement = false;
+  ResourceHandlePool<MeshHandle> meshHandles;
+  ResourceHandlePool<ShaderHandle> shaderHandles;
+  ResourceHandlePool<TextureHandle> textureHandles;
+  std::unordered_map<uint32_t, uint32_t> liveMeshes;
+  std::unordered_map<uint32_t, uint32_t> liveShaders;
+  std::unordered_map<uint32_t, uint32_t> liveTextures;
+  std::unordered_map<uint32_t, TextureInfo> textureInfos;
+
+  bool isCommandResourceValid(const RenderCommand& command) const
+  {
+    switch (command.commandType) {
+      case CommandType::SetMesh:
+        return IsMeshValid(command.bindMesh.handle);
+      case CommandType::SetShader:
+        return IsShaderValid(command.bindShader.handle);
+      case CommandType::SetTexture:
+        return IsTextureValid(command.bindTexture.handle);
+      case CommandType::UpdateBuffer:
+        return IsMeshValid(command.updateBuffer.handle);
+      case CommandType::UpdateTexture:
+        return IsTextureValid(command.updateTexture.handle);
+      default:
+        return true;
+    }
+  }
 
 public:
   MockBackend() = default;
@@ -64,6 +99,13 @@ public:
     commandQueue.Reset();
     lastSubmitted.clear();
     creates.clear();
+    liveMeshes.clear();
+    liveShaders.clear();
+    liveTextures.clear();
+    textureInfos.clear();
+    meshHandles.clear();
+    shaderHandles.clear();
+    textureHandles.clear();
     shutDown = true;
   }
 
@@ -76,7 +118,12 @@ public:
     lastSubmitted.clear();
     const size_t n = commandQueue.GetCommandCount();
     for (size_t i = 0; i < n; ++i) {
-      lastSubmitted.push_back(commandQueue.GetCommand(i));
+      const RenderCommand& command = commandQueue.GetCommand(i);
+      if (isCommandResourceValid(command)) {
+        lastSubmitted.push_back(command);
+      } else {
+        rejectedStaleCommands++;
+      }
     }
     if (!lastSubmitted.empty()) {
       lastNonEmptySubmitted = lastSubmitted;
@@ -96,13 +143,12 @@ public:
 
   void setFPS(int value) { fps = value; }
 
-  // --- Create* (record + echo tableID) ---
+  // --- Resource operations (recorded, generational, no GPU) ---
 
-  unsigned long CreateMesh(const void* vertices,
-                           size_t vertexSize,
-                           const void* indices,
-                           size_t indexSize,
-                           unsigned long tableID) override
+  MeshHandle CreateMesh(const void* vertices,
+                        size_t vertexSize,
+                        const void* indices,
+                        size_t indexSize) override
   {
     (void)vertices;
     (void)indices;
@@ -110,120 +156,239 @@ public:
                       vertexSize,
                       indices,
                       indexSize,
-                      tableID,
                       MeshVertexLayout::Pos3Color3Uv2,
                       false);
   }
 
-  unsigned long CreateMesh(const void* vertices,
-                           size_t vertexSize,
-                           const void* indices,
-                           size_t indexSize,
-                           unsigned long tableID,
-                           MeshVertexLayout layout,
-                           bool dynamic) override
+  MeshHandle CreateMesh(const void* vertices,
+                        size_t vertexSize,
+                        const void* indices,
+                        size_t indexSize,
+                        MeshVertexLayout layout,
+                        bool dynamic) override
   {
     (void)vertices;
     (void)indices;
+    MeshHandle handle = meshHandles.allocate();
     CreateRecord rec;
     rec.kind = CreateRecord::Kind::Mesh;
-    rec.tableID = tableID;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
     rec.vertexSize = vertexSize;
     rec.indexSize = indexSize;
     rec.layout = layout;
     rec.dynamic = dynamic;
     creates.push_back(rec);
-    return tableID;
+    liveMeshes[handle.slot] = handle.generation;
+    return handle;
   }
 
-  unsigned long CreateMesh(std::string filePath, unsigned long tableID) override
+  bool ReplaceMesh(MeshHandle handle,
+                   const void* vertices,
+                   size_t vertexSize,
+                   const void* indices,
+                   size_t indexSize,
+                   MeshVertexLayout layout,
+                   bool dynamic) override
   {
+    (void)vertices;
+    (void)indices;
+    if (!IsMeshValid(handle)) {
+      return false;
+    }
     CreateRecord rec;
-    rec.kind = CreateRecord::Kind::Mesh;
-    rec.tableID = tableID;
-    rec.pathOrNote = filePath;
+    rec.kind = CreateRecord::Kind::ReplaceMesh;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
+    rec.vertexSize = vertexSize;
+    rec.indexSize = indexSize;
+    rec.layout = layout;
+    rec.dynamic = dynamic;
     creates.push_back(rec);
-    return tableID;
+    return true;
   }
 
-  unsigned long CreateShaderProgram(const ShaderPaths& paths,
-                                    unsigned long tableID) override
+  bool DestroyMesh(MeshHandle handle) override
   {
+    if (!IsMeshValid(handle)) {
+      return false;
+    }
+    CreateRecord rec;
+    rec.kind = CreateRecord::Kind::DestroyMesh;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
+    creates.push_back(rec);
+    liveMeshes.erase(handle.slot);
+    return meshHandles.release(handle);
+  }
+
+  bool IsMeshValid(MeshHandle handle) const override
+  {
+    std::unordered_map<uint32_t, uint32_t>::const_iterator it =
+      liveMeshes.find(handle.slot);
+    return meshHandles.isCurrent(handle) && it != liveMeshes.end() &&
+           it->second == handle.generation;
+  }
+
+  ShaderHandle CreateShaderProgram(const ShaderPaths& paths) override
+  {
+    ShaderHandle handle = shaderHandles.allocate();
     CreateRecord rec;
     rec.kind = CreateRecord::Kind::ShaderPaths;
-    rec.tableID = tableID;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
     rec.pathOrNote = paths.vertexPath + "|" + paths.fragmentPath;
     creates.push_back(rec);
-    return tableID;
+    liveShaders[handle.slot] = handle.generation;
+    return handle;
   }
 
-  unsigned long CreateShaderProgram(const ShaderSources& sources,
-                                    unsigned long tableID) override
+  ShaderHandle CreateShaderProgram(const ShaderSources& sources) override
   {
     (void)sources;
+    ShaderHandle handle = shaderHandles.allocate();
     CreateRecord rec;
     rec.kind = CreateRecord::Kind::ShaderSources;
-    rec.tableID = tableID;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
     rec.pathOrNote = "inline_sources";
     creates.push_back(rec);
-    return tableID;
+    liveShaders[handle.slot] = handle.generation;
+    return handle;
   }
 
-  unsigned long CreateTexture(const unsigned char* data,
-                              const int width,
-                              const int height,
-                              unsigned long tableID) override
+  bool ReplaceShaderProgram(ShaderHandle handle,
+                            const ShaderSources& sources) override
   {
-    return CreateTexture(data, width, height, 4, tableID);
+    (void)sources;
+    if (!IsShaderValid(handle) || rejectNextShaderReplacement) {
+      rejectNextShaderReplacement = false;
+      return false;
+    }
+    CreateRecord rec;
+    rec.kind = CreateRecord::Kind::ReplaceShader;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
+    creates.push_back(rec);
+    return true;
   }
 
-  unsigned long CreateTexture(const unsigned char* data,
+  bool DestroyShaderProgram(ShaderHandle handle) override
+  {
+    if (!IsShaderValid(handle)) {
+      return false;
+    }
+    CreateRecord rec;
+    rec.kind = CreateRecord::Kind::DestroyShader;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
+    creates.push_back(rec);
+    liveShaders.erase(handle.slot);
+    return shaderHandles.release(handle);
+  }
+
+  bool IsShaderValid(ShaderHandle handle) const override
+  {
+    std::unordered_map<uint32_t, uint32_t>::const_iterator it =
+      liveShaders.find(handle.slot);
+    return shaderHandles.isCurrent(handle) && it != liveShaders.end() &&
+           it->second == handle.generation;
+  }
+
+  TextureHandle CreateTexture(const unsigned char* data,
+                              const int width,
+                              const int height) override
+  {
+    TextureOptions options;
+    return CreateTexture(data, width, height, 4, options);
+  }
+
+  TextureHandle CreateTexture(const unsigned char* data,
                               const int width,
                               const int height,
                               int channels,
-                              unsigned long tableID) override
-  {
-    return CreateTexture(
-      data, width, height, channels, tableID, TextureFilter::Nearest);
-  }
-
-  unsigned long CreateTexture(const unsigned char* data,
-                              const int width,
-                              const int height,
-                              int channels,
-                              unsigned long tableID,
-                              TextureFilter filter) override
+                              const TextureOptions& options) override
   {
     (void)data;
+    TextureHandle handle = textureHandles.allocate();
     CreateRecord rec;
     rec.kind = CreateRecord::Kind::TextureData;
-    rec.tableID = tableID;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
     rec.width = width;
     rec.height = height;
     rec.channels = channels;
-    rec.filter = filter;
+    rec.filter = options.filter;
     creates.push_back(rec);
-    return tableID;
+    liveTextures[handle.slot] = handle.generation;
+    TextureInfo info;
+    info.width = width;
+    info.height = height;
+    info.channels = channels;
+    textureInfos[handle.slot] = info;
+    return handle;
   }
 
-  unsigned long CreateTexture(const std::string& filePath,
-                              unsigned long tableID) override
+  bool ReplaceTexture(TextureHandle handle,
+                      const unsigned char* data,
+                      int width,
+                      int height,
+                      int channels,
+                      const TextureOptions& options) override
   {
+    (void)data;
+    if (!IsTextureValid(handle) || rejectNextTextureReplacement) {
+      rejectNextTextureReplacement = false;
+      return false;
+    }
     CreateRecord rec;
-    rec.kind = CreateRecord::Kind::TextureFile;
-    rec.tableID = tableID;
-    rec.pathOrNote = filePath;
+    rec.kind = CreateRecord::Kind::ReplaceTexture;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
+    rec.width = width;
+    rec.height = height;
+    rec.channels = channels;
+    rec.filter = options.filter;
     creates.push_back(rec);
-    return tableID;
+    TextureInfo info;
+    info.width = width;
+    info.height = height;
+    info.channels = channels;
+    textureInfos[handle.slot] = info;
+    return true;
   }
 
-  unsigned long CreateDescriptorSet() override
+  bool DestroyTexture(TextureHandle handle) override
   {
+    if (!IsTextureValid(handle)) {
+      return false;
+    }
     CreateRecord rec;
-    rec.kind = CreateRecord::Kind::DescriptorSet;
-    rec.tableID = 0;
+    rec.kind = CreateRecord::Kind::DestroyTexture;
+    rec.slot = handle.slot;
+    rec.generation = handle.generation;
     creates.push_back(rec);
-    return 0;
+    liveTextures.erase(handle.slot);
+    textureInfos.erase(handle.slot);
+    return textureHandles.release(handle);
+  }
+
+  bool IsTextureValid(TextureHandle handle) const override
+  {
+    std::unordered_map<uint32_t, uint32_t>::const_iterator it =
+      liveTextures.find(handle.slot);
+    return textureHandles.isCurrent(handle) && it != liveTextures.end() &&
+           it->second == handle.generation;
+  }
+
+  TextureInfo GetTextureInfo(TextureHandle handle) const override
+  {
+    std::unordered_map<uint32_t, TextureInfo>::const_iterator it =
+      textureInfos.find(handle.slot);
+    if (!IsTextureValid(handle) || it == textureInfos.end()) {
+      return TextureInfo{};
+    }
+    return it->second;
   }
 
   // --- Inspection API for tests ---
@@ -233,6 +398,17 @@ public:
   int getBeginFrameCount() const { return beginFrameCount; }
   int getEndFrameCount() const { return endFrameCount; }
   int getSubmitCount() const { return submitCount; }
+  size_t getRejectedStaleCommandCount() const { return rejectedStaleCommands; }
+
+  void setRejectNextShaderReplacement(bool reject)
+  {
+    rejectNextShaderReplacement = reject;
+  }
+
+  void setRejectNextTextureReplacement(bool reject)
+  {
+    rejectNextTextureReplacement = reject;
+  }
 
   size_t getPendingCommandCount() const
   {
@@ -338,5 +514,6 @@ public:
     submittedFrames.clear();
     commandQueue.Reset();
     creates.clear();
+    rejectedStaleCommands = 0;
   }
 };

@@ -4,6 +4,7 @@
 #include "IShaderProgram.h"
 #include "ITexture.h"
 #include "PipelineState.h"
+#include "ResourceHandle.h"
 #include <string>
 
 class IBackend
@@ -21,47 +22,51 @@ public:
   virtual void ClearCommandQueue() = 0;
   virtual int getFPS() const = 0;
 
-  virtual unsigned long CreateMesh(const void* vertices,
-                                   size_t vertexSize,
-                                   const void* indices,
-                                   size_t indexSize,
-                                   unsigned long tableID) = 0;
+  virtual MeshHandle CreateMesh(const void* vertices,
+                                size_t vertexSize,
+                                const void* indices,
+                                size_t indexSize) = 0;
   // layout + dynamic: when dynamic, vertexSize is VBO capacity and vertices may
   // be null.
-  virtual unsigned long CreateMesh(const void* vertices,
-                                   size_t vertexSize,
-                                   const void* indices,
-                                   size_t indexSize,
-                                   unsigned long tableID,
-                                   MeshVertexLayout layout,
-                                   bool dynamic) = 0;
-  virtual unsigned long CreateMesh(std::string filePath,
-                                   unsigned long tableID) = 0;
-  virtual unsigned long CreateShaderProgram(const ShaderPaths& paths,
-                                            unsigned long tableID) = 0;
-  virtual unsigned long CreateShaderProgram(const ShaderSources& sources,
-                                            unsigned long tableID) = 0;
-  virtual unsigned long CreateTexture(const unsigned char* data,
+  virtual MeshHandle CreateMesh(const void* vertices,
+                                size_t vertexSize,
+                                const void* indices,
+                                size_t indexSize,
+                                MeshVertexLayout layout,
+                                bool dynamic) = 0;
+  virtual bool ReplaceMesh(MeshHandle handle,
+                           const void* vertices,
+                           size_t vertexSize,
+                           const void* indices,
+                           size_t indexSize,
+                           MeshVertexLayout layout,
+                           bool dynamic) = 0;
+  virtual bool DestroyMesh(MeshHandle handle) = 0;
+  virtual bool IsMeshValid(MeshHandle handle) const = 0;
+
+  virtual ShaderHandle CreateShaderProgram(const ShaderPaths& paths) = 0;
+  virtual ShaderHandle CreateShaderProgram(const ShaderSources& sources) = 0;
+  virtual bool ReplaceShaderProgram(ShaderHandle handle,
+                                    const ShaderSources& sources) = 0;
+  virtual bool DestroyShaderProgram(ShaderHandle handle) = 0;
+  virtual bool IsShaderValid(ShaderHandle handle) const = 0;
+
+  virtual TextureHandle CreateTexture(const unsigned char* data,
                                       const int width,
-                                      const int height,
-                                      unsigned long tableID) = 0;
+                                      const int height) = 0;
   // channels: 1 = R8, 3 = RGB, 4 = RGBA
-  virtual unsigned long CreateTexture(const unsigned char* data,
+  virtual TextureHandle CreateTexture(const unsigned char* data,
                                       const int width,
                                       const int height,
                                       int channels,
-                                      unsigned long tableID) = 0;
-  virtual unsigned long CreateTexture(const unsigned char* data,
-                                      const int width,
-                                      const int height,
-                                      int channels,
-                                      unsigned long tableID,
-                                      TextureFilter filter)
-  {
-    (void)filter;
-    return CreateTexture(data, width, height, channels, tableID);
-  }
-  virtual unsigned long CreateTexture(const std::string& filePath,
-                                      unsigned long tableID) = 0;
-  virtual unsigned long CreateDescriptorSet() = 0;
+                                      const TextureOptions& options) = 0;
+  virtual bool ReplaceTexture(TextureHandle handle,
+                              const unsigned char* data,
+                              int width,
+                              int height,
+                              int channels,
+                              const TextureOptions& options) = 0;
+  virtual bool DestroyTexture(TextureHandle handle) = 0;
+  virtual bool IsTextureValid(TextureHandle handle) const = 0;
+  virtual TextureInfo GetTextureInfo(TextureHandle handle) const = 0;
 };

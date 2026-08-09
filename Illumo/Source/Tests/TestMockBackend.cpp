@@ -10,6 +10,11 @@
 #include "Tests/TestRegistry.h"
 #include <cstdio>
 #include <cstring>
+#include <type_traits>
+
+static_assert(!std::is_convertible_v<TextureHandle, ShaderHandle>);
+static_assert(!std::is_convertible_v<ShaderHandle, MeshHandle>);
+static_assert(!std::is_convertible_v<MeshHandle, TextureHandle>);
 
 static int g_failures = 0;
 
@@ -61,9 +66,9 @@ expectCommandType(CommandType got, CommandType expected, const char* msg)
 // Renderer/GL.
 static void
 emitProofLikeFrame(MockBackend& backend,
-                   unsigned long shaderH,
-                   unsigned long meshH,
-                   unsigned long texH)
+                   ShaderHandle shaderHandle,
+                   MeshHandle meshHandle,
+                   TextureHandle textureHandle)
 {
   backend.ClearCommandQueue();
 
@@ -92,19 +97,18 @@ emitProofLikeFrame(MockBackend& backend,
 
   RenderCommand setShader;
   setShader.commandType = CommandType::SetShader;
-  setShader.bind.handle = shaderH;
-  setShader.bind.slot = 0;
+  setShader.bindShader.handle = shaderHandle;
   backend.PushToCommandQueue(setShader);
 
   RenderCommand setMesh;
   setMesh.commandType = CommandType::SetMesh;
-  setMesh.bind.handle = meshH;
+  setMesh.bindMesh.handle = meshHandle;
   backend.PushToCommandQueue(setMesh);
 
   RenderCommand setTex;
   setTex.commandType = CommandType::SetTexture;
-  setTex.bind.handle = texH;
-  setTex.bind.slot = 0;
+  setTex.bindTexture.handle = textureHandle;
+  setTex.bindTexture.slot = 0;
   backend.PushToCommandQueue(setTex);
 
   RenderCommand mat;
@@ -158,27 +162,26 @@ testCreateRecords()
 
   float verts[8] = { 0 };
   unsigned int idx[6] = { 0, 1, 2, 0, 2, 3 };
-  unsigned long meshId =
-    mock.CreateMesh(verts, sizeof(verts), idx, sizeof(idx), 10);
-  expectEqSize(static_cast<size_t>(meshId), 10u, "CreateMesh returns tableID");
+  MeshHandle meshHandle =
+    mock.CreateMesh(verts, sizeof(verts), idx, sizeof(idx));
+  expectTrue(meshHandle.isValid(), "CreateMesh returns a typed handle");
 
-  unsigned long dynId = mock.CreateMesh(
-    nullptr, 4096, idx, sizeof(idx), 11, MeshVertexLayout::Pos3Color4U8, true);
-  expectEqSize(
-    static_cast<size_t>(dynId), 11u, "CreateMesh dynamic returns tableID");
+  MeshHandle dynamicHandle = mock.CreateMesh(
+    nullptr, 4096, idx, sizeof(idx), MeshVertexLayout::Pos3Color4U8, true);
+  expectTrue(dynamicHandle.isValid(),
+             "CreateMesh dynamic returns a typed handle");
 
   ShaderPaths paths;
   paths.vertexPath = "v.glsl";
   paths.fragmentPath = "f.glsl";
-  unsigned long shId = mock.CreateShaderProgram(paths, 20);
-  expectEqSize(static_cast<size_t>(shId),
-               20u,
-               "CreateShaderProgram paths returns tableID");
+  ShaderHandle shaderHandle = mock.CreateShaderProgram(paths);
+  expectTrue(shaderHandle.isValid(),
+             "CreateShaderProgram returns a typed handle");
 
   unsigned char px[4] = { 255, 0, 255, 255 };
-  unsigned long texId = mock.CreateTexture(px, 1, 1, 4, 30);
-  expectEqSize(
-    static_cast<size_t>(texId), 30u, "CreateTexture returns tableID");
+  TextureOptions textureOptions;
+  TextureHandle textureHandle = mock.CreateTexture(px, 1, 1, 4, textureOptions);
+  expectTrue(textureHandle.isValid(), "CreateTexture returns a typed handle");
 
   expectEqSize(mock.getCreateCount(), 4u, "four create records");
   expectTrue(mock.getCreate(1).dynamic == true, "dynamic mesh flagged");
@@ -237,16 +240,18 @@ testProofLikeSequence()
   MockBackend mock;
   mock.Initialize();
 
-  const unsigned long meshH = mock.CreateMesh(
-    nullptr, 128, nullptr, 0, 1, MeshVertexLayout::Pos3Color3Uv2, false);
+  const MeshHandle meshHandle = mock.CreateMesh(
+    nullptr, 128, nullptr, 0, MeshVertexLayout::Pos3Color3Uv2, false);
   ShaderSources src;
   src.vertexSource = "void main(){}";
   src.fragmentSource = "void main(){}";
-  const unsigned long shaderH = mock.CreateShaderProgram(src, 2);
-  const unsigned long texH = mock.CreateTexture(nullptr, 2, 2, 4, 3);
+  const ShaderHandle shaderHandle = mock.CreateShaderProgram(src);
+  TextureOptions textureOptions;
+  const TextureHandle textureHandle =
+    mock.CreateTexture(nullptr, 2, 2, 4, textureOptions);
 
   mock.BeginFrame();
-  emitProofLikeFrame(mock, shaderH, meshH, texH);
+  emitProofLikeFrame(mock, shaderHandle, meshHandle, textureHandle);
   mock.EndFrame();
 
   expectEqInt(mock.getSubmitCount(), 1, "one submit for proof frame");
@@ -267,13 +272,12 @@ testProofLikeSequence()
   expectEqSize(
     mock.countSubmittedOfType(CommandType::ClearScreen), 1u, "one ClearScreen");
 
-  // Handles in bind tokens should be opaque table IDs we enrolled
-  expectTrue(mock.getLastSubmitted(3).bind.handle == shaderH,
-             "SetShader handle is enrolled ID");
-  expectTrue(mock.getLastSubmitted(4).bind.handle == meshH,
-             "SetMesh handle is enrolled ID");
-  expectTrue(mock.getLastSubmitted(5).bind.handle == texH,
-             "SetTexture handle is enrolled ID");
+  expectTrue(mock.getLastSubmitted(3).bindShader.handle == shaderHandle,
+             "SetShader preserves its typed handle");
+  expectTrue(mock.getLastSubmitted(4).bindMesh.handle == meshHandle,
+             "SetMesh preserves its typed handle");
+  expectTrue(mock.getLastSubmitted(5).bindTexture.handle == textureHandle,
+             "SetTexture preserves its typed handle");
   expectEqInt(
     static_cast<int>(mock.getLastSubmitted(8).drawIndexed.elementCount),
     6,
@@ -286,12 +290,14 @@ testCanvasLikeUpdateTexture()
   std::printf("\n--- canvas-like UpdateTexture token ---\n");
   MockBackend mock;
   mock.Initialize();
-  unsigned long texH = mock.CreateTexture(nullptr, 80, 60, 3, 5);
+  TextureOptions textureOptions;
+  TextureHandle textureHandle =
+    mock.CreateTexture(nullptr, 80, 60, 3, textureOptions);
 
   unsigned char fakePixels[12] = { 0 };
   RenderCommand upd{};
   upd.commandType = CommandType::UpdateTexture;
-  upd.updateTexture.handle = texH;
+  upd.updateTexture.handle = textureHandle;
   upd.updateTexture.x = 0;
   upd.updateTexture.y = 0;
   upd.updateTexture.width = 80;
@@ -310,7 +316,7 @@ testCanvasLikeUpdateTexture()
   expectEqSize(mock.countSubmittedOfType(CommandType::UpdateTexture),
                1u,
                "UpdateTexture recorded");
-  expectTrue(mock.getLastSubmitted(0).updateTexture.handle == texH,
+  expectTrue(mock.getLastSubmitted(0).updateTexture.handle == textureHandle,
              "UpdateTexture handle matches");
   expectEqInt(mock.getLastSubmitted(0).updateTexture.channels,
               3,
@@ -324,7 +330,7 @@ testCommandQueueOverflowPolicy()
 {
   std::printf("\n--- command queue overflow policy ---\n");
   CommandQueue queue;
-  expectEqSize(queue.GetCapacity(), 2048u, "fixed capacity is 2048");
+  expectEqSize(queue.GetCapacity(), 2048u, "initial reserve is 2048");
 
   RenderCommand cmd;
   cmd.commandType = CommandType::ClearScreen;
@@ -333,24 +339,123 @@ testCommandQueueOverflowPolicy()
   cmd.clear.b = 0.0f;
   cmd.clear.a = 1.0f;
 
-  for (size_t i = 0; i < queue.GetCapacity(); ++i) {
+  for (size_t i = 0; i < 3000; ++i) {
     queue.Submit(cmd);
   }
-  expectEqSize(queue.GetCommandCount(), 2048u, "queue fills to capacity");
-  expectEqSize(queue.GetDroppedThisFrame(), 0u, "no drops while under cap");
+  expectEqSize(queue.GetCommandCount(), 3000u, "queue grows beyond reserve");
+  expectEqSize(queue.GetHighWaterMark(), 3000u, "growth updates high-water");
+  expectEqSize(queue.GetRejectedThisFrame(), 0u, "growth does not reject");
 
-  queue.Submit(cmd);
-  queue.Submit(cmd);
-  expectEqSize(queue.GetCommandCount(), 2048u, "overflow does not grow queue");
-  expectEqSize(queue.GetDroppedThisFrame(), 2u, "two drops counted this frame");
-  expectEqSize(queue.GetTotalDropped(), 2u, "total dropped accumulates");
-  expectTrue(queue.HasOverflowedThisFrame(), "overflow flag set");
+  CommandQueue oddCeilingQueue(3000);
+  for (size_t i = 0; i < 3000; ++i) {
+    oddCeilingQueue.Submit(cmd);
+  }
+  expectEqSize(oddCeilingQueue.GetCapacity(),
+               3000u,
+               "allocation does not grow beyond a non-power-of-two ceiling");
 
-  queue.Reset();
-  expectEqSize(queue.GetCommandCount(), 0u, "reset clears pending");
-  expectEqSize(queue.GetDroppedThisFrame(), 0u, "reset clears frame drops");
-  expectTrue(!queue.HasOverflowedThisFrame(), "overflow flag cleared on reset");
-  expectEqSize(queue.GetTotalDropped(), 2u, "lifetime drop count preserved");
+  CommandQueue cappedQueue(2048);
+  for (size_t i = 0; i < cappedQueue.GetSafetyCeiling(); ++i) {
+    cappedQueue.Submit(cmd);
+  }
+  cappedQueue.Submit(cmd);
+  cappedQueue.Submit(cmd);
+  expectEqSize(
+    cappedQueue.GetCommandCount(), 2048u, "safety ceiling bounds queue growth");
+  expectEqSize(
+    cappedQueue.GetRejectedThisFrame(), 2u, "two commands rejected this frame");
+  expectEqSize(
+    cappedQueue.GetTotalRejected(), 2u, "total rejected count accumulates");
+  expectTrue(cappedQueue.HasRejectedThisFrame(), "rejection flag set");
+
+  cappedQueue.Reset();
+  expectEqSize(cappedQueue.GetCommandCount(), 0u, "reset clears pending");
+  expectEqSize(
+    cappedQueue.GetRejectedThisFrame(), 0u, "reset clears frame rejects");
+  expectTrue(!cappedQueue.HasRejectedThisFrame(),
+             "rejection flag cleared on reset");
+  expectEqSize(
+    cappedQueue.GetTotalRejected(), 2u, "lifetime rejected count preserved");
+}
+
+static void
+testGenerationalHandles()
+{
+  std::printf("\n--- generational handles ---\n");
+  MockBackend mock;
+  mock.Initialize();
+  unsigned char pixels[4] = { 255, 255, 255, 255 };
+  TextureOptions options;
+  TextureHandle first = mock.CreateTexture(pixels, 1, 1, 4, options);
+  expectTrue(mock.IsTextureValid(first), "created texture is valid");
+  expectTrue(mock.DestroyTexture(first), "destroy accepts current handle");
+  expectTrue(!mock.IsTextureValid(first), "destroy invalidates generation");
+  expectTrue(!mock.ReplaceTexture(first, pixels, 1, 1, 4, options),
+             "replace rejects stale handle");
+
+  TextureHandle second = mock.CreateTexture(pixels, 1, 1, 4, options);
+  expectTrue(second.slot == first.slot, "released slot is reused");
+  expectTrue(second.generation != first.generation,
+             "reused slot receives a new generation");
+
+  RenderCommand staleCommand{};
+  staleCommand.commandType = CommandType::SetTexture;
+  staleCommand.bindTexture.handle = first;
+  staleCommand.bindTexture.slot = 0;
+  mock.PushToCommandQueue(staleCommand);
+  mock.SubmitCommandQueue();
+  expectEqSize(mock.getLastSubmittedCount(),
+               0u,
+               "stale resource command is safely rejected");
+  expectEqSize(mock.getRejectedStaleCommandCount(),
+               1u,
+               "stale command rejection is reported");
+
+  MeshHandle mesh = mock.CreateMesh(nullptr, 64, nullptr, 0);
+  expectTrue(
+    mock.ReplaceMesh(
+      mesh, nullptr, 128, nullptr, 0, MeshVertexLayout::Pos3Color4U8, true),
+    "current mesh can be replaced in place");
+  expectTrue(mock.DestroyMesh(mesh), "current mesh can be destroyed");
+  expectTrue(!mock.DestroyMesh(mesh), "stale mesh destroy safely no-ops");
+
+  ShaderSources sources;
+  sources.vertexSource = "vertex";
+  sources.fragmentSource = "fragment";
+  ShaderHandle shader = mock.CreateShaderProgram(sources);
+  expectTrue(mock.ReplaceShaderProgram(shader, sources),
+             "current shader can be replaced in place");
+  expectTrue(mock.DestroyShaderProgram(shader),
+             "current shader can be destroyed");
+  expectTrue(!mock.ReplaceShaderProgram(shader, sources),
+             "stale shader replacement safely no-ops");
+}
+
+static void
+testScissorEnableDisable()
+{
+  std::printf("\n--- explicit scissor state ---\n");
+  MockBackend mock;
+  mock.Initialize();
+
+  RenderCommand enable{};
+  enable.commandType = CommandType::SetScissorState;
+  enable.scissor.enabled = true;
+  enable.scissor.width = 40;
+  enable.scissor.height = 20;
+  mock.PushToCommandQueue(enable);
+
+  RenderCommand disable{};
+  disable.commandType = CommandType::SetScissorState;
+  disable.scissor.enabled = false;
+  mock.PushToCommandQueue(disable);
+  mock.SubmitCommandQueue();
+
+  expectEqSize(mock.getLastSubmittedCount(), 2u, "both scissor states submit");
+  expectTrue(mock.getLastSubmitted(0).scissor.enabled,
+             "first scissor token enables clipping");
+  expectTrue(!mock.getLastSubmitted(1).scissor.enabled,
+             "second scissor token disables clipping");
 }
 
 static int
@@ -378,4 +483,8 @@ registerMockBackendTests(IllumoTestRegistry& registry)
   registry.add("Illumo.MockBackend.CommandQueueOverflow", []() {
     return runMockBackendCase(testCommandQueueOverflowPolicy);
   });
+  registry.add("Illumo.MockBackend.GenerationalHandles",
+               []() { return runMockBackendCase(testGenerationalHandles); });
+  registry.add("Illumo.MockBackend.ScissorEnableDisable",
+               []() { return runMockBackendCase(testScissorEnableDisable); });
 }

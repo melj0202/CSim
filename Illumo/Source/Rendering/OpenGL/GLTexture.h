@@ -2,7 +2,6 @@
 
 #include "GL/glew.h"
 #include "ITexture.h"
-#include "thirdparty/stb/stb_image.h"
 #include <array>
 #include <cstring>
 #include <string>
@@ -27,6 +26,22 @@ public:
             int height,
             int channels = 4,
             TextureFilter filter = TextureFilter::Nearest)
+    : GLTexture(data,
+                width,
+                height,
+                channels,
+                TextureOptions{ filter,
+                                TextureWrap::ClampToEdge,
+                                TextureWrap::ClampToEdge,
+                                false })
+  {
+  }
+
+  GLTexture(const unsigned char* data,
+            int width,
+            int height,
+            int channels,
+            const TextureOptions& options)
     : m_path("")
     , m_id(0)
     , m_size({ width, height })
@@ -35,29 +50,7 @@ public:
     , m_pboIndex(0)
     , m_pboBytes(0)
   {
-    UploadToGPU(data, width, height, m_channels, filter);
-  }
-
-  GLTexture(const std::string& path)
-    : ITexture(path)
-    , m_path(path)
-    , m_id(0)
-    , m_size({ 0, 0 })
-    , m_channels(4)
-    , m_pbo{ 0, 0 }
-    , m_pboIndex(0)
-    , m_pboBytes(0)
-  {
-    int width = 0;
-    int height = 0;
-    int bpp = 0;
-    unsigned char* data = stbi_load(path.c_str(), &width, &height, &bpp, 4);
-    if (data) {
-      m_size = { width, height };
-      m_channels = 4;
-      UploadToGPU(data, width, height, 4, TextureFilter::Nearest);
-      stbi_image_free(data);
-    }
+    UploadToGPU(data, width, height, m_channels, options);
   }
 
   ~GLTexture() override {}
@@ -70,7 +63,7 @@ public:
 
   unsigned int getID() const override { return m_id; }
   std::array<int, 2> getSize() const override { return m_size; }
-  int getChannels() const { return m_channels; }
+  int getChannels() const override { return m_channels; }
 
   // CPU → GPU subimage upload with optional row stride and PBO ping-pong (P4).
   // data is host pointer (not PBO). srcRowStride is in pixels (0 = tightly
@@ -272,7 +265,7 @@ private:
                    int width,
                    int height,
                    int channels,
-                   TextureFilter filter)
+                   const TextureOptions& options)
   {
     glGenTextures(1, &m_id);
     glBindTexture(GL_TEXTURE_2D, m_id);
@@ -290,12 +283,25 @@ private:
                  GL_UNSIGNED_BYTE,
                  data);
 
-    const GLint glFilter =
-      (filter == TextureFilter::Linear) ? GL_LINEAR : GL_NEAREST;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glFilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glFilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    const GLint magnificationFilter =
+      (options.filter == TextureFilter::Linear) ? GL_LINEAR : GL_NEAREST;
+    GLint minificationFilter = magnificationFilter;
+    if (options.generateMipmaps) {
+      minificationFilter = options.filter == TextureFilter::Linear
+                             ? GL_LINEAR_MIPMAP_LINEAR
+                             : GL_NEAREST_MIPMAP_NEAREST;
+    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minificationFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magnificationFilter);
+    const GLint wrapX =
+      options.wrapX == TextureWrap::Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+    const GLint wrapY =
+      options.wrapY == TextureWrap::Repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapX);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapY);
+    if (options.generateMipmaps) {
+      glGenerateMipmap(GL_TEXTURE_2D);
+    }
 
     // R8 samples only .r; make .gba = r for any accidental RGB sampling.
     if (channels == 1) {

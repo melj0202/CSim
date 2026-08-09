@@ -34,7 +34,7 @@ CanvasView::CanvasView(int width,
   , targetRgb(nullptr)
   , sampledRgb(nullptr)
   , fadeSpeed(8.0f)
-  , displayTextureHandle(0)
+  , displayTextureHandle()
   , gpuReady(false)
   , fadeActive(false)
   , textureUploadPending(false)
@@ -71,6 +71,10 @@ CanvasView::CanvasView(int width,
 
 CanvasView::~CanvasView()
 {
+  if (renderer != nullptr && displayTextureHandle.isValid()) {
+    renderer->destroyTexture(displayTextureHandle);
+    displayTextureHandle = TextureHandle{};
+  }
   delete[] texBuffer;
   delete[] displayRgb;
   delete[] targetRgb;
@@ -145,13 +149,10 @@ CanvasView::initializeGpuResources()
   visual.setSpace(PrimitiveSpace::World);
   visual.setLayerHint(RenderLayerId::World);
   visual.prepare(renderer);
-  displayTextureHandle = renderer->allocateHandle();
-  renderer->enrollTexture(texBuffer,
-                          textureWidth,
-                          textureHeight,
-                          3,
-                          displayTextureHandle,
-                          TextureFilter::Nearest);
+  TextureOptions textureOptions;
+  textureOptions.filter = TextureFilter::Nearest;
+  displayTextureHandle = renderer->enrollTexture(
+    texBuffer, textureWidth, textureHeight, 3, textureOptions);
   gpuReady = true;
 }
 
@@ -193,12 +194,14 @@ CanvasView::resizeBuffers(int width, int height)
   lastGridRevision = std::numeric_limits<std::uint64_t>::max();
 
   if (gpuReady && renderer != nullptr) {
-    renderer->enrollTexture(texBuffer,
-                            textureWidth,
-                            textureHeight,
-                            3,
-                            displayTextureHandle,
-                            TextureFilter::Nearest);
+    TextureOptions textureOptions;
+    textureOptions.filter = TextureFilter::Nearest;
+    renderer->replaceTexture(displayTextureHandle,
+                             texBuffer,
+                             textureWidth,
+                             textureHeight,
+                             3,
+                             textureOptions);
   }
 }
 

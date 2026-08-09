@@ -46,6 +46,4 @@ struct PipelineState
 
   bool wireframe = false;
   Primitives primitives = Primitives::Triangles;
-
-  unsigned int shaderProgramID = 0;
 };

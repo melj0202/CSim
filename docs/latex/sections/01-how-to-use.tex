@@ -55,13 +55,17 @@ pdflatex -output-directory=../output illumo.tex   # second pass for refs/TOC
 \noindent Output: \pathref{docs/output/illumo.pdf}.
 
 \begin{statusbox}
-As of 2026-08-07 (current-state audit): packages under \pathref{App},
-\pathref{Engine}, \pathref{Game}, \ldots; token renderer + mock tests shipped;
-SparseCellGrid uses signed-coordinate 16$\times$16 chunks and serial
-18$\times$18 halos; CanvasView uses CPU palette targets, \texttt{displayRgb}
+As of 2026-08-09: packages under \pathref{App}, \pathref{Engine},
+\pathref{Game}, \ldots; the reusable 2D token renderer has typed generational
+resources, managed texture/shader assets, painter-correct primitives, and mock
+tests; SparseCellGrid uses signed-coordinate 16$\times$16 chunks and adaptive
+candidate/18$\times$18 halo evaluation; CanvasView uses CPU palette targets, \texttt{displayRgb}
 fade, and one dirty-rect RGB display texture/quad; headless
 \texttt{IllumoTests} runs as part of the default build; the command console has measured editing,
 metadata-driven help, and module-registered domain commands. Windows MSVC
 Release/Debug builds are the primary target, and DebugModule is excluded from
 Release.
 \end{statusbox}
+
+Debug console renderer diagnostics are \texttt{renderer\_demo [on|off]},
+\texttt{assets}, and \texttt{asset\_reload <all|path>}.

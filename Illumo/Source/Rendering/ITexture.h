@@ -8,6 +8,27 @@ enum class TextureFilter
   Linear
 };
 
+enum class TextureWrap
+{
+  ClampToEdge,
+  Repeat
+};
+
+struct TextureOptions
+{
+  TextureFilter filter = TextureFilter::Nearest;
+  TextureWrap wrapX = TextureWrap::ClampToEdge;
+  TextureWrap wrapY = TextureWrap::ClampToEdge;
+  bool generateMipmaps = false;
+};
+
+struct TextureInfo
+{
+  int width = 0;
+  int height = 0;
+  int channels = 0;
+};
+
 class ITexture
 {
 public:
@@ -17,6 +38,7 @@ public:
   virtual void Bind(unsigned int slot) const = 0;
   virtual unsigned int getID() const = 0;
   virtual std::array<int, 2> getSize() const = 0;
+  virtual int getChannels() const = 0;
   virtual void Destroy() = 0;
 
 protected:

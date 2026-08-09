@@ -63,7 +63,9 @@ set(ILLUMO_SHARED_SOURCES
     Source/Rendering/GLString.cpp
     Source/Rendering/Camera.cpp
     Source/Rendering/RendererStyles.cpp
+    Source/Rendering/AssetManager.cpp
     Source/Rendering/Primitives/GameVisual.cpp
+    Source/Rendering/Primitives/SpriteAnimation.cpp
 )
 
 set(ILLUMO_APP_SOURCES
@@ -274,6 +276,12 @@ add_custom_command(TARGET Illumo POST_BUILD
         "${CMAKE_CURRENT_SOURCE_DIR}/Shader"
         "$<TARGET_FILE_DIR:Illumo>/Shader"
     COMMENT "Copying Shader directory beside Illumo"
+)
+add_custom_command(TARGET Illumo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/Assets"
+        "$<TARGET_FILE_DIR:Illumo>/Assets"
+    COMMENT "Copying runtime Assets directory beside Illumo"
 )
 
 # ---------------------------------------------------------------------------

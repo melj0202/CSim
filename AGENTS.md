@@ -64,7 +64,7 @@ Rendering path:
 ```text
 Drawable::AppendCommands(Renderer*)
   -> RenderCommand tagged-union tokens
-  -> CommandQueue
+  -> vector CommandQueue (2,048 reserve; configurable 65,536 default ceiling)
   -> IBackend::SubmitCommandQueue
   -> GLBackend/GLDevice or MockBackend
 ```
@@ -74,6 +74,20 @@ for tests or incomplete stubs. Game and rules code must not issue raw OpenGL
 draw calls. Resource enrollment is rare; per-frame work emits bind, update,
 uniform, state, and draw tokens. Token payload pointers must remain valid until
 submission returns.
+
+Backend resources use non-convertible slot+generation `MeshHandle`,
+`ShaderHandle`, and `TextureHandle` values; renderer styles use the same model.
+Backends allocate handles and validate replacement, destruction, queries, and
+command submission. `AssetManager` caches file textures/shaders by canonical
+path+options, owns one CPU file/decode worker, and performs GPU replacement only
+from render-thread `pump`. Debug builds poll timestamps every 500 ms; explicit
+reload remains available in all builds. The Debug renderer demo acquires both
+its atlas and contract-compatible sprite shader through this managed path.
+
+`GameVisual` is the reusable painter-correct 2D host. One stable ordered stream
+spans shapes, sprites, and text; only adjacent compatible items batch. Parent and
+local `Transform2D`, normalized pivots, atlas regions/flips, and bounded dynamic
+quad buffers are supported. `SpriteAnimator` is passive and caller-updated.
 
 Canvas truth (verify here before trusting older notes):
 
@@ -139,6 +153,9 @@ Ruleset truth:
 | Compatibility dense storage | `Illumo/Source/Game/CellGrid.*`, `Canvas.*` |
 | CA behavior | `Illumo/Source/Rulesets/*` (`nextState`/palette) |
 | Renderer and tokens | `Illumo/Source/Rendering/Renderer.h` (IBackend* only), `RenderCommand.h`, `CommandQueue.h` |
+| Resource handles and file assets | `Illumo/Source/Rendering/ResourceHandle*`, `AssetManager.*` |
+| 2D primitives and animation | `Illumo/Source/Rendering/Primitives/*` |
+| Debug renderer atlas and shader | `Illumo/Assets/RendererDemo/*` |
 | Production backend factory | `Illumo/Source/Rendering/OpenGL/CreateOpenGLBackend.*` (composed in `Engine/Illumo.cpp`) |
 | Real graphics execution | `Illumo/Source/Rendering/OpenGL/*` |
 | Headless backend | `Illumo/Source/Rendering/Mock/MockBackend.h` |
@@ -178,7 +195,8 @@ ctest --test-dir build -C Release -N -L Illumo
 supports `--list` and `--run <exact-name>`; CTest invokes one case per process
 with an isolated working directory.
 
-Headless tests cover MockBackend, Renderer/token/asset flow, rulesets,
+Headless tests cover typed/generational MockBackend resources,
+Renderer/token/style/asset flow, painter-correct primitives and animation, rulesets,
 CellContext, CellGameModule commands and file-backed save/load, Canvas
 domain/fade/dirty behavior, input, environment/logging, SysCmdLine, and
 CommandLine/GLString/SplashText tokens. `ILLUMO_ENABLE_COVERAGE=ON` adds the
@@ -219,8 +237,9 @@ Confirm each against the current tree before acting:
   `DispatchDrawables`; the game path can then dereference a null `cellContext`.
 - Wireworld lacks a convenient head-placement brush, and startup still seeds a
   Game-of-Life glider even in Wireworld mode.
-- `CommandQueue` has a fixed capacity of 2048 commands and its overflow policy
-  needs explicit handling.
+- `CommandQueue` reserves 2,048 commands, grows to a configurable 65,536
+  default ceiling, and reports high-water/rejected counts. Do not remove the
+  ceiling or hide rejection metrics.
 - Keep sources shared by `Illumo` and `IllumoTests` in `ILLUMO_SHARED_SOURCES`, and
   put common target settings in `illumo_configure_target`; preserve target-only
   behavior such as the application's Debug Tracy instrumentation.

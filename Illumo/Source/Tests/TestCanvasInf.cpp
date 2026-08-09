@@ -977,7 +977,7 @@ testCanvasViewUsesWorldCellQuad()
                sprite->rect.w == 96.0f && sprite->rect.h == 96.0f,
              "display sprite follows cell boundaries");
     testTrue(g,
-             sprite->v0 == 1.0f && sprite->v1 == 0.0f,
+             sprite->region.v0 == 1.0f && sprite->region.v1 == 0.0f,
              "display sprite keeps world-up rows upright");
   }
 }

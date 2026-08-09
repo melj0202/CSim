@@ -25,9 +25,12 @@ Quick index for chats that need to open the right files. Not exhaustive.
 \pathref{Rendering/Scene.h} & Drawable list + camera + window (no scene graph) \\
 \pathref{Rendering/Drawable.*} & Token emitter base (no GL ownership) \\
 \pathref{Rendering/RenderCommand.h} & Tagged-union tokens \\
-\pathref{Rendering/CommandQueue.*} & Token buffer \\
+\pathref{Rendering/CommandQueue.h} & Growable bounded token buffer + metrics \\
+\pathref{Rendering/ResourceHandle*.h} & Typed slot+generation handles and allocator \\
+\pathref{Rendering/AssetManager.*} & Managed texture/shader cache, worker, pump, reload \\
 \pathref{Rendering/IBackend.h} & Backend interface \\
-\pathref{Rendering/Renderer.h} & Backend-neutral enroll + RenderScene + push helpers \\
+\pathref{Rendering/Renderer.h} & Backend-neutral enroll, style registry, RenderScene, push helpers \\
+\pathref{Rendering/Primitives/*} & GameVisual, transforms, atlas sprites, animation \\
 \pathref{Rendering/OpenGL/CreateOpenGLBackend.*} & Production OpenGL IBackend factory \\
 \pathref{Rendering/OpenGL/GLBackend.*} & OpenGL backend registries \\
 \pathref{Rendering/OpenGL/GLDevice.*} & Execute queue, bind tracker \\
@@ -44,6 +47,7 @@ Quick index for chats that need to open the right files. Not exhaustive.
 \pathref{Platform/Windows/*} & Win main + file dialogs \\
 \pathref{Foundation/MathTypes.h} & GLM aliases (not Math.h!) \\
 \pathref{Tests/TestMain.cpp} & Headless suite entry \\
+\pathref{Illumo/Assets/RendererDemo/*} & Managed Debug atlas and custom sprite shader \\
 \pathref{Illumo/Shader/canvas\_*.glsl} & Sample the faded RGB display texture \\
 \pathref{Illumo/CMakeLists.txt} & Sources + IllumoTests \\
 \pathref{docs/architecture-consensus.md} & Canonical current architecture and work order \\
