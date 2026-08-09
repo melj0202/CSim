@@ -204,14 +204,33 @@ GLBackend::CreateTexture(const unsigned char* data,
                          unsigned long tableID,
                          TextureFilter filter)
 {
-  _textureRegistryLookup[tableID] =
+  std::unique_ptr<GLTexture> replacement =
     std::make_unique<GLTexture>(data, width, height, channels, filter);
+  DestroyTexture(tableID);
+  _textureRegistryLookup.emplace(tableID, std::move(replacement));
   return tableID;
 }
 
 unsigned long
 GLBackend::CreateTexture(const std::string& filePath, unsigned long tableID)
 {
-  _textureRegistryLookup[tableID] = std::make_unique<GLTexture>(filePath);
+  std::unique_ptr<GLTexture> replacement =
+    std::make_unique<GLTexture>(filePath);
+  DestroyTexture(tableID);
+  _textureRegistryLookup.emplace(tableID, std::move(replacement));
   return tableID;
+}
+
+void
+GLBackend::DestroyTexture(unsigned long tableID)
+{
+  std::unordered_map<unsigned long, std::unique_ptr<GLTexture>>::iterator
+    found = _textureRegistryLookup.find(tableID);
+  if (found == _textureRegistryLookup.end()) {
+    return;
+  }
+  if (found->second != nullptr) {
+    found->second->Destroy();
+  }
+  _textureRegistryLookup.erase(found);
 }

@@ -82,29 +82,53 @@ Canvas truth (verify here before trusting older notes):
   and neighbor-counting masks. Sparse chunks accumulate non-background cells
   and neighbors of counted cells in retained
   contiguous per-chunk scratch records with fixed candidate masks and neighbor
-  counts. A retained generation-stamped flat index maps chunk addresses directly
-  to scratch records without sorting or binary searches. Next-generation output
+  counts. Candidate target discovery tests edge and corner bits directly. The
+  serial builder remains source-centric, while large or explicitly parallel
+  preparation assigns independent target records to the reusable worker pool;
+  neighbor counters are initialized only when their candidate bit is first set.
+  A retained generation-stamped flat index maps chunk addresses directly to
+  scratch records without sorting or binary searches. Next-generation output
   uses a retained inactive chunk map and recycled `unordered_map` node handles,
   avoiding steady-state chunk-node allocation. At 16,384 or more candidate
   cells, candidate evaluation uses the reusable worker pool with coarse ranges
   of roughly 2,048 candidate cells and up to four automatic workers; small
-  candidate sets remain direct and serial. A retained changed-chunk frontier
-  evaluates only changed chunks and their neighbors while that expands to at
-  most 64 targets; settled worlds evaluate no chunks, and broad changes fall
-  back to the complete adaptive paths. Complete mixed worlds select candidate
+  candidate sets remain direct and serial. Current and inactive chunk maps
+  maintain transactional aggregate stored-cell, counted-cell, and
+  candidate-preferred-chunk totals, so path selection and settled statistics do
+  not rescan all allocated chunks. A retained changed-chunk frontier
+  retains up to 4,096 changed addresses and expands them by one chunk. Exact
+  local candidate preparation/evaluation work is compared with a cached-total
+  complete-path estimate; cheaper frontiers patch the prior map, while broad
+  changes fall back. Sparse frontier targets use candidate masks or halos by
+  counted-neighbor work, and settled worlds evaluate no chunks. Complete mixed
+  worlds select candidate
   or deterministic 18x18 halo evaluation independently per target from actual
   counted-neighbor contribution work; Wireworld conductors are stored but only
   heads contribute. All-dense counted chunks bypass scratch construction. At
   32 or more halo targets, a grid-owned reusable pool uses up to eight workers.
-  All evaluators index a per-ruleset 256x9 transition table; dense halo targets
-  count neighbors with a rolling three-row stencil. The grid is non-toroidal and its
+  Complete-halo targets use a retained generation-stamped flat index and
+  retained result storage instead of a local hash set, sorting, and disposable
+  vectors. All evaluators index a per-ruleset 256x9 transition table; dense
+  halo targets build rolling rows directly from chunk counting masks without
+  materializing an 18x18 byte halo. Normal mode always completes one due
+  generation, but starts a second synchronous generation only when the first
+  generation's measured cost projects both inside a 4 ms frame slice; excess
+  catch-up debt is dropped. Status separates requested/achieved TPS and reports
+  step/frame timing plus budget deferral. The grid is non-toroidal and its
   revision changes only when cell contents actually change.
 - Production presentation: `CanvasView` samples the camera-visible region into
   an exact nearest-filtered RGB texture while one texel per cell fits. At far
   zoom it uses a revision-gated, density-colored overview capped at roughly
   four screen pixels per texel; this is a presentation cap, not a simulation
-  chunk cap. It fades visible colors, snaps newly revealed cells, and owns one
-  reusable RGB texture plus one world-space quad aligned to 16x16 cell bounds.
+  chunk cap. At exact-cell zoom, one-revision grid changes publish changed
+  chunks so the view resamples only their visible 16x16 tiles. Revision gaps,
+  overview density, palette changes, camera changes, and grid replacement use
+  a complete bounded resample. A retained active-texel set makes fade/snap work
+  proportional to colors still changing. Its CPU/GPU texture capacity grows by
+  50% for small increases, re-enrollment replaces and destroys the prior GL
+  texture/PBOs under the same handle, and view destruction explicitly releases
+  that handle. It owns one reusable RGB texture plus one world-space quad
+  aligned to 16x16 cell bounds.
 - Persistence always writes sparse version 2 and reads both that format and the
   prior dense format. Legacy `CellGrid`/`Canvas` remain compatibility fixtures,
   not a second production runtime path.

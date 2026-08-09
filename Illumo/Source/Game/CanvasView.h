@@ -3,7 +3,9 @@
 #include "Game/SparseCellGrid.h"
 #include "Rendering/Drawable.h"
 #include "Rendering/Primitives/GameVisual.h"
+#include <cstddef>
 #include <cstdint>
+#include <vector>
 
 class Camera;
 class IRenderWindow;
@@ -71,6 +73,13 @@ public:
   const unsigned char* getPaletteRgb() const { return paletteRgb; }
   bool isFadeActive() const { return fadeActive; }
   bool isTextureUploadPending() const { return textureUploadPending; }
+  std::size_t getFadingTexelCount() const { return fadingTexels.size(); }
+  std::size_t getLastSampledTexelCount() const { return lastSampledTexelCount; }
+  std::size_t getLastFadeVisitCount() const { return lastFadeVisitCount; }
+  std::size_t getLastSnapVisitCountForTesting() const
+  {
+    return lastSnapVisitCount;
+  }
 
   // Kept public for the small headless fixture and diagnostics.
   IRenderWindow* window;
@@ -97,6 +106,11 @@ private:
   float* displayRgb;
   float* targetRgb;
   float* sampledRgb;
+  std::vector<int> fadingTexels;
+  std::vector<unsigned char> fadingFlags;
+  std::size_t lastSampledTexelCount;
+  std::size_t lastFadeVisitCount;
+  std::size_t lastSnapVisitCount;
   float fadeSpeed;
 
   GameVisual visual;
@@ -119,13 +133,16 @@ private:
   bool worldQuadReady;
 
   static bool sameAddress(const CellAddress& left, const CellAddress& right);
+  static int growTextureDimension(int current, int required);
   void initializeGpuResources();
   void resizeBuffers(int width, int height);
   void resetUploadBounds();
   void markFullActiveUpload();
   void rebuildWorldQuad();
   void sampleGrid(bool snap);
+  bool sampleChangedChunks(std::uint64_t previousRevision);
   void applySampledTargets(bool snap);
+  void clearFadingTexels();
   int getSlotSampleCount(int x, int y) const;
   void includeUpload(int x, int y);
   void writeTexel(int index, int x, int y);

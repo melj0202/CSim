@@ -63,5 +63,6 @@ public:
   }
   virtual unsigned long CreateTexture(const std::string& filePath,
                                       unsigned long tableID) = 0;
+  virtual void DestroyTexture(unsigned long tableID) = 0;
   virtual unsigned long CreateDescriptorSet() = 0;
 };

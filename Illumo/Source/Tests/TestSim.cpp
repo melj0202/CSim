@@ -643,11 +643,14 @@ testSparseMicroBenchReport()
   const double conductorHaloGps =
     benchWireworldConductorsGensPerSecond(9, 10, -1, &conductorHaloStats);
   std::printf("BENCH: Sparse Wireworld 9x9 conductor chunks candidates "
-              "gens/s=%.1f halos gens/s=%.1f stored=%zu counted=%zu\n",
+              "gens/s=%.1f halos gens/s=%.1f stored=%zu counted=%zu "
+              "halo-targets=%zu halo-workers=%u\n",
               conductorCandidateGps,
               conductorHaloGps,
               conductorCandidateStats.activeCellCount,
-              conductorCandidateStats.countedCellCount);
+              conductorCandidateStats.countedCellCount,
+              conductorHaloStats.targetChunkCount,
+              conductorHaloStats.workerCount);
   testTrue(g,
            conductorCandidateGps > 0.0 && conductorHaloGps > 0.0,
            "Wireworld candidate and halo comparison bench ran");

@@ -60,7 +60,7 @@ public:
     }
   }
 
-  ~GLTexture() override {}
+  ~GLTexture() override { Destroy(); }
 
   void Bind(unsigned int slot) const override
   {

@@ -73,5 +73,6 @@ public:
                               TextureFilter filter) override;
   unsigned long CreateTexture(const std::string& filePath,
                               unsigned long tableID) override;
+  void DestroyTexture(unsigned long tableID) override;
   unsigned long CreateDescriptorSet() override { return 0; }
 };

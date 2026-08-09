@@ -40,12 +40,14 @@ under `docs/`. Start with:
 - `docs/output/illumo.pdf` — generated locally; not a source of truth
 
 **Current stack (short):** token renderer (`AppendCommands` → `IBackend`),
-`SparseCellGrid` domain + revision-gated `CanvasView` RGB-fade presentation +
-dirty-rect upload, retained flat-indexed chunk-local cell-candidate scratch /
+`SparseCellGrid` domain + changed-chunk `CanvasView` sampling / active-texel
+RGB fades + dirty-rect upload, retained flat-indexed chunk-local cell-candidate scratch /
 per-target candidate-or-halo CA `nextState`, separate stored/counting masks,
-coarse parallel evaluation, recycled transactional chunk-map nodes,
-changed-region frontier stepping, cached 256x9 rule transitions and rolling-row
-halo counts, headless `IllumoTests` with
+mask-derived target discovery, lazy candidate-counter initialization,
+target-parallel preparation and coarse parallel evaluation, recycled transactional chunk-map nodes,
+cost-adaptive candidate/halo frontier stepping with transactionally cached population totals,
+retained complete-halo targets/results, cached 256x9 rule transitions and direct
+counting-mask rolling rows, headless `IllumoTests` with
 `MockBackend`.
 
 **Architecture (single source for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — unified consensus (purpose, history of old plans, current renderer/sim truth, decisions, bugs, debt, work order).
@@ -151,6 +153,16 @@ builds only. Type `help` for the live list or `help <command>` for details.
 | Timing | `tps`, `speed`, `fade` |
 | Environment | `get`, `set`, `toggle`, `vars [filter]` |
 | Console/app | `help`, `echo`, `clear`, `close`, `quit` |
+
+Normal mode guarantees one due generation. It starts a second synchronous
+generation only when the first generation's measured cost projects both inside
+the 4 ms simulation slice for that render frame. `status` reports requested and
+recently achieved TPS, step/frame simulation time, and budget deferral.
+
+The bounded canvas texture retains 50% headroom after small growth so nearby
+smooth-zoom sizes reuse the same allocation. Replacements preserve the opaque
+handle while deleting the old GL texture/PBOs, and destroying the view releases
+its texture immediately.
 
 Save commands append `.illumo` when no extension is supplied. Loading validates
 the save before changing the canvas and activates the ruleset stored in it.

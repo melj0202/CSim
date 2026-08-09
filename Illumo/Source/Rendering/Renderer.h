@@ -218,6 +218,13 @@ public:
       data, width, height, channels, tableID, filter);
   }
 
+  void releaseTexture(unsigned long tableID)
+  {
+    if (_backend != nullptr && tableID != 0) {
+      _backend->DestroyTexture(tableID);
+    }
+  }
+
   // Opaque table IDs for enroll* (v1: monotonic, never recycled).
   unsigned long allocateHandle() { return _nextHandleId++; }
 

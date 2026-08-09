@@ -914,6 +914,183 @@ serial, and parallel outputs byte-identical. No SIMD or GPU simulation is added.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-P17 --- Transactional sparse population aggregates}
+\begin{decisionbox}[title={D-P17 \quad 2026-08-09}]
+\textbf{Decision:} Cache stored-cell and counted-cell totals per chunk and
+maintain aggregate stored, counted, and candidate-preferred chunk totals for
+both the authoritative and retained inactive maps. Update the aggregates in
+the same operations that edit, assign, clear, patch, insert, recycle, or swap
+chunk data. Read the authoritative aggregates at the start of
+\symbolref{SparseCellGrid::advance} instead of popcounting every chunk.\\
+\textbf{Why:} The retained changed frontier already made settled worlds perform
+no cell evaluation, but \texttt{advance} still scanned and popcounted every
+allocated chunk before reaching that return. Large static worlds therefore
+paid work proportional to their stored chunk count on every requested step.\\
+\textbf{Consequences:} Settled stepping and complete-path selection are
+constant-time in allocated chunk count before any actual target construction.
+Status retains exact stored/counting totals and now exposes the cached
+candidate-preferred chunk count. Focused tests cover direct state changes,
+threshold crossings, chunk replacement, clear, full-map and frontier-map
+publication, and grid swaps. Each stored chunk adds two 16-bit counters and
+each retained map adds three aggregate counters.\\
+\textbf{Refines:} D-P14's empty-frontier fast path and D-P15's separate stored
+and counted masks.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P18 --- Cost-adaptive candidate frontiers}
+\begin{decisionbox}[title={D-P18 \quad 2026-08-09}]
+\textbf{Decision:} Replace D-P14's 64-target selection cutoff with a work-unit
+comparison. Retain up to 4,096 changed chunk addresses, expand them by one
+chunk, and build exact candidate masks from only the sparse source chunks that
+can affect those targets. Classify frontier targets as candidates or halos by
+counted-neighbor contributions. Compare frontier target/source bookkeeping,
+candidate construction, contributions, and evaluation cells with a
+complete-path estimate derived from D-P17's cached totals; patch the retained
+map when frontier work is no greater.\\
+\textbf{Why:} Eight separated localized changes could expand beyond 64 targets
+and fall abruptly into complete-world preparation even when most of a large
+world was static. The target count also treated a sparse candidate target as if
+it required all 256 halo cells.\\
+\textbf{Consequences:} Local work can cross the former cutoff without a path
+cliff, while broad separated changes are cost-rejected. Sparse frontier
+evaluation shares candidate/halo semantics and worker ranges with complete
+mixed stepping. The 4,096-address retention cap bounds persistent bookkeeping;
+crossing it invalidates the frontier for that generation. Focused coverage
+exercises more than 64 frontier targets, candidate selection, forced-complete
+byte identity, local-source bounds, and broad-change fallback.\\
+\textbf{Refines:} D-P14 changed-region selection and D-P15 per-target
+adaptation.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P19 --- Parallel candidate preparation without blanket clears}
+\begin{decisionbox}[title={D-P19 \quad 2026-08-09}]
+\textbf{Decision:} Derive candidate target edges and corners directly from the
+four 64-bit counting-mask words. Do not value-initialize all 256 neighbor
+counters in each scratch record; initialize a counter when its candidate bit
+is first enrolled. Keep the locality-friendly source-centric builder for
+serial preparation. For large automatic or explicitly parallel preparation,
+assign independent target scratch records to the retained worker pool; each
+worker reads the target's 3-by-3 source neighborhood and writes only its own
+record. Report preparation workers separately from evaluation workers.\\
+\textbf{Why:} Candidate collection previously rescanned every counted cell to
+discover boundary participation, cleared 256 bytes per target even though only
+candidate entries are read, and finished all scratch construction before
+workers could begin. A fully target-centric serial traversal regressed sparse
+locality, so preparation needs distinct serial and parallel layouts.\\
+\textbf{Consequences:} Small sparse worlds retain the faster serial traversal
+while avoiding blanket counter stores. Large worlds can parallelize candidate
+construction without shared destination writes, using the same retained pool
+as evaluation. Focused tests cover signed edge/corner targets, forced one- and
+four-worker preparation, scratch reuse, and byte identity against complete
+halos.\\
+\textbf{Refines:} D-P12 retained candidate scratch and D-P13 coarse candidate
+worker ranges.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P20 --- Retained complete halos from counting masks}
+\begin{decisionbox}[title={D-P20 \quad 2026-08-09}]
+\textbf{Decision:} Replace the complete-halo path's generation-local target
+hash set, address/result vectors, and target sort with a retained
+generation-stamped flat target index plus retained target and result vectors.
+For evaluation, extract one 18-bit counted row from the 3-by-3 source chunks'
+counting masks and feed three rolling horizontal rows directly into the
+transition loop. Read cell-state bytes only from the target core; do not
+materialize a temporary 18-by-18 byte halo.\\
+\textbf{Why:} Dense fallback paid repeated allocation, hashing, and sorting
+before evaluation, then populated 324 byte states per target even though the
+neighbor loop only needed counted-state membership around the core. This work
+was visible both for all-dense worlds and for halo targets selected inside
+mixed generations.\\
+\textbf{Consequences:} Complete target/index/result capacity survives at its
+high-water mark, while generation stamps make prior target slots logically
+empty. Halo evaluation keeps the existing serial/worker split and exact
+transition semantics but removes byte-halo construction. The informational
+bench improves both serial and four-worker dense stepping; focused coverage
+checks capacity reuse, index generations, signed boundaries, multistate rules,
+and candidate/full-halo byte identity.\\
+\textbf{Refines:} D-P8 reusable halo workers and D-P16 rolling halo counts.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P21 --- Changed-tile sampling and active fades}
+\begin{decisionbox}[title={D-P21 \quad 2026-08-09}]
+\textbf{Decision:} Publish a revision-scoped retained list of current or
+removed chunks after a single edit or completed generation. When
+\symbolref{CanvasView} displays one texel per cell and exactly one revision is
+unseen, resample only the visible portions of those 16-by-16 tiles. Retain a
+deduplicated set of texels whose display RGB differs from target RGB; fade
+ticks and zero-speed snaps visit only that set. Treat repeated unchanged
+\texttt{setFadeSpeed(0)} calls as no-ops.\\
+\textbf{Why:} Any content revision previously rebuilt the whole active view,
+and any active fade scanned every visible texel each frame. The normal module
+also reapplied the environment fade value every frame, causing a full snap
+scan whenever that value was zero.\\
+\textbf{Consequences:} Common near-zoom edits and generations perform work per
+visible changed chunk, while fade work follows colors still moving. Revision
+gaps, density overviews, camera or palette changes, whole-grid replacement,
+and invalid change journals deliberately use the complete bounded resample.
+The status command reports fading, last-sampled, and last-fade-visited texels.
+Focused tests cover edits, removals, generations, replacement invalidation,
+overview and revision-gap fallback, active fade counts, and repeated zero-speed
+configuration.\\
+\textbf{Refines:} D-P6 CPU RGB fade and D-P14 retained changed chunks.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P22 --- Measured synchronous simulation budget}
+\begin{decisionbox}[title={D-P22 \quad 2026-08-09}]
+\textbf{Decision:} Keep one due generation guaranteed in NORMAL mode. Before
+starting a second synchronous generation, measure the first and require the
+elapsed frame simulation time plus that observed step cost to fit inside a
+4\,ms simulation slice. Retain the two-step ceiling and fractional accumulator
+remainder while dropping further catch-up debt. Track a smoothed achieved TPS
+separately from requested \texttt{tps} $\times$ \texttt{speedFactor}, plus the
+longest step and total simulation time in the current frame.\\
+\textbf{Why:} A count-only two-step cap still allowed two expensive generations
+to execute before rendering. The configured TPS described demand, not the rate
+the main thread actually sustained, so status could not distinguish scheduling
+pressure from simulation cost.\\
+\textbf{Consequences:} Cheap worlds can still take the bounded second step,
+while a costly first generation yields to input, presentation, and rendering.
+A single costly generation remains synchronous and visible in timing
+diagnostics; background snapshot publication is deferred unless profiling shows
+its p95 still exceeds the render-frame budget after CPU-path improvements.
+Focused coverage forces zero and ample budget values to verify the one-step
+guarantee, second-step gate, debt policy, and status diagnostics.\\
+\textbf{Refines:} D-P8 responsive parallel sparse stepping.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P23 --- Retained texture capacity and explicit release}
+\begin{decisionbox}[title={D-P23 \quad 2026-08-09}]
+\textbf{Decision:} When one CanvasView texture dimension grows by a small
+amount, allocate the greater of the required size or 150\% of its current
+capacity. Keep the opaque texture handle stable across re-enrollment, but make
+\symbolref{GLBackend} explicitly destroy the old registry entry before
+installing its replacement. Make \symbolref{GLTexture} destruction idempotently
+delete its GL texture and two PBOs. Add \texttt{DestroyTexture} to
+\symbolref{IBackend}/\symbolref{Renderer} and release the display texture from
+\symbolref{CanvasView}'s destructor.\\
+\textbf{Why:} Smooth zoom could increase the active dimensions by a few texels
+on consecutive frames, repeatedly reallocating four CPU buffers and
+re-enrolling the GPU texture. Registry replacement destroyed a C++
+\texttt{unique\_ptr}, but the empty GLTexture destructor leaked the old texture
+and any PBO pair. The final live texture also remained registered until global
+backend shutdown after its view was gone.\\
+\textbf{Consequences:} Nearby zoom sizes reuse retained CPU/GPU capacity, while
+large jumps allocate their exact required bound. Replacement and view teardown
+now reclaim GL resources with the context-owning backend. Shutdown remains an
+idempotent bulk fallback; general refcounts and generational handle reuse are
+still deferred. Headless coverage verifies retained capacity, stable handles,
+and explicit view release; the full application build compiles the OpenGL
+replacement path.\\
+\textbf{Refines:} D-R4 shutdown lifecycle and D-C5 bounded overview capacity.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
 \subsection*{Template for new entries}
 \begin{lstlisting}[language={}]
 \subsection*{D-0XX --- short title}

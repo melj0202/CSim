@@ -42,6 +42,7 @@ private:
   std::vector<RenderCommand> lastNonEmptySubmitted;
   std::vector<std::vector<RenderCommand>> submittedFrames;
   std::vector<CreateRecord> creates;
+  std::vector<unsigned long> destroyedTextures;
   int beginFrameCount = 0;
   int endFrameCount = 0;
   int submitCount = 0;
@@ -64,6 +65,7 @@ public:
     commandQueue.Reset();
     lastSubmitted.clear();
     creates.clear();
+    destroyedTextures.clear();
     shutDown = true;
   }
 
@@ -217,6 +219,11 @@ public:
     return tableID;
   }
 
+  void DestroyTexture(unsigned long tableID) override
+  {
+    destroyedTextures.push_back(tableID);
+  }
+
   unsigned long CreateDescriptorSet() override
   {
     CreateRecord rec;
@@ -302,6 +309,13 @@ public:
 
   const CreateRecord& getCreate(size_t index) const { return creates[index]; }
 
+  size_t getDestroyedTextureCount() const { return destroyedTextures.size(); }
+
+  unsigned long getDestroyedTexture(size_t index) const
+  {
+    return destroyedTextures[index];
+  }
+
   // Count how many submitted commands match type.
   size_t countSubmittedOfType(CommandType type) const
   {
@@ -338,5 +352,6 @@ public:
     submittedFrames.clear();
     commandQueue.Reset();
     creates.clear();
+    destroyedTextures.clear();
   }
 };

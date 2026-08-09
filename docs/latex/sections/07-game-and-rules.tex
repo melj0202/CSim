@@ -15,11 +15,14 @@ class-per-state hierarchy (archived under \pathref{archive/old-states/}).
 Save/load, pause/run/step, canvas, ruleset, and camera behavior is exposed as
 registered console commands rather than artificial frame states.
 Simulation rate: env \texttt{tps} $\times$ \texttt{speedFactor}, with
-accumulator + two-step cap; excess catch-up debt is dropped to keep input and
-camera responsive. Status reports active chunks, stored and counted cells,
-candidate and halo targets, worker count, the selected path, and steps completed
-in the current frame. Painting and simulation operate on signed world coordinates;
-there is no finite or toroidal production canvas.
+an accumulator and one guaranteed due generation. A second synchronous
+generation starts only when the first generation's measured duration projects
+both inside a 4\,ms simulation slice; excess catch-up debt is dropped to keep
+input and camera responsive. Status separates requested and recently achieved
+TPS, reports step/frame simulation time and budget deferral, and retains active
+chunk/cell, target, worker, path, and frame-step diagnostics. Painting and
+simulation operate on signed world coordinates; there is no finite or toroidal
+production canvas.
 \end{statusbox}
 
 \subsection{Domain console commands and persistence}
@@ -47,33 +50,53 @@ Mode changes from console/env call \texttt{setRuleSet} and
         non-background 16$\times$16 byte chunks. Negative coordinates and all
         multi-state values are preserved; no fixed chunk pool cap exists.
   \item Simulation: each chunk carries a compact stored-cell occupancy mask and
-        a separate neighbor-counting mask. If any source
+        a separate neighbor-counting mask plus cached counts for both masks.
+        The authoritative and inactive maps maintain aggregate stored-cell,
+        counted-cell, and candidate-preferred-chunk totals transactionally
+        across edits, local patches, and complete swaps. Settled stepping and
+        complete-path selection therefore do not scan every allocated chunk.
+        If any source
         chunk has fewer than 48 counted cells, the grid creates exact affected
         targets through a retained generation-stamped
         open-addressed index. Its slots address contiguous scratch records
         containing a 256-bit candidate mask and 256 neighbor counts. It
-        evaluates only non-background cells and neighbors of counted cells.
+        derives target participation directly from counting-mask edge and
+        corner bits, and initializes a neighbor counter only when its candidate
+        bit is first enrolled. Serial preparation remains source-centric for
+        locality. Large or explicitly parallel preparation instead assigns
+        independent target records to the reusable worker pool. It evaluates
+        only non-background cells and neighbors of counted cells.
         Each target selects candidate or direct halo evaluation independently
         from its counted-neighbor contribution work; all-dense counted worlds
         bypass scratch construction. This keeps Wireworld conductors separate
         from the heads that actually contribute neighbor counts. Before either
         complete path, a retained changed-chunk frontier expands
         by one chunk in every direction. An empty frontier performs no cell
-        evaluation; frontiers of at most 64 target chunks patch the retained
+        evaluation. Up to 4,096 changed addresses are retained. Sparse local
+        sources build candidate masks only for frontier targets and select
+        candidates or halos independently. Exact frontier preparation and
+        evaluation work is compared with a complete-path estimate derived from
+        cached population totals; cheaper frontiers patch the retained
         prior-generation map directly. At 16,384 or more candidates, retained
         ranges of roughly 2,048 candidate cells use up to four automatic
         workers and independent result slots; smaller sets keep direct serial
         output. Denser worlds use deterministic direct
-        18$\times$18 halo/core
-        work; at 32 or more targets a reusable pool evaluates independent cores
+        halo/core work. Complete targets, their generation-stamped flat index,
+        and result slots retain high-water storage. Counted rows are extracted
+        directly from chunk masks without materializing an 18$\times$18 byte
+        halo; at 32 or more targets a reusable pool evaluates independent cores
         with up to eight workers. Both paths write into a retained inactive map
         using recycled node handles before transactional comparison/swap. Empty
         space is implicit and non-toroidal. The revision changes only when cell
         contents differ.
   \item View: \symbolref{CanvasView} samples contiguous 16$\times$16 cells
-        around the camera, fades palette colors, and snaps newly revealed
-        cells. At far zoom, its bounded active texture carries density-colored
-        overview texels rather than one texel per source cell.
+        around the camera. One-revision changes publish changed chunks so exact
+        near views resample only visible dirty tiles. A retained active-texel
+        set fades only colors still changing and snaps newly revealed cells.
+        At far zoom, its bounded active texture carries density-colored
+        overview texels rather than one texel per source cell; density,
+        revision gaps, camera/palette changes, and grid replacement use a full
+        bounded resample.
   \item GPU: one reusable nearest-filtered RGB display texture and one
         world-space \symbolref{GameVisual} quad that shares its cell bounds
         with the editor cursor; at most one dirty texture update per view
@@ -88,8 +111,10 @@ Sparse simulation cost follows stored cells, counted cells, and their local
 birth candidates, not a fixed world rectangle. Mixed targets independently use
 candidates or chunk halos; 32 or more halo targets use up to eight reusable CPU
 workers. A cached 256-state by 9-neighbor transition table serves every hot
-loop, and dense halos use rolling three-row neighbor counts. Presentation samples only on grid/camera/palette changes
-and limits far-zoom output to roughly one texel per four screen pixels. GPU
+loop, and dense halos use rolling three-row neighbor counts. Presentation uses
+changed-chunk tiles for one-revision exact views and an active-texel fade set;
+fallback resampling remains bounded and far-zoom output stays near one texel
+per four screen pixels. GPU
 resources do not scale with chunk count.
 \end{statusbox}
 
@@ -111,13 +136,18 @@ class RuleSet {
 
 \textbf{Generation:}
 \begin{enumerate}
-  \item If the retained changed frontier is empty, return immediately. If its
-        one-chunk expansion contains at most 64 targets, evaluate those targets
-        and transactionally patch the retained prior-generation map. Edits and
-        ruleset-type changes repopulate the frontier; broad changes fall back
-        to a complete path.
-  \item Count stored and neighbor-counting cells from separate chunk masks for
-        a complete path.
+  \item Read cached stored/counting totals and the candidate-preferred chunk
+        count. If the retained changed frontier is empty, return immediately
+        without visiting allocated chunks. Otherwise build its one-chunk
+        expansion and, for sparse local sources, target-local candidate masks.
+  \item Compare exact frontier target/source bookkeeping, candidate,
+        neighbor-contribution, and evaluation work with a complete-path
+        estimate derived from cached totals. Patch the retained map when the
+        frontier is no more expensive; otherwise use a complete path. Retain
+        at most 4,096 changed addresses. Edits and ruleset-type changes
+        repopulate the frontier.
+  \item Use the cached candidate-preferred count to select the complete
+        adaptive or all-dense path.
   \item If any source chunk is counting-sparse, create exact affected targets
         directly through the
         retained generation-stamped flat index, reset their contiguous
@@ -125,10 +155,12 @@ class RuleSet {
         then choose candidate bits or a direct halo independently for each
         target from counted-neighbor contribution work. Large sets are divided
         into coarse work-count ranges for the reusable worker pool.
-  \item If all source chunks are counting-dense, bypass candidate scratch and
-        read nine neighbors into a temporary 18$\times$18 read-only halo for
-        each target core. Reduce it through three rolling horizontal rows and
-        evaluate serially or through the bounded worker pool for 32 or more targets.
+  \item If all source chunks are counting-dense, bypass candidate scratch.
+        Build the expanded target set in a retained generation-stamped flat
+        index and reuse retained target/result storage. Extract 18-bit counted
+        rows directly from the nine chunks' masks, reduce them through three
+        rolling horizontal rows, and evaluate serially or through the bounded
+        worker pool for 32 or more targets.
   \item Install non-background results serially into the retained inactive map,
         reusing extracted chunk-node handles before allocating new nodes. Compare
         and swap transactionally only when contents differ.

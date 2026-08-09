@@ -33,6 +33,9 @@ CanvasView::CanvasView(int width,
   , displayRgb(nullptr)
   , targetRgb(nullptr)
   , sampledRgb(nullptr)
+  , lastSampledTexelCount(0u)
+  , lastFadeVisitCount(0u)
+  , lastSnapVisitCount(0u)
   , fadeSpeed(8.0f)
   , displayTextureHandle(0)
   , gpuReady(false)
@@ -58,6 +61,7 @@ CanvasView::CanvasView(int width,
   displayRgb = new float[texelCount * 3u];
   targetRgb = new float[texelCount * 3u];
   sampledRgb = new float[texelCount * 3u];
+  fadingFlags.assign(texelCount, 0u);
   for (std::size_t i = 0; i < texelCount * 3u; ++i) {
     texBuffer[i] = 255;
     displayRgb[i] = 1.0f;
@@ -71,6 +75,11 @@ CanvasView::CanvasView(int width,
 
 CanvasView::~CanvasView()
 {
+  if (gpuReady && renderer != nullptr && displayTextureHandle != 0) {
+    renderer->releaseTexture(displayTextureHandle);
+    displayTextureHandle = 0;
+    gpuReady = false;
+  }
   delete[] texBuffer;
   delete[] displayRgb;
   delete[] targetRgb;
@@ -88,6 +97,19 @@ bool
 CanvasView::sameAddress(const CellAddress& left, const CellAddress& right)
 {
   return left.x == right.x && left.y == right.y;
+}
+
+int
+CanvasView::growTextureDimension(int current, int required)
+{
+  if (required <= current) {
+    return current;
+  }
+  const int growth = std::max(1, current / 2);
+  if (current > std::numeric_limits<int>::max() - growth) {
+    return required;
+  }
+  return std::max(required, current + growth);
 }
 
 void
@@ -162,8 +184,8 @@ CanvasView::resizeBuffers(int width, int height)
     return;
   }
 
-  const int newWidth = std::max(textureWidth, width);
-  const int newHeight = std::max(textureHeight, height);
+  const int newWidth = growTextureDimension(textureWidth, width);
+  const int newHeight = growTextureDimension(textureHeight, height);
   const std::size_t texelCount =
     static_cast<std::size_t>(newWidth) * static_cast<std::size_t>(newHeight);
 
@@ -178,6 +200,8 @@ CanvasView::resizeBuffers(int width, int height)
   displayRgb = new float[texelCount * 3u];
   targetRgb = new float[texelCount * 3u];
   sampledRgb = new float[texelCount * 3u];
+  fadingTexels.clear();
+  fadingFlags.assign(texelCount, 0u);
   for (std::size_t i = 0; i < texelCount * 3u; ++i) {
     texBuffer[i] = 255;
     displayRgb[i] = 1.0f;
@@ -186,6 +210,9 @@ CanvasView::resizeBuffers(int width, int height)
   }
 
   fadeActive = false;
+  lastSampledTexelCount = 0u;
+  lastFadeVisitCount = 0u;
+  lastSnapVisitCount = 0u;
   textureUploadPending = false;
   resetUploadBounds();
   regionReady = false;
@@ -314,8 +341,22 @@ CanvasView::setTargetForSlot(int index, float r, float g, float b, bool snap)
     displayRgb[base + 1] = g;
     displayRgb[base + 2] = b;
   } else if (changed) {
+    if (fadingFlags[static_cast<std::size_t>(index)] == 0u) {
+      fadingFlags[static_cast<std::size_t>(index)] = 1u;
+      fadingTexels.push_back(index);
+    }
     fadeActive = true;
   }
+}
+
+void
+CanvasView::clearFadingTexels()
+{
+  for (int index : fadingTexels) {
+    fadingFlags[static_cast<std::size_t>(index)] = 0u;
+  }
+  fadingTexels.clear();
+  fadeActive = false;
 }
 
 int
@@ -346,7 +387,7 @@ CanvasView::applySampledTargets(bool snap)
     }
   }
   if (snap) {
-    fadeActive = false;
+    clearFadingTexels();
     markFullActiveUpload();
   }
 }
@@ -356,8 +397,11 @@ CanvasView::sampleGrid(bool snap)
 {
   ZoneScopedN("CanvasView.sampleGrid");
   if (activeViewWidth <= 0 || activeViewHeight <= 0) {
+    lastSampledTexelCount = 0u;
     return;
   }
+  lastSampledTexelCount = static_cast<std::size_t>(activeViewWidth) *
+                          static_cast<std::size_t>(activeViewHeight);
 
   const int backgroundBase = SparseCellGrid::BackgroundState * 3;
   const float backgroundR =
@@ -439,6 +483,62 @@ CanvasView::sampleGrid(bool snap)
   applySampledTargets(snap);
 }
 
+bool
+CanvasView::sampleChangedChunks(std::uint64_t previousRevision)
+{
+  ZoneScopedN("CanvasView.sampleChangedChunks");
+  if (grid == nullptr || activeViewWidth != visibleCellWidth ||
+      activeViewHeight != visibleCellHeight) {
+    return false;
+  }
+
+  lastSampledTexelCount = 0u;
+  const std::int64_t visibleMaximumX =
+    visibleFirstCell.x + static_cast<std::int64_t>(visibleCellWidth) - 1;
+  const std::int64_t visibleMinimumY =
+    visibleFirstCell.y - static_cast<std::int64_t>(visibleCellHeight) + 1;
+  return grid->visitChangedChunksSince(
+    previousRevision,
+    [this, visibleMaximumX, visibleMinimumY](
+      const ChunkAddress& address, const SparseCellGrid::ChunkCells* cells) {
+      const std::int64_t chunkMinimumX = address.x * SparseCellGrid::kChunkDim;
+      const std::int64_t chunkMinimumY = address.y * SparseCellGrid::kChunkDim;
+      const std::int64_t chunkMaximumX =
+        chunkMinimumX + SparseCellGrid::kChunkDim - 1;
+      const std::int64_t chunkMaximumY =
+        chunkMinimumY + SparseCellGrid::kChunkDim - 1;
+      const std::int64_t minimumX = std::max(chunkMinimumX, visibleFirstCell.x);
+      const std::int64_t maximumX = std::min(chunkMaximumX, visibleMaximumX);
+      const std::int64_t minimumY = std::max(chunkMinimumY, visibleMinimumY);
+      const std::int64_t maximumY = std::min(chunkMaximumY, visibleFirstCell.y);
+      if (minimumX > maximumX || minimumY > maximumY) {
+        return;
+      }
+
+      for (std::int64_t cellY = minimumY; cellY <= maximumY; ++cellY) {
+        for (std::int64_t cellX = minimumX; cellX <= maximumX; ++cellX) {
+          const std::size_t localIndex = static_cast<std::size_t>(
+            (cellY - chunkMinimumY) * SparseCellGrid::kChunkDim + cellX -
+            chunkMinimumX);
+          const unsigned char state = cells == nullptr
+                                        ? SparseCellGrid::BackgroundState
+                                        : (*cells)[localIndex];
+          const int outputX = static_cast<int>(cellX - visibleFirstCell.x);
+          const int outputY = static_cast<int>(visibleFirstCell.y - cellY);
+          const int index = outputY * textureWidth + outputX;
+          const int paletteIndex = static_cast<int>(state) * 3;
+          setTargetForSlot(
+            index,
+            static_cast<float>(paletteRgb[paletteIndex + 0]) / 255.0f,
+            static_cast<float>(paletteRgb[paletteIndex + 1]) / 255.0f,
+            static_cast<float>(paletteRgb[paletteIndex + 2]) / 255.0f,
+            false);
+          lastSampledTexelCount += 1u;
+        }
+      }
+    });
+}
+
 void
 CanvasView::syncVisibleRegion()
 {
@@ -512,7 +612,9 @@ CanvasView::rebuildTargetsFromGrid()
   if (!paletteDirty && currentRevision == lastGridRevision) {
     return;
   }
-  sampleGrid(false);
+  if (paletteDirty || !sampleChangedChunks(lastGridRevision)) {
+    sampleGrid(false);
+  }
   lastGridRevision = currentRevision;
   paletteDirty = false;
   if (fadeSpeed <= 0.0f) {
@@ -533,8 +635,12 @@ CanvasView::clearView()
 void
 CanvasView::setFadeSpeed(float speed)
 {
-  fadeSpeed = std::max(0.0f, speed);
-  if (fadeSpeed <= 0.0f) {
+  const float nextFadeSpeed = std::max(0.0f, speed);
+  if (fadeSpeed == nextFadeSpeed) {
+    return;
+  }
+  fadeSpeed = nextFadeSpeed;
+  if (fadeSpeed <= 0.0f && fadeActive) {
     snapVisualToTargets();
   }
 }
@@ -543,23 +649,22 @@ void
 CanvasView::snapVisualToTargets()
 {
   ZoneScopedN("CanvasView.snapVisualToTargets");
-  for (int y = 0; y < activeViewHeight; ++y) {
-    for (int x = 0; x < activeViewWidth; ++x) {
-      const int index = y * textureWidth + x;
-      const int base = index * 3;
-      displayRgb[base + 0] = targetRgb[base + 0];
-      displayRgb[base + 1] = targetRgb[base + 1];
-      displayRgb[base + 2] = targetRgb[base + 2];
-      writeTexel(index, x, y);
-    }
+  lastSnapVisitCount = fadingTexels.size();
+  for (int index : fadingTexels) {
+    const int base = index * 3;
+    displayRgb[base + 0] = targetRgb[base + 0];
+    displayRgb[base + 1] = targetRgb[base + 1];
+    displayRgb[base + 2] = targetRgb[base + 2];
+    writeTexel(index, index % textureWidth, index / textureWidth);
   }
-  fadeActive = false;
+  clearFadingTexels();
 }
 
 void
 CanvasView::tickVisual(float dt)
 {
   ZoneScopedN("CanvasView.tickVisual");
+  lastFadeVisitCount = fadingTexels.size();
   if (!fadeActive) {
     return;
   }
@@ -571,31 +676,34 @@ CanvasView::tickVisual(float dt)
     return;
   }
   const float alpha = std::min(1.0f, 1.0f - std::exp(-fadeSpeed * dt));
-  bool stillFading = false;
-  for (int y = 0; y < activeViewHeight; ++y) {
-    for (int x = 0; x < activeViewWidth; ++x) {
-      const int index = y * textureWidth + x;
-      const int base = index * 3;
-      bool cellStillFading = false;
-      for (int channel = 0; channel < 3; ++channel) {
-        const float target = targetRgb[base + channel];
-        const float difference = target - displayRgb[base + channel];
-        if (std::fabs(difference) > 0.002f) {
-          displayRgb[base + channel] += difference * alpha;
-          if (std::fabs(target - displayRgb[base + channel]) > 0.002f) {
-            cellStillFading = true;
-          } else {
-            displayRgb[base + channel] = target;
-          }
+  std::size_t retainedCount = 0u;
+  for (int index : fadingTexels) {
+    const int base = index * 3;
+    bool cellStillFading = false;
+    for (int channel = 0; channel < 3; ++channel) {
+      const float target = targetRgb[base + channel];
+      const float difference = target - displayRgb[base + channel];
+      if (std::fabs(difference) > 0.002f) {
+        displayRgb[base + channel] += difference * alpha;
+        if (std::fabs(target - displayRgb[base + channel]) > 0.002f) {
+          cellStillFading = true;
         } else {
           displayRgb[base + channel] = target;
         }
+      } else {
+        displayRgb[base + channel] = target;
       }
-      stillFading = stillFading || cellStillFading;
-      writeTexel(index, x, y);
+    }
+    writeTexel(index, index % textureWidth, index / textureWidth);
+    if (cellStillFading) {
+      fadingTexels[retainedCount] = index;
+      retainedCount += 1u;
+    } else {
+      fadingFlags[static_cast<std::size_t>(index)] = 0u;
     }
   }
-  fadeActive = stillFading;
+  fadingTexels.resize(retainedCount);
+  fadeActive = !fadingTexels.empty();
 }
 
 CellAddress

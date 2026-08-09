@@ -9,6 +9,7 @@
 #include "Rulesets/GameOfLifeRuleSet.h"
 #include "Rulesets/HighlifeRuleSet.h"
 #include "Rulesets/LifeWithoutDeathRuleSet.h"
+#include "Rulesets/Rule90RuleSet.h"
 #include "Rulesets/RuleSet.h"
 #include "Rulesets/SeedsRuleSet.h"
 #include "Rulesets/WireworldRuleSet.h"
@@ -443,6 +444,10 @@ testSparseCandidateParallelDeterminism()
             static_cast<int>(parallelStats.workerCount),
             4,
             "candidate evaluation uses the requested worker count");
+  testEqInt(g,
+            static_cast<int>(parallelStats.candidatePreparationWorkerCount),
+            4,
+            "candidate preparation uses the requested worker count");
   testTrue(g,
            parallelStats.candidateWorkRangeCount >= 4u,
            "candidate work provides at least one coarse range per worker");
@@ -454,6 +459,72 @@ testSparseCandidateParallelDeterminism()
            sameSparseRecords(serial.collectChunkRecords(),
                              parallel.collectChunkRecords()),
            "parallel candidates remain byte-identical to serial candidates");
+}
+
+static void
+seedChunkBoundaryBlocks(SparseCellGrid* grid, int count)
+{
+  if (grid == nullptr) {
+    return;
+  }
+  for (int index = 0; index < count; ++index) {
+    const std::int64_t boundaryX = static_cast<std::int64_t>(index) * 64;
+    const std::int64_t boundaryY = index % 2 == 0 ? 0 : -16;
+    grid->setCell(CellAddress{ boundaryX - 1, boundaryY - 1 }, 0);
+    grid->setCell(CellAddress{ boundaryX, boundaryY - 1 }, 0);
+    grid->setCell(CellAddress{ boundaryX - 1, boundaryY }, 0);
+    grid->setCell(CellAddress{ boundaryX, boundaryY }, 0);
+  }
+}
+
+static void
+testSparseCandidatePreparation()
+{
+  testSection("SparseCellGrid: parallel candidate preparation");
+  GameOfLifeRuleSet rules(nullptr);
+  SparseCellGrid serial;
+  SparseCellGrid parallel;
+  SparseCellGrid fullChunks;
+  seedChunkBoundaryBlocks(&serial, 128);
+  seedChunkBoundaryBlocks(&parallel, 128);
+  seedChunkBoundaryBlocks(&fullChunks, 128);
+
+  SparseCellGrid::setCellCandidateOverrideForTesting(1);
+  SparseCellGrid::setWorkerOverrideForTesting(1);
+  for (int generation = 0; generation < 3; ++generation) {
+    testTrue(g, serial.advance(rules), "serial preparation advances");
+  }
+  testEqInt(g,
+            static_cast<int>(
+              serial.getLastAdvanceStats().candidatePreparationWorkerCount),
+            1,
+            "serial preparation remains direct");
+
+  SparseCellGrid::setWorkerOverrideForTesting(4);
+  for (int generation = 0; generation < 3; ++generation) {
+    testTrue(g, parallel.advance(rules), "parallel preparation advances");
+  }
+  testEqInt(g,
+            static_cast<int>(
+              parallel.getLastAdvanceStats().candidatePreparationWorkerCount),
+            4,
+            "target-centric preparation uses four workers");
+
+  SparseCellGrid::setCellCandidateOverrideForTesting(-1);
+  SparseCellGrid::setWorkerOverrideForTesting(1);
+  for (int generation = 0; generation < 3; ++generation) {
+    testTrue(g, fullChunks.advance(rules), "full-halo reference advances");
+  }
+  testTrue(g,
+           sameSparseRecords(serial.collectChunkRecords(),
+                             parallel.collectChunkRecords()),
+           "parallel preparation matches serial preparation at boundaries");
+  testTrue(g,
+           sameSparseRecords(serial.collectChunkRecords(),
+                             fullChunks.collectChunkRecords()),
+           "candidate preparation matches full halos at boundaries");
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  SparseCellGrid::setWorkerOverrideForTesting(0);
 }
 
 static void
@@ -489,8 +560,10 @@ testSparseChangedFrontier()
   SparseCellGrid::setCellCandidateOverrideForTesting(0);
   testTrue(g, stable.advance(life), "still life frontier settles");
   testTrue(g,
-           stable.getLastAdvanceStats().usedChangedFrontier,
-           "small edited region uses the frontier evaluator");
+           stable.getLastAdvanceStats().usedChangedFrontier ||
+             stable.getLastAdvanceStats().frontierEstimatedWork >
+               stable.getLastAdvanceStats().completeEstimatedWork,
+           "small edited region is evaluated or cost-rejected");
   const std::uint64_t stableRevision = stable.getRevision();
   testTrue(g, stable.advance(life), "settled frontier advances");
   testTrue(g,
@@ -535,9 +608,11 @@ testSparseChangedFrontier()
   stable.setCell(CellAddress{ 20, 20 }, 0);
   testTrue(g, stable.advance(life), "edited settled world advances");
   testTrue(g,
-           stable.getLastAdvanceStats().usedChangedFrontier &&
-             stable.getLastAdvanceStats().frontierTargetCount > 0u,
-           "editing repopulates the local frontier");
+           (stable.getLastAdvanceStats().usedChangedFrontier &&
+            stable.getLastAdvanceStats().frontierTargetCount > 0u) ||
+             stable.getLastAdvanceStats().frontierEstimatedWork >
+               stable.getLastAdvanceStats().completeEstimatedWork,
+           "editing evaluates or cost-rejects the local frontier");
 
   SparseCellGrid ruleChange;
   ruleChange.setCell(CellAddress{ 0, 0 }, 0);
@@ -549,11 +624,241 @@ testSparseChangedFrontier()
   const std::uint64_t lifeRevision = ruleChange.getRevision();
   testTrue(g, ruleChange.advance(seeds), "ruleset change advances");
   testTrue(g,
-           ruleChange.getLastAdvanceStats().usedChangedFrontier,
-           "ruleset change invalidates the stable region locally");
+           ruleChange.getLastAdvanceStats().usedChangedFrontier ||
+             ruleChange.getLastAdvanceStats().frontierEstimatedWork >
+               ruleChange.getLastAdvanceStats().completeEstimatedWork,
+           "ruleset change evaluates or cost-rejects the invalidated region");
   testTrue(g,
            ruleChange.getRevision() > lifeRevision,
            "ruleset change produces a new generation");
+}
+
+static void
+seedAdaptiveFrontierWorld(SparseCellGrid* grid,
+                          int stableBlockCount,
+                          int blinkerCount)
+{
+  if (grid == nullptr) {
+    return;
+  }
+  for (int block = 0; block < stableBlockCount; ++block) {
+    const std::int64_t x = static_cast<std::int64_t>(block) * 64 + 4;
+    const std::int64_t y = 64;
+    grid->setCell(CellAddress{ x, y }, 0);
+    grid->setCell(CellAddress{ x + 1, y }, 0);
+    grid->setCell(CellAddress{ x, y + 1 }, 0);
+    grid->setCell(CellAddress{ x + 1, y + 1 }, 0);
+  }
+  for (int blinker = 0; blinker < blinkerCount; ++blinker) {
+    const std::int64_t x = static_cast<std::int64_t>(blinker) * 64 + 15;
+    grid->setCell(CellAddress{ x, -1 }, 0);
+    grid->setCell(CellAddress{ x, 0 }, 0);
+    grid->setCell(CellAddress{ x, 1 }, 0);
+  }
+}
+
+static void
+testSparseAdaptiveFrontierCost()
+{
+  testSection("SparseCellGrid: adaptive frontier cost and candidates");
+  GameOfLifeRuleSet life(nullptr);
+  SparseCellGrid optimized;
+  SparseCellGrid reference;
+  seedAdaptiveFrontierWorld(&optimized, 1024, 8);
+  seedAdaptiveFrontierWorld(&reference, 1024, 8);
+
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  testTrue(g, optimized.advance(life), "adaptive baseline generation advances");
+  SparseCellGrid::setCellCandidateOverrideForTesting(1);
+  testTrue(g, reference.advance(life), "complete baseline generation advances");
+
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  testTrue(g, optimized.advance(life), "wide local frontier advances");
+  const SparseAdvanceStats frontierStats = optimized.getLastAdvanceStats();
+  testTrue(g,
+           frontierStats.usedChangedFrontier,
+           "cost model keeps the localized frontier");
+  testTrue(g,
+           frontierStats.frontierTargetCount > 64u,
+           "localized frontier crosses the former 64-target cliff");
+  testTrue(g,
+           frontierStats.candidateTargetCount > 0u &&
+             frontierStats.usedCellCandidates,
+           "sparse frontier evaluates candidate masks");
+  testTrue(
+    g,
+    frontierStats.frontierEstimatedWork <= frontierStats.completeEstimatedWork,
+    "selected frontier has no more estimated work than complete stepping");
+  testTrue(g,
+           frontierStats.frontierSourceChunkCount <
+             frontierStats.activeChunkCount,
+           "frontier candidate preparation visits only local source chunks");
+
+  SparseCellGrid::setCellCandidateOverrideForTesting(1);
+  testTrue(
+    g, reference.advance(life), "complete comparison generation advances");
+  testTrue(g,
+           sameSparseRecords(optimized.collectChunkRecords(),
+                             reference.collectChunkRecords()),
+           "adaptive candidate frontier matches complete candidate stepping");
+
+  SparseCellGrid broad;
+  seedWideBlinkers(&broad, 128);
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  testTrue(g, broad.advance(life), "broad-change generation advances");
+  const SparseAdvanceStats broadStats = broad.getLastAdvanceStats();
+  testTrue(g,
+           !broadStats.usedChangedFrontier,
+           "cost model rejects a broad separated frontier");
+  testTrue(g,
+           broadStats.frontierEstimatedWork > broadStats.completeEstimatedWork,
+           "broad frontier rejection is explained by estimated work");
+}
+
+static void
+testSparseCachedStatistics()
+{
+  testSection("SparseCellGrid: transactional cached statistics");
+  Rule90RuleSet identity(nullptr);
+  SparseCellGrid grid;
+  grid.setCell(CellAddress{ 0, 0 }, 0);
+  grid.setCell(CellAddress{ 1, 0 }, 3);
+  grid.setCell(CellAddress{ 16, 0 }, 0);
+
+  testTrue(g, grid.advance(identity), "initial identity generation advances");
+  const SparseAdvanceStats initial = grid.getLastAdvanceStats();
+  testEqSize(g, initial.activeChunkCount, 2u, "two source chunks are cached");
+  testEqSize(g, initial.activeCellCount, 3u, "stored cells are cached");
+  testEqSize(g, initial.countedCellCount, 2u, "counted cells are cached");
+  testEqSize(g,
+             initial.candidatePreferredChunkCount,
+             2u,
+             "candidate-preferred chunks are cached");
+
+  testTrue(g, grid.advance(identity), "settled identity generation advances");
+  const SparseAdvanceStats settled = grid.getLastAdvanceStats();
+  testTrue(g,
+           settled.usedChangedFrontier && settled.frontierTargetCount == 0u,
+           "settled generation takes the zero-target frontier path");
+  testEqSize(g,
+             settled.activeCellCount,
+             3u,
+             "settled generation reports cached stored cells");
+  testEqSize(g,
+             settled.countedCellCount,
+             2u,
+             "settled generation reports cached counted cells");
+
+  grid.setCell(CellAddress{ 0, 0 }, 3);
+  grid.setCell(CellAddress{ 16, 0 }, SparseCellGrid::BackgroundState);
+  testTrue(g, grid.advance(identity), "edited identity generation advances");
+  const SparseAdvanceStats edited = grid.getLastAdvanceStats();
+  testEqSize(g, edited.activeChunkCount, 1u, "empty chunk leaves the cache");
+  testEqSize(g, edited.activeCellCount, 2u, "state edits update stored cells");
+  testEqSize(
+    g, edited.countedCellCount, 0u, "state edits update counted cells");
+  testEqSize(g,
+             edited.candidatePreferredChunkCount,
+             1u,
+             "state edits update candidate preference");
+
+  SparseChunkRecord replacement;
+  replacement.chunkX = 0;
+  replacement.chunkY = 0;
+  replacement.cells.fill(SparseCellGrid::BackgroundState);
+  replacement.cells[0] = 0;
+  replacement.cells[1] = 2;
+  testTrue(g, grid.assignChunk(replacement), "existing chunk is replaced");
+
+  SparseChunkRecord denseCounted;
+  denseCounted.chunkX = 3;
+  denseCounted.chunkY = 0;
+  denseCounted.cells.fill(SparseCellGrid::BackgroundState);
+  for (std::size_t index = 0u; index < 48u; ++index) {
+    denseCounted.cells[index] = 0;
+  }
+  testTrue(
+    g, grid.assignChunk(denseCounted), "dense counted chunk is assigned");
+  testTrue(g, grid.advance(identity), "assigned chunks advance");
+  const SparseAdvanceStats assigned = grid.getLastAdvanceStats();
+  testEqSize(
+    g, assigned.activeCellCount, 50u, "assignment updates stored cache");
+  testEqSize(
+    g, assigned.countedCellCount, 49u, "assignment updates counted cache");
+  testEqSize(g,
+             assigned.candidatePreferredChunkCount,
+             1u,
+             "threshold-equal chunk is not candidate-preferred");
+
+  grid.setCell(CellAddress{ 48, 0 }, 2);
+  testTrue(g, grid.advance(identity), "threshold crossing advances");
+  testEqSize(g,
+             grid.getLastAdvanceStats().candidatePreferredChunkCount,
+             2u,
+             "counted-cell edit updates cached candidate preference");
+
+  SparseCellGrid other;
+  other.setCell(CellAddress{ -32, 0 }, 0);
+  testTrue(g, other.advance(identity), "swap peer is synchronized");
+  grid.swap(other);
+  testTrue(g, grid.advance(identity), "swapped small grid advances");
+  testEqSize(g,
+             grid.getLastAdvanceStats().activeCellCount,
+             1u,
+             "swap moves stored cache");
+  testEqSize(g,
+             grid.getLastAdvanceStats().countedCellCount,
+             1u,
+             "swap moves counted cache");
+  testTrue(g, other.advance(identity), "swapped large grid advances");
+  testEqSize(g,
+             other.getLastAdvanceStats().activeCellCount,
+             50u,
+             "peer receives stored cache");
+  testEqSize(g,
+             other.getLastAdvanceStats().countedCellCount,
+             48u,
+             "peer receives counted cache");
+  other.clear();
+  testTrue(g, other.advance(identity), "cleared grid advances");
+  testEqSize(g,
+             other.getLastAdvanceStats().activeCellCount,
+             0u,
+             "clear resets stored cache");
+  testEqSize(g,
+             other.getLastAdvanceStats().countedCellCount,
+             0u,
+             "clear resets counted cache");
+
+  GameOfLifeRuleSet life(nullptr);
+  SparseCellGrid complete;
+  complete.setCell(CellAddress{ 0, 0 }, 0);
+  SparseCellGrid::setCellCandidateOverrideForTesting(-1);
+  testTrue(g, complete.advance(life), "complete generation removes lone cell");
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  testTrue(g, complete.advance(life), "empty complete result advances");
+  testEqSize(g,
+             complete.getLastAdvanceStats().activeCellCount,
+             0u,
+             "complete-map swap publishes cached empty totals");
+
+  SparseCellGrid frontier;
+  frontier.setCell(CellAddress{ 3, 3 }, 0);
+  frontier.setCell(CellAddress{ 4, 3 }, 0);
+  frontier.setCell(CellAddress{ 3, 4 }, 0);
+  frontier.setCell(CellAddress{ 4, 4 }, 0);
+  testTrue(g, frontier.advance(life), "frontier still life synchronizes");
+  frontier.setCell(CellAddress{ 64, 0 }, 0);
+  testTrue(g, frontier.advance(life), "frontier removes edited lone cell");
+  testTrue(g, frontier.advance(life), "frontier result settles");
+  testEqSize(g,
+             frontier.getLastAdvanceStats().activeCellCount,
+             4u,
+             "frontier-map swap publishes cached stored totals");
+  testEqSize(g,
+             frontier.getLastAdvanceStats().countedCellCount,
+             4u,
+             "frontier-map swap publishes cached counted totals");
 }
 
 static void
@@ -646,6 +951,76 @@ testSparseCandidateFlatIndex()
            sameSparseRecords(candidates.collectChunkRecords(),
                              fullChunks.collectChunkRecords()),
            "flat-index generation matches full chunks");
+}
+
+static void
+testSparseCompleteHaloScratchReuse()
+{
+  testSection("SparseCellGrid: retained complete-halo scratch storage");
+  WireworldRuleSet rules(nullptr);
+  SparseCellGrid grid;
+  bool assigned = true;
+  for (int chunkY = 0; chunkY < 9; ++chunkY) {
+    for (int chunkX = 0; chunkX < 9; ++chunkX) {
+      SparseChunkRecord record;
+      record.chunkX = chunkX;
+      record.chunkY = chunkY;
+      record.cells.fill(WireworldRuleSet::CELL_CONDUCTOR);
+      assigned = grid.assignChunk(record) && assigned;
+    }
+  }
+  testTrue(g, assigned, "complete-halo source chunks assign");
+
+  SparseCellGrid::setWorkerOverrideForTesting(1);
+  SparseCellGrid::setCellCandidateOverrideForTesting(-1);
+  testTrue(g, grid.advance(rules), "first complete-halo generation advances");
+  testEqSize(g,
+             grid.getLastAdvanceStats().targetChunkCount,
+             11u * 11u,
+             "complete halo owns the exact expanded target set");
+  const std::size_t targetCapacity = grid.getCompleteTargetCapacityForTesting();
+  const std::size_t indexCapacity =
+    grid.getCompleteTargetIndexCapacityForTesting();
+  const std::size_t resultCapacity = grid.getCompleteResultCapacityForTesting();
+  testTrue(g,
+           targetCapacity >= grid.getLastAdvanceStats().targetChunkCount,
+           "complete target vector owns retained capacity");
+  testTrue(g,
+           indexCapacity >= grid.getLastAdvanceStats().targetChunkCount,
+           "complete target index owns retained capacity");
+  testTrue(g,
+           resultCapacity >= grid.getLastAdvanceStats().targetChunkCount,
+           "complete result vector owns retained capacity");
+
+  testTrue(g, grid.advance(rules), "second complete-halo generation advances");
+  testEqSize(g,
+             grid.getCompleteTargetCapacityForTesting(),
+             targetCapacity,
+             "complete target capacity is reused");
+  testEqSize(g,
+             grid.getCompleteTargetIndexCapacityForTesting(),
+             indexCapacity,
+             "complete target-index capacity is reused");
+  testEqSize(g,
+             grid.getCompleteResultCapacityForTesting(),
+             resultCapacity,
+             "complete result capacity is reused");
+
+  grid.clear();
+  SparseChunkRecord replacement;
+  replacement.chunkX = -5;
+  replacement.chunkY = -5;
+  replacement.cells.fill(WireworldRuleSet::CELL_CONDUCTOR);
+  testTrue(g, grid.assignChunk(replacement), "replacement halo chunk assigns");
+  testTrue(g, grid.advance(rules), "new complete-target generation advances");
+  testEqSize(g,
+             grid.getLastAdvanceStats().targetChunkCount,
+             9u,
+             "old complete-target generation does not remain active");
+  testEqSize(g,
+             grid.getCompleteTargetIndexCapacityForTesting(),
+             indexCapacity,
+             "smaller complete world retains its target-index high-water");
 }
 
 static void
@@ -907,6 +1282,11 @@ testAdaptiveOverviewAndRevisionGate()
 
   grid.setCell(CellAddress{ 1, 0 }, 0);
   view.rebuildTargetsFromGrid();
+  testEqSize(g,
+             view.getLastSampledTexelCount(),
+             static_cast<std::size_t>(view.getViewWidth()) *
+               static_cast<std::size_t>(view.getViewHeight()),
+             "overview revisions retain full density resampling");
   view.setFadeSpeed(0.0f);
   mock.ClearCommandQueue();
   view.AppendCommands(&renderer);
@@ -937,6 +1317,168 @@ testAdaptiveOverviewAndRevisionGate()
             view.getTextureHeight(),
             180,
             "near view retains allocation without expanding active rows");
+}
+
+static std::size_t
+countTextureCreates(const MockBackend& mock)
+{
+  std::size_t count = 0u;
+  for (std::size_t i = 0; i < mock.getCreateCount(); ++i) {
+    if (mock.getCreate(i).kind ==
+        MockBackend::CreateRecord::Kind::TextureData) {
+      count += 1u;
+    }
+  }
+  return count;
+}
+
+static void
+testTextureCapacityAndLifecycle()
+{
+  testSection("CanvasView: texture capacity and lifecycle");
+  NullRenderWindow window(1280, 720);
+  EnvVars env;
+  env.setVar("WinX", 1280);
+  env.setVar("WinY", 720);
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  MockBackend mock;
+  mock.Initialize();
+  Renderer renderer(&window, &env, &camera, &mock, false);
+  SparseCellGrid grid;
+  unsigned long textureHandle = 0;
+
+  {
+    CanvasView view(80, 60, &grid, &window, &camera, &renderer);
+    const std::size_t initialTextureCreates = countTextureCreates(mock);
+    testEqSize(
+      g, initialTextureCreates, 1u, "view enrolls one initial display texture");
+
+    view.rebuildTargetsFromGrid();
+    const std::size_t grownTextureCreates = countTextureCreates(mock);
+    testEqSize(g,
+               grownTextureCreates,
+               initialTextureCreates + 1u,
+               "first capacity growth replaces the display texture once");
+    testEqInt(g,
+              view.getTextureWidth(),
+              120,
+              "small width growth reserves fifty percent headroom");
+
+    camera.SetZoom(0.95f);
+    view.syncVisibleRegion();
+    camera.SetZoom(0.90f);
+    view.syncVisibleRegion();
+    testEqSize(g,
+               countTextureCreates(mock),
+               grownTextureCreates,
+               "nearby smooth-zoom sizes reuse retained texture capacity");
+
+    for (std::size_t i = 0; i < mock.getCreateCount(); ++i) {
+      const MockBackend::CreateRecord& record = mock.getCreate(i);
+      if (record.kind != MockBackend::CreateRecord::Kind::TextureData) {
+        continue;
+      }
+      if (textureHandle == 0) {
+        textureHandle = record.tableID;
+      } else {
+        testTrue(g,
+                 record.tableID == textureHandle,
+                 "capacity replacement preserves the opaque texture handle");
+      }
+    }
+  }
+
+  testEqSize(g,
+             mock.getDestroyedTextureCount(),
+             1u,
+             "view destruction releases its backend texture");
+  testTrue(g,
+           mock.getDestroyedTexture(0) == textureHandle,
+           "view releases the enrolled texture handle");
+}
+
+static void
+testIncrementalPresentationWork()
+{
+  testSection("CanvasView: changed-tile sampling and active fades");
+  NullRenderWindow window(640, 480);
+  EnvVars env;
+  env.setVar("WinX", 640);
+  env.setVar("WinY", 480);
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  SparseCellGrid grid;
+  grid.setCell(CellAddress{ 0, 0 }, 0);
+  CanvasView view(80, 60, &grid, &window, &camera, nullptr);
+  view.rebuildDefaultPalette();
+  view.rebuildTargetsFromGrid();
+  const std::size_t fullViewTexels =
+    static_cast<std::size_t>(view.getViewWidth()) *
+    static_cast<std::size_t>(view.getViewHeight());
+  testEqSize(g,
+             view.getLastSampledTexelCount(),
+             fullViewTexels,
+             "initial presentation samples the complete view");
+
+  grid.setCell(CellAddress{ 0, 0 }, SparseCellGrid::BackgroundState);
+  view.rebuildTargetsFromGrid();
+  testEqSize(g,
+             view.getLastSampledTexelCount(),
+             SparseCellGrid::kChunkCellCount,
+             "one changed chunk resamples one visible tile");
+  testEqSize(g,
+             view.getFadingTexelCount(),
+             1u,
+             "one changed cell enrolls one fading texel");
+  view.tickVisual(0.01f);
+  testEqSize(g,
+             view.getLastFadeVisitCount(),
+             1u,
+             "fade tick visits only the active texel");
+
+  view.setFadeSpeed(0.0f);
+  testEqSize(g,
+             view.getLastSnapVisitCountForTesting(),
+             1u,
+             "zero fade speed snaps only the active texel");
+  testEqSize(
+    g, view.getFadingTexelCount(), 0u, "snap clears the active fade set");
+  view.setFadeSpeed(0.0f);
+  testEqSize(g,
+             view.getLastSnapVisitCountForTesting(),
+             1u,
+             "repeated zero fade configuration performs no snap scan");
+
+  grid.setCell(CellAddress{ 0, 0 }, 0);
+  grid.setCell(CellAddress{ 20, 0 }, 0);
+  view.rebuildTargetsFromGrid();
+  testEqSize(g,
+             view.getLastSampledTexelCount(),
+             fullViewTexels,
+             "multiple unseen revisions fall back to a complete resample");
+
+  grid.setCell(CellAddress{ 20, 0 }, SparseCellGrid::BackgroundState);
+  view.rebuildTargetsFromGrid();
+  testEqSize(g,
+             view.getLastSampledTexelCount(),
+             5u * SparseCellGrid::kChunkDim,
+             "single-cell removal clips changed-tile sampling to the view");
+
+  GameOfLifeRuleSet rules(nullptr);
+  testTrue(g, grid.advance(rules), "presentation source generation advances");
+  view.rebuildTargetsFromGrid();
+  testEqSize(g,
+             view.getLastSampledTexelCount(),
+             SparseCellGrid::kChunkCellCount,
+             "one simulation revision publishes its changed tile");
+
+  SparseCellGrid replacement;
+  replacement.setCell(CellAddress{ 1, 1 }, 0);
+  grid.swap(replacement);
+  view.rebuildTargetsFromGrid();
+  testEqSize(g,
+             view.getLastSampledTexelCount(),
+             fullViewTexels,
+             "whole-grid replacement invalidates incremental sampling");
 }
 
 static void
@@ -1046,13 +1588,24 @@ registerCanvasInfTests(IllumoTestRegistry& registry)
   registry.add("Illumo.CanvasInf.SparseCandidateParallelDeterminism", []() {
     return runCanvasInfCase(testSparseCandidateParallelDeterminism);
   });
+  registry.add("Illumo.CanvasInf.SparseCandidatePreparation", []() {
+    return runCanvasInfCase(testSparseCandidatePreparation);
+  });
   registry.add("Illumo.CanvasInf.SparseChangedFrontier",
                []() { return runCanvasInfCase(testSparseChangedFrontier); });
+  registry.add("Illumo.CanvasInf.SparseAdaptiveFrontierCost", []() {
+    return runCanvasInfCase(testSparseAdaptiveFrontierCost);
+  });
+  registry.add("Illumo.CanvasInf.SparseCachedStatistics",
+               []() { return runCanvasInfCase(testSparseCachedStatistics); });
   registry.add("Illumo.CanvasInf.SparseCandidateScratchReuse", []() {
     return runCanvasInfCase(testSparseCandidateScratchReuse);
   });
   registry.add("Illumo.CanvasInf.SparseCandidateFlatIndex",
                []() { return runCanvasInfCase(testSparseCandidateFlatIndex); });
+  registry.add("Illumo.CanvasInf.SparseCompleteHaloScratchReuse", []() {
+    return runCanvasInfCase(testSparseCompleteHaloScratchReuse);
+  });
   registry.add("Illumo.CanvasInf.SparseChunkNodeReuse",
                []() { return runCanvasInfCase(testSparseChunkNodeReuse); });
   registry.add("Illumo.CanvasInf.SparseCellCandidateRuleEquivalence", []() {
@@ -1064,6 +1617,12 @@ registerCanvasInfTests(IllumoTestRegistry& registry)
                []() { return runCanvasInfCase(testBoundedCanvasView); });
   registry.add("Illumo.CanvasInf.AdaptiveOverviewAndRevisionGate", []() {
     return runCanvasInfCase(testAdaptiveOverviewAndRevisionGate);
+  });
+  registry.add("Illumo.CanvasInf.TextureCapacityAndLifecycle", []() {
+    return runCanvasInfCase(testTextureCapacityAndLifecycle);
+  });
+  registry.add("Illumo.CanvasInf.IncrementalPresentationWork", []() {
+    return runCanvasInfCase(testIncrementalPresentationWork);
   });
   registry.add("Illumo.CanvasInf.WorldCellPresentation", []() {
     return runCanvasInfCase(testCanvasViewUsesWorldCellQuad);

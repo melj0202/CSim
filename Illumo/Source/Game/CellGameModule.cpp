@@ -4,6 +4,7 @@
 #include "Services/SaveLoad.h"
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -92,8 +93,14 @@ CellGameModule::CellGameModule()
   , currentState(CellState::EDIT)
   , simAccum(0.0)
   , simStepSeconds(1.0 / 30.0)
+  , requestedSimulationTps(30.0)
+  , achievedSimulationTps(0.0)
+  , simulationFrameBudgetSeconds(0.004)
+  , lastSimulationStepMilliseconds(0.0)
+  , lastSimulationFrameMilliseconds(0.0)
   , lastSimulationSteps(0)
   , simulationDebtDropped(false)
+  , simulationBudgetLimited(false)
   , wireworldBrush(WireworldRuleSet::CELL_CONDUCTOR)
   , modeSplash(nullptr)
 {
@@ -554,8 +561,12 @@ CellGameModule::setRunning(bool running)
 {
   currentState = running ? CellState::NORMAL : CellState::EDIT;
   simAccum = 0.0;
+  achievedSimulationTps = 0.0;
+  lastSimulationStepMilliseconds = 0.0;
+  lastSimulationFrameMilliseconds = 0.0;
   lastSimulationSteps = 0;
   simulationDebtDropped = false;
+  simulationBudgetLimited = false;
   showModeSplash(running ? "NORMAL" : "EDIT");
   ic->commandLine->logSuccess(running ? "Simulation running"
                                       : "Simulation paused in edit mode");
@@ -602,15 +613,22 @@ CellGameModule::printStatus() const
     std::to_string(canvas->getVisibleCellHeight()) + " cells -> " +
     std::to_string(canvas->getViewWidth()) + " x " +
     std::to_string(canvas->getViewHeight()) + " texels; chunks: " +
-    std::to_string(cellContext->getGrid()->getAllocatedChunkCount()));
-  ic->commandLine->logNormal("Rate: " + ic->envVars->getVar("tps").value +
-                             " tps x " +
-                             ic->envVars->getVar("speedFactor").value);
+    std::to_string(cellContext->getGrid()->getAllocatedChunkCount()) +
+    "; fading texels=" + std::to_string(canvas->getFadingTexelCount()) +
+    ", last sample=" + std::to_string(canvas->getLastSampledTexelCount()) +
+    ", last fade visits=" + std::to_string(canvas->getLastFadeVisitCount()));
+  ic->commandLine->logNormal(
+    "Rate: requested=" + std::to_string(requestedSimulationTps) + " tps (" +
+    ic->envVars->getVar("tps").value + " x " +
+    ic->envVars->getVar("speedFactor").value +
+    "), achieved=" + std::to_string(achievedSimulationTps) + " tps");
   ic->commandLine->logNormal(
     "Simulation: active chunks=" +
     std::to_string(simulationStats.activeChunkCount) +
     ", active cells=" + std::to_string(simulationStats.activeCellCount) +
     ", counted cells=" + std::to_string(simulationStats.countedCellCount) +
+    ", candidate-preferred chunks=" +
+    std::to_string(simulationStats.candidatePreferredChunkCount) +
     ", targets=" + std::to_string(simulationStats.targetChunkCount) +
     " (candidate=" + std::to_string(simulationStats.candidateTargetCount) +
     ", halo=" + std::to_string(simulationStats.haloTargetCount) + ")" +
@@ -623,6 +641,12 @@ CellGameModule::printStatus() const
     ", changed=" + std::to_string(simulationStats.changedChunkCount) +
     ", frontier targets=" +
     std::to_string(simulationStats.frontierTargetCount) +
+    ", frontier sources=" +
+    std::to_string(simulationStats.frontierSourceChunkCount) +
+    ", estimated work=" +
+    std::to_string(simulationStats.frontierEstimatedWork) + "/" +
+    std::to_string(simulationStats.completeEstimatedWork) + ", prep workers=" +
+    std::to_string(simulationStats.candidatePreparationWorkerCount) +
     ", workers=" + std::to_string(simulationStats.workerCount) + ", path=" +
     (simulationStats.usedChangedFrontier
        ? "frontier"
@@ -630,7 +654,15 @@ CellGameModule::printStatus() const
             ? "mixed"
             : (simulationStats.usedCellCandidates ? "cells" : "chunks"))) +
     ", steps this frame=" + std::to_string(lastSimulationSteps) +
+    ", step/frame ms=" + std::to_string(lastSimulationStepMilliseconds) + "/" +
+    std::to_string(lastSimulationFrameMilliseconds) +
     (simulationDebtDropped ? ", catch-up dropped" : ""));
+  if (simulationBudgetLimited) {
+    ic->commandLine->logNormal(
+      "Simulation frame budget: second step deferred after " +
+      std::to_string(lastSimulationFrameMilliseconds) + " ms of " +
+      std::to_string(simulationFrameBudgetSeconds * 1000.0) + " ms");
+  }
   ic->commandLine->logNormal("Camera: x=" + std::to_string(cameraPosition.x) +
                              " y=" + std::to_string(cameraPosition.y) +
                              " zoom=" + std::to_string(ic->camera->GetZoom()));
@@ -652,6 +684,7 @@ CellGameModule::syncSimRateFromEnv()
     speedFactor = 100.0;
 
   const double effectiveTps = static_cast<double>(tps) * speedFactor;
+  requestedSimulationTps = effectiveTps;
   simStepSeconds = 1.0 / effectiveTps;
 
   float fadeSpeed = 8.0f;
@@ -717,11 +750,13 @@ CellGameModule::Update(double dt)
     } else {
       currentState = CellState::NORMAL;
       simAccum = 0.0;
+      achievedSimulationTps = 0.0;
       showModeSplash("NORMAL");
       Logger::LogInfo("State changed to NORMAL");
     }
     lastSimulationSteps = 0;
     simulationDebtDropped = false;
+    simulationBudgetLimited = false;
   }
 
   // State dependent behavior
@@ -774,19 +809,59 @@ CellGameModule::Normal(double dt)
 
   simAccum += dt;
 
-  // Favor camera/input responsiveness over catching up indefinitely. Small,
-  // fast patterns can still reach high TPS, but a heavy generation cannot
-  // turn one render frame into a long burst of simulation work.
+  // Favor camera/input responsiveness over catching up indefinitely. Always
+  // complete one due generation. Start a second only when the first
+  // generation's measured cost projects that both fit in the frame slice.
   const int maxSteps = 2;
+  const std::chrono::steady_clock::time_point simulationFrameStart =
+    std::chrono::steady_clock::now();
+  double longestStepSeconds = 0.0;
   int steps = 0;
+  simulationBudgetLimited = false;
   while (simAccum >= simStepSeconds && steps < maxSteps) {
+    if (steps > 0) {
+      const double elapsedSeconds =
+        std::chrono::duration<double>(std::chrono::steady_clock::now() -
+                                      simulationFrameStart)
+          .count();
+      if (elapsedSeconds + longestStepSeconds > simulationFrameBudgetSeconds) {
+        FrameMarkNamed("Sim.frameBudgetLimited");
+        simulationBudgetLimited = true;
+        break;
+      }
+    }
+
+    const std::chrono::steady_clock::time_point stepStart =
+      std::chrono::steady_clock::now();
     this->cellContext->getGrid()->advance(*this->cellContext->getRuleSet());
+    const double stepSeconds = std::chrono::duration<double>(
+                                 std::chrono::steady_clock::now() - stepStart)
+                                 .count();
+    longestStepSeconds = std::max(longestStepSeconds, stepSeconds);
     simAccum -= simStepSeconds;
     steps += 1;
   }
 
+  const double simulationFrameSeconds =
+    steps == 0 ? 0.0
+               : std::chrono::duration<double>(
+                   std::chrono::steady_clock::now() - simulationFrameStart)
+                   .count();
+  lastSimulationStepMilliseconds = longestStepSeconds * 1000.0;
+  lastSimulationFrameMilliseconds = simulationFrameSeconds * 1000.0;
   lastSimulationSteps = steps;
   simulationDebtDropped = false;
+
+  if (dt > 0.0) {
+    const double instantaneousTps = static_cast<double>(steps) / dt;
+    const double blend = 1.0 - std::exp(-dt * 2.0);
+    if (achievedSimulationTps == 0.0 && steps > 0) {
+      achievedSimulationTps = instantaneousTps;
+    } else {
+      achievedSimulationTps +=
+        (instantaneousTps - achievedSimulationTps) * blend;
+    }
+  }
 
   // Drop whole overdue steps once the per-frame budget is exhausted. Retain
   // the fractional remainder so the configured cadence resumes smoothly.

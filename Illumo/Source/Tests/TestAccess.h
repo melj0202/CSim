@@ -26,6 +26,27 @@ public:
     return module.simulationDebtDropped;
   }
 
+  static bool getSimulationBudgetLimited(const CellGameModule& module)
+  {
+    return module.simulationBudgetLimited;
+  }
+
+  static double getAchievedSimulationTps(const CellGameModule& module)
+  {
+    return module.achievedSimulationTps;
+  }
+
+  static double getLastSimulationFrameMilliseconds(const CellGameModule& module)
+  {
+    return module.lastSimulationFrameMilliseconds;
+  }
+
+  static void setSimulationFrameBudgetSeconds(CellGameModule& module,
+                                              double seconds)
+  {
+    module.simulationFrameBudgetSeconds = seconds;
+  }
+
   static bool save(CellGameModule& module, const std::string& filename)
   {
     return module.SaveCellGame(filename);

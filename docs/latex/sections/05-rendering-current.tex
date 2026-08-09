@@ -70,7 +70,9 @@ No second real GPU API.
         world-space quad aligned to the same 16$\times$16 cell bounds as the
         editor cursor, updated via at most one dirty-rect
         \texttt{UpdateTexture} token per submission (PBO path; optional
-        \texttt{srcRowStride}).
+        \texttt{srcRowStride}). Small dimension increases reserve 50\% texture
+        headroom. Re-enrollment destroys the prior GL texture/PBO pair under
+        the same handle, and view destruction explicitly releases the texture.
   \item Shaders: \pathref{Shader/canvas\_vertex.glsl},
         \pathref{Shader/canvas\_frag.glsl} --- sample \texttt{uDisplayTexture}.
   \item History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
@@ -82,7 +84,8 @@ No second real GPU API.
 \subsection{Backend surface}
 \symbolref{IBackend}: lifecycle and command-queue push/submit/clear. Resource
 enrollment is \texttt{CreateMesh}, \texttt{CreateShaderProgram}, and
-\texttt{CreateTexture} (handles = \texttt{unsigned long} table IDs).
+\texttt{CreateTexture}; \texttt{DestroyTexture} provides explicit texture
+release (handles = \texttt{unsigned long} table IDs).
 
 \symbolref{RenderCommand}: tagged union (\texttt{CommandType} + POD payload)
 including pipeline, bind, uniforms, \texttt{UpdateTexture}, \texttt{UpdateBuffer},

@@ -661,6 +661,62 @@ testUpdateStateAndTiming()
   fixture.module.Update(0.016);
 }
 
+static void
+testFrameSimulationBudget()
+{
+  testSection("CellGameModule: frame simulation budget");
+  CellGameFixture fixture(5, 5);
+  fixture.env.setVar("tps", 1000);
+  fixture.env.setVar("speedFactor", 100.0);
+
+  InputManagerTestAccess::setAction(
+    fixture.input, KeyCode::E, InputAction::Press);
+  fixture.module.Update(0.0);
+  InputManagerTestAccess::setAction(
+    fixture.input, KeyCode::E, InputAction::None);
+
+  CellGameModuleTestAccess::setSimulationFrameBudgetSeconds(fixture.module,
+                                                            0.0);
+  fixture.module.Update(0.25);
+  testEqInt(g,
+            CellGameModuleTestAccess::getLastSimulationSteps(fixture.module),
+            1,
+            "zero frame budget still completes one due generation");
+  testTrue(g,
+           CellGameModuleTestAccess::getSimulationBudgetLimited(fixture.module),
+           "measured frame budget prevents a second synchronous generation");
+  testTrue(g,
+           CellGameModuleTestAccess::getSimulationDebtDropped(fixture.module),
+           "budget-limited frame drops excess catch-up debt");
+  testTrue(g,
+           CellGameModuleTestAccess::getAchievedSimulationTps(fixture.module) >
+             0.0,
+           "normal updates track achieved simulation rate separately");
+  testTrue(g,
+           CellGameModuleTestAccess::getLastSimulationFrameMilliseconds(
+             fixture.module) >= 0.0,
+           "normal updates expose measured simulation frame time");
+  fixture.executeThroughConsole("status");
+  testTrue(g,
+           historyContains(fixture.console, "achieved="),
+           "status reports achieved simulation rate separately");
+  testTrue(g,
+           historyContains(fixture.console, "second step deferred"),
+           "status reports frame-budget deferral");
+
+  CellGameModuleTestAccess::setSimulationFrameBudgetSeconds(fixture.module,
+                                                            1.0);
+  fixture.module.Update(0.25);
+  testEqInt(g,
+            CellGameModuleTestAccess::getLastSimulationSteps(fixture.module),
+            2,
+            "ample frame budget permits the bounded second generation");
+  testTrue(
+    g,
+    !CellGameModuleTestAccess::getSimulationBudgetLimited(fixture.module),
+    "second generation is not marked budget-limited when it fits");
+}
+
 static int
 runCellGameModuleCase(void (*testFunction)())
 {
@@ -698,5 +754,8 @@ registerCellGameModuleTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.CellGame.UpdateStateAndTiming", []() {
     return runCellGameModuleCase(testUpdateStateAndTiming);
+  });
+  registry.add("Illumo.CellGame.FrameSimulationBudget", []() {
+    return runCellGameModuleCase(testFrameSimulationBudget);
   });
 }

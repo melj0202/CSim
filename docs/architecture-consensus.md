@@ -322,14 +322,14 @@ IBackend::SubmitCommandQueue
 | **Primitives / GameVisual** | Value-type shapes/sprites/text on a `GameVisual` host (D-R15). **Canvas**, **CommandLine**, **GLString**/SplashText, and **Cursor** embed/compose via `GameVisual`. |
 | **Drawable** | Content handles; `bindStyle` then content tokens via `AppendCommands`. Immediate `Draw()` only if AppendCommands returns false (tests/stubs). |
 | **Renderer** | Backend-neutral: owns style table; frame setup; walk layers; submit. Depends only on `IBackend*` (D-R11). |
-| **IBackend** | Create resources, queue, submit, begin/end frame. GPU programs live in backend registries. |
+| **IBackend** | Create resources, explicitly destroy textures, queue, submit, begin/end frame. GPU objects live in backend registries. |
 | **Composition (Illumo::Init)** | Constructs the production backend via `CreateOpenGLBackend` and injects it into `Renderer` with `takeOwnership=true`; calls `ensureBuiltinStyles()`. |
 | **GLBackend / GLDevice** | Real OpenGL under `Rendering/OpenGL/`: handle registries, execute tokens, PBO texture updates, bind-state tracking, blend-func-on-enable (D-R5). |
 | **MockBackend** | Headless under `Rendering/Mock/`: record creates + command order; injected for tests. |
 
 **Layers vs passes (Phase A):** layers are composition buckets on the default framebuffer (single clear). They are not multi-target GPU render passes. A future pass object would own FBO/load-store when targets diverge.
 
-**Enroll (rare):** `enrollMesh` / `enrollShader` / `enrollTexture` → opaque `unsigned long` table IDs; built-in styles enroll their shaders once via `ensureBuiltinStyles`.  
+**Enroll (rare):** `enrollMesh` / `enrollShader` / `enrollTexture` → opaque `unsigned long` table IDs; built-in styles enroll their shaders once via `ensureBuiltinStyles`. Re-enrolling a texture handle replaces and destroys its prior GPU object; `releaseTexture` removes a texture before backend shutdown.
 **Per frame:** `RenderCommand` tagged union (bind, uniform, update texture/buffer, draw, clear, viewport, pipeline).  
 **Not current (old engine PDF):** separate Opaque/Transparent/UI pass *objects*, MeshDrawCommand-only world draws, entity mesh tables.
 
@@ -344,8 +344,8 @@ The live path is intentionally a full replacement of the finite dense runtime:
 | Layer | Type | Contents |
 |-------|------|----------|
 | **Domain** | `SparseCellGrid` | signed 64-bit cells in a hash map of non-background 16×16 chunks |
-| **Simulation** | `SparseCellGrid::advance` | a retained changed-chunk frontier patches at most 64 changed-neighbor targets and makes settled steps empty; broader mixed worlds choose flat-indexed candidates or rolling-row dense halos independently per target from counted-neighbor work; all paths index a cached 256x9 transition table; 16,384+ work cells use coarse ~2,048-cell ranges and up to four automatic workers; complete paths reuse an inactive chunk map and recycled nodes; dense 32+ target sets use up to eight workers; no toroidal wrapping; revision changes only for a content change |
-| **View** | `CanvasView` | revision-gated camera sampling, exact cells while they fit, 4-screen-pixel density overview at far zoom, CPU palette/RGB fade, newly revealed-region snapping |
+| **Simulation** | `SparseCellGrid::advance` | authoritative and inactive maps maintain transactional stored/counted/candidate-preferred totals, so a retained changed-chunk frontier makes settled steps O(1) in allocated chunks; up to 4,096 changed addresses are retained, local candidate/preparation work is compared with a cached-total complete estimate, and cheaper frontiers use per-target candidates or halos before patching the prior map; broader mixed worlds use the same flat-indexed candidates or direct-counting-mask dense halos independently per target; candidate targets come directly from counting-mask edges/corners, counters initialize lazily, serial preparation is source-centric, and large/forced parallel preparation owns one target per work item; complete-halo targets/index/results retain high-water storage; all paths index a cached 256x9 transition table; 16,384+ work cells use coarse ~2,048-cell ranges and up to four automatic workers; complete paths reuse an inactive chunk map and recycled nodes; dense 32+ target sets use up to eight workers; no toroidal wrapping; revision changes only for a content change |
+| **View** | `CanvasView` | one-revision changed chunks resample only visible near-zoom tiles; revision gaps, camera/palette changes, replacement, and overview density use a complete bounded resample; exact cells while they fit, 4-screen-pixel density overview at far zoom, retained active-texel CPU RGB fades, newly revealed-region snapping |
 | **GPU** | `CanvasView` + `GameVisual` | one reusable nearest-filtered RGB staging texture update and one world-space quad; near texels and cursor outlines share 16×16 cell bounds |
 
 Rulesets provide stateless `nextState` and `evalCell` functions. Each ruleset's
@@ -359,19 +359,41 @@ multi-state byte values.
 Negative chunk coordinates use centralized floor division/modulo. Chunk output
 is sorted by `(chunkY, chunkX)` for deterministic saves and tests. The view
 visits only chunks intersecting its source bounds and resamples only after a
-grid revision, palette update, or camera-region change. At far zoom it limits
+grid revision, palette update, or camera-region change. The grid publishes a
+revision-scoped changed-chunk list for edits and completed generations. When
+exact cells are shown and exactly one revision is unseen, the view resamples
+only the visible portions of those 16x16 chunks, including removed chunks.
+Revision gaps, palette/camera changes, whole-grid replacement, and density
+overview sampling use a complete bounded resample. A retained active-texel set
+makes fade ticks and zero-speed snaps proportional to colors still changing;
+reapplying an unchanged zero fade speed does no scan. At far zoom it limits
 the active texture to `max(CanvasX/Y, window / 4)` texels and accumulates
 palette density into each overview texel. This presentation budget neither
 caps chunks nor discards simulation cells. Rendering never creates per-chunk
 GPU resources: only the bounded view texture and quad enter the token stream.
+For small required dimension increases, the CPU and GPU texture allocation
+reserves 50% headroom; nearby smooth-zoom sizes reuse it. A replacement keeps
+the same opaque handle while `GLBackend` destroys the old texture and PBO pair,
+and `CanvasView` explicitly releases the handle during destruction.
 
 Sparse stepping keeps result installation serial. Each chunk carries separate
 compact masks for stored non-background cells and cells that contribute to
-neighbor counts. If any source chunk has fewer than 48 counted cells, the grid
+neighbor counts, plus cached popcounts for both masks. The authoritative and
+inactive maps each maintain aggregate stored-cell, counted-cell, and
+candidate-preferred-chunk totals. Edits, assignment, clear, local patches, and
+complete map swaps update those totals in the same transaction as the chunk
+data. `advance` therefore reports population statistics and checks whether any
+chunk prefers candidate evaluation without scanning every allocated chunk. If
+any source chunk has fewer than 48 counted cells, the grid
 creates exact affected targets through a retained power-of-two open-addressed
 index. Generation stamps make old slots logically empty without clearing the
 table, and each slot points into contiguous scratch containing a 256-bit
-candidate mask plus 256 neighbor counts. Each target independently uses those
+candidate mask plus 256 neighbor counts. Target discovery checks the four edge
+masks and corner bits directly. Candidate counters are initialized when a bit
+is first enrolled, avoiding a 256-byte clear for every target. The direct
+serial path keeps source-centric accumulation for locality; large or forced
+parallel preparation instead reads each target's 3x3 source neighborhood and
+writes only that target's scratch record through the reusable pool. Each target independently uses those
 candidates when its counted-neighbor contributions are below the calibrated
 threshold, or a direct 18×18 halo otherwise. Thus mixed dense/sparse worlds do
 not inherit one global decision, and dense Wireworld conductors remain candidate
@@ -379,9 +401,13 @@ work because only heads contribute neighbor counts. Worlds whose source chunks
 are all densely counted bypass scratch construction. Both capacities are
 retained, so a stable-width colony neither reallocates candidate records nor
 sorts or binary-searches chunk addresses. Halo/core evaluation uses up to eight
-reusable workers once there are at least 32 targets. Its 18x18 halo is reduced
-through three rolling horizontal rows, so output cells combine cached row counts
-instead of rescanning eight neighbors. Coarse mixed/candidate
+reusable workers once there are at least 32 targets. Complete target discovery
+uses a retained generation-stamped flat index and retained address/result
+vectors rather than a generation-local hash set, target sort, and disposable
+buffers. Evaluation extracts each 18-bit counted row directly from the 3x3
+chunks' counting masks and reduces it through three rolling horizontal rows;
+no 18x18 byte halo is materialized and cell states are read only for the target
+core. Coarse mixed/candidate
 evaluation uses up to four automatic workers once there are at least 16,384
 work cells. Its retained ranges contain roughly 2,048 work cells each, avoiding
 one atomic claim per mostly empty target chunk; all-candidate small worlds keep
@@ -390,17 +416,24 @@ evaluators build transactionally into a retained inactive map. Nodes from the
 prior inactive generation are extracted into a retained handle vector, assigned
 new addresses/data, and reinserted; allocation occurs only when output exceeds
 the previous node high-water count. The normal simulation loop completes at
-most two generations per rendered frame and drops excess catch-up debt.
+most two generations per rendered frame. One due generation is guaranteed; a
+second starts only when the first generation's measured duration projects both
+inside a 4 ms simulation frame slice. Excess catch-up debt is dropped, and
+status separates requested/achieved TPS from step and frame simulation timing.
 
 The inactive map also preserves the prior generation for changed-region
 stepping. Edits and committed generations record changed chunk addresses in a
 retained generation-stamped flat set. On the next step, those chunks and their
-eight neighbors form the only possible change region. If expansion produces at
-most 64 targets, the grid evaluates and transactionally patches only that region;
-an empty frontier returns without evaluating any cell. Tracking stops after 64
-changed chunks and broad edits or moving colonies use the complete adaptive path,
-preventing frontier bookkeeping from becoming a new scale wall. Ruleset type
-changes invalidate current chunks before the next step.
+eight neighbors form the only possible change region. Sparse local sources build
+exact candidate masks only for those targets and choose candidates or halos from
+counted-neighbor contribution work. The grid compares target/source bookkeeping,
+candidate construction, neighbor contributions, and evaluation cells with a
+complete-path estimate derived from cached population totals. It patches the
+retained prior map only when the frontier estimate is no greater; broad changes
+use the complete adaptive path. An empty frontier returns without visiting any
+chunk. Tracking retains at most 4,096 changed chunks, bounding bookkeeping
+without reintroducing the former 64-target selection cliff. Ruleset type changes
+invalidate current chunks before the next step.
 
 ### 5.7 Rules and encoding
 
@@ -424,18 +457,31 @@ class RuleSet {
 
 **Generation path:**
 
-1. If the retained changed frontier is empty, return immediately. If changed
-   chunks plus neighbors fit within 64 targets, evaluate and patch that region.
-2. Otherwise count each allocated chunk's stored and neighbor-counting masks.
-3. If any source chunk is counting-sparse, insert affected target addresses into
-   the retained generation-stamped flat index and build fixed candidate masks and
-   neighbor counts. Select candidate or direct 18×18 halo evaluation separately
+1. Read the cached stored/counting totals and candidate-preferred chunk count.
+   If the retained changed frontier is empty, return immediately without
+   visiting allocated chunks. Otherwise build its one-chunk expansion. For
+   sparse local sources, build target-local candidate masks and select candidate
+   or halo evaluation independently.
+2. Compare exact frontier preparation/evaluation work units with a complete-path
+   estimate derived from cached totals. Evaluate and patch the frontier when it
+   is no more expensive; otherwise use the complete path. Retain at most 4,096
+   changed addresses between generations.
+3. Use the cached candidate-preferred count to select the complete
+   adaptive or all-dense path.
+4. If any source chunk is counting-sparse, derive affected target addresses
+   from source counting-mask edges/corners and insert them into the retained
+   generation-stamped flat index. Initialize neighbor counts only as candidate
+   bits are enrolled. Build serial scratch source-by-source, or prepare large
+   and explicitly parallel workloads target-by-target through the reusable
+   pool. Select candidate or direct 18×18 halo evaluation separately
    for each target from its actual counted-neighbor contribution work. Large
    mixed work sets use coarse work-count ranges in the worker pool.
-4. If every source chunk is counting-dense, bypass scratch construction and
-   evaluate direct halos with a rolling three-row stencil, serially or through
-   the bounded pool for 32+ targets.
-5. Build the complete next map serially using retained buckets and recycled
+5. If every source chunk is counting-dense, bypass candidate scratch. Build the
+   expanded target set in its retained generation-stamped flat index, retain
+   address/result vector capacity, and evaluate serially or through the bounded
+   pool for 32+ targets. Construct rolling neighbor rows directly from chunk
+   counting masks without a temporary 18×18 byte halo.
+6. Build the complete next map serially using retained buckets and recycled
    chunk nodes, compare it to the authoritative map, then swap transactionally
    only when contents differ. Empty space is implicit, so births never wrap.
 
@@ -454,7 +500,8 @@ JSON describes **data**, not executable behavior. Multi-state (Wireworld, Brian'
 
 ### 5.8 Simulation vs rendering
 
-1. Simulation advances on a **tps × speedFactor** clock (accumulator + step cap).  
+1. Simulation advances on a **tps × speedFactor** clock. One due generation is
+   guaranteed; a measured 4 ms slice gates the optional second generation.
 2. Rendering runs every frame.  
 3. Double-buffer prevents reading a half-written generation.  
 4. Visual fade is **presentation**, not simulation state.  
@@ -547,7 +594,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-R1** | `RenderCommand` = simple tagged union (C-style), not byte-stream compiler / `std::variant`. |
 | **D-R2** | Each drawable emits tokens via `AppendCommands`; Renderer owns frame setup + submit. |
 | **D-R3** | Opaque `unsigned long` handles + backend registries for v1; strong typedefs deferred. |
-| **D-R4** | Migration phases 1–6 done; destroy resources at shutdown only for v1; Windows GL primary. |
+| **D-R4** | Migration phases 1–6 done; shutdown remains the default bulk-destruction point, while D-P23 explicitly replaces/releases the resizeable canvas texture; Windows GL primary. |
 | **D-R5** | On blend enable, always set `glBlendFunc` (console panel transparency). |
 | **D-R6** | Archive dead render queue / SceneObject graph helpers; Scene + Renderer is the path. |
 | **D-R7** | MockBackend + headless tests; no Vulkan/Metal yet. |
@@ -586,6 +633,13 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-P14** | Retain changed chunks and patch only their neighbor frontier; settled worlds perform no simulation evaluation. | 2026-08-08 |
 | **D-P15** | Track stored and neighbor-counting masks separately and select candidate versus halo work independently per target chunk. | 2026-08-08 |
 | **D-P16** | Cache all 256x9 rule transitions and reduce dense halos with a rolling three-row neighbor stencil. | 2026-08-09 |
+| **D-P17** | Maintain transactional chunk population aggregates so settled stepping and complete-path selection do not scan all allocated chunks. | 2026-08-09 |
+| **D-P18** | Replace the 64-target frontier cutoff with bounded adaptive work comparison and per-target candidate/halo frontier evaluation. | 2026-08-09 |
+| **D-P19** | Derive candidate boundaries from masks, initialize counters lazily, and use target-owned worker preparation for large workloads. | 2026-08-09 |
+| **D-P20** | Retain complete-halo targets/index/results and build rolling neighbor rows directly from chunk counting masks. | 2026-08-09 |
+| **D-P21** | Publish revision-scoped changed chunks for near-view dirty-tile sampling and retain active fading texels. | 2026-08-09 |
+| **D-P22** | Gate the optional second synchronous generation by measured frame cost and report requested versus achieved TPS. | 2026-08-09 |
+| **D-P23** | Grow canvas texture capacity geometrically and destroy replaced/released GL textures and PBOs. | 2026-08-09 |
 
 ### 6.4 Engine shape (D-E\*, D-C\*, D-F\*)
 
@@ -743,7 +797,7 @@ Most design questions from the LaTeX open list are **resolved** (see §6). Still
 
 | Topic | Working answer |
 |-------|----------------|
-| Resource ownership long-term | Destroy only at shutdown for v1 (D-R4). Refcounts / generational handles later if hot-reload needs them. |
+| Resource ownership long-term | Bulk destruction remains at shutdown; the resizeable canvas texture has explicit replace/release lifecycle (D-P23). Refcounts / generational handles remain deferred until hot-reload needs them. |
 | Linux/macOS parity | Freeze until Windows token path solid — Windows path is solid; parity still optional. |
 | Tracy CI policy | Debug-oriented; no strict CI policy yet. |
 | When to introduce chunks / SYCL | After correctness + serial benchmarks, or as an explicit learning goal. |
