@@ -78,13 +78,33 @@ submission returns.
 Canvas truth (verify here before trusting older notes):
 
 - Production domain: `SparseCellGrid` owns signed 64-bit world cells in a
-  hash map of non-background 16x16 chunks. Serial advancement reads temporary
-  18x18 halos and is non-toroidal.
+  hash map of non-background 16x16 chunks with separate stored-cell occupancy
+  and neighbor-counting masks. Sparse chunks accumulate non-background cells
+  and neighbors of counted cells in retained
+  contiguous per-chunk scratch records with fixed candidate masks and neighbor
+  counts. A retained generation-stamped flat index maps chunk addresses directly
+  to scratch records without sorting or binary searches. Next-generation output
+  uses a retained inactive chunk map and recycled `unordered_map` node handles,
+  avoiding steady-state chunk-node allocation. At 16,384 or more candidate
+  cells, candidate evaluation uses the reusable worker pool with coarse ranges
+  of roughly 2,048 candidate cells and up to four automatic workers; small
+  candidate sets remain direct and serial. A retained changed-chunk frontier
+  evaluates only changed chunks and their neighbors while that expands to at
+  most 64 targets; settled worlds evaluate no chunks, and broad changes fall
+  back to the complete adaptive paths. Complete mixed worlds select candidate
+  or deterministic 18x18 halo evaluation independently per target from actual
+  counted-neighbor contribution work; Wireworld conductors are stored but only
+  heads contribute. All-dense counted chunks bypass scratch construction. At
+  32 or more halo targets, a grid-owned reusable pool uses up to eight workers.
+  All evaluators index a per-ruleset 256x9 transition table; dense halo targets
+  count neighbors with a rolling three-row stencil. The grid is non-toroidal and its
+  revision changes only when cell contents actually change.
 - Production presentation: `CanvasView` samples the camera-visible region into
-  a bounded RGB staging buffer, fades visible colors, snaps newly revealed
-  cells, and owns one reusable RGB texture plus one screen-space quad. Its
-  display texture uses linear filtering when stretched to the window so
-  zoomed-out views do not use nearest-neighbor block sampling.
+  an exact nearest-filtered RGB texture while one texel per cell fits. At far
+  zoom it uses a revision-gated, density-colored overview capped at roughly
+  four screen pixels per texel; this is a presentation cap, not a simulation
+  chunk cap. It fades visible colors, snaps newly revealed cells, and owns one
+  reusable RGB texture plus one world-space quad aligned to 16x16 cell bounds.
 - Persistence always writes sparse version 2 and reads both that format and the
   prior dense format. Legacy `CellGrid`/`Canvas` remain compatibility fixtures,
   not a second production runtime path.
@@ -96,10 +116,16 @@ Ruleset truth:
 - Rule 90 and Rule 184 are stubs.
 - Binary rules encode `0` as alive and `1` as dead.
 - Wireworld encodes head `0`, empty `1`, tail `2`, conductor `3`.
-- `RuleSet` transitions (`nextState`) and palette evaluation (`evalCell`) are
-  used by `SparseCellGrid`; production stepping is serial halo evaluation.
-  Dense `calcGeneration` support remains only for compatibility tests.
-  Headless benches: `Illumo.Sim.MicroBench`.
+- `RuleSet` transitions (`nextState`) build a cached 256x9 table and palette
+  evaluation (`evalCell`) supplies colors. Production hot loops index the table
+  instead of making virtual transition calls and use separate stored/counting masks,
+  retained chunk-local candidate scratch, and a generation-stamped flat address
+  index. Mixed targets independently select candidate or halo evaluation, with
+  bounded worker-pool evaluation for large work sets. Both
+  result paths share retained transactional chunk-map node storage; a local
+  changed-region path patches the retained prior generation. Dense
+  `calcGeneration` support remains only for compatibility tests.
+  Headless benches: `Illumo.Sim.MicroBench`, `Illumo.Sim.SparseMicroBench`.
 
 ## Source map
 

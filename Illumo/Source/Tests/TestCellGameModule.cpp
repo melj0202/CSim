@@ -321,11 +321,13 @@ testSaveLoadRoundTrip()
            fixture.camera.GetPositionPrecise() ==
              glm::dvec2(123456789.25, -987654321.5),
            "saved camera position round-trips precisely");
-  testTrue(g, fixture.camera.GetZoom() == 2.5f, "saved camera zoom round-trips");
+  testTrue(
+    g, fixture.camera.GetZoom() == 2.5f, "saved camera zoom round-trips");
 
-  testTrue(g,
-           CellGameModuleTestAccess::save(fixture.module, "roundtrip-again.illumo"),
-           "same sparse state saves again");
+  testTrue(
+    g,
+    CellGameModuleTestAccess::save(fixture.module, "roundtrip-again.illumo"),
+    "same sparse state saves again");
   const std::vector<char> secondSave = readFileBytes("roundtrip-again.illumo");
   testTrue(g, firstSave == secondSave, "sparse save output is deterministic");
   testEqSize(g,
@@ -481,6 +483,22 @@ testConsoleSimulationCommands()
               canvas->getCanvasPixel(visibleOrigin.x, visibleOrigin.y),
               1,
               "zero percent randomize empties cells");
+  fixture.camera.SetZoom(0.1f);
+  canvas->syncVisibleRegion();
+  fixture.execute("randomize", { "100" });
+  const CellAddress farFirstCell = canvas->getVisibleFirstCell();
+  const CellAddress farLastCell{
+    farFirstCell.x + canvas->getVisibleCellWidth() - 1,
+    farFirstCell.y - canvas->getVisibleCellHeight() + 1
+  };
+  testTrue(g,
+           canvas->getVisibleCellWidth() > canvas->getViewWidth() ||
+             canvas->getVisibleCellHeight() > canvas->getViewHeight(),
+           "far view aggregates source cells into fewer display texels");
+  testEqUChar(g,
+              canvas->getCanvasPixel(farLastCell.x, farLastCell.y),
+              0,
+              "far-view randomize reaches the full source region");
   fixture.execute("randomize", { "101" });
   testTrue(g,
            historyContains(fixture.console, "percentage from 0 to 100"),
@@ -616,6 +634,13 @@ testUpdateStateAndTiming()
            CellGameModuleTestAccess::getState(fixture.module) ==
              CellState::NORMAL,
            "large delta and rate remain bounded");
+  testTrue(g,
+           CellGameModuleTestAccess::getLastSimulationSteps(fixture.module) <=
+             2,
+           "normal update limits simulation work to two generations per frame");
+  testTrue(g,
+           CellGameModuleTestAccess::getSimulationDebtDropped(fixture.module),
+           "normal update drops excessive catch-up debt");
 
   InputManager::scrollCallback(nullptr, 0.0, 1.0);
   const float oldZoom = fixture.camera.GetZoom();

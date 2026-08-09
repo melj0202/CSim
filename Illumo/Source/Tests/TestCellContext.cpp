@@ -100,8 +100,15 @@ testCanvasDimensionsFromEnv()
   Renderer renderer(&window, &env, &camera, &mock, false);
 
   CellContext ctx("GAME_OF_LIFE", &env, &window, &camera, &renderer);
-  testEqInt(g, ctx.getCanvas()->getViewWidth(), 10, "width from env");
-  testEqInt(g, ctx.getCanvas()->getViewHeight(), 12, "height from env");
+  testEqInt(
+    g, ctx.getCanvas()->getTextureWidth(), 10, "texture width from env");
+  testEqInt(
+    g, ctx.getCanvas()->getTextureHeight(), 12, "texture height from env");
+  ctx.getCanvas()->syncVisibleRegion();
+  testEqInt(
+    g, ctx.getCanvas()->getViewWidth(), 9, "active cell width from window");
+  testEqInt(
+    g, ctx.getCanvas()->getViewHeight(), 9, "active cell height from window");
 }
 
 static int

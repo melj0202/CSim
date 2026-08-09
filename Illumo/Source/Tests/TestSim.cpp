@@ -2,7 +2,9 @@
 
 #include "Game/Canvas.h"
 #include "Game/CellGrid.h"
+#include "Game/SparseCellGrid.h"
 #include "Rulesets/GameOfLifeRuleSet.h"
+#include "Rulesets/WireworldRuleSet.h"
 #include "Tests/TestHelpers.h"
 #include "Tests/TestRegistry.h"
 #include <chrono>
@@ -225,6 +227,201 @@ benchVisualTickMs(int width, int height, int frames)
 }
 
 static void
+seedSparseBenchmark(SparseCellGrid* grid, int chunksPerSide, unsigned int seed)
+{
+  if (grid == nullptr) {
+    return;
+  }
+
+  unsigned int state = seed;
+  const int firstChunk = -chunksPerSide / 2;
+  for (int chunkY = 0; chunkY < chunksPerSide; ++chunkY) {
+    for (int chunkX = 0; chunkX < chunksPerSide; ++chunkX) {
+      SparseChunkRecord record;
+      record.chunkX = firstChunk + chunkX;
+      record.chunkY = firstChunk + chunkY;
+      record.cells.fill(SparseCellGrid::BackgroundState);
+      for (std::size_t index = 0; index < record.cells.size(); ++index) {
+        state = state * 1664525u + 1013904223u;
+        if ((state >> 29) < 2u) {
+          record.cells[index] = SparseCellGrid::CountedNeighborState;
+        }
+      }
+      grid->assignChunk(record);
+    }
+  }
+}
+
+static void
+seedSparseWideBlinkers(SparseCellGrid* grid, int count)
+{
+  if (grid == nullptr) {
+    return;
+  }
+  for (int index = 0; index < count; ++index) {
+    const std::int64_t x = static_cast<std::int64_t>(index) * 32;
+    grid->setCell(CellAddress{ x, -1 }, 0);
+    grid->setCell(CellAddress{ x, 0 }, 0);
+    grid->setCell(CellAddress{ x, 1 }, 0);
+  }
+}
+
+static void
+seedSparseStableBlocksAndBlinker(SparseCellGrid* grid, int blockCount)
+{
+  if (grid == nullptr) {
+    return;
+  }
+  for (int block = 0; block < blockCount; ++block) {
+    const std::int64_t x = static_cast<std::int64_t>(block) * 64 + 4;
+    const std::int64_t y = 64;
+    grid->setCell(CellAddress{ x, y }, 0);
+    grid->setCell(CellAddress{ x + 1, y }, 0);
+    grid->setCell(CellAddress{ x, y + 1 }, 0);
+    grid->setCell(CellAddress{ x + 1, y + 1 }, 0);
+  }
+  grid->setCell(CellAddress{ 0, -1 }, 0);
+  grid->setCell(CellAddress{ 0, 0 }, 0);
+  grid->setCell(CellAddress{ 0, 1 }, 0);
+}
+
+static double
+benchSparseGensPerSecond(int chunksPerSide,
+                         int generations,
+                         int workers,
+                         SparseAdvanceStats* stats)
+{
+  SparseCellGrid grid;
+  seedSparseBenchmark(&grid, chunksPerSide, 101u);
+  GameOfLifeRuleSet rules(nullptr);
+  SparseCellGrid::setWorkerOverrideForTesting(workers);
+  SparseCellGrid::setCellCandidateOverrideForTesting(-1);
+
+  grid.advance(rules);
+  const auto t0 = std::chrono::steady_clock::now();
+  for (int generation = 0; generation < generations; ++generation) {
+    grid.advance(rules);
+  }
+  const auto t1 = std::chrono::steady_clock::now();
+  if (stats != nullptr) {
+    *stats = grid.getLastAdvanceStats();
+  }
+  SparseCellGrid::setWorkerOverrideForTesting(0);
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+
+  const double seconds = std::chrono::duration<double>(t1 - t0).count();
+  if (seconds <= 0.0) {
+    return 0.0;
+  }
+  return static_cast<double>(generations) / seconds;
+}
+
+static double
+benchSparseWideGensPerSecond(int colonyCount,
+                             int generations,
+                             int candidateMode,
+                             SparseAdvanceStats* stats,
+                             bool reuseChunkNodes = true,
+                             int workers = 1)
+{
+  SparseCellGrid grid;
+  seedSparseWideBlinkers(&grid, colonyCount);
+  GameOfLifeRuleSet rules(nullptr);
+  SparseCellGrid::setWorkerOverrideForTesting(workers);
+  SparseCellGrid::setCellCandidateOverrideForTesting(candidateMode);
+  SparseCellGrid::setChunkNodeReuseOverrideForTesting(reuseChunkNodes);
+
+  grid.advance(rules);
+  const std::chrono::steady_clock::time_point t0 =
+    std::chrono::steady_clock::now();
+  for (int generation = 0; generation < generations; ++generation) {
+    grid.advance(rules);
+  }
+  const std::chrono::steady_clock::time_point t1 =
+    std::chrono::steady_clock::now();
+  if (stats != nullptr) {
+    *stats = grid.getLastAdvanceStats();
+  }
+  SparseCellGrid::setWorkerOverrideForTesting(0);
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  SparseCellGrid::setChunkNodeReuseOverrideForTesting(true);
+
+  const double seconds = std::chrono::duration<double>(t1 - t0).count();
+  if (seconds <= 0.0) {
+    return 0.0;
+  }
+  return static_cast<double>(generations) / seconds;
+}
+
+static double
+benchSparseFrontierGensPerSecond(int blockCount,
+                                 int generations,
+                                 int candidateMode,
+                                 SparseAdvanceStats* stats)
+{
+  SparseCellGrid grid;
+  seedSparseStableBlocksAndBlinker(&grid, blockCount);
+  GameOfLifeRuleSet rules(nullptr);
+  SparseCellGrid::setWorkerOverrideForTesting(1);
+  SparseCellGrid::setCellCandidateOverrideForTesting(candidateMode);
+
+  grid.advance(rules);
+  const std::chrono::steady_clock::time_point t0 =
+    std::chrono::steady_clock::now();
+  for (int generation = 0; generation < generations; ++generation) {
+    grid.advance(rules);
+  }
+  const std::chrono::steady_clock::time_point t1 =
+    std::chrono::steady_clock::now();
+  if (stats != nullptr) {
+    *stats = grid.getLastAdvanceStats();
+  }
+  SparseCellGrid::setWorkerOverrideForTesting(0);
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+
+  const double seconds = std::chrono::duration<double>(t1 - t0).count();
+  return seconds > 0.0 ? static_cast<double>(generations) / seconds : 0.0;
+}
+
+static double
+benchWireworldConductorsGensPerSecond(int chunksPerSide,
+                                      int generations,
+                                      int candidateMode,
+                                      SparseAdvanceStats* stats)
+{
+  SparseCellGrid grid;
+  for (int chunkY = 0; chunkY < chunksPerSide; ++chunkY) {
+    for (int chunkX = 0; chunkX < chunksPerSide; ++chunkX) {
+      SparseChunkRecord record;
+      record.chunkX = chunkX;
+      record.chunkY = chunkY;
+      record.cells.fill(WireworldRuleSet::CELL_CONDUCTOR);
+      grid.assignChunk(record);
+    }
+  }
+  WireworldRuleSet rules(nullptr);
+  SparseCellGrid::setWorkerOverrideForTesting(1);
+  SparseCellGrid::setCellCandidateOverrideForTesting(candidateMode);
+
+  grid.advance(rules);
+  const std::chrono::steady_clock::time_point t0 =
+    std::chrono::steady_clock::now();
+  for (int generation = 0; generation < generations; ++generation) {
+    grid.advance(rules);
+  }
+  const std::chrono::steady_clock::time_point t1 =
+    std::chrono::steady_clock::now();
+  if (stats != nullptr) {
+    *stats = grid.getLastAdvanceStats();
+  }
+  SparseCellGrid::setWorkerOverrideForTesting(0);
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+
+  const double seconds = std::chrono::duration<double>(t1 - t0).count();
+  return seconds > 0.0 ? static_cast<double>(generations) / seconds : 0.0;
+}
+
+static void
 testMicroBenchReport()
 {
   testSection("Sim: micro-bench report (informational)");
@@ -312,13 +509,167 @@ testMicroBenchReport()
   }
 }
 
+static void
+testSparseMicroBenchReport()
+{
+  testSection("Sim: sparse micro-bench report (informational)");
+  const int chunksPerSide = 24;
+  const int generations = 6;
+  SparseAdvanceStats serialStats;
+  SparseAdvanceStats parallelStats;
+  const double serialGps =
+    benchSparseGensPerSecond(chunksPerSide, generations, 1, &serialStats);
+  const double parallelGps =
+    benchSparseGensPerSecond(chunksPerSide, generations, 4, &parallelStats);
+  std::printf("BENCH: Sparse GoL %dx%d chunks serial gens/s=%.1f parallel(4) "
+              "gens/s=%.1f targets=%zu workers=%u\n",
+              chunksPerSide,
+              chunksPerSide,
+              serialGps,
+              parallelGps,
+              parallelStats.targetChunkCount,
+              parallelStats.workerCount);
+  testTrue(g,
+           serialGps > 0.0 && parallelGps > 0.0,
+           "sparse serial and parallel bench ran");
+  testTrue(g,
+           serialStats.workerCount == 1u && parallelStats.workerCount == 4u,
+           "sparse bench honored worker overrides");
+
+  const int colonyCount = 256;
+  SparseAdvanceStats cellCandidateStats;
+  SparseAdvanceStats fullChunkStats;
+  const double candidateGps = benchSparseWideGensPerSecond(
+    colonyCount, generations, 1, &cellCandidateStats);
+  const double fullChunkGps =
+    benchSparseWideGensPerSecond(colonyCount, generations, -1, &fullChunkStats);
+  std::printf("BENCH: Sparse wide blinkers count=%d candidates gens/s=%.1f "
+              "full-chunks gens/s=%.1f candidate-cells=%zu\n",
+              colonyCount,
+              candidateGps,
+              fullChunkGps,
+              cellCandidateStats.candidateCellCount);
+  testTrue(g,
+           candidateGps > 0.0 && fullChunkGps > 0.0,
+           "wide sparse candidate and full-chunk bench ran");
+  testTrue(g,
+           cellCandidateStats.usedCellCandidates &&
+             !fullChunkStats.usedCellCandidates,
+           "wide sparse bench exercised both evaluation paths");
+
+  const int largeColonyCount = 16384;
+  SparseAdvanceStats allocatingCandidateStats;
+  SparseAdvanceStats largeCandidateStats;
+  SparseAdvanceStats parallelCandidateStats;
+  SparseAdvanceStats parallelEightCandidateStats;
+  const double allocatingCandidateGps = benchSparseWideGensPerSecond(
+    largeColonyCount, 10, 1, &allocatingCandidateStats, false);
+  const double largeCandidateGps =
+    benchSparseWideGensPerSecond(largeColonyCount, 10, 1, &largeCandidateStats);
+  const double parallelCandidateGps = benchSparseWideGensPerSecond(
+    largeColonyCount, 10, 1, &parallelCandidateStats, true, 4);
+  const double parallelEightCandidateGps = benchSparseWideGensPerSecond(
+    largeColonyCount, 10, 1, &parallelEightCandidateStats, true, 8);
+  std::printf("BENCH: Sparse large-wide blinkers count=%d candidates "
+              "allocating gens/s=%.1f retained serial gens/s=%.1f "
+              "parallel(4) gens/s=%.1f parallel(8) gens/s=%.1f "
+              "candidate-cells=%zu targets=%zu "
+              "ranges=%zu chunk-node-allocs=%zu reused=%zu retained=%zu\n",
+              largeColonyCount,
+              allocatingCandidateGps,
+              largeCandidateGps,
+              parallelCandidateGps,
+              parallelEightCandidateGps,
+              largeCandidateStats.candidateCellCount,
+              largeCandidateStats.targetChunkCount,
+              parallelCandidateStats.candidateWorkRangeCount,
+              largeCandidateStats.allocatedChunkNodeCount,
+              largeCandidateStats.reusedChunkNodeCount,
+              largeCandidateStats.retainedChunkNodeCount);
+  testTrue(g, largeCandidateGps > 0.0, "large wide candidate bench ran");
+  testTrue(g, parallelCandidateGps > 0.0, "large parallel candidate bench ran");
+  testTrue(g,
+           parallelEightCandidateGps > 0.0,
+           "large eight-worker candidate bench ran");
+  testEqInt(g,
+            static_cast<int>(parallelCandidateStats.workerCount),
+            4,
+            "large parallel candidate bench uses four workers");
+  testEqInt(g,
+            static_cast<int>(parallelEightCandidateStats.workerCount),
+            8,
+            "large parallel candidate bench uses eight workers");
+  testTrue(g,
+           allocatingCandidateGps > 0.0,
+           "large allocating candidate reference bench ran");
+  testEqSize(g,
+             largeCandidateStats.candidateCellCount,
+             static_cast<std::size_t>(largeColonyCount) * 15u,
+             "large wide candidate count remains exact");
+  testEqSize(g,
+             largeCandidateStats.allocatedChunkNodeCount,
+             0u,
+             "large steady candidate generation allocates no chunk nodes");
+
+  const int stableBlockCount = 1024;
+  SparseAdvanceStats frontierStats;
+  SparseAdvanceStats completeStats;
+  const double frontierGps =
+    benchSparseFrontierGensPerSecond(stableBlockCount, 200, 0, &frontierStats);
+  const double completeGps =
+    benchSparseFrontierGensPerSecond(stableBlockCount, 10, 1, &completeStats);
+  std::printf("BENCH: Sparse local frontier static-blocks=%d frontier "
+              "gens/s=%.1f complete-candidates gens/s=%.1f targets=%zu "
+              "active-chunks=%zu\n",
+              stableBlockCount,
+              frontierGps,
+              completeGps,
+              frontierStats.frontierTargetCount,
+              frontierStats.activeChunkCount);
+  testTrue(g,
+           frontierGps > 0.0 && completeGps > 0.0,
+           "local frontier comparison bench ran");
+  testTrue(g,
+           frontierStats.usedChangedFrontier,
+           "local frontier bench uses changed-region stepping");
+  testTrue(g,
+           frontierStats.frontierTargetCount < frontierStats.activeChunkCount,
+           "local frontier bench skips the static majority");
+
+  SparseAdvanceStats conductorCandidateStats;
+  SparseAdvanceStats conductorHaloStats;
+  const double conductorCandidateGps =
+    benchWireworldConductorsGensPerSecond(9, 10, 1, &conductorCandidateStats);
+  const double conductorHaloGps =
+    benchWireworldConductorsGensPerSecond(9, 10, -1, &conductorHaloStats);
+  std::printf("BENCH: Sparse Wireworld 9x9 conductor chunks candidates "
+              "gens/s=%.1f halos gens/s=%.1f stored=%zu counted=%zu\n",
+              conductorCandidateGps,
+              conductorHaloGps,
+              conductorCandidateStats.activeCellCount,
+              conductorCandidateStats.countedCellCount);
+  testTrue(g,
+           conductorCandidateGps > 0.0 && conductorHaloGps > 0.0,
+           "Wireworld candidate and halo comparison bench ran");
+  testEqSize(g,
+             conductorCandidateStats.countedCellCount,
+             0u,
+             "Wireworld conductor bench counts no head neighbors");
+}
+
 static int
 runSimCase(void (*testFunction)())
 {
   g.failures = 0;
   RuleSet::setWorkerOverride(0);
+  SparseCellGrid::setWorkerOverrideForTesting(0);
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  SparseCellGrid::setChunkNodeReuseOverrideForTesting(true);
   testFunction();
   RuleSet::setWorkerOverride(0);
+  SparseCellGrid::setWorkerOverrideForTesting(0);
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  SparseCellGrid::setChunkNodeReuseOverrideForTesting(true);
   return g.failures;
 }
 
@@ -335,4 +686,6 @@ registerSimTests(IllumoTestRegistry& registry)
                []() { return runSimCase(testSerialParallelIdentical); });
   registry.add("Illumo.Sim.MicroBench",
                []() { return runSimCase(testMicroBenchReport); });
+  registry.add("Illumo.Sim.SparseMicroBench",
+               []() { return runSimCase(testSparseMicroBenchReport); });
 }

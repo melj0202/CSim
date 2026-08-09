@@ -39,7 +39,14 @@ under `docs/`. Start with:
 - `docs/latex/illumo.tex` — the only current LaTeX/PDF entrypoint
 - `docs/output/illumo.pdf` — generated locally; not a source of truth
 
-**Current stack (short):** token renderer (`AppendCommands` → `IBackend`), `CellGrid` domain + `Canvas` RGB-fade presentation + dirty-rect upload, double-buffered CA `nextState`, headless `IllumoTests` with `MockBackend`.
+**Current stack (short):** token renderer (`AppendCommands` → `IBackend`),
+`SparseCellGrid` domain + revision-gated `CanvasView` RGB-fade presentation +
+dirty-rect upload, retained flat-indexed chunk-local cell-candidate scratch /
+per-target candidate-or-halo CA `nextState`, separate stored/counting masks,
+coarse parallel evaluation, recycled transactional chunk-map nodes,
+changed-region frontier stepping, cached 256x9 rule transitions and rolling-row
+halo counts, headless `IllumoTests` with
+`MockBackend`.
 
 **Architecture (single source for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — unified consensus (purpose, history of old plans, current renderer/sim truth, decisions, bugs, debt, work order).
 
@@ -93,6 +100,16 @@ The report measures headless-testable first-party production code. Tests,
 vendored/system code, `MockBackend`, and the live OpenGL backend are excluded;
 native dialogs, window behavior, and live OpenGL still require smoke testing.
 See `Illumo/Source/Tests/README.md` for the exact scope and commands.
+
+### Optimized Tracy profiling
+
+Keep the normal Release optimization level while enabling application Tracy
+instrumentation:
+
+```bash
+cmake -S Illumo -B build-profile -DILLUMO_ENABLE_TRACY=ON -DILLUMO_BUILD_DOCUMENTATION=OFF
+cmake --build build-profile --config Release
+```
 
 Visual Studio: open the generated solution from the build directory, or generate with the VS generator.
 

@@ -8,6 +8,9 @@ project(Illumo)
 
 find_package(OpenGL REQUIRED)
 
+option(ILLUMO_ENABLE_TRACY
+    "Enable Tracy instrumentation in optimized application builds" OFF)
+
 # Include Third-Party Sources
 add_subdirectory("thirdparty/glfw-3.4" SYSTEM)
 add_subdirectory("thirdparty/glm" SYSTEM)
@@ -261,6 +264,9 @@ endif()
 target_compile_definitions(Illumo PRIVATE
     $<$<CONFIG:Debug>:TRACY_ENABLE>
 )
+if(ILLUMO_ENABLE_TRACY)
+    target_compile_definitions(Illumo PRIVATE TRACY_ENABLE)
+endif()
 
 # Copy over the shader files to build execution paths
 add_custom_command(TARGET Illumo POST_BUILD

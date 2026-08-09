@@ -49,6 +49,8 @@ private:
   InputContext inputContext;
   double simAccum;
   double simStepSeconds;
+  int lastSimulationSteps;
+  bool simulationDebtDropped;
   // Wireworld left-paint state: 0 head, 1 empty, 2 tail, 3 conductor.
   // Selected with keys 1/H, 2, 3/T, 4 while the console is closed.
   unsigned char wireworldBrush;

@@ -638,7 +638,7 @@ shipped \symbolref{RuleSet} implementations. A further
 \symbolref{SparseCellGrid}: signed 64-bit world coordinates, non-background
 16$\times$16 chunks, temporary 18$\times$18 read-only halos, and serial
 non-toroidal stepping. Present it through a bounded \symbolref{CanvasView}
-with one reusable RGB staging texture and one screen-space quad. Always write
+with one reusable RGB staging texture and one quad. Always write
 version 2 sparse saves; read both version 2 and the prior dense format after
 validating temporary state.\\
 \textbf{Why:} The finite canvas was the remaining product-scale boundary:
@@ -654,6 +654,21 @@ domain remains compatibility material.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-C4 --- Cell-aligned sparse presentation}
+\begin{decisionbox}[title={D-C4 \quad 2026-08-07}]
+\textbf{Decision:} Render \symbolref{CanvasView} as a world-space quad whose
+nearest-filtered texture texels each represent one 16$\times$16 world cell.
+Grow staging capacity as needed to cover the camera viewport. The editor cursor
+uses the same centered cell bounds.\\
+\textbf{Why:} A screen-space, linearly filtered texture decoupled display
+texels from world cells, blurring colors and misaligning the cursor after pan
+or zoom.\\
+\textbf{Consequences:} Cell edges remain sharp and cursor, paint, and display
+refer to the same cell. Zoomed-out views retain a bounded texture without
+using linear filtering to hide undersampling.\\
+\textbf{Refines:} D-C3 presentation details.
+\end{decisionbox}
+
 \subsection*{D-R13 --- Single production frame path}
 \begin{decisionbox}[title={D-R13 \quad 2026-08-06}]
 \textbf{Decision:} \symbolref{Illumo::Render} always rebuilds the per-frame
@@ -680,6 +695,222 @@ teardown and multi-instance reasoning.\\
 \textbf{Consequences:} Splash lifetime follows the game module; platform
 \texttt{SaveLoad} dialog entry points remain platform implementations without
 becoming a new engine singleton.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-C5 --- Revision-gated adaptive sparse overview}
+\begin{decisionbox}[title={D-C5 \quad 2026-08-07}]
+\textbf{Decision:} Keep nearest-filtered, one-texel-per-cell presentation while
+the visible world fits the active texture. At far zoom, cap the active texture
+to the larger of configured canvas dimensions or roughly one texel per four
+screen pixels, and accumulate source-cell palette density into each overview
+texel. Rebuild only on a sparse-grid revision, palette update, or visible-region
+change; traverse only intersecting sparse chunks.\\
+\textbf{Why:} Expanding the texture and hash-looking up every visible cell on
+every render frame made wide camera views lag even when the displayed world was
+unchanged. Linear filtering would hide neither the CPU work nor the cell model.\\
+\textbf{Consequences:} Near-view cell edges, cursor alignment, and paint stay
+exact. Far views remain crisp rather than blurred, retain sparse activity and
+multi-state proportions, and use bounded fade/upload work. The texture budget
+does not cap chunks, simulation cells, randomization source bounds, or saves.\\
+\textbf{Refines:} D-C4 presentation scaling details.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P8 --- Responsive parallel sparse stepping}
+\begin{decisionbox}[title={D-P8 \quad 2026-08-07}]
+\textbf{Decision:} Keep sparse target discovery and next-map merge serial and
+deterministic. For 32 or more target chunks, \symbolref{SparseCellGrid} uses a
+grid-owned reusable pool of up to eight workers to evaluate independent
+18$\times$18 halo / 16$\times$16 core results into separate slots. Normal mode
+performs at most two generations per rendered frame and drops further catch-up
+debt.\\
+\textbf{Why:} Dense random sparse worlds are generation-bound after the direct
+halo lookup optimization. Per-generation thread creation would erase much of
+the gain, while unrestricted catch-up makes camera and input visibly stutter.\\
+\textbf{Consequences:} Rule evaluation, persistence ordering, revisions, and
+the bounded presentation path remain deterministic. Small patterns remain
+serial. \texttt{SparseAdvanceStats}, Tracy zones, serial/parallel identity
+tests, and \texttt{Illumo.Sim.SparseMicroBench} make the threshold observable.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P9 --- Adaptive cell candidates for sparse chunks}
+\begin{decisionbox}[title={D-P9 \quad 2026-08-08}]
+\textbf{Decision:} Keep 16$\times$16 chunks as authoritative storage, but
+maintain a four-word occupancy mask per stored chunk. Below an average of 48
+occupied cells per active chunk, evaluate only each non-background cell plus
+the eight neighbors of counted cells, accumulating neighbor counts in temporary
+candidate records. At or above that density, retain D-P8's direct 18$\times$18
+halo evaluator and bounded worker pool.\\
+\textbf{Why:} A wide thin colony made full 16$\times$16 core evaluation spend
+most of its time on unchanged background cells. Sparse storage alone did not
+reduce that per-chunk work.\\
+\textbf{Consequences:} Every shipped ruleset has a stable empty background, so
+untouched cells remain implicit. Candidate results are byte-identical to the
+full-chunk evaluator; tests cover wide colonies, multi-state transitions, and
+dense fallback. Status and Tracy distinguish active cells, candidates, and the
+selected evaluation path.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P10 --- Retained chunk-local candidate scratch}
+\begin{decisionbox}[title={D-P10 \quad 2026-08-08}]
+\textbf{Decision:} Replace the per-world-cell candidate hash map and diagnostic
+candidate-chunk hash set with two grid-owned, capacity-retaining vectors. Sort
+the exact affected chunk addresses, then use one contiguous scratch record per
+target chunk containing a 256-bit candidate mask and 256 neighbor counts. Reset
+record contents with \texttt{clear}/\texttt{resize} while retaining the vectors'
+high-water capacity.\\
+\textbf{Why:} Profiling a wide sparse colony found hundreds of thousands of
+temporary hash-node allocations per generation; hash construction and teardown
+consumed substantially more time than rule evaluation.\\
+\textbf{Consequences:} Candidate discovery performs no per-world-cell hash
+allocation, scratch records are contiguous, and unchanged colony width reuses
+capacity. The authoritative sparse chunk map and full-chunk fallback remain
+unchanged. Tests cover exact candidate counts, capacity reuse, boundary behavior,
+and byte identity across all shipped rulesets.\\
+\textbf{Refines:} D-P9 candidate storage.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P11 --- Generation-stamped flat candidate index}
+\begin{decisionbox}[title={D-P11 \quad 2026-08-08}]
+\textbf{Decision:} Retain a power-of-two, open-addressed table from signed
+chunk address to candidate-scratch index. Use linear probing and a 64-bit
+generation stamp so prior slots become logically empty without clearing the
+table. Create affected chunks directly during collection, retain the contiguous
+scratch vector, and grow both structures only beyond their previous high-water
+marks.\\
+\textbf{Why:} After D-P10, the 16,384-colony benchmark still performed 294,912
+binary searches over 65,536 large scratch records per generation, while address
+collection/sorting and scratch construction dominated measured simulation time.\\
+\textbf{Consequences:} Sparse candidate discovery no longer sorts, uniques, or
+binary-searches chunk addresses. Signed unbounded coordinates remain intact;
+capacity is reused across generations; and focused tests cover table growth,
+generation reset, negative coordinates, and byte identity against full-chunk
+evaluation for every shipped ruleset. The 16,384-colony Release benchmark
+improved from roughly 18 to roughly 40 generations per second on the measured
+machine.\\
+\textbf{Refines:} D-P10 candidate-address discovery; the candidate masks and
+neighbor counts remain chunk-local and contiguous.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P12 --- Retained transactional chunk-map nodes}
+\begin{decisionbox}[title={D-P12 \quad 2026-08-08}]
+\textbf{Decision:} Keep the authoritative sparse chunk map and a grid-owned
+inactive next-generation map. Before each build, extract inactive map nodes into
+a retained vector of node handles. Reassign and reinsert those nodes for output
+chunks, retaining both maps' bucket capacity. Allocate a new node only when the
+output exceeds the previous node high-water count. Use the same lifecycle for
+cell-candidate and full-chunk result paths.\\
+\textbf{Why:} After candidate scratch became allocation-free, the 16,384-colony
+case still allocated and freed about 32,775 nodes and moved roughly 11 MB through
+the heap per generation. Most were authoritative output-map nodes.\\
+\textbf{Consequences:} A steady 16,384-colony generation now reports zero output
+chunk-node allocations while reusing and retaining 32,768 nodes. The retained
+and allocating A/B benchmark keeps identical rules and map semantics and shows
+the retained path consistently faster on the measured machine. The current map
+remains untouched until result evaluation succeeds and content comparison chooses
+the transactional swap; unchanged generations keep their revision. Status and
+Tracy expose allocation, reuse, retention, preparation, recycling, and finish
+work.\\
+\textbf{Refines:} D-P10 and D-P11 generation-local storage; authoritative sparse
+map semantics remain unchanged.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P13 --- Coarse parallel candidate evaluation}
+\begin{decisionbox}[title={D-P13 \quad 2026-08-08}]
+\textbf{Decision:} Once serial candidate scratch construction completes, divide
+large candidate sets into retained contiguous ranges containing roughly 2,048
+candidate cells. Use the existing reusable pool to evaluate ranges into
+independent retained result slots, then merge results serially through D-P12's
+transactional node recycler. Enable automatic parallelism at 16,384 candidate
+cells and retain direct serial evaluation below that threshold.\\
+\textbf{Why:} Candidate rule evaluation remained serial after flat-index and
+node-allocation work. Claiming one atomic job per mostly empty target chunk would
+make 65,536 claims for the 16,384-colony benchmark, so work is balanced by actual
+candidate-cell count instead.\\
+\textbf{Consequences:} The 16,384-colony case forms about 120 jobs rather than
+65,536. Explicit four- and eight-worker Release benchmarks improve over retained
+serial evaluation on the measured machine; automatic execution is capped at
+four workers because additional workers gave little benefit on this path. A
+256-colony case keeps its original direct loop and avoids result-buffer overhead.
+Tests verify coarse job granularity, requested worker use, and byte identity with
+serial candidates. Status and Tracy report range count, workers, parallel
+evaluation, and serial merge work.\\
+\textbf{Refines:} D-P9 candidate evaluation and D-P8 worker-pool use.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P14 --- Retained changed-region frontier}
+\begin{decisionbox}[title={D-P14 \quad 2026-08-08}]
+\textbf{Decision:} Preserve the inactive chunk map as the complete prior
+generation and retain generation-stamped flat sets for changed chunks and their
+next targets. Expand each changed chunk by its eight neighbors. An empty set
+returns without evaluating cells; at most 64 targets are evaluated and patched
+transactionally into the prior map. Cell edits and ruleset-type changes mark the
+affected chunks. More than 64 changed chunks invalidates the optimization for
+that generation and selects the existing complete candidate or halo path.\\
+\textbf{Why:} For deterministic radius-one rules, a chunk outside the changed
+set and its neighbors sees the same input neighborhood as the prior generation
+and therefore cannot change. Complete candidate discovery still rescanned every
+stable chunk in a wide mostly-static world.\\
+\textbf{Consequences:} Settled still lifes advance with zero target evaluation.
+The measured 1,024-block world with one blinker evaluates 15 of 1,026 active
+chunks and runs roughly 15 times faster than complete candidate discovery.
+Broad moving colonies retain the bounded tracking cost and fall back to the
+already parallel complete paths. Tests cover settled stepping, edits, ruleset
+changes, and byte identity against forced full evaluation.\\
+\textbf{Refines:} D-P12's retained prior map and the D-P9/D-P13 complete sparse
+paths.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P15 --- Per-target counted-state adaptation}
+\begin{decisionbox}[title={D-P15 \quad 2026-08-08}]
+\textbf{Decision:} Store separate 256-bit masks for non-background cells and
+cells that contribute to Moore-neighbor counts. When candidate scratch is
+built, classify every target independently: use its exact candidate mask below
+the counted-neighbor contribution threshold, otherwise use the direct
+18$\times$18 halo evaluator. Work ranges charge halo targets as 256 cells.
+Worlds whose source chunks are all counting-dense bypass scratch construction.\\
+\textbf{Why:} A global average misclassified mixed dense/sparse worlds. It also
+treated every stored Wireworld conductor as neighbor-counting work even though
+only electron heads contribute to conductor transitions.\\
+\textbf{Consequences:} One generation may contain both candidate and halo
+targets while preserving deterministic transactional output. The measured
+9$\times$9 all-conductor Wireworld case contains 20,736 stored cells but zero
+counted cells; candidate stepping measured roughly 8,019 generations per second
+versus 4,249 for forced halos on the development machine. Tests compare mixed
+per-target output and conductor-only output against forced complete halos.
+Status exposes stored/counted cells, candidate/halo target totals, and the mixed
+path.\\
+\textbf{Refines:} D-P9's global density selection and D-P13's candidate work
+ranges.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P16 --- Cached transitions and rolling halo stencil}
+\begin{decisionbox}[title={D-P16 \quad 2026-08-09}]
+\textbf{Decision:} Lazily build an immutable 256-state by 9-neighbor transition
+table for each ruleset instance before worker dispatch. Candidate, halo, and
+compatibility dense loops index that table. Reduce every 18$\times$18 halo with
+three rolling horizontal count rows; each output cell sums those rows and
+removes the center state instead of rescanning eight neighbors.\\
+\textbf{Why:} The transition domain is only 2,304 inputs, while virtual calls,
+rule branches, and repeated Moore-neighborhood comparisons occurred for every
+evaluated cell in every generation. The table preserves the existing ruleset
+interface while moving that work out of the hot loops.\\
+\textbf{Consequences:} A ruleset performs exactly 2,304 virtual transitions on
+first use and none during subsequent generation evaluation. On the development
+machine, the 24$\times$24-chunk benchmark improved from roughly 419 to 673
+serial generations per second and from 1,146 to 1,605 with four workers. Tests
+compare every table entry for all seven shipped rules and keep candidate, halo,
+serial, and parallel outputs byte-identical. No SIMD or GPU simulation is added.\\
+\textbf{Refines:} D-P8 dense halo evaluation and all D-P9--D-P15 sparse paths.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------

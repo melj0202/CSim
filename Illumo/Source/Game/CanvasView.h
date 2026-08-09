@@ -4,7 +4,6 @@
 #include "Rendering/Drawable.h"
 #include "Rendering/Primitives/GameVisual.h"
 #include <cstdint>
-#include <vector>
 
 class Camera;
 class IRenderWindow;
@@ -12,8 +11,8 @@ class Renderer;
 class RuleSet;
 
 // Bounded presentation of an unbounded SparseCellGrid. The view owns one
-// reusable RGB staging texture and one screen-space quad; simulation chunks
-// never become individual GPU resources or render commands.
+// reusable RGB staging texture and one world-space, cell-aligned quad;
+// simulation chunks never become individual GPU resources or render commands.
 class CanvasView : public Drawable<CanvasView>
 {
 public:
@@ -28,9 +27,18 @@ public:
   CanvasView(const CanvasView&) = delete;
   CanvasView& operator=(const CanvasView&) = delete;
 
-  int getViewWidth() const { return viewWidth; }
-  int getViewHeight() const { return viewHeight; }
+  // Active display texels. These are one-to-one with cells near the camera and
+  // become a bounded density overview only when zooming far out.
+  int getViewWidth() const { return activeViewWidth; }
+  int getViewHeight() const { return activeViewHeight; }
+  int getTextureWidth() const { return textureWidth; }
+  int getTextureHeight() const { return textureHeight; }
+  int getVisibleCellWidth() const { return visibleCellWidth; }
+  int getVisibleCellHeight() const { return visibleCellHeight; }
+  CellAddress getVisibleFirstCell() const { return visibleFirstCell; }
   SparseCellGrid* getGrid() const { return grid; }
+
+  static std::int64_t worldToCell(double worldCoordinate);
 
   void clearView();
   void clearCanvas() { clearView(); }
@@ -72,15 +80,23 @@ public:
 private:
   static const int kPaletteSize = 256;
   static constexpr float kCellSize = 16.0f;
+  static const int kOverviewPixelsPerTexel = 4;
 
-  int viewWidth;
-  int viewHeight;
+  int baseViewWidth;
+  int baseViewHeight;
+  int textureWidth;
+  int textureHeight;
+  int activeViewWidth;
+  int activeViewHeight;
+  int visibleCellWidth;
+  int visibleCellHeight;
+  CellAddress visibleFirstCell;
   SparseCellGrid* grid;
   unsigned char paletteRgb[kPaletteSize * 3];
   unsigned char* texBuffer;
   float* displayRgb;
   float* targetRgb;
-  std::vector<CellAddress> visibleCells;
+  float* sampledRgb;
   float fadeSpeed;
 
   GameVisual visual;
@@ -92,19 +108,26 @@ private:
   int uploadMinY;
   int uploadMaxX;
   int uploadMaxY;
-  int lastWindowWidth;
-  int lastWindowHeight;
-  bool screenQuadReady;
+  CellAddress quadFirstCell;
+  int quadCellWidth;
+  int quadCellHeight;
+  int quadActiveWidth;
+  int quadActiveHeight;
+  std::uint64_t lastGridRevision;
+  bool regionReady;
+  bool paletteDirty;
+  bool worldQuadReady;
 
-  static std::int64_t worldToCell(double worldCoordinate);
   static bool sameAddress(const CellAddress& left, const CellAddress& right);
   void initializeGpuResources();
-  void rebuildScreenQuad();
+  void resizeBuffers(int width, int height);
+  void resetUploadBounds();
+  void markFullActiveUpload();
+  void rebuildWorldQuad();
+  void sampleGrid(bool snap);
+  void applySampledTargets(bool snap);
+  int getSlotSampleCount(int x, int y) const;
   void includeUpload(int x, int y);
   void writeTexel(int index, int x, int y);
-  void setTargetForSlot(int index,
-                        unsigned char r,
-                        unsigned char g,
-                        unsigned char b,
-                        bool snap);
+  void setTargetForSlot(int index, float r, float g, float b, bool snap);
 };

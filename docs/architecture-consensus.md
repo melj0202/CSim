@@ -1,7 +1,7 @@
 # Illumo — Architecture consensus (unified)
 
 **Status:** Single living document — **authoritative for later sessions**  
-**Last updated:** 2026-08-07
+**Last updated:** 2026-08-08
 
 This file **merges and supersedes** scattered design memory into one coherent story. Read this first; treat external PDFs and old agenda notes as **history** (§2).
 
@@ -104,7 +104,7 @@ Live consumers:
 | Nested alias expansion | `ChainedStackAlloc aliasExpandStack` | LIFO expanded text frames |
 | `Renderer::RenderScene` | `ArenaAlloc frameArena` | Immediate-drawable pointer list per frame |
 | `CellGameModule::LoadCellGame` | standard temporary vectors | Validated sparse/legacy load state |
-| `SparseCellGrid` | standard hash map | Unbounded 16×16 sparse chunks |
+| `SparseCellGrid` | standard authoritative hash map + retained inactive map, node handles, flat index/vector | Unbounded 16×16 chunks plus allocation-reusing generation output, separate stored/counting masks, and per-target candidate/halo selection |
 
 A general-purpose allocator (mimalloc-class) is a different product; do not reinvent it.
 
@@ -344,20 +344,63 @@ The live path is intentionally a full replacement of the finite dense runtime:
 | Layer | Type | Contents |
 |-------|------|----------|
 | **Domain** | `SparseCellGrid` | signed 64-bit cells in a hash map of non-background 16×16 chunks |
-| **Simulation** | `SparseCellGrid::advance` | serial evaluation of active chunks plus neighbors through temporary 18×18 read-only halos; no toroidal wrapping |
-| **View** | `CanvasView` | camera-visible `CanvasX`×`CanvasY` sampling, CPU palette, RGB fade, newly revealed-cell snapping |
-| **GPU** | `CanvasView` + `GameVisual` | one reusable RGB staging texture update and one screen-space quad; linear display sampling avoids nearest-neighbor blockiness when zoomed out |
+| **Simulation** | `SparseCellGrid::advance` | a retained changed-chunk frontier patches at most 64 changed-neighbor targets and makes settled steps empty; broader mixed worlds choose flat-indexed candidates or rolling-row dense halos independently per target from counted-neighbor work; all paths index a cached 256x9 transition table; 16,384+ work cells use coarse ~2,048-cell ranges and up to four automatic workers; complete paths reuse an inactive chunk map and recycled nodes; dense 32+ target sets use up to eight workers; no toroidal wrapping; revision changes only for a content change |
+| **View** | `CanvasView` | revision-gated camera sampling, exact cells while they fit, 4-screen-pixel density overview at far zoom, CPU palette/RGB fade, newly revealed-region snapping |
+| **GPU** | `CanvasView` + `GameVisual` | one reusable nearest-filtered RGB staging texture update and one world-space quad; near texels and cursor outlines share 16×16 cell bounds |
 
-Rulesets provide stateless `nextState` and `evalCell` functions. Production
-does not depend on `CellGrid*`; the old dense `CellGrid`/`Canvas` and their
+Rulesets provide stateless `nextState` and `evalCell` functions. Each ruleset's
+complete 256-state by 9-neighbor transition table is built once before worker
+dispatch and indexed by sparse and compatibility dense loops. Production does
+not depend on `CellGrid*`; the old dense `CellGrid`/`Canvas` and their
 toroidal `calcGeneration` entry remain only for compatibility tests during the
 transition. The sparse map has no fixed chunk-count cap and preserves all
 multi-state byte values.
 
 Negative chunk coordinates use centralized floor division/modulo. Chunk output
-is sorted by `(chunkY, chunkX)` for deterministic saves and tests. Rendering
-never creates per-chunk GPU resources: only the bounded view texture and quad
-enter the token stream.
+is sorted by `(chunkY, chunkX)` for deterministic saves and tests. The view
+visits only chunks intersecting its source bounds and resamples only after a
+grid revision, palette update, or camera-region change. At far zoom it limits
+the active texture to `max(CanvasX/Y, window / 4)` texels and accumulates
+palette density into each overview texel. This presentation budget neither
+caps chunks nor discards simulation cells. Rendering never creates per-chunk
+GPU resources: only the bounded view texture and quad enter the token stream.
+
+Sparse stepping keeps result installation serial. Each chunk carries separate
+compact masks for stored non-background cells and cells that contribute to
+neighbor counts. If any source chunk has fewer than 48 counted cells, the grid
+creates exact affected targets through a retained power-of-two open-addressed
+index. Generation stamps make old slots logically empty without clearing the
+table, and each slot points into contiguous scratch containing a 256-bit
+candidate mask plus 256 neighbor counts. Each target independently uses those
+candidates when its counted-neighbor contributions are below the calibrated
+threshold, or a direct 18×18 halo otherwise. Thus mixed dense/sparse worlds do
+not inherit one global decision, and dense Wireworld conductors remain candidate
+work because only heads contribute neighbor counts. Worlds whose source chunks
+are all densely counted bypass scratch construction. Both capacities are
+retained, so a stable-width colony neither reallocates candidate records nor
+sorts or binary-searches chunk addresses. Halo/core evaluation uses up to eight
+reusable workers once there are at least 32 targets. Its 18x18 halo is reduced
+through three rolling horizontal rows, so output cells combine cached row counts
+instead of rescanning eight neighbors. Coarse mixed/candidate
+evaluation uses up to four automatic workers once there are at least 16,384
+work cells. Its retained ranges contain roughly 2,048 work cells each, avoiding
+one atomic claim per mostly empty target chunk; all-candidate small worlds keep
+the original direct serial output loop. Both
+evaluators build transactionally into a retained inactive map. Nodes from the
+prior inactive generation are extracted into a retained handle vector, assigned
+new addresses/data, and reinserted; allocation occurs only when output exceeds
+the previous node high-water count. The normal simulation loop completes at
+most two generations per rendered frame and drops excess catch-up debt.
+
+The inactive map also preserves the prior generation for changed-region
+stepping. Edits and committed generations record changed chunk addresses in a
+retained generation-stamped flat set. On the next step, those chunks and their
+eight neighbors form the only possible change region. If expansion produces at
+most 64 targets, the grid evaluates and transactionally patches only that region;
+an empty frontier returns without evaluating any cell. Tracking stops after 64
+changed chunks and broad edits or moving colonies use the complete adaptive path,
+preventing frontier bookkeeping from becoming a new scale wall. Ruleset type
+changes invalidate current chunks before the next step.
 
 ### 5.7 Rules and encoding
 
@@ -381,13 +424,25 @@ class RuleSet {
 
 **Generation path:**
 
-1. Collect each allocated chunk and its eight neighboring chunk addresses.  
-2. Read the target chunk plus one-cell border into a temporary 18×18 halo.  
-3. Apply `nextState` to the 16×16 core and retain only non-background chunks.  
-4. Install the complete next map serially. Empty space is implicit, so births
-   never wrap from one far edge to another.
+1. If the retained changed frontier is empty, return immediately. If changed
+   chunks plus neighbors fit within 64 targets, evaluate and patch that region.
+2. Otherwise count each allocated chunk's stored and neighbor-counting masks.
+3. If any source chunk is counting-sparse, insert affected target addresses into
+   the retained generation-stamped flat index and build fixed candidate masks and
+   neighbor counts. Select candidate or direct 18×18 halo evaluation separately
+   for each target from its actual counted-neighbor contribution work. Large
+   mixed work sets use coarse work-count ranges in the worker pool.
+4. If every source chunk is counting-dense, bypass scratch construction and
+   evaluate direct halos with a rolling three-row stencil, serially or through
+   the bounded pool for 32+ targets.
+5. Build the complete next map serially using retained buckets and recycled
+   chunk nodes, compare it to the authoritative map, then swap transactionally
+   only when contents differ. Empty space is implicit, so births never wrap.
 
-Rules stay free of rendering and input. `evalCell` supplies palette/RGB colors only.
+Before evaluation, the active ruleset lazily materializes all 2,304 transition
+results. Hot loops share that immutable table, eliminating virtual dispatch and
+repeated rule branches after the first use. Rules stay free of rendering and
+input. `evalCell` supplies palette/RGB colors only.
 
 **Optional cleanup (from CA PDF, not required for correctness):** collapse life-like rules into one family + JSON birth/survive tables:
 
@@ -508,6 +563,8 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-WW1** | Wireworld: ruleset-aware seed + sticky head/tail/conductor brush keys. |
 | **D-C2** | `CellGrid` domain + `Canvas` presentation; rulesets depend only on `CellGrid`. |
 | **D-C3** | Replace the finite production path with signed-coordinate `SparseCellGrid` chunks plus bounded `CanvasView`; retain dense types only as compatibility fixtures. |
+| **D-C4** | `CanvasView` is a nearest-filtered, world-space quad with exact cell texels at normal zoom and cursor-aligned world-cell editing. |
+| **D-C5** | At far zoom, `CanvasView` uses a revision-gated density overview capped at roughly four screen pixels per texel; this visual budget does not cap sparse simulation chunks. |
 
 ### 6.3 Performance (D-P\*)
 
@@ -520,6 +577,15 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-P5** | Single-pass dirty AABB + `CellGrid` front/back swap (no full memcpy). | 2026-08-06 |
 | **D-P6** | Fade loop hoists + packed dirty-rect PBO staging (keep CPU RGB fade). | 2026-08-06 |
 | **D-P7** | Optional row-parallel `calcGeneration` (≥512² auto, override for tests). | 2026-08-06 |
+| **D-P8** | Reusable bounded worker pool for large sparse target sets; normal mode drops excess catch-up debt after two generations per frame. | 2026-08-07 |
+| **D-P9** | Occupancy-masked cell candidates for sparse chunks; full chunk halos remain the dense fallback. | 2026-08-08 |
+| **D-P10** | Replace per-world-cell candidate hash nodes with retained contiguous per-chunk masks and neighbor counts. | 2026-08-08 |
+| **D-P11** | Replace candidate-address sorting and binary searches with a retained generation-stamped open-addressed flat index. | 2026-08-08 |
+| **D-P12** | Reuse next-generation chunk-map buckets and nodes transactionally through a retained inactive map and node handles. | 2026-08-08 |
+| **D-P13** | Parallelize large candidate evaluation with retained coarse ranges balanced by candidate-cell count. | 2026-08-08 |
+| **D-P14** | Retain changed chunks and patch only their neighbor frontier; settled worlds perform no simulation evaluation. | 2026-08-08 |
+| **D-P15** | Track stored and neighbor-counting masks separately and select candidate versus halo work independently per target chunk. | 2026-08-08 |
+| **D-P16** | Cache all 256x9 rule transitions and reduce dense halos with a rolling three-row neighbor stencil. | 2026-08-09 |
 
 ### 6.4 Engine shape (D-E\*, D-C\*, D-F\*)
 
@@ -544,7 +610,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | Command line | **Done** (validated built-ins plus module-registered simulation, canvas, camera, ruleset, and file commands) |
 | Console on GL screen | **Done** (token UI, advanced editing, measured caret, scrolling, full-help capacity test) |
 | More rulesets | **Partly** — Wireworld live; 90/184 stubs |
-| Infinite 16×16 chunk canvas | **Done** — sparse signed-coordinate chunks, 18×18 halos, bounded view, editing, camera, persistence, and tests |
+| Infinite 16×16 chunk canvas | **Done** — sparse signed-coordinate chunks with separate stored/counting masks, per-target candidates or dense 18×18 halos, bounded view, editing, camera, persistence, and tests |
 | Mouse pan | **Done** (camera controls) |
 | SYCL / large-grid parallel | **Not done** — serial full-grid; deferred |
 
@@ -609,11 +675,11 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 | Command queue overflow | **D-R12:** log once per frame + drop counters; capacity still fixed at 2048 |
 | CMake duplication | Resolved 2026-08-02 with shared source lists/settings; no forced package libraries |
 | Renderer ↔ backend | **D-R11:** `CreateOpenGLBackend` at composition; Renderer is `IBackend*`-only; Mock inject for tests |
-| Sparse sim + bounded view memory | Simulation scales with allocated chunks and halo neighbors; presentation scales with the configured visible view |
+| Sparse sim + bounded view memory | Sparse simulation scales with stored and counted cells; mixed targets independently use candidates or halos, dense counted chunks use at most eight reusable workers, and presentation scales with the configured visible view |
 | MacroDefs + Windows.h | D-F1 deferred |
 | IllumoContext growth | Frozen; third module = explicit deps |
 | Life-like JSON family collapse | Optional cleanup of repetitive RuleSet classes |
-| GPU/SYCL acceleration | Optional after serial benchmark / product need; CPU sparse serial stepping is the production baseline |
+| GPU/SYCL acceleration | Optional after bounded CPU parallel benchmark / product need; CPU sparse stepping is the production baseline |
 | Resource destroy/reload | Shutdown-only for v1 (D-R4); hot-reload later |
 
 ---
@@ -640,8 +706,8 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 
 ### D. Only if product or learning goals require it
 
-10. Further renderer slimming or sparse stepping acceleration if profiling requires it.
-11. ~~Threaded simulation~~ — serial sparse stepping is the baseline; parallel/GPU work remains optional.
+10. Further renderer slimming or GPU sparse stepping if profiling requires it.
+11. Bounded CPU chunk parallelism is production; GPU simulation remains optional.
 12. Non-string uniforms / second real backend (OpenGL factory already at composition).
 13. Data-driven life-like rule family (JSON birth/survive).
 14. Focused controllers (camera / console) if input coupling becomes painful.
@@ -662,7 +728,7 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 3. **Boundaries over cleverness** — abstract volatility (GLFW, GL, future compute); keep the stable sparse-domain/bounded-view split explicit.
 4. **Sim produces complete state; render observes** — double-buffer; no draw mid-generation.  
 5. **Tokens for draw submission** — enroll once, emit commands, backend executes.  
-6. **Parallelize data transformations last** — serial halo correctness first; acceleration is optional.
+6. **Parallelize data transformations last** — deterministic serial ownership first; adaptive cell candidates and bounded CPU chunk evaluation are justified only by measured pressure.
 7. **Archive experiments** — don’t leave half-live ECS/graph/passes in the hot path.  
 8. **Simplest architecture that preserves the boundaries you care about** (engine PDF principle, applied to the CA product).  
 9. **Code wins over docs** — update this file when consensus shifts.  

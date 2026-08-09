@@ -92,6 +92,8 @@ CellGameModule::CellGameModule()
   , currentState(CellState::EDIT)
   , simAccum(0.0)
   , simStepSeconds(1.0 / 30.0)
+  , lastSimulationSteps(0)
+  , simulationDebtDropped(false)
   , wireworldBrush(WireworldRuleSet::CELL_CONDUCTOR)
   , modeSplash(nullptr)
 {
@@ -432,18 +434,21 @@ CellGameModule::registerConsoleCommands()
       }
 
       CanvasView* canvas = cellContext->getCanvasView();
+      canvas->syncVisibleRegion();
       std::mt19937 generator(std::random_device{}());
       std::uniform_real_distribution<double> distribution(0.0, 100.0);
       const bool wireworld = cellContext->getModeString() == "WIREWORLD";
-      for (int y = 0; y < canvas->getViewHeight(); ++y) {
-        for (int x = 0; x < canvas->getViewWidth(); ++x) {
+      const CellAddress firstCell = canvas->getVisibleFirstCell();
+      for (int y = 0; y < canvas->getVisibleCellHeight(); ++y) {
+        for (int x = 0; x < canvas->getVisibleCellWidth(); ++x) {
           const bool selected = distribution(generator) < density;
           const unsigned char state =
             wireworld ? (selected ? WireworldRuleSet::CELL_CONDUCTOR
                                   : WireworldRuleSet::CELL_EMPTY)
                       : (selected ? static_cast<unsigned char>(0)
                                   : static_cast<unsigned char>(1));
-          cellContext->getGrid()->setCell(canvas->getVisibleCell(x, y), state);
+          cellContext->getGrid()->setCell(
+            CellAddress{ firstCell.x + x, firstCell.y - y }, state);
         }
       }
       ic->commandLine->logSuccess("Randomized canvas at " +
@@ -549,6 +554,8 @@ CellGameModule::setRunning(bool running)
 {
   currentState = running ? CellState::NORMAL : CellState::EDIT;
   simAccum = 0.0;
+  lastSimulationSteps = 0;
+  simulationDebtDropped = false;
   showModeSplash(running ? "NORMAL" : "EDIT");
   ic->commandLine->logSuccess(running ? "Simulation running"
                                       : "Simulation paused in edit mode");
@@ -583,18 +590,47 @@ void
 CellGameModule::printStatus() const
 {
   const CanvasView* canvas = cellContext->getCanvasView();
+  const SparseAdvanceStats& simulationStats =
+    cellContext->getGrid()->getLastAdvanceStats();
   const glm::vec2 cameraPosition = ic->camera->GetPosition();
   ic->commandLine->logNormal(
     std::string("State: ") +
     (currentState == CellState::NORMAL ? "RUNNING" : "PAUSED/EDIT"));
   ic->commandLine->logNormal("Ruleset: " + cellContext->getModeString());
   ic->commandLine->logNormal(
-    "View: " + std::to_string(canvas->getViewWidth()) + " x " +
-    std::to_string(canvas->getViewHeight()) + "; chunks: " +
+    "View: " + std::to_string(canvas->getVisibleCellWidth()) + " x " +
+    std::to_string(canvas->getVisibleCellHeight()) + " cells -> " +
+    std::to_string(canvas->getViewWidth()) + " x " +
+    std::to_string(canvas->getViewHeight()) + " texels; chunks: " +
     std::to_string(cellContext->getGrid()->getAllocatedChunkCount()));
   ic->commandLine->logNormal("Rate: " + ic->envVars->getVar("tps").value +
                              " tps x " +
                              ic->envVars->getVar("speedFactor").value);
+  ic->commandLine->logNormal(
+    "Simulation: active chunks=" +
+    std::to_string(simulationStats.activeChunkCount) +
+    ", active cells=" + std::to_string(simulationStats.activeCellCount) +
+    ", counted cells=" + std::to_string(simulationStats.countedCellCount) +
+    ", targets=" + std::to_string(simulationStats.targetChunkCount) +
+    " (candidate=" + std::to_string(simulationStats.candidateTargetCount) +
+    ", halo=" + std::to_string(simulationStats.haloTargetCount) + ")" +
+    ", candidates=" + std::to_string(simulationStats.candidateCellCount) +
+    ", chunk nodes allocated=" +
+    std::to_string(simulationStats.allocatedChunkNodeCount) +
+    ", reused=" + std::to_string(simulationStats.reusedChunkNodeCount) +
+    ", retained=" + std::to_string(simulationStats.retainedChunkNodeCount) +
+    ", work ranges=" + std::to_string(simulationStats.candidateWorkRangeCount) +
+    ", changed=" + std::to_string(simulationStats.changedChunkCount) +
+    ", frontier targets=" +
+    std::to_string(simulationStats.frontierTargetCount) +
+    ", workers=" + std::to_string(simulationStats.workerCount) + ", path=" +
+    (simulationStats.usedChangedFrontier
+       ? "frontier"
+       : (simulationStats.usedMixedTargets
+            ? "mixed"
+            : (simulationStats.usedCellCandidates ? "cells" : "chunks"))) +
+    ", steps this frame=" + std::to_string(lastSimulationSteps) +
+    (simulationDebtDropped ? ", catch-up dropped" : ""));
   ic->commandLine->logNormal("Camera: x=" + std::to_string(cameraPosition.x) +
                              " y=" + std::to_string(cameraPosition.y) +
                              " zoom=" + std::to_string(ic->camera->GetZoom()));
@@ -684,6 +720,8 @@ CellGameModule::Update(double dt)
       showModeSplash("NORMAL");
       Logger::LogInfo("State changed to NORMAL");
     }
+    lastSimulationSteps = 0;
+    simulationDebtDropped = false;
   }
 
   // State dependent behavior
@@ -736,9 +774,10 @@ CellGameModule::Normal(double dt)
 
   simAccum += dt;
 
-  // Allow enough steps to honor high tps; still cap so a stall can't melt the
-  // CPU.
-  const int maxSteps = 64;
+  // Favor camera/input responsiveness over catching up indefinitely. Small,
+  // fast patterns can still reach high TPS, but a heavy generation cannot
+  // turn one render frame into a long burst of simulation work.
+  const int maxSteps = 2;
   int steps = 0;
   while (simAccum >= simStepSeconds && steps < maxSteps) {
     this->cellContext->getGrid()->advance(*this->cellContext->getRuleSet());
@@ -746,10 +785,15 @@ CellGameModule::Normal(double dt)
     steps += 1;
   }
 
-  // Drop leftover debt if we hit the cap so we don't forever "catch up".
-  if (steps >= maxSteps && simAccum > simStepSeconds) {
+  lastSimulationSteps = steps;
+  simulationDebtDropped = false;
+
+  // Drop whole overdue steps once the per-frame budget is exhausted. Retain
+  // the fractional remainder so the configured cadence resumes smoothly.
+  if (simAccum >= simStepSeconds) {
     FrameMarkNamed("Sim.debtDropped");
-    simAccum = 0.0;
+    simAccum = std::fmod(simAccum, simStepSeconds);
+    simulationDebtDropped = true;
   }
 }
 
@@ -765,11 +809,8 @@ CellGameModule::Edit(double dt)
   glm::dvec2 worldPos = ic->camera->ScreenToWorldPrecise(
     glm::dvec2(mouseCoords[0], mouseCoords[1]));
 
-  const float cellSize = 16.0f;
-  const std::int64_t currentX = static_cast<std::int64_t>(
-    std::floor(worldPos.x / static_cast<double>(cellSize) + 0.5));
-  const std::int64_t currentY = static_cast<std::int64_t>(
-    std::floor(worldPos.y / static_cast<double>(cellSize) + 0.5));
+  const std::int64_t currentX = CanvasView::worldToCell(worldPos.x);
+  const std::int64_t currentY = CanvasView::worldToCell(worldPos.y);
 
   if (!ic->commandLine->isOpen) {
     if (cellContext->getModeString() == "WIREWORLD") {
@@ -853,12 +894,9 @@ CellGameModule::updateEditorCursor()
   std::array<double, 2> mouseCoords = ic->window->getMouseCoords();
   glm::dvec2 worldPos = ic->camera->ScreenToWorldPrecise(
     glm::dvec2(mouseCoords[0], mouseCoords[1]));
-  const float cellSize = 16.0f;
-  const std::int64_t cellX = static_cast<std::int64_t>(
-    std::floor(worldPos.x / static_cast<double>(cellSize) + 0.5));
-  const std::int64_t cellY = static_cast<std::int64_t>(
-    std::floor(worldPos.y / static_cast<double>(cellSize) + 0.5));
-  editorCursor.setCellSize(cellSize);
+  const std::int64_t cellX = CanvasView::worldToCell(worldPos.x);
+  const std::int64_t cellY = CanvasView::worldToCell(worldPos.y);
+  editorCursor.setCellSize(16.0f);
   editorCursor.setFromCell(cellX, cellY);
 }
 

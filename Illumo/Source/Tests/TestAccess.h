@@ -16,6 +16,16 @@ public:
     return module.currentState;
   }
 
+  static int getLastSimulationSteps(const CellGameModule& module)
+  {
+    return module.lastSimulationSteps;
+  }
+
+  static bool getSimulationDebtDropped(const CellGameModule& module)
+  {
+    return module.simulationDebtDropped;
+  }
+
   static bool save(CellGameModule& module, const std::string& filename)
   {
     return module.SaveCellGame(filename);

@@ -5,6 +5,25 @@
 
 int RuleSet::workerOverride = 0;
 
+const RuleSet::TransitionTable&
+RuleSet::getTransitionTable() const
+{
+  if (transitionTableReady) {
+    return transitionTable;
+  }
+  ZoneScopedN("Rule.buildTransitionTable");
+  for (std::size_t state = 0u; state < kCellStateCount; ++state) {
+    for (std::size_t neighbors = 0u; neighbors < kNeighborCountCount;
+         ++neighbors) {
+      transitionTable[state * kNeighborCountCount + neighbors] =
+        nextState(static_cast<unsigned char>(state),
+                  static_cast<unsigned char>(neighbors));
+    }
+  }
+  transitionTableReady = true;
+  return transitionTable;
+}
+
 void
 RuleSet::setWorkerOverride(int workers)
 {
@@ -110,6 +129,7 @@ RuleSet::resolveWorkerCount(int width, int height) const
 void
 RuleSet::evalRows(const unsigned char* src,
                   unsigned char* dst,
+                  const unsigned char* transitions,
                   int width,
                   int height,
                   int yBegin,
@@ -120,6 +140,9 @@ RuleSet::evalRows(const unsigned char* src,
                   int* outMaxY,
                   bool* outAnyChange) const
 {
+  if (transitions == nullptr) {
+    return;
+  }
   int minX = width;
   int minY = height;
   int maxX = -1;
@@ -138,7 +161,7 @@ RuleSet::evalRows(const unsigned char* src,
         const size_t i = rowBase + static_cast<size_t>(x);
         const unsigned char n = static_cast<unsigned char>(
           countAliveNeighbors(src, width, height, x, y));
-        const unsigned char next = nextState(src[i], n);
+        const unsigned char next = transitions[transitionIndex(src[i], n)];
         dst[i] = next;
         if (next != src[i]) {
           anyChange = true;
@@ -163,7 +186,7 @@ RuleSet::evalRows(const unsigned char* src,
         const size_t i = rowBase;
         const unsigned char n = static_cast<unsigned char>(
           countAliveNeighbors(src, width, height, x, y));
-        const unsigned char next = nextState(src[i], n);
+        const unsigned char next = transitions[transitionIndex(src[i], n)];
         dst[i] = next;
         if (next != src[i]) {
           anyChange = true;
@@ -186,7 +209,7 @@ RuleSet::evalRows(const unsigned char* src,
         const size_t i = rowBase + static_cast<size_t>(x);
         const unsigned char n = static_cast<unsigned char>(
           countAliveNeighborsInterior(src, width, x, y));
-        const unsigned char next = nextState(src[i], n);
+        const unsigned char next = transitions[transitionIndex(src[i], n)];
         dst[i] = next;
         if (next != src[i]) {
           anyChange = true;
@@ -210,7 +233,7 @@ RuleSet::evalRows(const unsigned char* src,
         const size_t i = rowBase + static_cast<size_t>(x);
         const unsigned char n = static_cast<unsigned char>(
           countAliveNeighbors(src, width, height, x, y));
-        const unsigned char next = nextState(src[i], n);
+        const unsigned char next = transitions[transitionIndex(src[i], n)];
         dst[i] = next;
         if (next != src[i]) {
           anyChange = true;
@@ -263,6 +286,7 @@ RuleSet::calcGeneration(const int& x_start,
 
   const unsigned char* src = canvas->lifeCanvas;
   unsigned char* dst = canvas->getLifeBackBuffer();
+  const unsigned char* transitions = getTransitionTable().data();
 
   int minX = width;
   int minY = height;
@@ -277,6 +301,7 @@ RuleSet::calcGeneration(const int& x_start,
     if (workers <= 1) {
       evalRows(src,
                dst,
+               transitions,
                width,
                height,
                0,
@@ -316,6 +341,7 @@ RuleSet::calcGeneration(const int& x_start,
         if (w == workers - 1) {
           evalRows(src,
                    dst,
+                   transitions,
                    width,
                    height,
                    yBegin,
@@ -326,20 +352,28 @@ RuleSet::calcGeneration(const int& x_start,
                    &result->maxY,
                    &result->anyChange);
         } else {
-          threads.emplace_back(
-            [this, src, dst, width, height, yBegin, yEnd, result]() {
-              evalRows(src,
-                       dst,
-                       width,
-                       height,
-                       yBegin,
-                       yEnd,
-                       &result->minX,
-                       &result->minY,
-                       &result->maxX,
-                       &result->maxY,
-                       &result->anyChange);
-            });
+          threads.emplace_back([this,
+                                src,
+                                dst,
+                                transitions,
+                                width,
+                                height,
+                                yBegin,
+                                yEnd,
+                                result]() {
+            evalRows(src,
+                     dst,
+                     transitions,
+                     width,
+                     height,
+                     yBegin,
+                     yEnd,
+                     &result->minX,
+                     &result->minY,
+                     &result->maxX,
+                     &result->maxY,
+                     &result->anyChange);
+          });
         }
       }
 

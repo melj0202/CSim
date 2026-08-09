@@ -55,15 +55,22 @@ No second real GPU API.
 \label{sec:canvas-rgb-fade}
 \begin{itemize}
   \item Domain: \symbolref{SparseCellGrid} stores signed-coordinate
-        16$\times$16 chunks; the view samples only the camera-visible
-        \texttt{CanvasX}$\times$\texttt{CanvasY} cells.
+        16$\times$16 chunks and changes its revision only for a cell-content
+        change. The view visits only chunks intersecting its camera source
+        bounds.
   \item View: CPU palette via \texttt{evalCell} $\rightarrow$ \texttt{targetRgb};
         \texttt{displayRgb} eases toward targets, newly revealed cells snap,
-        and packed RGB is staged for upload.
-  \item GPU: one reusable RGB display texture and one screen-space quad,
-        using linear sampling when stretched to the window, and updated via
-        at most one dirty-rect \texttt{UpdateTexture} token per submission
-        (PBO path; optional \texttt{srcRowStride}).
+        and packed RGB is staged for upload. Unchanged grid, palette, and
+        camera bounds skip resampling entirely.
+  \item Zoom: normal views retain one nearest-filtered texel per 16$\times$16
+        world cell. Far views use a density-colored overview bounded to about
+        four screen pixels per texel; this is a visual budget, never a chunk
+        or world-cell cap.
+  \item GPU: one reusable nearest-filtered RGB display texture and one
+        world-space quad aligned to the same 16$\times$16 cell bounds as the
+        editor cursor, updated via at most one dirty-rect
+        \texttt{UpdateTexture} token per submission (PBO path; optional
+        \texttt{srcRowStride}).
   \item Shaders: \pathref{Shader/canvas\_vertex.glsl},
         \pathref{Shader/canvas\_frag.glsl} --- sample \texttt{uDisplayTexture}.
   \item History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
@@ -73,9 +80,9 @@ No second real GPU API.
 \end{itemize}
 
 \subsection{Backend surface}
-\symbolref{IBackend}: lifecycle, command queue push/submit/clear, enroll
-\texttt{CreateMesh}/\texttt{CreateShaderProgram}/\texttt{CreateTexture}
-(handles = \texttt{unsigned long} table IDs).
+\symbolref{IBackend}: lifecycle and command-queue push/submit/clear. Resource
+enrollment is \texttt{CreateMesh}, \texttt{CreateShaderProgram}, and
+\texttt{CreateTexture} (handles = \texttt{unsigned long} table IDs).
 
 \symbolref{RenderCommand}: tagged union (\texttt{CommandType} + POD payload)
 including pipeline, bind, uniforms, \texttt{UpdateTexture}, \texttt{UpdateBuffer},

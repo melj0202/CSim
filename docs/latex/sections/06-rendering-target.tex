@@ -83,11 +83,12 @@ CanvasView end state (shipped):
 \begin{itemize}
   \item Domain: \texttt{SparseCellGrid}, signed coordinates, 16$\times$16
         chunks, and serial 18$\times$18 halo stepping.
-  \item View: bounded camera sampling + RGB fade buffers + one RGB display
-        texture and one screen-space quad; linear display sampling avoids
-        nearest-neighbor blockiness when zoomed out, while dirty-rect
-        \texttt{UpdateTexture} remains the only per-frame texture upload
-        (PBO).
+  \item View: revision-gated camera sampling + RGB fade buffers + one
+        nearest-filtered RGB display texture and one world-space quad. The
+        quad and editor cursor share 16$\times$16 cell bounds at normal zoom;
+        far zoom uses a density overview at about four screen pixels per
+        texel. Dirty-rect \texttt{UpdateTexture} remains the only texture
+        upload (PBO) and idle frames do not resample or upload.
   \item See \pathref{docs/architecture-consensus.md} for the single canonical
         presentation model (R8-only notes are historical).
 \end{itemize}

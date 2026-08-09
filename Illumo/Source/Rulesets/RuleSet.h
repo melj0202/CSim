@@ -1,5 +1,7 @@
 #pragma once
 #include "Game/CellGrid.h"
+#include <array>
+#include <cstddef>
 #include <string>
 
 constexpr auto MAX_RULETAG_SIZE = 128;
@@ -12,6 +14,11 @@ constexpr auto MAX_RULETAG_SIZE = 128;
 class RuleSet
 {
 public:
+  static constexpr std::size_t kCellStateCount = 256u;
+  static constexpr std::size_t kNeighborCountCount = 9u;
+  using TransitionTable =
+    std::array<unsigned char, kCellStateCount * kNeighborCountCount>;
+
   CellGrid* canvas;
 
   RuleSet(CellGrid* targetCanvas)
@@ -54,7 +61,21 @@ public:
     return cell;
   }
 
+  // Built once per ruleset instance before worker dispatch. Hot simulation
+  // loops index this table instead of repeating virtual calls and rule
+  // branches.
+  const TransitionTable& getTransitionTable() const;
+
+  static std::size_t transitionIndex(unsigned char cell,
+                                     unsigned char aliveNeighbors)
+  {
+    return static_cast<std::size_t>(cell) * kNeighborCountCount +
+           static_cast<std::size_t>(aliveNeighbors);
+  }
+
 protected:
+  void invalidateTransitionTable() const { transitionTableReady = false; }
+
   // Toroidal Moore count of cells with value 0 (project "alive" encoding).
   static int countAliveNeighbors(const unsigned char* grid,
                                  int w,
@@ -75,9 +96,12 @@ private:
   static const int kParallelCellThreshold = 512 * 512;
 
   static int workerOverride;
+  mutable TransitionTable transitionTable{};
+  mutable bool transitionTableReady = false;
 
   void evalRows(const unsigned char* src,
                 unsigned char* dst,
+                const unsigned char* transitions,
                 int width,
                 int height,
                 int yBegin,

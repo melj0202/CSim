@@ -14,6 +14,24 @@
 
 static TestCounters g;
 
+class CountingRuleSet : public RuleSet
+{
+public:
+  CountingRuleSet()
+    : RuleSet(nullptr)
+  {
+  }
+
+  unsigned char nextState(unsigned char cell,
+                          unsigned char aliveNeighbors) const override
+  {
+    callCount += 1u;
+    return static_cast<unsigned char>((cell + aliveNeighbors) & 0x03u);
+  }
+
+  mutable std::size_t callCount = 0u;
+};
+
 static void
 testGameOfLifeBlockStillLife()
 {
@@ -422,6 +440,58 @@ testWireworldConductorNeighborCounts()
               "three heads keep conductor");
 }
 
+static void
+testTransitionTableCacheAndEquivalence()
+{
+  testSection("Rules: cached 256 by 9 transition table");
+  CountingRuleSet counting;
+  const RuleSet::TransitionTable& first = counting.getTransitionTable();
+  const std::size_t expectedCalls =
+    RuleSet::kCellStateCount * RuleSet::kNeighborCountCount;
+  testEqInt(g,
+            static_cast<int>(counting.callCount),
+            static_cast<int>(expectedCalls),
+            "first access evaluates every state and neighbor pair once");
+  const RuleSet::TransitionTable& second = counting.getTransitionTable();
+  testTrue(g, &first == &second, "subsequent access returns the same table");
+  testEqInt(g,
+            static_cast<int>(counting.callCount),
+            static_cast<int>(expectedCalls),
+            "subsequent access performs no transition calls");
+
+  GameOfLifeRuleSet gameOfLife(nullptr);
+  SeedsRuleSet seeds(nullptr);
+  BrainsBrainRuleSet briansBrain(nullptr);
+  HighlifeRuleSet highlife(nullptr);
+  DayAndNightRuleSet dayAndNight(nullptr);
+  LifeWithoutDeathRuleSet lifeWithoutDeath(nullptr);
+  WireworldRuleSet wireworld(nullptr);
+  const RuleSet* rules[] = { &gameOfLife, &seeds,       &briansBrain,
+                             &highlife,   &dayAndNight, &lifeWithoutDeath,
+                             &wireworld };
+  bool equivalent = true;
+  for (const RuleSet* rule : rules) {
+    const RuleSet::TransitionTable& table = rule->getTransitionTable();
+    for (std::size_t state = 0u; state < RuleSet::kCellStateCount && equivalent;
+         ++state) {
+      for (std::size_t neighbors = 0u; neighbors < RuleSet::kNeighborCountCount;
+           ++neighbors) {
+        const unsigned char cell = static_cast<unsigned char>(state);
+        const unsigned char aliveNeighbors =
+          static_cast<unsigned char>(neighbors);
+        if (table[RuleSet::transitionIndex(cell, aliveNeighbors)] !=
+            rule->nextState(cell, aliveNeighbors)) {
+          equivalent = false;
+          break;
+        }
+      }
+    }
+  }
+  testTrue(g,
+           equivalent,
+           "all shipped rules match direct transitions for all 2304 inputs");
+}
+
 static int
 runRuleSetCase(void (*testFunction)())
 {
@@ -433,6 +503,9 @@ runRuleSetCase(void (*testFunction)())
 void
 registerRuleSetTests(IllumoTestRegistry& registry)
 {
+  registry.add("Illumo.Rules.TransitionTable", []() {
+    return runRuleSetCase(testTransitionTableCacheAndEquivalence);
+  });
   registry.add("Illumo.Rules.GameOfLifeBlock",
                []() { return runRuleSetCase(testGameOfLifeBlockStillLife); });
   registry.add("Illumo.Rules.GameOfLifeBlinker",
