@@ -47,6 +47,19 @@ a configurable 65,536 default ceiling. `SpriteAnimator` is passive: callers
 advance Once, Loop, or PingPong clips outside submission, and rendering observes
 only the current region.
 
+## Primitive-composed UI
+
+`UiTheme` supplies shared value-only colors and compact panel chrome. It does
+not own widgets or layout. `CommandLine` composes its surface, inset history,
+input row, selection, caret, scrollbar, and floating resize affordance directly
+from `GameVisual` fills, outlines, lines, and text. `GLString` remains a cached
+text drawable and can optionally add panel shadow, surface, border, and accent
+primitives; the FPS badge and fading EDIT/NORMAL notice use that path.
+
+All of these drawables retain their existing owners and Scene layers. The
+console and each decorated label remain one adjacent shape/text batch, so the
+redesign does not add a widget tree or per-element Scene traffic.
+
 ## Product boundary
 
 The Debug-only `renderer_demo`, `assets`, and `asset_reload` commands prove the

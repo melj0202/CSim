@@ -1,5 +1,6 @@
 #pragma once
 #include "GLString.h"
+#include "Rendering/Primitives/UiTheme.h"
 #include <chrono>
 
 class SplashText : public GLString
@@ -8,6 +9,7 @@ public:
   SplashText()
     : startTime(std::chrono::high_resolution_clock::now())
   {
+    setPanelStyle(UiTheme::noticePanel(ColorRgba{ 255, 230, 120, 255 }));
     setVisible(false);
   }
 
@@ -26,6 +28,11 @@ public:
     , wakeDuration(std::chrono::duration<float>(1.5f))
     , fadeRate(1.0f)
   {
+    setPanelStyle(
+      UiTheme::noticePanel(ColorRgba{ static_cast<unsigned char>(r),
+                                      static_cast<unsigned char>(g),
+                                      static_cast<unsigned char>(b),
+                                      static_cast<unsigned char>(a) }));
     setVisible(false);
   }
 

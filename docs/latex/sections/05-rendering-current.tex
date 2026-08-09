@@ -118,14 +118,19 @@ fallback to client \texttt{glTexSubImage2D} if map fails.
 
 \symbolref{GLDevice}: bind-state tracker (skip redundant program/VAO/texture/
 viewport within a submit); uniform location cache; blend-func-on-enable (D-R5).
-
-\subsection{UI tokens}
+\subsection{Primitive-composed UI (D-R20)}
 \begin{itemize}
   \item \symbolref{CommandLine}: one batched \texttt{UpdateBuffer} +
-        \texttt{DrawIndexed} when open; blend for translucent panel.
+        \texttt{DrawIndexed} when open. Its surface, inset history, input row,
+        selection, caret, scrollbar, and floating resize affordance compose
+        \symbolref{GameVisual} fills, outlines, lines, and text.
   \item \symbolref{GLString}: geometry cache --- skip VBO re-upload if
-        content/style unchanged (FPS $\sim$1\,Hz rebuilds).
-  \item \symbolref{SplashText}: mode label built on GLString; woken on EDIT/NORMAL.
+        content/style unchanged (FPS $\sim$1\,Hz rebuilds). Optional panel
+        chrome adds a shadow, surface, border, and accent in the same batch.
+  \item \symbolref{SplashText}: fading EDIT/NORMAL label built on decorated
+        GLString chrome; the two modes use distinct shared theme accents.
+  \item \texttt{UiTheme}: shared value-only colors and compact panel metrics;
+        it is not a retained widget tree or layout engine.
   \item \symbolref{DebugModule}: \texttt{renderer\_demo}, \texttt{assets}, and
         \texttt{asset\_reload} prove managed atlas/shader loading, atlas
         animation, transforms, tint, alpha order, async load, state inspection,
@@ -138,7 +143,8 @@ binary for compile efficiency, but CTest invokes one exact logical case per
 process (D-T1). The sparse-canvas entries cover mock/Renderer flow, assets,
 rulesets, CellContext, CellGameModule commands and file-backed save/load,
 CanvasView,
-input/services, and UI tokens. Each case has an isolated working directory; no
+input/services, primitive panel composition, and UI tokens. Each case has an
+isolated working directory; no
 GPU context is required. The Clang/LLVM \texttt{IllumoCoverage} target enforces
 85\% line coverage over headless-testable first-party production code.
 

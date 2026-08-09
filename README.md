@@ -41,7 +41,8 @@ under `docs/`. Start with:
 
 **Current stack (short):** reusable 2D token renderer (`AppendCommands` →
 `IBackend`) with typed generational handles, painter-correct primitives,
-dynamic quad buffers, and asynchronous texture/shader assets,
+dynamic quad buffers, primitive-composed themed UI, and asynchronous
+texture/shader assets,
 `SparseCellGrid` domain + revision-gated `CanvasView` RGB-fade presentation +
 dirty-rect upload, retained flat-indexed chunk-local cell-candidate scratch /
 per-target candidate-or-halo CA `nextState`, separate stored/counting masks,

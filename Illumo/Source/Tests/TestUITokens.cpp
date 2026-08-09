@@ -362,6 +362,21 @@ testCommandLineOpenEmitsPanelTokens()
     }
   }
   testTrue(g, foundBlend, "open: pipeline enables blend");
+
+  bool foundOutline = false;
+  bool foundLine = false;
+  GameVisual& visual = console.getVisual();
+  for (size_t i = 0; i < visual.shapeCount(); ++i) {
+    const ShapePrimitive* shape = visual.getShape(i);
+    if (shape == nullptr) {
+      continue;
+    }
+    foundOutline = foundOutline || shape->kind == ShapeKind::OutlineRect;
+    foundLine = foundLine || shape->kind == ShapeKind::Line;
+  }
+  testTrue(
+    g, foundOutline, "open: themed chrome uses outline rectangle primitives");
+  testTrue(g, foundLine, "open: themed chrome uses line primitives");
 }
 
 static void
@@ -565,6 +580,42 @@ testGLStringEmitsTextTokens()
   }
   testTrue(g, foundBlend, "GLString enables blend");
   testTrue(g, foundDrawElems, "GLString DrawIndexed elementCount > 0");
+}
+
+static void
+testGLStringPanelComposition()
+{
+  testSection("GLString: optional panel chrome composes primitive shapes");
+  NullRenderWindow window(640, 480);
+  EnvVars env;
+  env.setVar("WinX", 640);
+  env.setVar("WinY", 480);
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  MockBackend mock;
+  mock.Initialize();
+  Renderer renderer(&window, &env, &camera, &mock, false);
+  GLString::setRenderWindow(&window);
+
+  GLString label("FPS: 60", 92, 224, 150, 255, 18, 12, 12, &renderer);
+  label.setPanelStyle(UiTheme::statusPanel());
+  testTrue(g,
+           label.AppendCommands(&renderer),
+           "decorated label remains on the token path");
+  testEqSize(g,
+             label.getVisual().shapeCount(),
+             4u,
+             "panel adds shadow, surface, border, and accent primitives");
+  testEqSize(
+    g, label.getVisual().textCount(), 1u, "panel retains one text primitive");
+
+  label.clearPanelStyle();
+  testTrue(g,
+           label.AppendCommands(&renderer),
+           "plain label remains drawable after clearing chrome");
+  testEqSize(g,
+             label.getVisual().shapeCount(),
+             0u,
+             "clearing chrome returns to text-only composition");
 }
 
 static void
@@ -1368,6 +1419,8 @@ registerUITokenTests(IllumoTestRegistry& registry)
                []() { return runUITokenCase(testGLStringEmitsTextTokens); });
   registry.add("Illumo.GLString.GeometryCache",
                []() { return runUITokenCase(testGLStringCachesGeometry); });
+  registry.add("Illumo.GLString.PanelComposition",
+               []() { return runUITokenCase(testGLStringPanelComposition); });
   registry.add("Illumo.Rendering.CommandLineAndGLString", []() {
     return runUITokenCase(testGLStringAndCommandLineTogether);
   });

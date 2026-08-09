@@ -89,6 +89,13 @@ spans shapes, sprites, and text; only adjacent compatible items batch. Parent an
 local `Transform2D`, normalized pivots, atlas regions/flips, and bounded dynamic
 quad buffers are supported. `SpriteAnimator` is passive and caller-updated.
 
+Product UI is primitive-composed rather than a separate widget system.
+`CommandLine` builds its panel from `GameVisual` fills, outlines, lines, and
+text; `GLString` may add cached panel chrome; FPS and `SplashText` use that
+decorated-label path. `UiTheme` is shared value-only styling. Preserve the
+existing drawable owners and Scene layers; do not introduce a retained UI tree
+for this surface.
+
 Canvas truth (verify here before trusting older notes):
 
 - Production domain: `SparseCellGrid` owns signed 64-bit world cells in a

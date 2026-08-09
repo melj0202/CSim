@@ -44,6 +44,7 @@ DebugModule::Start(IllumoContext* context)
 
   fpsLabel =
     new GLString("FPS: 0", 80, 255, 120, 255, 18, 12, 12, ic->renderer);
+  fpsLabel->setPanelStyle(UiTheme::statusPanel());
   fpsLabel->setVisible(isShowFpsEnabled());
   createRendererDemo();
   registerRendererCommands();

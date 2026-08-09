@@ -158,7 +158,6 @@ private:
   float currentPanelY;
   float currentPanelW;
   float currentPanelH;
-  float scanlinePhase;
 
   IEnvVars* envVars;
   IRenderWindow* window;

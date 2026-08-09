@@ -505,6 +505,26 @@ projects require.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-R20 --- Primitive-composed product UI}
+\begin{decisionbox}[title={D-R20 \quad 2026-08-09}]
+\textbf{Decision:} Build Illumo's existing UI drawables from
+\symbolref{GameVisual} shape and text primitives. Keep
+\symbolref{CommandLine} as the owner of console layout and interaction, retain
+\symbolref{GLString}'s geometry cache while allowing optional panel chrome, and
+use that decorated-label path for Debug FPS and fading EDIT/NORMAL notices.
+Share colors and compact panel metrics through value-only \texttt{UiTheme}; do
+not introduce a retained widget tree, layout engine, or additional render pass.\\
+\textbf{Why:} The renderer foundation should prove useful composition in the
+real product, and the console, FPS, and mode notice need one coherent visual
+language without increasing Scene traffic or creating a second UI architecture.\\
+\textbf{Consequences:} Console chrome now uses fills, outline rectangles, and
+line primitives instead of a bespoke packed-quad aesthetic. Decorated labels
+compose shadow, surface, border, accent, and text in one adjacent batch. Existing
+editing, floating-window, fading, Scene-layer, and Debug/Release ownership
+boundaries remain unchanged; headless tests assert the primitive composition.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
 \subsection*{D-F1 --- MacroDefs Windows include deferred}
 \begin{decisionbox}[title={D-F1 \quad 2026-07-30}]
 \textbf{Decision:} Do \textbf{not} split \pathref{MacroDefs.h} /

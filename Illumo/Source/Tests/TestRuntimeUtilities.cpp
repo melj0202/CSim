@@ -518,6 +518,14 @@ testSplashWakeAndTokens()
   testTrue(g,
            fixture.mock.getPendingCommandCount() > 0,
            "awake splash emits render commands");
+  testEqSize(g,
+             splash.getVisual().shapeCount(),
+             4u,
+             "awake splash composes panel chrome from shape primitives");
+  testEqSize(g,
+             splash.getVisual().textCount(),
+             1u,
+             "awake splash composes one text primitive");
 }
 
 static void
