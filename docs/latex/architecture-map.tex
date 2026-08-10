@@ -149,8 +149,8 @@
     {\scriptsize \#ifndef NDEBUG}};
   \node[layer, pkgfill=pkgRules] (dom) at (16.3,-1.2) {%
     \textbf{\rmfamily Domain}\\[3pt]
-    CellContext\\Canvas\\RuleSet*\\[2pt]
-    {\scriptsize factory in CellContext}};
+    SparseCellGrid\\CanvasView\\RuleSet*\\[2pt]
+    {\scriptsize owned by CellContext}};
   \node[layer, pkgfill=pkgRender] (rnd) at (19.9,-1.2) {%
     \textbf{\rmfamily Rendering}\\[3pt]
     Scene\\Drawable\\Renderer\\[2pt]
@@ -179,8 +179,9 @@
     CommandRegistry · Logger (static)\\[2pt]
     SaveLoad (static OS entry)};
   \node[box, pkgfill=pkgAssets, minimum width=3.8cm, minimum height=2.5cm] (ast) at (18.0,-4.8) {%
-    \textbf{\rmfamily Assets}\\[4pt]
-    Runtime data};
+    \textbf{\rmfamily Runtime files}\\[4pt]
+    Illumo/Assets\\[2pt]
+    {\scriptsize outside Source}};
   \node[box, pkgfill=pkgTests, minimum width=4.2cm, minimum height=2.5cm] (tst) at (22.8,-4.8) {%
     \textbf{\rmfamily Tests}\\[4pt]
     inject MockBackend\\[2pt]
@@ -188,7 +189,6 @@
 
   \draw[owns] (eng.south) -- ++(0,-0.7) -| (svc.north);
   \draw[nonown] (eng.south west) ++(0.4,0) -- ++(0,-0.7) -| (fnd.north);
-  \draw[arr] (svc) -- (ast);
   \draw[arr, densely dotted] (tst.north) -- ++(0,0.7) -| (be.south);
 
   % Legend
@@ -211,7 +211,7 @@
     Platform entry $\rightarrow$ CellMain composes Illumo + modules $\rightarrow$
     Illumo owns services via \texttt{unique\_ptr} $\rightarrow$
     modules receive non-owning \texttt{IllumoContext*} $\rightarrow$\\[2pt]
-    domain (CellContext / Canvas / RuleSet) $\rightarrow$
+    domain (SparseCellGrid / CanvasView / RuleSet) $\rightarrow$
     Scene drawables emit tokens $\rightarrow$ IBackend (GL* production, Mock in tests).
   };
 \ChartEnd
@@ -257,11 +257,11 @@
   \foreach \n in {cr,cl,im} {
     \draw[owns] (\n.north |- hub) -- (\n.north);
   }
-  % GLBackend under AssetManager column (not under InputManager); ctor label right of drop
+  % GLBackend is created at composition and transferred into Renderer ownership.
   \node[box, pkgfill=pkgRender, minimum width=2.5cm] (glb) at (19.2,-3.75) {GLBackend};
   \node[iface, minimum width=2.2cm] (ibe) at (22.0,-3.75) {IBackend};
   \draw[owns] (ren.south) -- ++(0,-0.35) -| (glb.north);
-  \node[font=\scriptsize\rmfamily] at (17.55,-3.05) {ctor};
+  \node[font=\scriptsize\rmfamily] at (17.1,-3.05) {injected ownership};
   \draw[impl] (glb) -- (ibe);
 
   % IllumoContext
@@ -280,11 +280,12 @@
     Illumo owns services via \texttt{unique\_ptr}.\\[2pt]
     Modules: \texttt{vector\textless unique\_ptr\textless IModule\textgreater\textgreater}.\\[2pt]
     IllumoContext is raw pointers only.\\[2pt]
-    GLBackend is created in Renderer ctor.
+    Illumo::Init creates GLBackend through CreateOpenGLBackend,\\
+    then transfers it to Renderer as IBackend ownership.
   };
   \node[card, pkgfill=pkgEngine, minimum width=13.8cm, minimum height=3.0cm] (ord) at (19.0,-8.2) {%
     \textbf{\rmfamily Init() order (Illumo.cpp)}\\[4pt]
-    1 EnvVars · 2 RenderWindow · 3 Camera · 4 Renderer (+GLBackend)\\[1pt]
+    1 EnvVars · 2 RenderWindow · 3 Camera · 4 GLBackend factory + Renderer\\[1pt]
     5 AssetManager · 6 CommandRegistry · 7 CommandLine\\[1pt]
     8 Logger::setContext · 9 InputManager · 10 Scene\\[1pt]
     11 GLString::setRenderWindow · 12 fill IllumoContext\\[3pt]
@@ -350,7 +351,8 @@
   % Side cards: same width, aligned centers, ≥0.5cm from step column
   \node[card, pkgfill=pkgGame, minimum width=3.8cm, text width=3.4cm] (dlist) at (24.6,-3.5) {%
     \textbf{\rmfamily AddDrawable}\\[2pt]
-    CellGame: Canvas\\
+    CellGame: CanvasView\\
+    CellGame: Cursor\\
     CellGame: modeSplash\\
     Debug: CommandLine\\
     Debug: fpsLabel
@@ -466,17 +468,17 @@
 %==============================================================================
 % PAGE 5 --- Game / Rulesets / Canvas
 %==============================================================================
-\ChartTitle{5 $\cdot$ Game · Rulesets · Canvas}
+\ChartTitle{5 $\cdot$ Game · Rulesets · sparse domain / bounded view}
 \ChartBegin
   % Ownership chain well below title
   \node[iface, minimum width=2.5cm] (imod) at (2.0,-0.9) {IModule};
   \node[box, pkgfill=pkgGame, minimum width=3.4cm] (cgm) at (5.9,-0.9) {CellGameModule};
   \node[box, pkgfill=pkgGame, minimum width=3.2cm] (cc) at (10.4,-0.9) {CellContext};
   \node[box, pkgfill=pkgGame, minimum width=7.4cm, align=left, text width=6.9cm] (cv) at (18.2,-0.9) {%
-    \textbf{Canvas : Drawable}\\[3pt]
-    lifeCanvas · targetRgb / displayRgb · DirtyRect\\
-    texCanvasBuffer · mesh/shader/tex · AppendCommands\\
-    window* camera* renderer*
+    \textbf{SparseCellGrid + CanvasView : Drawable}\\[3pt]
+    signed sparse 16x16 chunks · non-toroidal advance\\
+    targetRgb / displayRgb · world-space GameVisual sprite\\
+    one reusable RGB texture · CanvasView borrows grid*
   };
   \draw[impl] (cgm)--(imod);
   \draw[owns] (cgm)-- node[above, font=\scriptsize\rmfamily] {new in Start} (cc);
@@ -511,16 +513,14 @@
   % RuleSet
   \node[iface, minimum width=3.0cm] (rs) at (8.6,-3.4) {RuleSet};
   \draw[owns] (cc.south) -- node[right, font=\scriptsize\rmfamily] {setRuleSet} (rs.north);
-  % canvas* above the factory grid; label on horizontal only
-  \draw[nonown] (rs.north) -- ++(0,0.55) -| node[above, font=\scriptsize\rmfamily, pos=0.55] {canvas*} (cv.west);
 
   % R(api)=10.1; keep left of factory rail and orph (L≥11.5)
   \node[card, pkgfill=pkgRules, minimum width=3.0cm, minimum height=2.5cm, text width=2.6cm] (api) at (8.6,-6.9) {%
     \textbf{RuleSet API}\\[3pt]
     nextState()\\
     evalCell()\\
-    calcGeneration()\\
-    nextGen buffer
+    transitionTable()\\
+    calcGeneration() {\rmfamily\scriptsize compatibility}
   };
   \draw[arr] (rs.south) -- (api.north);
 
@@ -556,9 +556,9 @@
   \node[stub, minimum width=2.3cm] (r9) at (22.5,-4.9) {Rule184};
   \node[legend, font=\scriptsize\rmfamily, align=center] at (22.5,-5.75) {not in setRuleSet\\/ AllSets.h};
 
-  % Orphan + commands strip: L=11.55 > R(api)=10.1; even width under factory
+  % Compatibility + commands strip
   \node[stub, minimum width=13.0cm, minimum height=0.78cm, align=left, font=\scriptsize\ttfamily] (orph) at (18.05,-7.15) {%
-    orphan / unwired in Game/: Brush · CanvasView · SparseCellGrid
+    compatibility/dormant: dense CellGrid + Canvas · unused Brush header
   };
   \node[card, pkgfill=pkgGame, minimum width=13.0cm, align=left, font=\scriptsize\ttfamily] (cmds) at (18.05,-8.55) {%
     \textbf{CellGame registered commands}\\[3pt]
@@ -583,7 +583,7 @@
   \draw[impl] (dcrtp)--(db);
 
   % Drawable implementers: column gaps leave room for token path
-  \node[box, pkgfill=pkgGame, minimum width=2.5cm] (c) at (1.7,-3.6) {Canvas};
+  \node[box, pkgfill=pkgGame, minimum width=2.5cm] (c) at (1.7,-3.6) {CanvasView};
   \node[box, pkgfill=pkgSvc, minimum width=2.5cm] (cl) at (4.5,-3.6) {CommandLine};
   \node[box, pkgfill=pkgRender, minimum width=2.5cm] (gls) at (7.3,-3.6) {GLString};
   \node[box, pkgfill=pkgRender, minimum width=2.5cm] (sp) at (7.3,-4.8) {SplashText};
@@ -714,7 +714,7 @@
     Logger (console output)\\
     SaveLoad::Get*\\
     Save/LoadCellGame\\
-    Canvas lifeCanvas\\
+    SparseCellGrid / CanvasView\\
     Camera pan/zoom
   };
   \draw[arr] (cl.south) -- ++(0,-0.45) -| (builtin.north);
@@ -729,7 +729,7 @@
 
   \node[note, minimum width=24.8cm, align=left, font=\footnotesize\ttfamily] at (13.0,-10.9) {%
     text $\rightarrow$ CommandLine buffer $\rightarrow$ built-in handler OR CommandRegistry::QueueCommand\\
-    $\rightarrow$ ExecuteQueue $\rightarrow$ CellGameModule lambdas $\rightarrow$ CellContext / Canvas / RuleSet / SaveLoad / Camera
+    $\rightarrow$ ExecuteQueue $\rightarrow$ CellGameModule lambdas $\rightarrow$ CellContext / SparseCellGrid / CanvasView / RuleSet / SaveLoad / Camera
   };
 \ChartEnd
 
@@ -756,9 +756,10 @@
   \node[card, pkgfill=pkgGame, minimum width=5.9cm, minimum height=2.9cm] at (22.05,-1.5) {%
     \textbf{\rmfamily Game}\\[3pt]
     CellGameModule · CellContext \textbf{L}\\
-    Canvas · DirtyRect \textbf{L}\\
-    Brush · Cursor · CanvasView \textbf{S}\\
-    SparseCellGrid \textbf{S}};
+    SparseCellGrid · CanvasView \textbf{L}\\
+    Cursor · DirtyRect \textbf{L}\\
+    CellGrid · Canvas \textbf{C}\\
+    Brush header \textbf{S}};
 
   \node[card, pkgfill=pkgRules, minimum width=5.9cm, minimum height=2.9cm] at (3.15,-4.85) {%
     \textbf{\rmfamily Rulesets}\\[3pt]
@@ -788,7 +789,8 @@
     KeyCode CommandLine \textbf{L}\\
     CommandRegistry Logger \textbf{L}\\
     SaveLoad \textbf{L}\\
-    allocators SysCmdLine \textbf{U}};
+    SysCmdLine \textbf{L}\\
+    allocators \textbf{L/U}};
 
   \node[card, pkgfill=pkgFound, minimum width=5.9cm, minimum height=2.5cm] at (3.15,-7.9) {%
     \textbf{\rmfamily Foundation}\\[3pt]
@@ -796,8 +798,9 @@
     ArrayQueue \textbf{L}\\
     BuildInfo};
   \node[card, pkgfill=pkgAssets, minimum width=5.9cm, minimum height=2.5cm] at (9.45,-7.9) {%
-    \textbf{\rmfamily Assets}\\[3pt]
-    Runtime data};
+    \textbf{\rmfamily Runtime files}\\[3pt]
+    Illumo/Assets (outside Source)\\
+    Handjet font + license};
   \node[card, pkgfill=pkgTests, minimum width=5.9cm, minimum height=2.5cm] at (15.75,-7.9) {%
     \textbf{\rmfamily Tests}\\[3pt]
     IllumoTests \textbf{T}\\
@@ -807,13 +810,14 @@
     \textbf{\rmfamily Tags}\\[3pt]
     \textbf{L} live product path\\
     \textbf{S} stub / orphan file\\
+    \textbf{C} compatibility-only\\
     \textbf{U} utility / not host-owned\\
     \textbf{T} tests only};
 
   \node[card, pkgfill=pkgEngine, minimum width=24.8cm, align=left, minimum height=1.7cm] at (12.6,-10.2) {%
     \textbf{\rmfamily Observed dependency direction (production)}\\[3pt]
     Platform $\rightarrow$ App/CellMain $\rightarrow$ Illumo $\rightarrow$ IModule (CellGame / Debug) $\cdot$
-    CellGame $\rightarrow$ CellContext $\rightarrow$ Canvas + RuleSet $\rightarrow$ Renderer tokens\\
+    CellGame $\rightarrow$ CellContext $\rightarrow$ SparseCellGrid + CanvasView + RuleSet $\rightarrow$ Renderer tokens\\
     Debug $\rightarrow$ CommandLine + GLString $\cdot$
     Renderer $\rightarrow$ IBackend $\rightarrow$ GL* $\cdot$
     Tests $\rightarrow$ MockBackend $\cdot$

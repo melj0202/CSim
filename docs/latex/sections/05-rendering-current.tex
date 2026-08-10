@@ -34,17 +34,18 @@ No second real GPU API.
 \begin{itemize}
   \item \textbf{Layer} --- composition bucket / draw order on the default FB
         (not a multi-target GPU pass).
-  \item \textbf{RenderStyle} --- Renderer-owned table: shader handle +
-        \texttt{PipelineState} defaults (\texttt{Canvas}, \texttt{UiText},
-        \texttt{Console}). GPU programs still live in backend registries.
+  \item \textbf{RenderStyle} --- Renderer-owned table of shader handles and
+        \texttt{PipelineState} defaults. Current entries are \texttt{Canvas},
+        \texttt{UiText}, and \texttt{Console}; GPU programs remain backend-owned.
   \item \symbolref{DrawableBase} --- type-erased list entry; virtual
         \texttt{Draw} + virtual \texttt{AppendCommands} (default returns false).
         \textbf{No GL handle ownership} on the base (D-R6). Content handles
         only; call \texttt{bindStyle} then emit content tokens.
   \item \symbolref{Drawable<Derived>} --- CRTP: \texttt{Draw} $\rightarrow$
         \texttt{DrawImpl} for the rare immediate path.
-  \item Production emitters (CanvasView, CommandLine, GLString/SplashText) use
-        \texttt{AppendCommands} only; \texttt{DrawImpl} is empty/no-op.
+  \item Production emitters use \texttt{AppendCommands} only; their
+        \texttt{DrawImpl} fallback is empty. This covers CanvasView,
+        CommandLine, GLString, and SplashText.
   \item \symbolref{GameVisual} (D-R15) hosts composed
         \texttt{ShapePrimitive}/\texttt{SpritePrimitive} value lists; other
         classes embed the host to build complex objects. Scene lists the host
@@ -71,8 +72,12 @@ No second real GPU API.
         editor cursor, updated via at most one dirty-rect
         \texttt{UpdateTexture} token per submission (PBO path; optional
         \texttt{srcRowStride}).
-  \item Shaders: \pathref{Shader/canvas\_vertex.glsl},
-        \pathref{Shader/canvas\_frag.glsl} --- sample \texttt{uDisplayTexture}.
+  \item Shader/style: \symbolref{CanvasView} composes a world-space
+        \symbolref{GameVisual} sprite and therefore uses the Renderer-owned
+        inline \texttt{Sprite} style with sampler \texttt{uTexture}.
+        The file-backed \texttt{Canvas} style and
+        \pathref{Shader/canvas\_*.glsl} remain enrolled but have no production
+        CanvasView binding.
   \item History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
         Fade was restored; dirty-rect PBO + bind-state tracker from that work
         remain. Canonical write-up:
@@ -88,8 +93,8 @@ enrollment is \texttt{CreateMesh}, \texttt{CreateShaderProgram}, and
 including pipeline, bind, uniforms, \texttt{UpdateTexture}, \texttt{UpdateBuffer},
 clear, draw (D-R1).
 
-\symbolref{GLTexture::UpdateSubImage}: PBO ping-pong + dirty-rect packing;
-fallback to client \texttt{glTexSubImage2D} if map fails.
+Texture sub-image updates use PBO ping-pong and dirty-rect packing, with a
+client-memory \texttt{glTexSubImage2D} fallback when mapping fails.
 
 \symbolref{GLDevice}: bind-state tracker (skip redundant program/VAO/texture/
 viewport within a submit); uniform location cache; blend-func-on-enable (D-R5).
@@ -119,9 +124,8 @@ GPU context is required. The Clang/LLVM \texttt{IllumoCoverage} target enforces
         production drawables are pure-token (D-R10).
   \item String-named uniforms are GL-shaped debt if a second real GPU API appears
         (D-R9).
-  \item \symbolref{Renderer.h} still includes GL backend headers for production
-        construction (test injection uses \symbolref{IBackend*}).
   \item \pathref{RenderWindow} still uses GLEW for context create / viewport
         (window bootstrap, not frame submission).
-  \item Platform Linux/macOS render windows may still be older than the Windows path.
+  \item Windows is the supported live path. Linux and macOS bootstraps are
+        known stale against current App APIs and have no native validation.
 \end{enumerate}

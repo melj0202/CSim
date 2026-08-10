@@ -914,6 +914,33 @@ serial, and parallel outputs byte-identical. No SIMD or GPU simulation is added.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-DOC2 --- Technical documentation and operational guidance}
+\begin{decisionbox}[title={D-DOC2 \quad 2026-08-09}]
+\textbf{Decision:} Keep canonical technical documentation under
+\pathref{docs/}: current Markdown, package maps, dated records, provenance,
+LaTeX sources, and generated PDF output. Treat \pathref{latex/illumo.tex} as
+the canonical prose-book entrypoint and \pathref{latex/architecture-map.tex}
+as the current chart-only entrypoint; \pathref{docs/build.ps1} builds both.
+Permit root and nested \pathref{AGENTS.md} files plus \pathref{.agent/} as
+operational-guidance exceptions. They define durable engineering rules,
+planning protocol, and reusable guidance scaffolds, but do not own current
+architecture narration.\\
+\textbf{Why:} One technical-documentation tree still gives implementation and
+decision prose a discoverable source of truth, while scoped agent guidance must
+sit where instruction inheritance applies. Treating those operational files as
+ordinary architecture prose either hides local rules or duplicates the design
+book. The chart pack is also a deliberate second generated view rather than a
+competing prose book.\\
+\textbf{Consequences:} Root guidance contains project-wide commands and
+invariants; nested guidance contains only durable local specializations. Active
+guidance has no template placeholders and links back to canonical documents.
+Long-form architecture, current file maps, rationale, and dated history remain
+under \pathref{docs/}. Generated PDFs remain outputs, not sources.\\
+\textbf{Refines:} D-DOC1's single-tree and single-entrypoint wording without
+rewriting its historical record.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
 \subsection*{Template for new entries}
 \begin{lstlisting}[language={}]
 \subsection*{D-0XX --- short title}

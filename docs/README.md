@@ -1,8 +1,10 @@
 # Illumo documentation
 
-This directory is the single home for Illumo's first-party documentation.
-Source-package folders contain code only; their former README files are
-preserved under `packages/`.
+This directory is the canonical home for Illumo's first-party technical
+documentation. Source-package folders contain code plus narrowly scoped
+operational `AGENTS.md` guidance; their former descriptive README files are
+preserved under `packages/`. Root/nested `AGENTS.md` and `.agent/` are the
+intentional operational-guidance exceptions established by D-DOC2.
 
 ## Documentation tree
 
@@ -16,15 +18,17 @@ docs/
   sessions/                    Dated implementation and verification records
   history/                     Original requests and superseded material
   latex/
-    illumo.tex                 The only current PDF entrypoint
+    illumo.tex                 Canonical prose-book PDF entrypoint
+    architecture-map.tex      Current chart-only PDF entrypoint
     sections/                  Long-form chapters and formal decision log
     figures/                   Optional source figures
   output/                      Generated PDF output; never a source of truth
 ```
 
-The root `README.md` remains the repository landing page, and `AGENTS.md`
-remains the automation bootstrap. All other first-party prose belongs here.
-Licenses and vendored dependency READMEs stay beside the assets they govern.
+The root `README.md` remains the repository landing page. The root and nested
+`AGENTS.md` files plus `.agent/` govern automation; they do not replace this
+tree's architecture or decision records. Licenses and vendored dependency
+READMEs stay beside the assets they govern.
 
 ## Reading order
 
@@ -55,10 +59,11 @@ To remove generated LaTeX output:
 .\docs\build.ps1 -Clean
 ```
 
-The result is `docs/output/illumo.pdf`. A normal CMake build also invokes this
-script through the `IllumoDocs` target when Windows PowerShell and `latexmk` are
-on `PATH`; turn that off with `-DILLUMO_BUILD_DOCUMENTATION=OFF` at configure
-time. Focused CMake targets such as `IllumoTests` do not require TeX.
+The results are `docs/output/illumo.pdf` and
+`docs/output/architecture-map.pdf`. A normal CMake build also invokes this
+script through the `IllumoDocs` target when Windows PowerShell and `latexmk`
+are on `PATH`; turn that off with `-DILLUMO_BUILD_DOCUMENTATION=OFF` at
+configure time. Focused CMake targets such as `IllumoTests` do not require TeX.
 
 A full TeX installation is expected;
 the book uses packages including `tcolorbox`, `booktabs`, `tikz`, `listings`,

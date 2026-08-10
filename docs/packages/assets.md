@@ -1,4 +1,6 @@
 # Assets
 
-Runtime asset data. Font rendering and its runtime handles live in the rendering
-path (`GLString` / `GameVisual`) rather than a disconnected asset-loader stub.
+Runtime asset files live under `Illumo/Assets/`, outside the first-party
+`Illumo/Source/` package tree. The current tree contains the Handjet font and
+its license. Font rendering and runtime handles live in the rendering path
+(`GLString` / `GameVisual`), not in a `Source/Assets` subsystem.

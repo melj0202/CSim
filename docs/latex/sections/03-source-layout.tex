@@ -17,7 +17,6 @@ Source lives under \pathref{Illumo/Source/}. Package names describe
 \pathref{Rendering/} & Window, camera, drawables, scene, RHI-ish interfaces, OpenGL backend, Mock. \\
 \pathref{Services/} & Log, env vars, input, CLI (token UI), allocators, \symbolref{SaveLoad} API. \\
 \pathref{Foundation/} & Macros, build/sys info, math type aliases, small containers. \\
-\pathref{Assets/} & Asset loaders (e.g.\ TTF). \\
 \pathref{Platform/} & OS entry points + native dialogs / save-load. \\
 \pathref{Tests/} & Granular headless suite (\texttt{IllumoTests}): game/save-load, input/services, assets, mock backend, rules, canvas, UI tokens. \\
 \bottomrule
@@ -26,13 +25,16 @@ Source lives under \pathref{Illumo/Source/}. Package names describe
 
 \subsection{Related trees (not packages)}
 \begin{itemize}
-  \item \pathref{Illumo/Shader/} --- GLSL assets copied to the build tree
-        (\texttt{canvas\_*.glsl}, \texttt{triangle\_*.glsl}, UI shaders).
+  \item \pathref{Illumo/Shader/} --- GLSL assets copied to the build tree:
+        canvas, triangle, and UI shaders.
   \item \pathref{Illumo/Assets/} --- runtime files (fonts).
   \item \pathref{Illumo/thirdparty/} --- vendored deps (GLFW, GLEW, GLM, FreeType, Tracy, \ldots).
   \item \pathref{archive/} --- historical code (old State pattern, dead render stacks). Not built.
-  \item \pathref{docs/} --- all first-party documentation: current Markdown,
-        package maps, dated sessions, history, one LaTeX book, and generated output.
+  \item \pathref{docs/} --- canonical technical documentation: current
+        Markdown, package maps, dated sessions, history, a prose book, a
+        chart-only map, and generated output.
+  \item Root and nested \texttt{AGENTS.md} files plus \pathref{.agent/} ---
+        D-DOC2 operational exceptions, not technical-documentation owners.
 \end{itemize}
 
 \subsection{Naming landmine (Windows)}
