@@ -1,65 +1,67 @@
 # Illumo repository guidance
 
-This file is the durable bootstrap for Codex work in this repository. Use it at
-the start of every new task, then inspect the live files relevant to the request.
-Do not rely on chat history as the source of truth.
+This file is the durable project-wide operating contract for work in Illumo.
+Read the closest nested `AGENTS.md` before changing a subsystem. Use the live
+tree and canonical documentation for implementation detail; do not treat this
+file as an architecture catalog.
 
-## First five minutes
+## Project identity and boundaries
 
-1. Run `git status --short` and preserve all existing user changes.
-2. Read `README.md` for the current commands and
-   `docs/architecture-consensus.md` for the architecture and decision history.
-   Before substantive work, also read `docs/output/illumo.pdf` when it exists
-   and its contents are not already available in the task context. If it is
-   absent or stale, rebuild it first with `docs/build.ps1` rather than relying
-   on an older copy.
-3. Inspect the live implementation before repeating a documentation claim.
-   Code wins when code and docs disagree; update the docs in the same change
-   when behavior intentionally changes.
-4. Search the live tree narrowly. Exclude `build/`, `Illumo/thirdparty/`,
-   `archive/`, `Illumo/.agents/`, `Illumo/Source/.agents/`, and
-   `Illumo/Source/all.txt` unless the task specifically concerns generated,
-   vendored, historical, or prior-agent material.
-5. Keep the user's requested boundary. A review request does not authorize
-   fixes, cleanup, generated-file removal, or worktree normalization.
+Illumo is a C++23 cellular-automata learning sandbox with an engine-shaped
+modular-monolith shell. The supported production path is Windows, GLFW,
+OpenGL, and the sparse infinite canvas. It is not a general-purpose game
+engine.
 
-## What this project is
+Do not introduce an ECS, render graph, generalized scene graph, additional
+graphics backend, compute backend, or broad framework merely for architectural
+completeness. Preserve public behavior and formats by default. A change to
+subsystem boundaries, dependency direction, ownership, lifetime, threading,
+persistence, or public contracts requires explicit authorization and a design
+appropriate to its blast radius.
 
-Illumo is a C++23 cellular-automata learning sandbox with a small modular-monolith
-shell. It is an engine-shaped application, not a general-purpose game engine.
-Windows, OpenGL, GLFW, and the sparse infinite-canvas simulation are the current
-production path. Linux and macOS contain older port scaffolding and should not
-be assumed to compile or match Windows without fresh verification.
+## Sources of truth
 
-Near-term priorities are correctness, clarity, and useful CA behavior. Do not
-introduce an ECS, render graph, generalized scene graph, multiple graphics
-backends, or SYCL merely for architectural completeness.
+Inspect the applicable implementation, tests, CMake, and documentation before
+editing. Route detail to these canonical sources:
 
-## Current architecture
+- repository use and exact common commands: `README.md`;
+- current architecture and decision catalog: `docs/architecture-consensus.md`;
+- long-form design book and chart-only map: `docs/latex/illumo.tex` and
+  `docs/latex/architecture-map.tex`;
+- formal decisions: `docs/latex/sections/09-design-decision-log.tex`;
+- package ownership maps: `docs/packages/`;
+- coding and dependency policy: `docs/contributing.md`;
+- large-work planning: `.agent/PLANS.md`;
+- migration scaffolds, retained verbatim for reuse:
+  `.agent/reference/PROJECT_AGENTS_TEMPLATE.md` and
+  `.agent/reference/MIGRATION_GUIDE.md`.
 
-Runtime flow:
+Before substantive work, read `docs/output/illumo.pdf` when its content is not
+already available. When a task authorizes documentation writes and the PDF is
+absent or older than its LaTeX sources, rebuild it with `docs/build.ps1` first.
+A read-only task does not authorize regenerating it.
 
-```text
-Platform entry
-  -> App/CellMain                 product composition and main loop
-  -> Engine/Illumo                owns services and module lifetime
-  -> IModule implementations      CellGameModule; DebugModule in Debug builds
-  -> Game + Rulesets              CA state, editor, simulation
-  -> Rendering                    Scene list, Renderer, command tokens
-  -> IBackend                     CreateOpenGLBackend at Illumo::Init; MockBackend in tests
-```
+When code, tests, CMake, instructions, and documentation disagree, identify
+the conflict. The live implementation is current-state evidence, but do not
+silently bless unintended behavior; correct stale documentation in the same
+authorized change or report the mismatch.
 
-Ownership and lifecycle:
+## First steps and scope discipline
 
-- `CellMain` decides which modules ship. `Illumo` must not construct Game
-  modules.
-- `Illumo` owns long-lived services with `unique_ptr` and passes modules a
-  non-owning `IllumoContext` pointer bag.
-- Modules implement `Start`, `Update`, `DispatchDrawables`, and `Exit`.
-- `Scene` is a non-owning, ordered drawable list rebuilt every frame. It is not
-  a scene graph or ECS.
+1. Run `git status --short` and preserve every existing user change.
+2. Read `README.md`, `docs/architecture-consensus.md`, this file, and the
+   closest nested guidance.
+3. Search narrowly and inspect call sites, tests, configuration, ownership,
+   and error paths relevant to the request.
+4. Exclude generated, vendored, and historical trees unless the task concerns
+   them: `build*/`, `Illumo/thirdparty/`, `archive/`, LaTeX auxiliaries,
+   source dumps, ZIPs, and prior-agent records.
+5. Keep the requested boundary. Review and diagnosis do not authorize fixes;
+   preserve production code when the task is documentation-only.
 
-Rendering path:
+Use `.agent/PLANS.md` for medium, subsystem-scale, high-risk, migration, or
+architectural work. Keep design authority, writes, and integration with the
+lead agent; read-only subagents may supply bounded evidence.
 
 ```text
 Drawable::AppendCommands(Renderer*)
@@ -172,35 +174,26 @@ Ruleset truth:
 | Canonical architecture | `docs/architecture-consensus.md` |
 | Formal decisions | `docs/latex/sections/09-design-decision-log.tex` |
 
-## Build and verification
+## Build and verification commands
 
-From the repository root on Windows:
+Run from the repository root on Windows.
 
 ```powershell
 cmake -S Illumo -B build
 cmake --build build --config Release
+ctest --test-dir build -C Release -L Illumo --output-on-failure
 ```
 
-The default build compiles `IllumoTests.exe` and runs every granular `Illumo`
-CTest entry through the `IllumoRunTests` `ALL` target. A failing case must fail
-the build.
-When Windows PowerShell and `latexmk` are found at configure time, the same
-default build also runs `IllumoDocs` (`docs/build.ps1`) and writes
-`docs/output/illumo.pdf`. Configure with `-DILLUMO_BUILD_DOCUMENTATION=OFF` for
-a code-only machine.
-
-Focused test commands:
+Focused test work:
 
 ```powershell
 cmake --build build --config Release --target IllumoTests
-ctest --test-dir build -C Release -L Illumo --output-on-failure
 ctest --test-dir build -C Release -N -L Illumo
+build/Release/IllumoTests.exe --list
+build/Release/IllumoTests.exe --run <exact-test-name>
 ```
 
-`IllumoRenderTests` is a convenience CMake alias. The canonical executable is
-`build/Release/IllumoTests.exe` (or the matching active configuration). It
-supports `--list` and `--run <exact-name>`; CTest invokes one case per process
-with an isolated working directory.
+Clang/LLVM coverage:
 
 Headless tests cover typed/generational MockBackend resources,
 Renderer/token/style/asset flow, painter-correct primitives and animation, rulesets,
@@ -211,62 +204,117 @@ Clang/LLVM `IllumoCoverage` target, an 85% production-line gate, and an HTML
 report. They do not prove that the live OpenGL window, native dialogs, or
 non-Windows ports work. Run a proportional manual smoke test for those paths.
 
-## Change rules
+```powershell
+cmake -S Illumo -B build-coverage -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DILLUMO_BUILD_DOCUMENTATION=OFF -DILLUMO_ENABLE_COVERAGE=ON
+cmake --build build-coverage --target IllumoCoverage
+```
 
-- Follow `docs/contributing.md`: avoid `auto`, avoid namespaces, do not add
-  recursion, and do not add third-party dependencies without user approval.
-- **Run `clang-format`** on all modified files before finalizing tasks to conform to the Mozilla-based configuration.
-- **Enforce naming conventions** on new/modified code (Classes: `PascalCase`, Functions/Variables: `camelCase`, etc.). See `docs/contributing.md` for the full mapping.
-- Prefer explicit ownership and narrow dependencies.
-- Keep Game and Rulesets independent of raw OpenGL. Preserve the token-first
-  render boundary and MockBackend testability.
-- Do not grow `IllumoContext` casually. If a genuinely different third module
-  appears, prefer explicit constructor dependencies.
-- When adding a ruleset, update the factory/known-mode logic, console help and
-  validation, CMake source lists, palette behavior, and focused tests together.
-- Architecture changes require an update to
-  `docs/architecture-consensus.md`; closed decisions also require a new entry in
-  `docs/latex/sections/09-design-decision-log.tex`.
-- **Mandatory Pre-Completion Checklist**: Before declaring any task, feature, or behavior change complete, the agent MUST perform both steps in the same turn:
-  1. **Verification**: Execute `cmake --build build --config Release` and `ctest --test-dir build -C Release -L Illumo --output-on-failure`.
-  2. **Documentation Sync**: Update matching documentation files (`docs/architecture-consensus.md`, `docs/packages/*`, `docs/latex/sections/*`) in the exact same turn before presenting final completion to the user.
-- Edit LaTeX/Markdown sources, not generated `.aux`, `.fls`, `.fdb_latexmk`,
-  `.log`, `.toc`, PDF, source dumps, ZIPs, or build outputs unless the user
-  explicitly requests regenerated artifacts.
-- Update this `AGENTS.md` whenever build commands, canonical paths, or durable
-  architecture facts change.
+Documentation and formatting:
 
-## Known hazards; do not fix opportunistically
+```powershell
+./docs/build.ps1
+clang-format -i <modified-cpp-or-header-files>
+```
 
-Confirm each against the current tree before acting:
+The default build compiles `IllumoTests`, runs every granular `Illumo.*` CTest
+case through `IllumoRunTests`, and builds `IllumoDocs` when PowerShell and
+`latexmk` are available. Headless tests do not prove the live OpenGL window,
+native dialogs, or non-Windows ports. Use Debug or Release GUI smoke tests and
+sanitizers when the affected risk requires them. No repository-wide
+`clang-tidy` target is configured; use the compile database and report the
+exact checks and translation units when static analysis is requested.
 
-- A module whose `Start` returns early can still receive `Update` and
-  `DispatchDrawables`; the game path can then dereference a null `cellContext`.
-- Wireworld lacks a convenient head-placement brush, and startup still seeds a
-  Game-of-Life glider even in Wireworld mode.
+## Project-wide invariants
+
+- `App` owns product composition. `Engine/Illumo` owns long-lived services and
+  module lifetime; it must not construct product modules.
+- `IllumoContext` is a non-owning pointer bag frozen after engine startup.
+  Modules whose `Start` returns `false` are removed before update or draw.
+- Runtime window, input, module, rendering, and OpenGL work is main-thread
+  affine unless a documented subsystem contract explicitly provides workers.
+- Game and Rulesets do not issue raw OpenGL calls or depend on OpenGL types.
+- Production drawables append `RenderCommand` tokens to the backend-neutral
+  `Renderer`; `IBackend` executes them. Any pointer carried by a command must
+  remain valid until synchronous queue submission returns.
+- `Scene` is a non-owning ordered list rebuilt each frame, not a scene graph or
+  ECS. Rendering resource handles remain backend-neutral and registry-owned.
+- `SparseCellGrid` is the production domain: signed 64-bit coordinates,
+  non-background 16x16 sparse chunks, and non-toroidal evolution.
+  `CanvasView` is a bounded world-space presentation. Legacy `CellGrid` and
+  `Canvas` remain compatibility fixtures, not a second production path.
+- Save writes preserve sparse format version 2 and loads remain compatible
+  with both version 2 and the legacy dense format unless migration is
+  explicitly authorized.
+- Ruleset transitions and palettes must remain deterministic. Update factory
+  selection, known-mode validation, console help/completion, source lists, and
+  focused tests together when ruleset availability changes.
+- Windows is the only supported and currently verified platform. Linux and
+  macOS are stale bootstrap scaffolds and must not be described as supported
+  until they configure, compile, launch, and pass platform smoke tests.
+- Keep generic engine/services independent of game-domain policy. Keep raw
+  platform and OpenGL details behind their existing boundaries.
+- Do not add or replace a third-party dependency without user approval and a
+  licensing, maintenance, build, and deployment assessment.
 - `CommandQueue` reserves 2,048 commands, grows to a configurable 65,536
   default ceiling, and reports high-water/rejected counts. Do not remove the
   ceiling or hide rejection metrics.
-- Keep sources shared by `Illumo` and `IllumoTests` in `ILLUMO_SHARED_SOURCES`, and
-  put common target settings in `illumo_configure_target`; preserve target-only
-  behavior such as the application's Debug Tracy instrumentation.
-- Register each new logical behavior as its own exact `Illumo.<area>.<case>`
-  entry. Do not collapse new coverage back into one monolithic CTest result.
-- Keep `docs/packages/` maps synchronized with the canonical architecture; do not
-  let current-state summaries drift back to the archived R8-only or entity
-  scaffolding descriptions.
-- Keep general console commands in `CommandLine` and domain behavior registered
-  by `CellGameModule` through `CommandRegistry`; usage, descriptions, and argument
-  completion data belong with the registered command.
+- Product UI remains primitive-composed through `GameVisual`; do not introduce
+  a separate retained widget tree for the current console and labels.
 
-Treat `docs/current-issues.md` as a review snapshot, not a guarantee that every
-item remains open. Reproduce or inspect before fixing.
+## Code, documentation, and generated material
 
-## Generated and historical material
+Follow `docs/contributing.md`: avoid `auto`, namespaces, and recursion; use the
+documented names; run the Mozilla-based `clang-format` on every modified C++ or
+header file. Prefer explicit ownership and narrow dependencies. Owning types
+must define or delete copy/move operations deliberately.
 
-- `build/`, root `CMakeFiles/`, and `CMakeCache.txt`: generated configuration.
-- `Illumo/thirdparty/`: vendored dependencies; avoid broad searches and edits.
-- `archive/`: intentionally non-live experiments and analysis output.
-- `Illumo/.agents/` and `Illumo/Source/.agents/`: prior-agent working records.
-- `Illumo/Source/all.txt`, `Illumo/illumo_source.zip`, logs, and LaTeX auxiliaries:
-  snapshots or generated artifacts, never the implementation source of truth.
+Use comments for non-obvious intent and invariants. Put current architecture,
+workflows, rationale, and diagrams under `docs/`; cross-reference rather than
+duplicating long narratives in guidance. Architecture changes update
+`docs/architecture-consensus.md` and the matching LaTeX chapter. A closed
+decision also receives a new formal decision-log entry.
+
+Edit source inputs, not generated outputs: do not hand-edit CMake/build output,
+LaTeX auxiliaries, PDFs, source dumps, ZIPs, or copied runtime assets. Dated
+session records and superseded decisions are provenance; preserve them rather
+than rewriting history when current implementation changes.
+
+## Definition of done
+
+A change is complete only when its scope is reviewed for accidental edits and:
+
+- affected targets build and relevant exact tests pass;
+- behavior changes pass the full Release build and labeled CTest suite above;
+- configured formatting, analysis, sanitizer, coverage, benchmark, or manual
+  checks relevant to the risk pass, with environment and limitations reported;
+- new serious diagnostics are resolved and unrelated pre-existing failures are
+  recorded without opportunistic fixes;
+- matching canonical documentation is synchronized in the same change;
+- the final handoff states what was verified, what was not, and why.
+
+## Nested guidance
+
+Subsystem rules live in:
+
+- `Illumo/Source/App/AGENTS.md`, `Illumo/Source/Engine/AGENTS.md`, and
+  `Illumo/Source/Foundation/AGENTS.md`;
+- `Illumo/Source/Game/AGENTS.md` and `Illumo/Source/Rulesets/AGENTS.md`;
+- `Illumo/Source/Services/AGENTS.md` and `Illumo/Source/Tests/AGENTS.md`;
+- `Illumo/Source/Platform/AGENTS.md` plus
+  `Illumo/Source/Platform/Windows/AGENTS.md`,
+  `Illumo/Source/Platform/Linux/AGENTS.md`, and
+  `Illumo/Source/Platform/macOS/AGENTS.md`;
+- `Illumo/Source/Rendering/AGENTS.md` plus
+  `Illumo/Source/Rendering/OpenGL/AGENTS.md`,
+  `Illumo/Source/Rendering/Mock/AGENTS.md`, and
+  `Illumo/Source/Rendering/Primitives/AGENTS.md`.
+
+Child guidance specializes this file and does not weaken it.
+
+## Maintaining guidance
+
+Update this file or a nested `AGENTS.md` only when a task changes a durable
+invariant, convention, boundary, command, or required workflow. Do not use
+guidance as a class catalog, issue tracker, session log, or current-state
+architecture narrative. Preserve user-authored policy unless explicitly
+superseded.

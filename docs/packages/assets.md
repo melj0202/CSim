@@ -3,7 +3,8 @@
 `Illumo/Assets/` contains first-party runtime files copied beside the
 application. `Assets/RendererDemo/` contains the small Debug showcase atlas and
 its managed contract-compatible sprite shader; fonts retain their existing
-rendering path.
+rendering path through `GLString` / `GameVisual`, not a `Source/Assets`
+subsystem.
 
 `Rendering/AssetManager.*` owns managed file textures and shaders:
 

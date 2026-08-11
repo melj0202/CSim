@@ -59,24 +59,30 @@ From the repository root, run:
 \begin{lstlisting}[language={}]
 .\docs\build.ps1
 \end{lstlisting}
-The script creates \pathref{docs/output/} and builds
-\pathref{docs/output/illumo.pdf} from \pathref{docs/latex/illumo.tex}. On
-Windows, a normal all-target CMake build invokes this same script through
+The script creates \pathref{docs/output/} and builds two artifacts:
+\begin{itemize}
+  \item \texttt{illumo.pdf} from \pathref{docs/latex/illumo.tex};
+  \item \texttt{architecture-map.pdf} from
+        \pathref{docs/latex/architecture-map.tex}.
+\end{itemize}
+On Windows, a normal all-target CMake build invokes the same script through
 \texttt{IllumoDocs} when PowerShell and \texttt{latexmk} were found at configure
-time. Configure with \texttt{-DILLUMO\_BUILD\_}\allowbreak
-\texttt{DOCUMENTATION=OFF} to opt out.
+time. To opt out, configure with:
+\begin{lstlisting}[language={}]
+-DILLUMO_BUILD_DOCUMENTATION=OFF
+\end{lstlisting}
 
 \subsection{Known setup issues}
 \begin{itemize}
-  \item GLEW is pulled via \pathref{thirdparty/glew-2.1.0/build/cmake}; that
-        subtree must exist (do not delete vendored CMake helpers).
+  \item GLEW is built directly from
+        \pathref{Illumo/thirdparty/glew-2.1.0/src/glew.c}; the upstream
+        optional CMake subtree is not required.
   \item Debug may enable \texttt{/fsanitize=address}; requires a toolchain that
         supports MSVC ASan.
   \item FreeType may warn about missing optional system deps (HarfBuzz, zlib,
         PNG); build can still succeed with bundled defaults.
-  \item GLSL under \pathref{Illumo/Shader/} is copied to the build tree at
-        configure time; after adding shaders, reconfigure or copy into
-        \pathref{build/Shader/}.
+  \item GLSL under \pathref{Illumo/Shader/} is copied beside each application
+        and test executable by a post-build command.
 \end{itemize}
 
 \subsection{House style (CONTRIBUTING)}

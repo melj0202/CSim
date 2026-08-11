@@ -7,7 +7,7 @@ An improved version of a previous Game of Life program (OpenGL / GLFW).
 ```
 illumo/
   docs/                 # All first-party documentation and LaTeX sources
-    latex/              # One PDF entrypoint plus chapter sources
+    latex/              # Prose-book and chart-pack PDF entrypoints
     packages/           # Source-package maps formerly scattered by code
     sessions/           # Dated implementation and verification records
     history/            # Superseded/original material
@@ -20,7 +20,6 @@ illumo/
       Rendering/        # Graphics / backend interfaces
       Services/         # Log, input, env, CLI, allocators
       Foundation/       # Macros and shared helpers
-      Assets/           # Runtime asset data
       Platform/         # OS entry + native save/load
       Tests/
     Shader/             # GLSL shaders
@@ -36,8 +35,9 @@ under `docs/`. Start with:
 
 - `docs/README.md` — documentation map and PDF build commands
 - `docs/architecture-consensus.md` — canonical current architecture
-- `docs/latex/illumo.tex` — the only current LaTeX/PDF entrypoint
-- `docs/output/illumo.pdf` — generated locally; not a source of truth
+- `docs/latex/illumo.tex` — the canonical prose-book entrypoint
+- `docs/latex/architecture-map.tex` — the current chart-only entrypoint
+- `docs/output/*.pdf` — generated locally; never sources of truth
 
 **Current stack (short):** reusable 2D token renderer (`AppendCommands` →
 `IBackend`) with typed generational handles, painter-correct primitives,
@@ -49,7 +49,10 @@ per-target candidate-or-halo CA `nextState`, separate stored/counting masks,
 coarse parallel evaluation, recycled transactional chunk-map nodes,
 changed-region frontier stepping, cached 256x9 rule transitions and rolling-row
 halo counts, headless `IllumoTests` with
-`MockBackend`.
+`MockBackend`. `CanvasView` presents its bounded texture on a world-space
+`GameVisual` sprite. Windows is the supported runtime; Linux and macOS retain
+stale source/CMake scaffolding that is not currently buildable against the
+shared bootstrap API.
 
 **Architecture (single source for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — unified consensus (purpose, history of old plans, current renderer/sim truth, decisions, bugs, debt, work order).
 
@@ -85,7 +88,8 @@ ctest --test-dir build -C Release -N -L Illumo
 ```
 
 CTest registers one process-isolated entry per logical case. `IllumoTests.exe`
-is shared only to avoid recompiling the same production sources 80 times; use
+is shared only to avoid recompiling the same production sources for every
+case; use
 `IllumoTests.exe --list` to print the exact names. Each case gets its own
 working directory under `build/Testing/Illumo/`.
 

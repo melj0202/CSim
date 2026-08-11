@@ -15,6 +15,8 @@ Platform-independent application code lives here. OS-specific entry points and n
 | **Platform/** | Windows / Linux / macOS ports |
 | **Tests/** | Headless suite (`IllumoTests`): mock backend, rules, canvas, UI tokens |
 
-Historical / abandoned experiments live under `archive/` at the repo root and
-are not part of the build. This file and all other first-party package maps live
-under `docs/packages/`; source directories intentionally contain code only.
+Runtime fonts and related licensed files live under `Illumo/Assets/`; there is
+no `Illumo/Source/Assets/` package. Historical / abandoned experiments live
+under `archive/` at the repo root and are not part of the build. This file and
+all other first-party package maps live under `docs/packages/`; source
+directories contain implementation plus scoped operational `AGENTS.md` files.

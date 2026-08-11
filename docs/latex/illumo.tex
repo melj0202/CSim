@@ -99,7 +99,7 @@
   \large Architecture, decisions, and performance notes%
 }
 \author{Project author + collaborative development notes}
-\date{Started 2026-07-28 \quad (living document; current-state update 2026-08-04)}
+\date{Started 2026-07-28 \quad (living document; current-state update 2026-08-09)}
 
 \begin{document}
 \maketitle
@@ -110,14 +110,15 @@ what the code is doing today, why packages and abstractions exist, and how the
 \textbf{render command / token} path, cellular automata rules, and headless
 tests fit together.
 
-The token migration (Phases 1--6) and the performance ladder (dirty visual
-path, UI batching, double-buffer sim, RGB fade + dirty-rect PBO uploads) are reflected
+The token migration (Phases 1--6), sparse signed-coordinate simulation,
+bounded world-space CanvasView, adaptive CPU workers, RGB fade, and
+dirty-rectangle PBO uploads are reflected
 in the ``current state'' sections and the decision log. Sections marked as
-\emph{inferred} were reverse-engineered; correct them freely. Append new
-decisions rather than silently rewriting history. The 2026-08-04 session also
-records the Illumo product rename, advanced console/editor commands, save/load
-completion, fullscreen and caret fixes, Release/Debug packaging boundary, and
-the unified documentation tree.
+\emph{inferred} were reverse-engineered; correct them against live code. Append
+new decisions rather than silently rewriting history. D-DOC2 records the
+current split between canonical technical documentation under
+\pathref{docs/} and scoped operational guidance in
+\pathref{AGENTS.md}/\pathref{.agent/}.
 \end{abstract}
 
 \tableofcontents

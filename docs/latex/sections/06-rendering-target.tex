@@ -8,8 +8,8 @@ are kept for history; treat them as complete unless a status note says otherwise
 \begin{enumerate}
   \item \textbf{API isolation:} frame draw submission is via tokens; OpenGL
         execute path lives under \pathref{Rendering/OpenGL/}.
-  \item \textbf{Stable front-end:} modules contribute drawables; drawables emit
-        handles/uniforms/updates, not raw GL.
+  \item \textbf{Stable front-end:} modules contribute drawables, and drawables
+        emit render tokens instead of raw GL.
   \item \textbf{Record then execute:} per-frame command stream, single submit.
   \item \textbf{Resource handles:} non-convertible slot+generation values;
         backend registries map validated handles to GL objects (D-R16).
@@ -82,7 +82,10 @@ back to immediate \texttt{Draw}). GL objects live in backend registries, not on
 CanvasView end state (shipped):
 \begin{itemize}
   \item Domain: \texttt{SparseCellGrid}, signed coordinates, 16$\times$16
-        chunks, and adaptive candidate/18$\times$18 halo stepping.
+        chunks, retained candidate/frontier structures, and adaptive
+        candidate-or-18$\times$18-halo stepping. Large candidate and halo work
+        uses bounded reusable workers; discovery and transactional merge remain
+        deterministic.
   \item View: revision-gated camera sampling + RGB fade buffers + one
         nearest-filtered RGB display texture and one world-space quad. The
         quad and editor cursor share 16$\times$16 cell bounds at normal zoom;
@@ -130,5 +133,6 @@ CanvasView end state (shipped):
         the public boundary (D-R19).
   \item Second real graphics API (only if needed).
   \item GPU color fade without bringing back full-grid float RGB.
-  \item Linux/macOS parity with the Windows token path.
+  \item Restore Linux/macOS bootstrap compatibility and validate those ports
+        natively before changing their unsupported status.
 \end{itemize}

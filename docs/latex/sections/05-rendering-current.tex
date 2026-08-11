@@ -89,10 +89,14 @@ Shutdown cancels obsolete results and joins the worker before backend teardown.
         world-space quad aligned to the same 16$\times$16 cell bounds as the
         editor cursor, updated via at most one dirty-rect
         \texttt{UpdateTexture} token per submission (PBO path; optional
-        \texttt{srcRowStride}). Shaders:
-        \pathref{Shader/canvas\_vertex.glsl},
-        \pathref{Shader/canvas\_frag.glsl} --- sample \texttt{uDisplayTexture}.
-        History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
+        \texttt{srcRowStride}).
+  \item Shader/style: \symbolref{CanvasView} composes a world-space
+        \symbolref{GameVisual} sprite and therefore uses the Renderer-owned
+        inline \texttt{Sprite} style with sampler \texttt{uTexture}.
+        The file-backed \texttt{Canvas} style and
+        \pathref{Shader/canvas\_*.glsl} remain enrolled but have no production
+        CanvasView binding.
+  \item History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
         Fade was restored; dirty-rect PBO + bind-state tracker from that work
         remain. Canonical write-up:
         \pathref{docs/architecture-consensus.md} \S5.6.
@@ -113,8 +117,8 @@ counts. Rejection logs once per reset interval.
 including pipeline, bind, uniforms, \texttt{UpdateTexture}, \texttt{UpdateBuffer},
 clear, draw, and explicit enabled/disabled scissor state (D-R1).
 
-\symbolref{GLTexture::UpdateSubImage}: PBO ping-pong + dirty-rect packing;
-fallback to client \texttt{glTexSubImage2D} if map fails.
+Texture sub-image updates use PBO ping-pong and dirty-rect packing, with a
+client-memory \texttt{glTexSubImage2D} fallback when mapping fails.
 
 \symbolref{GLDevice}: bind-state tracker (skip redundant program/VAO/texture/
 viewport within a submit); uniform location cache; blend-func-on-enable (D-R5).
@@ -156,7 +160,8 @@ GPU context is required. The Clang/LLVM \texttt{IllumoCoverage} target enforces
         (D-R9).
   \item \pathref{RenderWindow} still uses GLEW for context create / viewport
         (window bootstrap, not frame submission).
-  \item Platform Linux/macOS render windows may still be older than the Windows path.
+  \item Windows is the supported live path. Linux and macOS bootstraps are
+        known stale against current App APIs and have no native validation.
   \item Font atlases/UTF-8 layout, tilemaps/particles, and offscreen compositing
         are follow-on features, not hidden scaffolding in the current renderer.
 \end{enumerate}

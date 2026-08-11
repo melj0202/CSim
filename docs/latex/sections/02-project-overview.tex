@@ -5,8 +5,9 @@
 Illumo is an interactive \textbf{cellular automata} (``cell'') simulator with a
 2D canvas, multiple rule sets (Game of Life, Brian's Brain, Wireworld, \ldots),
 camera navigation, edit/run modes, save/load hooks, and a small in-app command /
-debug surface. Rendering is currently OpenGL via GLFW/GLEW (with platform
-entry stubs for Linux/macOS).
+debug surface. Rendering is currently OpenGL via GLFW/GLEW on Windows. Linux
+and macOS retain unsupported source/CMake scaffolding whose entry points do not
+match the current shared bootstrap APIs.
 
 \begin{inferencebox}
 Historically this grew from a simpler GoL program into a mini engine shell
@@ -52,6 +53,7 @@ Confirm or rewrite. Draft non-goals:
   \item Not multiplayer / networking.
   \item Not a full ECS game engine (the unused entity scaffolding is archived,
         not part of the live path).
-  \item Perfect Linux/macOS parity is secondary to Windows correctness for now.
+  \item Restoring and validating Linux/macOS support is secondary to the
+        supported Windows path for now.
 \end{itemize}
 \end{openbox}
