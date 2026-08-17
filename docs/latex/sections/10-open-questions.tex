@@ -9,12 +9,13 @@ decision log when resolved.
   \item \sout{\textbf{Token payload:} flat struct vs variant vs byte stream?}
         \textbf{Resolved D-R1:} simple tagged union (C-style).
   \item \sout{\textbf{Handle type:} keep \texttt{unsigned long} \ldots?}
-        \textbf{Resolved D-R3:} \texttt{unsigned long} + registries for v1.
+        \textbf{Resolved D-R16:} typed slot+generation handles and registries.
   \item \sout{\textbf{Who emits tokens?} each drawable vs scene compiler?}
         \textbf{Resolved D-R2:} each drawable emits via \texttt{AppendCommands}.
-  \item \textbf{Resource ownership:} refcounts, generational handles, or
-        ``destroy only at shutdown'' for v1?
-        \emph{(Working answer D-R4: shutdown-only for v1.)}
+  \item \sout{\textbf{Resource ownership:} refcounts, generational handles, or
+        ``destroy only at shutdown''?}
+        \textbf{Resolved D-R16/D-R17:} generational backend resources plus
+        reference-counted managed texture/shader assets.
   \item \sout{\textbf{Scene graph leftovers?}}
         \textbf{Resolved D-E4:} drawable list only; SceneObject archived.
   \item \sout{\textbf{IllumoContext growth?}}
@@ -42,8 +43,9 @@ decision log when resolved.
 
   \item \textbf{Linux/macOS:} invest now or freeze until token GL path is solid
         on Windows?
-        \emph{(Working answer D-R4: freeze until Windows token path solid ---
-        Windows token path is solid; parity still open.)}
+        \emph{Current status: unsupported. Both selected entry points are stale
+        against current shared APIs; native build and smoke validation is
+        required before support can be claimed.}
   \item \textbf{Tracy:} always-on in Debug only --- any CI policy?
   \item \sout{\textbf{Tests:} first meaningful automated test?}
         \textbf{Resolved D-R7/D-R8:} \texttt{MockBackend} + \texttt{IllumoTests}
@@ -57,8 +59,8 @@ decision log when resolved.
         RGB dirty-rect upload (still float cost at large grids; D-C1 refined by D-C2).
   \item \sout{\textbf{Wireworld stub?}}
         \textbf{Implemented:} full rule + console \texttt{ruleset WIREWORLD}.
-        Rule 90 / 184 remain stubs. Product UX (head paint, seed) still open
-        --- see \pathref{docs/architecture-consensus.md} \S8.
+        Ruleset-aware startup seed and sticky head/tail/conductor brush are
+        also complete (D-WW1). Rule 90 / 184 remain identity stubs.
   \item \sout{\textbf{MacroDefs / Windows.h include toxicity?}}
         \textbf{Deferred D-F1:} fix only when it starts to cause problems.
 \end{enumerate}

@@ -14,21 +14,22 @@ Cross-cutting facilities used by Engine/Game/Rendering:
   \item \textbf{Input} --- \symbolref{InputManager}, \symbolref{InputContext},
         \symbolref{KeyCode}; action binding used by the game module.
         No Game types (D-E2).
-  \item \textbf{CLI} --- \symbolref{CommandLine} (token UI when open; batched
-        geometry), \symbolref{CommandRegistry}, \symbolref{SysCmdLine}.
-        Startup help/version and window/canvas dimension options are applied
-        before the render window is constructed.
+  \item \textbf{CLI} --- \symbolref{CommandLine} owns the token UI and batched
+        geometry. \symbolref{CommandRegistry} owns command metadata and
+        callbacks; \symbolref{SysCmdLine} handles startup options. Help,
+        version, and window/canvas dimensions are applied before window creation.
         General tooling stays in Services; \symbolref{CellGameModule} registers
         simulation/canvas/camera/save-load commands with usage, descriptions,
         and completion candidates. Editing includes selection, word movement and
         deletion, history, quoted arguments, measured caret placement, command
         chaining with \texttt{;}, alias macro management (\texttt{alias}/\texttt{unalias}),
         inline ghost-text auto-suggestions, dynamic parameter hints, and a
-        horizontally scrolling input viewport. History output word-wraps and
-        scrolls by visual line (shared floating-aware layout metrics for
-        PageUp/wheel/scrollbar and draw). The easy-font batch is sized for
-        8,000 UI quads so wrapped help pages are not truncated. The console is
-        Debug-only product composition (D-B1, D-CLI1, D-UI1--D-UI3).
+        horizontally scrolling input viewport. The current history draw path
+        truncates each entry to panel width and scrolls by raw history entries;
+        D-UI2's word-wrap and visual-line metrics are not currently
+        implemented. The easy-font batch is sized for 8,000 UI quads. The
+        console is Debug-only product composition
+        (D-B1, D-CLI1, D-UI1--D-UI3).
   \item \textbf{Allocators} --- pool/arena/debug allocators (experimental /
         learning surface; not all wired into the hot path).
   \item \textbf{SaveLoad API} --- pure declarations; OS dialogs implemented
@@ -49,16 +50,24 @@ narrower header.
 \end{statusbox}
 
 \subsection{Platform}
-Thin ports:
+Thin platform sources:
 \begin{itemize}
-  \item Windows: \pathref{WinMain.cpp}, \pathref{WinSaveLoad.cpp}
+  \item Windows: \pathref{WinMain.cpp}, \pathref{WinSaveLoad.cpp} ---
+        supported and currently verified.
   \item Linux: \pathref{\_main.cpp}, \pathref{LinuxSaveLoad.cpp}
-        (GTK pieces may be legacy relative to GLFW-centered shared code)
+        --- unsupported stale scaffold; the entry references removed shared
+        bootstrap APIs.
   \item macOS: \pathref{Main.cpp}, \pathref{MacSaveLoad.mm}
+        --- unsupported stale scaffold; the entry references removed APIs and
+        CMake does not enable Objective-C++ for the selected \texttt{.mm} file.
 \end{itemize}
 
-Contract: bootstrap $\rightarrow$ call \symbolref{CellMain} $\rightarrow$ implement
-\symbolref{SaveLoad::GetLoadLocation} / \symbolref{GetSaveLocation}.
+Contract: bootstrap $\rightarrow$ call \symbolref{CellMain}. Each port also
+implements the native load-location and save-location functions in
+\symbolref{SaveLoad}.
+Source presence and CMake selection do not establish support; Linux/macOS
+require native configure, build, tests, rendering/input, dialogs, and shutdown
+validation.
 
 \subsection{Third-party}
 Vendored under \pathref{Illumo/thirdparty/}. Policy from \pathref{docs/contributing.md}:

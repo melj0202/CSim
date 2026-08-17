@@ -29,6 +29,7 @@ public:
   }
 
   unsigned long GetID() const override { return _programID; }
+  bool isValid() const override { return _valid && _programID != 0; }
 
   void Destroy() override
   {
@@ -36,9 +37,11 @@ public:
       glDeleteProgram(_programID);
       _programID = 0;
     }
+    _valid = false;
   }
 
 private:
+  bool _valid = false;
   std::string ReadFile(const std::string& filePath)
   {
     std::ifstream file(filePath);
@@ -71,6 +74,16 @@ private:
   {
     unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexSource);
     unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentSource);
+    if (vs == 0 || fs == 0) {
+      if (vs != 0) {
+        glDeleteShader(vs);
+      }
+      if (fs != 0) {
+        glDeleteShader(fs);
+      }
+      _valid = false;
+      return;
+    }
 
     _programID = glCreateProgram();
     glAttachShader(_programID, vs);
@@ -87,6 +100,11 @@ private:
       glGetProgramInfoLog(_programID, length, &length, message.data());
       std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
                 << message.data() << std::endl;
+      glDeleteProgram(_programID);
+      _programID = 0;
+      _valid = false;
+    } else {
+      _valid = true;
     }
 
     // Clean up intermediate shader objects

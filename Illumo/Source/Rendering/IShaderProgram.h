@@ -28,6 +28,7 @@ public:
   virtual void CompileAndLink(const ShaderPaths& paths) = 0;
   virtual void Destroy() = 0;
   virtual unsigned long GetID() const = 0;
+  virtual bool isValid() const = 0;
 
 protected:
   unsigned int _programID;

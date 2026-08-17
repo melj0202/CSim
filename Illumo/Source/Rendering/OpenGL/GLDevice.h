@@ -9,19 +9,36 @@
 #include "Rendering/CommandQueue.h"
 #include "Rendering/HWInfo.h"
 #include "Rendering/PipelineState.h"
+#include "Rendering/ResourceHandle.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
 
-// Registries owned by GLBackend; opaque handles are keys into these maps.
+struct GLMeshResourceEntry
+{
+  uint32_t generation = 0;
+  std::unique_ptr<GLMesh> resource;
+};
+
+struct GLShaderResourceEntry
+{
+  uint32_t generation = 0;
+  std::unique_ptr<GLShaderProgram> resource;
+};
+
+struct GLTextureResourceEntry
+{
+  uint32_t generation = 0;
+  std::unique_ptr<GLTexture> resource;
+};
+
+// Registries owned by GLBackend; typed handles resolve by slot and generation.
 struct GLResourceTables
 {
-  const std::unordered_map<unsigned long, std::unique_ptr<GLMesh>>* meshes =
+  const std::unordered_map<uint32_t, GLMeshResourceEntry>* meshes = nullptr;
+  const std::unordered_map<uint32_t, GLShaderResourceEntry>* programs = nullptr;
+  const std::unordered_map<uint32_t, GLTextureResourceEntry>* textures =
     nullptr;
-  const std::unordered_map<unsigned long, std::unique_ptr<GLShaderProgram>>*
-    programs = nullptr;
-  const std::unordered_map<unsigned long, std::unique_ptr<GLTexture>>*
-    textures = nullptr;
 };
 
 class GLDevice
@@ -120,48 +137,48 @@ private:
     return loc;
   }
 
-  GLMesh* resolveMesh(const GLResourceTables& tables,
-                      unsigned long handle) const
+  GLMesh* resolveMesh(const GLResourceTables& tables, MeshHandle handle) const
   {
     if (!tables.meshes) {
       return nullptr;
     }
-    std::unordered_map<unsigned long, std::unique_ptr<GLMesh>>::const_iterator
-      it = tables.meshes->find(handle);
-    if (it == tables.meshes->end()) {
+    std::unordered_map<uint32_t, GLMeshResourceEntry>::const_iterator it =
+      tables.meshes->find(handle.slot);
+    if (it == tables.meshes->end() ||
+        it->second.generation != handle.generation) {
       return nullptr;
     }
-    return it->second.get();
+    return it->second.resource.get();
   }
 
   GLShaderProgram* resolveProgram(const GLResourceTables& tables,
-                                  unsigned long handle) const
+                                  ShaderHandle handle) const
   {
     if (!tables.programs) {
       return nullptr;
     }
-    std::unordered_map<unsigned long,
-                       std::unique_ptr<GLShaderProgram>>::const_iterator it =
-      tables.programs->find(handle);
-    if (it == tables.programs->end()) {
+    std::unordered_map<uint32_t, GLShaderResourceEntry>::const_iterator it =
+      tables.programs->find(handle.slot);
+    if (it == tables.programs->end() ||
+        it->second.generation != handle.generation) {
       return nullptr;
     }
-    return it->second.get();
+    return it->second.resource.get();
   }
 
   GLTexture* resolveTexture(const GLResourceTables& tables,
-                            unsigned long handle) const
+                            TextureHandle handle) const
   {
     if (!tables.textures) {
       return nullptr;
     }
-    std::unordered_map<unsigned long,
-                       std::unique_ptr<GLTexture>>::const_iterator it =
-      tables.textures->find(handle);
-    if (it == tables.textures->end()) {
+    std::unordered_map<uint32_t, GLTextureResourceEntry>::const_iterator it =
+      tables.textures->find(handle.slot);
+    if (it == tables.textures->end() ||
+        it->second.generation != handle.generation) {
       return nullptr;
     }
-    return it->second.get();
+    return it->second.resource.get();
   }
 
 public:

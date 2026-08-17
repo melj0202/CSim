@@ -166,6 +166,9 @@ Illumo::Render()
   }
 
   if (renderer) {
+    if (assetManager) {
+      assetManager->pump();
+    }
     renderer->BeginFrame();
     {
       ZoneScopedN("Illumo.RenderScene");

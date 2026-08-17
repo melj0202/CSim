@@ -105,7 +105,7 @@ private:
   float fadeSpeed;
 
   GameVisual visual;
-  unsigned long displayTextureHandle;
+  TextureHandle displayTextureHandle{};
   bool gpuReady;
   float worldWidth;
   float worldHeight;

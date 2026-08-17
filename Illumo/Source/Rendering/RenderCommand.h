@@ -1,7 +1,8 @@
 #pragma once
 #include "PipelineState.h"
+#include "ResourceHandle.h"
 
-// Opaque backend registry IDs (not raw GL object names). See D-R3.
+// Opaque, typed, generational backend handles (never raw GL object names).
 // Data pointers in update payloads must remain valid until SubmitCommandQueue
 // returns.
 
@@ -10,15 +11,12 @@ enum class CommandType
   // Pipeline / raster state
   SetPipelineState,
   SetViewport,
-  SetScissor,
+  SetScissorState,
 
-  // Resource bindings (handles are table IDs)
+  // Resource bindings
   SetShader,
   SetMesh,
-  SetVertexBuffer,
-  SetIndexBuffer,
   SetTexture,
-  SetUniformBuffer,
 
   // Uniforms
   SetUniformInt,
@@ -30,20 +28,17 @@ enum class CommandType
   UpdateTexture,
   UpdateBuffer,
 
-  // Render targets / clear
-  BeginRenderPass,
+  // Clear
   ClearScreen,
   ClearDepthBuffer,
   ClearColorBuffer,
   ClearStencilBuffer,
   ClearAll,
-  EndRenderPass,
 
   // Draw
   Draw,
   DrawIndexed,
   DrawInstanced,
-  DrawBatched,
 };
 
 struct CmdClearColor
@@ -64,15 +59,26 @@ struct CmdViewport
 
 struct CmdScissor
 {
+  bool enabled;
   int x;
   int y;
   int width;
   int height;
 };
 
-struct CmdBindHandle
+struct CmdBindMesh
 {
-  unsigned long handle;
+  MeshHandle handle;
+};
+
+struct CmdBindShader
+{
+  ShaderHandle handle;
+};
+
+struct CmdBindTexture
+{
+  TextureHandle handle;
   unsigned int slot;
 };
 
@@ -124,7 +130,7 @@ struct CmdDrawInstanced
 
 struct CmdUpdateTexture
 {
-  unsigned long handle;
+  TextureHandle handle;
   int x;
   int y;
   int width;
@@ -141,13 +147,13 @@ struct CmdUpdateTexture
 
 struct CmdUpdateBuffer
 {
-  unsigned long handle;
+  MeshHandle handle;
   unsigned int offsetBytes;
   unsigned int sizeBytes;
   const void* data;
 };
 
-// Tagged-union command token (D-R1). Trivially copyable for ArrayQueue.
+// Tagged-union command token. Trivially copyable for the vector queue.
 struct RenderCommand
 {
   CommandType commandType = CommandType::ClearScreen;
@@ -160,7 +166,9 @@ struct RenderCommand
     CmdClearColor clear;
     CmdViewport viewport;
     CmdScissor scissor;
-    CmdBindHandle bind;
+    CmdBindMesh bindMesh;
+    CmdBindShader bindShader;
+    CmdBindTexture bindTexture;
     CmdUniformInt uniformInt;
     CmdUniformFloat uniformFloat;
     CmdUniformVec2 uniformVec2;

@@ -2,6 +2,7 @@
 #include "IRenderWindow.h"
 #include "Logger.h"
 #include "Renderer.h"
+#include "thirdparty/stb/stb_easy_font.h"
 
 GLString::GLString()
   : content("")
@@ -73,8 +74,49 @@ GLString::syncVisual()
                      static_cast<unsigned char>(g),
                      static_cast<unsigned char>(b),
                      static_cast<unsigned char>(a) };
-    visual.addText(
-      content, static_cast<float>(x), static_cast<float>(y), size_pt, color);
+    float textX = static_cast<float>(x);
+    float textY = static_cast<float>(y);
+    if (panelStyle.enabled) {
+      std::string measuredContent = content;
+      const float scale = size_pt / 12.0f;
+      const float textWidth =
+        static_cast<float>(stb_easy_font_width(measuredContent.data())) * scale;
+      const float textHeight =
+        static_cast<float>(stb_easy_font_height(measuredContent.data())) *
+        scale;
+      const float accentGap = panelStyle.accentWidth + 7.0f;
+      const float panelX = textX;
+      const float panelY = textY;
+      const float panelW = panelStyle.paddingX * 2.0f + accentGap + textWidth;
+      const float panelH = panelStyle.paddingY * 2.0f + textHeight;
+      const unsigned char opacity = static_cast<unsigned char>(a);
+
+      visual.addFilledRect(panelX + panelStyle.shadowOffset,
+                           panelY + panelStyle.shadowOffset,
+                           panelW,
+                           panelH,
+                           UiTheme::applyOpacity(panelStyle.shadow, opacity));
+      visual.addFilledRect(
+        panelX,
+        panelY,
+        panelW,
+        panelH,
+        UiTheme::applyOpacity(panelStyle.background, opacity));
+      visual.addOutlineRect(panelX,
+                            panelY,
+                            panelW,
+                            panelH,
+                            UiTheme::applyOpacity(panelStyle.border, opacity),
+                            panelStyle.borderWidth);
+      visual.addFilledRect(panelX,
+                           panelY,
+                           panelStyle.accentWidth,
+                           panelH,
+                           UiTheme::applyOpacity(panelStyle.accent, opacity));
+      textX += panelStyle.paddingX + accentGap;
+      textY += panelStyle.paddingY;
+    }
+    visual.addText(content, textX, textY, size_pt, color);
   }
   contentDirty = false;
 }
@@ -144,6 +186,20 @@ GLString::setY(int newY)
     y = newY;
     markContentDirty();
   }
+}
+
+void
+GLString::setPanelStyle(const UiPanelStyle& style)
+{
+  panelStyle = style;
+  markContentDirty();
+}
+
+void
+GLString::clearPanelStyle()
+{
+  panelStyle = UiPanelStyle{};
+  markContentDirty();
 }
 
 std::string

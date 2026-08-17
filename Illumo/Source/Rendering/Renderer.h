@@ -6,27 +6,15 @@
 #include "IShaderProgram.h"
 #include "RenderCommand.h"
 #include "RenderLayerId.h"
-#include "RenderPass.h"
 #include "RenderStyle.h"
+#include "ResourceHandlePool.h"
 #include "Scene.h"
 #include "Services/ArenaAlloc.h"
 #include <array>
 #include <cstring>
 #include <memory>
+#include <unordered_map>
 #include <vector>
-
-struct FrameBuffer
-{
-  unsigned int id = 0;
-  unsigned int width = 0;
-  unsigned int height = 0;
-};
-
-struct Uniform
-{
-  std::string name;
-  unsigned int location = 0;
-};
 
 class Renderer
 {
@@ -39,22 +27,22 @@ private:
   Camera* _camera;
   EnvVars* envVars;
   Scene* currentScene;
-  std::vector<PipelineState> pipelineStates;
-  std::vector<RenderPass> renderPasses;
-  std::vector<FrameBuffer> frameBuffers;
-  std::vector<Uniform> uniforms;
-
-  // Built-in render styles (shader handle + pipeline defaults). GPU programs
-  // still live in the backend registry; Renderer owns the style table (D-R14).
-  std::array<RenderStyle, static_cast<size_t>(RenderStyleId::Count)> _styles{};
+  struct RenderStyleEntry
+  {
+    uint32_t generation = 0;
+    RenderStyle style;
+  };
+  std::unordered_map<uint32_t, RenderStyleEntry> styleRegistry;
+  ResourceHandlePool<RenderStyleHandle> styleHandles;
+  std::array<RenderStyleHandle, static_cast<size_t>(RenderStyleId::Count)>
+    builtinStyleHandles{};
   bool _builtinStylesReady = false;
 
-  // Phase 1 proof-quad resources (handles are table IDs)
+  // Proof-quad resources.
   bool _proofReady = false;
-  unsigned long _proofMeshHandle = 0;
-  unsigned long _proofShaderHandle = 0;
-  unsigned long _proofTextureHandle = 0;
-  unsigned long _nextHandleId = 1;
+  MeshHandle _proofMeshHandle{};
+  ShaderHandle _proofShaderHandle{};
+  TextureHandle _proofTextureHandle{};
 
   // Per-frame scratch (immediate-draw pointer list, etc.). Cleared at the
   // start of RenderScene and again after submission so token payload pointers
@@ -130,129 +118,127 @@ public:
   // Asset enrollment (not mixed into the per-frame token stream — D-007)
   // =========================================================================
 
-  unsigned long enrollShader(const ShaderPaths& paths, unsigned long tableID)
+  ShaderHandle enrollShader(const ShaderPaths& paths)
   {
-    return _backend->CreateShaderProgram(paths, tableID);
+    return _backend->CreateShaderProgram(paths);
   }
 
-  unsigned long enrollShader(const ShaderSources& sources,
-                             unsigned long tableID)
+  ShaderHandle enrollShader(const ShaderSources& sources)
   {
-    return _backend->CreateShaderProgram(sources, tableID);
+    return _backend->CreateShaderProgram(sources);
   }
 
-  unsigned long enrollMesh(const void* vertices,
-                           const size_t verticesSize,
-                           const void* indices,
-                           const size_t indicesSize,
-                           unsigned long tableID)
+  MeshHandle enrollMesh(const void* vertices,
+                        const size_t verticesSize,
+                        const void* indices,
+                        const size_t indicesSize)
+  {
+    return _backend->CreateMesh(vertices, verticesSize, indices, indicesSize);
+  }
+
+  MeshHandle enrollMesh(const void* vertices,
+                        const size_t verticesSize,
+                        const void* indices,
+                        const size_t indicesSize,
+                        MeshVertexLayout layout,
+                        bool dynamic)
   {
     return _backend->CreateMesh(
-      vertices, verticesSize, indices, indicesSize, tableID);
-  }
-
-  unsigned long enrollMesh(const void* vertices,
-                           const size_t verticesSize,
-                           const void* indices,
-                           const size_t indicesSize,
-                           unsigned long tableID,
-                           MeshVertexLayout layout,
-                           bool dynamic)
-  {
-    return _backend->CreateMesh(
-      vertices, verticesSize, indices, indicesSize, tableID, layout, dynamic);
+      vertices, verticesSize, indices, indicesSize, layout, dynamic);
   }
 
   // Dynamic VBO (capacityBytes) + static index buffer; for UI text/console.
-  unsigned long enrollDynamicMesh(size_t vertexCapacityBytes,
-                                  const void* indices,
-                                  size_t indicesSize,
-                                  unsigned long tableID,
-                                  MeshVertexLayout layout)
+  MeshHandle enrollDynamicMesh(size_t vertexCapacityBytes,
+                               const void* indices,
+                               size_t indicesSize,
+                               MeshVertexLayout layout)
   {
-    return _backend->CreateMesh(nullptr,
-                                vertexCapacityBytes,
-                                indices,
-                                indicesSize,
-                                tableID,
-                                layout,
-                                true);
+    return _backend->CreateMesh(
+      nullptr, vertexCapacityBytes, indices, indicesSize, layout, true);
   }
 
-  unsigned long enrollMesh(std::string filePath, unsigned long tableID)
+  bool replaceDynamicMesh(MeshHandle handle,
+                          size_t vertexCapacityBytes,
+                          const void* indices,
+                          size_t indicesSize,
+                          MeshVertexLayout layout)
   {
-    return _backend->CreateMesh(filePath, tableID);
+    return _backend->ReplaceMesh(
+      handle, nullptr, vertexCapacityBytes, indices, indicesSize, layout, true);
   }
 
-  unsigned long enrollTexture(const std::string& filePath,
-                              unsigned long tableID)
+  bool destroyMesh(MeshHandle handle) { return _backend->DestroyMesh(handle); }
+
+  TextureHandle enrollTexture(const unsigned char* data,
+                              const int width,
+                              const int height)
   {
-    return _backend->CreateTexture(filePath, tableID);
+    return _backend->CreateTexture(data, width, height);
   }
 
-  unsigned long enrollTexture(const unsigned char* data,
+  TextureHandle enrollTexture(const unsigned char* data,
                               const int width,
                               const int height,
-                              unsigned long tableID)
+                              int channels)
   {
-    return _backend->CreateTexture(data, width, height, tableID);
+    TextureOptions options;
+    return _backend->CreateTexture(data, width, height, channels, options);
   }
 
-  unsigned long enrollTexture(const unsigned char* data,
-                              const int width,
-                              const int height,
-                              int channels,
-                              unsigned long tableID)
-  {
-    return _backend->CreateTexture(data, width, height, channels, tableID);
-  }
-
-  unsigned long enrollTexture(const unsigned char* data,
+  TextureHandle enrollTexture(const unsigned char* data,
                               const int width,
                               const int height,
                               int channels,
-                              unsigned long tableID,
-                              TextureFilter filter)
+                              const TextureOptions& options)
   {
-    return _backend->CreateTexture(
-      data, width, height, channels, tableID, filter);
+    return _backend->CreateTexture(data, width, height, channels, options);
   }
 
-  void releaseTexture(unsigned long tableID)
+  bool replaceTexture(TextureHandle handle,
+                      const unsigned char* data,
+                      int width,
+                      int height,
+                      int channels,
+                      const TextureOptions& options)
   {
-    if (_backend != nullptr && tableID != 0) {
-      _backend->DestroyTexture(tableID);
-    }
+    return _backend->ReplaceTexture(
+      handle, data, width, height, channels, options);
   }
 
-  // Opaque table IDs for enroll* (v1: monotonic, never recycled).
-  unsigned long allocateHandle() { return _nextHandleId++; }
+  bool replaceShader(ShaderHandle handle, const ShaderSources& sources)
+  {
+    return _backend->ReplaceShaderProgram(handle, sources);
+  }
+
+  bool destroyTexture(TextureHandle handle)
+  {
+    return _backend->DestroyTexture(handle);
+  }
+
+  bool destroyShader(ShaderHandle handle)
+  {
+    return _backend->DestroyShaderProgram(handle);
+  }
+
+  TextureInfo getTextureInfo(TextureHandle handle) const
+  {
+    return _backend->GetTextureInfo(handle);
+  }
 
   // Built-in styles: enroll shaders once; bind emits pipeline + SetShader.
   // Implemented in RendererStyles.cpp.
   void ensureBuiltinStyles();
+  RenderStyleHandle createStyle(const RenderStyle& style);
+  bool updateStyle(RenderStyleHandle handle, const RenderStyle& style);
+  bool destroyStyle(RenderStyleHandle handle);
+  const RenderStyle* getStyle(RenderStyleHandle handle) const;
+  RenderStyle* getStyle(RenderStyleHandle handle);
+  bool bindStyle(RenderStyleHandle handle);
+  RenderStyleHandle getBuiltinStyleHandle(RenderStyleId id) const;
   const RenderStyle* getStyle(RenderStyleId id) const;
   RenderStyle* getStyle(RenderStyleId id);
   bool bindStyle(RenderStyleId id);
   bool builtinStylesReady() const { return _builtinStylesReady; }
-
-  unsigned long enrollRenderPass(const RenderPass& renderPass)
-  {
-    renderPasses.push_back(renderPass);
-    return renderPasses.size() - 1;
-  }
-
-  unsigned long enrollFrameBuffer(const FrameBuffer& frameBuffer)
-  {
-    frameBuffers.push_back(frameBuffer);
-    return frameBuffers.size() - 1;
-  }
-
-  unsigned long enrollUniform(const Uniform& uniform)
-  {
-    uniforms.push_back(uniform);
-    return uniforms.size() - 1;
-  }
 
   // =========================================================================
   // Frame lifecycle
@@ -320,30 +306,28 @@ public:
     _backend->PushToCommandQueue(cmd);
   }
 
-  void pushSetShader(unsigned long handle)
+  void pushSetShader(ShaderHandle handle)
   {
     RenderCommand cmd;
     cmd.commandType = CommandType::SetShader;
-    cmd.bind.handle = handle;
-    cmd.bind.slot = 0;
+    cmd.bindShader.handle = handle;
     _backend->PushToCommandQueue(cmd);
   }
 
-  void pushSetMesh(unsigned long handle)
+  void pushSetMesh(MeshHandle handle)
   {
     RenderCommand cmd;
     cmd.commandType = CommandType::SetMesh;
-    cmd.bind.handle = handle;
-    cmd.bind.slot = 0;
+    cmd.bindMesh.handle = handle;
     _backend->PushToCommandQueue(cmd);
   }
 
-  void pushSetTexture(unsigned long handle, unsigned int slot)
+  void pushSetTexture(TextureHandle handle, unsigned int slot)
   {
     RenderCommand cmd;
     cmd.commandType = CommandType::SetTexture;
-    cmd.bind.handle = handle;
-    cmd.bind.slot = slot;
+    cmd.bindTexture.handle = handle;
+    cmd.bindTexture.slot = slot;
     _backend->PushToCommandQueue(cmd);
   }
 
@@ -395,7 +379,19 @@ public:
     _backend->PushToCommandQueue(cmd);
   }
 
-  void pushUpdateTexture(unsigned long handle,
+  void pushScissor(bool enabled, int x, int y, int width, int height)
+  {
+    RenderCommand cmd;
+    cmd.commandType = CommandType::SetScissorState;
+    cmd.scissor.enabled = enabled;
+    cmd.scissor.x = x;
+    cmd.scissor.y = y;
+    cmd.scissor.width = width;
+    cmd.scissor.height = height;
+    _backend->PushToCommandQueue(cmd);
+  }
+
+  void pushUpdateTexture(TextureHandle handle,
                          int x,
                          int y,
                          int width,
@@ -417,7 +413,7 @@ public:
     _backend->PushToCommandQueue(cmd);
   }
 
-  void pushUpdateBuffer(unsigned long meshHandle,
+  void pushUpdateBuffer(MeshHandle meshHandle,
                         unsigned int offsetBytes,
                         unsigned int sizeBytes,
                         const void* data)
@@ -522,15 +518,13 @@ public:
     };
     const unsigned int indices[6] = { 0, 1, 2, 0, 2, 3 };
 
-    _proofMeshHandle = allocateHandle();
-    enrollMesh(
-      verts, sizeof(verts), indices, sizeof(indices), _proofMeshHandle);
+    _proofMeshHandle =
+      enrollMesh(verts, sizeof(verts), indices, sizeof(indices));
 
     ShaderPaths paths;
     paths.vertexPath = "Shader/triangle_vertex.glsl";
     paths.fragmentPath = "Shader/triangle_frag.glsl";
-    _proofShaderHandle = allocateHandle();
-    enrollShader(paths, _proofShaderHandle);
+    _proofShaderHandle = enrollShader(paths);
 
     // 2x2 RGBA checkerboard (magenta / dark)
     const int tw = 2;
@@ -538,8 +532,7 @@ public:
     unsigned char tex[2 * 2 * 4] = {
       255, 0, 255, 255, 40, 40, 40, 255, 40, 40, 40, 255, 255, 0, 255, 255,
     };
-    _proofTextureHandle = allocateHandle();
-    enrollTexture(tex, tw, th, 4, _proofTextureHandle);
+    _proofTextureHandle = enrollTexture(tex, tw, th, 4);
 
     _proofReady = true;
   }

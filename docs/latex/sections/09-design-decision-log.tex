@@ -122,6 +122,7 @@ registries (\texttt{tableID} $\rightarrow$ GL object). Strong typedefs deferred.
 \textbf{Why:} Minimal churn; critical fix is resolve-on-submit, not type names.\\
 \textbf{Consequences:} Execute must never treat handles as raw GLuints without
 registry lookup.
+\textbf{Status:} Historical v1 decision; superseded by D-R16.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -132,7 +133,7 @@ routing $\rightarrow$ Canvas $\rightarrow$ UI drawables $\rightarrow$ cleanup).
 Phase 6 (mock backend) included; second real GPU API still optional.\\
 \textbf{Why:} Playable strangler path to API isolation without big-bang rewrite.\\
 \textbf{Also freeze for v1:} destroy resources at shutdown only; Windows GL is
-primary platform.\\
+primary platform. The lifetime clause is superseded by D-R16/D-R17.\\
 \textbf{Superseded in part by D-P1/D-P4:} full-frame Canvas rewrite was v1 only.
 Dirty-rect/PBO uploads remain, while the R8 presentation was later superseded
 by the restored RGB fade path documented in D-P4.
@@ -403,8 +404,8 @@ GPU targets:
   \item Production drawables keep content handles (mesh/texture/domain data)
         and call \texttt{bindStyle} before content tokens.
 \end{itemize}
-Layers are not the same as \symbolref{RenderPass} (targets/load-store). A
-layer may later feed multiple passes if targets diverge; that is deferred.\\
+Layers are not GPU target/load-store passes. Unimplemented pass scaffolding is
+removed; explicit offscreen targets remain deferred.\\
 \textbf{Why:} World/UI/debug stacking and shared draw policy should not live
 as duplicated per-drawable shader enrollment and ad-hoc pipeline structs.\\
 \textbf{Consequences:} \pathref{RenderLayerId.h}, \pathref{RenderStyle.h},
@@ -432,6 +433,95 @@ as duplicated per-drawable shader enrollment and ad-hoc pipeline structs.\\
 and matches D-R14 style ownership.\\
 \textbf{Consequences:} \pathref{Rendering/Primitives/}; headless tests
 \texttt{Illumo.GameVisual.*}; Canvas/UI paths unchanged.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R16 --- Typed resource lifetime and bounded command growth}
+\begin{decisionbox}[title={D-R16 \quad 2026-08-09}]
+\textbf{Decision:} Replace raw renderer IDs with non-convertible
+\texttt{MeshHandle}, \texttt{ShaderHandle}, \texttt{TextureHandle}, and
+\texttt{RenderStyleHandle} values containing slot and generation. Backends
+allocate handles and validate replace, destroy, validity, metadata, and command
+resolution. Stale operations warn and safely no-op. Replace the fixed token
+array with vector storage that reserves 2,048, grows as needed, and rejects only
+at a configurable 65,536 default ceiling while reporting high-water and
+rejection counts. Scissor state is explicitly enabled or disabled.\\
+\textbf{Why:} Reusable rendering needs safe lifetime, hot replacement, and
+realistic frame growth without silent corruption or unbounded memory.\\
+\textbf{Consequences:} D-R3 and the fixed-capacity part of D-R12 are
+superseded. Unimplemented command/pass scaffolding is removed. OpenGL and Mock
+implement the same lifecycle contract.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R17 --- Managed texture and shader assets}
+\begin{decisionbox}[title={D-R17 \quad 2026-08-09}]
+\textbf{Decision:} \symbolref{AssetManager} caches file textures by canonical
+path plus options and shaders by canonical path pair. Duplicate acquisition
+increments a reference count; final release destroys the backend resource.
+Async is default, synchronous loading is available for startup/tests, one owned
+worker performs file read/decode, and render-thread \texttt{pump} performs GPU
+replacement. Stable fallbacks cover pending/failed initial loads. Failed reload
+keeps the last good object. Debug polls timestamps every 500\,ms; all builds
+retain explicit reload.\\
+\textbf{Why:} Future 2D projects need deterministic resource ownership and live
+iteration without compiling or mutating GPU objects from a worker.\\
+\textbf{Consequences:} Managed scope is textures and shaders only. Dynamic quad
+meshes stay renderer-owned; font atlases, model import, and general 3D meshes
+remain outside this milestone.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R18 --- Painter-correct 2D primitive stream}
+\begin{decisionbox}[title={D-R18 \quad 2026-08-09}]
+\textbf{Decision:} Give \symbolref{GameVisual} one stable ordered stream across
+shape, sprite, and text values. Integer draw order is followed by insertion
+sequence; only adjacent compatible items batch. Parent/local
+\texttt{Transform2D}, normalized pivots, atlas regions, flips, and centered
+sprite helpers are supported without a hierarchy. Dynamic quad buffers begin at
+1,024, double, and stop at a configurable 65,536 default ceiling.
+\symbolref{SpriteAnimator} is caller-updated and exposes only current visual
+state with Once, Loop, and PingPong modes.\\
+\textbf{Why:} Global texture sorting breaks overlapping alpha composition, and
+animation time inside submission makes rendering nondeterministic.\\
+\textbf{Consequences:} Top-left behavior remains the default $(0,0)$ pivot;
+rendering observes state and never owns gameplay time.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R19 --- Product proof before renderer extraction}
+\begin{decisionbox}[title={D-R19 \quad 2026-08-09}]
+\textbf{Decision:} Illumo is a cellular-automata application with a reusable 2D
+renderer, not a general engine. A Debug-only first-party atlas and managed
+sprite-shader showcase plus
+\texttt{renderer\_demo}/\texttt{assets}/\texttt{asset\_reload} commands prove
+the foundation in the product. Extract a standalone library only when a second
+real project proves the required public boundary.\\
+\textbf{Why:} A real consumer reveals the useful boundary better than detached
+ECS, scene-graph, render-graph, or multi-backend scaffolding.\\
+\textbf{Consequences:} Release composition remains unchanged. Follow-on work is
+font/UI layout, tilemaps/culling/particles, then offscreen composition as actual
+projects require.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-R20 --- Primitive-composed product UI}
+\begin{decisionbox}[title={D-R20 \quad 2026-08-09}]
+\textbf{Decision:} Build Illumo's existing UI drawables from
+\symbolref{GameVisual} shape and text primitives. Keep
+\symbolref{CommandLine} as the owner of console layout and interaction, retain
+\symbolref{GLString}'s geometry cache while allowing optional panel chrome, and
+use that decorated-label path for Debug FPS and fading EDIT/NORMAL notices.
+Share colors and compact panel metrics through value-only \texttt{UiTheme}; do
+not introduce a retained widget tree, layout engine, or additional render pass.\\
+\textbf{Why:} The renderer foundation should prove useful composition in the
+real product, and the console, FPS, and mode notice need one coherent visual
+language without increasing Scene traffic or creating a second UI architecture.\\
+\textbf{Consequences:} Console chrome now uses fills, outline rectangles, and
+line primitives instead of a bespoke packed-quad aesthetic. Decorated labels
+compose shadow, surface, border, accent, and text in one adjacent batch. Existing
+editing, floating-window, fading, Scene-layer, and Debug/Release ownership
+boundaries remain unchanged; headless tests assert the primitive composition.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -595,6 +685,8 @@ acceptable on the production frame path. One log per overflowing frame is
 visible without spamming every discarded command.\\
 \textbf{Consequences:} Callers can query drop counters in tests; capacity
 changes require profiling evidence, not opportunistic growth.
+\textbf{Status:} Fixed-capacity policy superseded by bounded vector growth in
+D-R16; one-warning and rejection-metric intent remains.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -1340,6 +1432,33 @@ pan/zoom run at 144\,Hz measured 6.94/7.00/8.10\,ms frame-start p50/p95/max in
 the refill window and only six refills across 36,892 frames.\
 \textbf{Refines:} D-P26 publication, D-P30 source-linked preparation, D-P31
 direct sparse output, and D-P32 paced presentation.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-DOC2 --- Technical documentation and operational guidance}
+\begin{decisionbox}[title={D-DOC2 \quad 2026-08-09}]
+\textbf{Decision:} Keep canonical technical documentation under
+\pathref{docs/}: current Markdown, package maps, dated records, provenance,
+LaTeX sources, and generated PDF output. Treat \pathref{latex/illumo.tex} as
+the canonical prose-book entrypoint and \pathref{latex/architecture-map.tex}
+as the current chart-only entrypoint; \pathref{docs/build.ps1} builds both.
+Permit root and nested \pathref{AGENTS.md} files plus \pathref{.agent/} as
+operational-guidance exceptions. They define durable engineering rules,
+planning protocol, and reusable guidance scaffolds, but do not own current
+architecture narration.\\
+\textbf{Why:} One technical-documentation tree still gives implementation and
+decision prose a discoverable source of truth, while scoped agent guidance must
+sit where instruction inheritance applies. Treating those operational files as
+ordinary architecture prose either hides local rules or duplicates the design
+book. The chart pack is also a deliberate second generated view rather than a
+competing prose book.\\
+\textbf{Consequences:} Root guidance contains project-wide commands and
+invariants; nested guidance contains only durable local specializations. Active
+guidance has no template placeholders and links back to canonical documents.
+Long-form architecture, current file maps, rationale, and dated history remain
+under \pathref{docs/}. Generated PDFs remain outputs, not sources.\\
+\textbf{Refines:} D-DOC1's single-tree and single-entrypoint wording without
+rewriting its historical record.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------

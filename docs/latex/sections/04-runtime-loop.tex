@@ -35,7 +35,7 @@ service locator library). Modules are closer to subsystems than ECS systems.
 \begin{lstlisting}
 class IModule {
 public:
-  virtual void Start(IllumoContext* context) = 0;
+  virtual bool Start(IllumoContext* context) = 0;
   virtual void Update(double dt) = 0;
   virtual void DispatchDrawables(Scene* scene) = 0;
   virtual void Exit() = 0;
@@ -43,11 +43,16 @@ public:
 \end{lstlisting}
 
 \begin{itemize}
-  \item \textbf{Start} --- bind inputs, allocate game state.
+  \item \textbf{Start} --- bind inputs and allocate game state; return
+        \texttt{false} if required context or initialization is unavailable.
   \item \textbf{Update} --- simulation / input.
   \item \textbf{DispatchDrawables} --- contribute what should draw this frame.
   \item \textbf{Exit} --- teardown module-owned state.
 \end{itemize}
+
+\symbolref{Illumo::StartModules} erases a module whose \texttt{Start} returns
+false. Only successfully started modules receive later \texttt{Update},
+\texttt{DispatchDrawables}, and \texttt{Exit} calls.
 
 Registered modules today (from \symbolref{CellMain} product composition):
 \begin{itemize}

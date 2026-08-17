@@ -3,6 +3,19 @@
 void
 SplashText::Wake()
 {
+  if (getContent() == "EDIT") {
+    const ColorRgba color = UiTheme::warning();
+    setR(color.r);
+    setG(color.g);
+    setB(color.b);
+    setPanelStyle(UiTheme::noticePanel(color));
+  } else if (getContent() == "NORMAL") {
+    const ColorRgba color = UiTheme::accent();
+    setR(color.r);
+    setG(color.g);
+    setB(color.b);
+    setPanelStyle(UiTheme::noticePanel(color));
+  }
   setVisible(true);
   setA(255);
   startTime = std::chrono::high_resolution_clock::now();

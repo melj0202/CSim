@@ -3,14 +3,68 @@
 #include "Rendering/Camera.h"
 #include "Rendering/Mock/MockBackend.h"
 #include "Rendering/Primitives/GameVisual.h"
+#include "Rendering/Primitives/SpriteAnimation.h"
 #include "Rendering/Renderer.h"
 #include "Rendering/Scene.h"
 #include "Services/EnvVars.h"
 #include "Tests/TestHarness.h"
 #include "Tests/TestHelpers.h"
 #include "Tests/TestRegistry.h"
+#include <cmath>
 
 static TestCounters g;
+
+struct CapturedSpriteVertex
+{
+  float x;
+  float y;
+  float z;
+  unsigned char r;
+  unsigned char green;
+  unsigned char b;
+  unsigned char a;
+  float u;
+  float v;
+};
+
+static bool
+nearFloat(float left, float right)
+{
+  return std::abs(left - right) < 0.0001f;
+}
+
+static const RenderCommand*
+findSubmittedCommand(const MockBackend& mock, CommandType type, size_t ordinal)
+{
+  size_t found = 0;
+  for (size_t i = 0; i < mock.getLastNonEmptySubmittedCount(); ++i) {
+    const RenderCommand& command = mock.getLastNonEmptySubmitted(i);
+    if (command.commandType == type) {
+      if (found == ordinal) {
+        return &command;
+      }
+      found += 1;
+    }
+  }
+  return nullptr;
+}
+
+static size_t
+submittedCommandPosition(const MockBackend& mock,
+                         CommandType type,
+                         size_t ordinal)
+{
+  size_t found = 0;
+  for (size_t i = 0; i < mock.getLastNonEmptySubmittedCount(); ++i) {
+    if (mock.getLastNonEmptySubmittedType(i) == type) {
+      if (found == ordinal) {
+        return i;
+      }
+      found += 1;
+    }
+  }
+  return mock.getLastNonEmptySubmittedCount();
+}
 
 static void
 testGameVisualShapesEmitTokens()
@@ -82,24 +136,24 @@ testGameVisualSpritesBatchByTexture()
   Renderer renderer(&window, &env, &camera, &mock, false);
 
   // Enroll two textures as content handles (owner side).
-  unsigned long texA = renderer.allocateHandle();
-  unsigned long texB = renderer.allocateHandle();
   unsigned char px[4] = { 255, 255, 255, 255 };
-  renderer.enrollTexture(px, 1, 1, 4, texA);
-  renderer.enrollTexture(px, 1, 1, 4, texB);
+  TextureHandle textureA = renderer.enrollTexture(px, 1, 1, 4);
+  TextureHandle textureB = renderer.enrollTexture(px, 1, 1, 4);
 
   GameVisual visual;
   visual.setWindow(&window);
   visual.prepare(&renderer);
 
   ColorRgba white{ 255, 255, 255, 255 };
-  // Interleave textures so sort-by-handle is required for clean batches.
-  visual.addSprite(texB, 0.0f, 0.0f, 16.0f, 16.0f, white);
-  visual.addSprite(texA, 20.0f, 0.0f, 16.0f, 16.0f, white);
-  visual.addSprite(texB, 40.0f, 0.0f, 16.0f, 16.0f, white);
-  visual.addSprite(texA, 60.0f, 0.0f, 16.0f, 16.0f, white);
+  // Interleave textures. Painter order is preserved, so no global texture
+  // sort may combine these non-adjacent sprites.
+  visual.addSprite(textureB, 0.0f, 0.0f, 16.0f, 16.0f, white);
+  visual.addSprite(textureA, 20.0f, 0.0f, 16.0f, 16.0f, white);
+  visual.addSprite(textureA, 40.0f, 0.0f, 16.0f, 16.0f, white);
+  visual.addSprite(textureB, 60.0f, 0.0f, 16.0f, 16.0f, white);
+  visual.addSprite(textureA, 80.0f, 0.0f, 16.0f, 16.0f, white);
 
-  testEqSize(g, visual.spriteCount(), 4u, "four sprites stored");
+  testEqSize(g, visual.spriteCount(), 5u, "five sprites stored");
   testTrue(
     g, renderer.getStyle(RenderStyleId::Sprite) != nullptr, "Sprite style");
 
@@ -115,15 +169,16 @@ testGameVisualSpritesBatchByTexture()
              mock.countNonEmptyOfType(CommandType::UpdateBuffer),
              1u,
              "one sprite buffer upload");
-  // Two texture groups → two SetTexture + two DrawIndexed (sorted A then B).
+  // B, A+A, B, A remains four batches: adjacent A sprites combine, while a
+  // global texture sort would incorrectly combine non-adjacent runs.
   testEqSize(g,
              mock.countNonEmptyOfType(CommandType::SetTexture),
-             2u,
-             "two texture binds after sort");
+             4u,
+             "four adjacent texture runs bind independently");
   testEqSize(g,
              mock.countNonEmptyOfType(CommandType::DrawIndexed),
-             2u,
-             "two sprite draw batches");
+             4u,
+             "four painter-correct sprite draw batches");
 }
 
 static void
@@ -225,6 +280,250 @@ testGameVisualEmptyAndInvisible()
              "invisible emits no draw");
 }
 
+static void
+testGameVisualTransformAndAtlas()
+{
+  testSection("GameVisual: pivot rotation, atlas UVs, and flips");
+  NullRenderWindow window(320, 240);
+  EnvVars env;
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  MockBackend mock;
+  mock.Initialize();
+  Renderer renderer(&window, &env, &camera, &mock, false);
+  unsigned char pixels[4] = { 255, 255, 255, 255 };
+  TextureHandle texture = renderer.enrollTexture(pixels, 1, 1, 4);
+
+  GameVisual visual;
+  visual.setWindow(&window);
+  visual.prepare(&renderer);
+  TextureRegion region = TextureRegion::gridCell(4, 2, 2, 1);
+  size_t index =
+    visual.addSprite(texture, Rect2{ 10.0f, 20.0f, 20.0f, 10.0f }, region);
+  SpritePrimitive* sprite = visual.getSprite(index);
+  sprite->transform.x = 3.0f;
+  sprite->transform.y = 4.0f;
+  sprite->transform.scaleX = 2.0f;
+  sprite->transform.pivotX = 0.5f;
+  sprite->transform.pivotY = 0.5f;
+  sprite->transform.rotationRadians = 1.57079632679f;
+  sprite->flipX = true;
+  sprite->flipY = true;
+  Transform2D hostTransform;
+  hostTransform.x = 5.0f;
+  hostTransform.y = 7.0f;
+  visual.setTransform(hostTransform);
+
+  mock.resetCounters();
+  visual.AppendCommands(&renderer);
+  renderer.EndFrame();
+  const RenderCommand* update =
+    findSubmittedCommand(mock, CommandType::UpdateBuffer, 0);
+  testTrue(g, update != nullptr, "sprite vertices are uploaded");
+  if (update != nullptr) {
+    const CapturedSpriteVertex* vertices =
+      static_cast<const CapturedSpriteVertex*>(update->updateBuffer.data);
+    testTrue(g,
+             nearFloat(vertices[0].x, 33.0f) && nearFloat(vertices[0].y, 16.0f),
+             "local scale/position and parent translation transform corner");
+    testTrue(g,
+             nearFloat(vertices[2].x, 23.0f) && nearFloat(vertices[2].y, 56.0f),
+             "center pivot rotation transforms the opposite corner");
+    testTrue(g,
+             nearFloat(vertices[0].u, 0.75f) && nearFloat(vertices[0].v, 1.0f),
+             "grid region and both flips map the first UV");
+    testTrue(g,
+             nearFloat(vertices[2].u, 0.5f) && nearFloat(vertices[2].v, 0.5f),
+             "grid region and both flips map the opposite UV");
+  }
+}
+
+static void
+testGameVisualDynamicCapacity()
+{
+  testSection("GameVisual: dynamic quad growth and safety limit");
+  NullRenderWindow window(320, 240);
+  EnvVars env;
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  MockBackend mock;
+  mock.Initialize();
+  Renderer renderer(&window, &env, &camera, &mock, false);
+  ColorRgba color{ 255, 255, 255, 255 };
+
+  GameVisual growing;
+  growing.prepare(&renderer);
+  for (unsigned int i = 0; i < 1025; ++i) {
+    growing.addFilledRect(static_cast<float>(i), 0.0f, 1.0f, 1.0f, color);
+  }
+  growing.AppendCommands(&renderer);
+  renderer.EndFrame();
+  testEqInt(g,
+            static_cast<int>(growing.getQuadCapacity()),
+            2048,
+            "capacity doubles from 1024 to 2048");
+
+  GameVisual capped(1024);
+  capped.prepare(&renderer);
+  for (unsigned int i = 0; i < 1025; ++i) {
+    capped.addFilledRect(static_cast<float>(i), 2.0f, 1.0f, 1.0f, color);
+  }
+  mock.resetCounters();
+  capped.AppendCommands(&renderer);
+  renderer.EndFrame();
+  const RenderCommand* draw =
+    findSubmittedCommand(mock, CommandType::DrawIndexed, 0);
+  testTrue(g, draw != nullptr, "capped visual still draws accepted quads");
+  if (draw != nullptr) {
+    testEqInt(g,
+              static_cast<int>(draw->drawIndexed.elementCount),
+              1024 * 6,
+              "safety limit rejects geometry beyond configured maximum");
+  }
+}
+
+static void
+testGameVisualCrossTypeOrder()
+{
+  testSection("GameVisual: stable cross-type draw order");
+  NullRenderWindow window(320, 240);
+  EnvVars env;
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  MockBackend mock;
+  mock.Initialize();
+  Renderer renderer(&window, &env, &camera, &mock, false);
+  unsigned char pixels[4] = { 255, 255, 255, 255 };
+  TextureHandle texture = renderer.enrollTexture(pixels, 1, 1, 4);
+  GameVisual visual;
+  visual.prepare(&renderer);
+  size_t shapeIndex =
+    visual.addFilledRect(0.0f, 0.0f, 32.0f, 32.0f, ColorRgba{ 255, 0, 0, 180 });
+  size_t spriteIndex = visual.addSprite(
+    texture, 8.0f, 8.0f, 32.0f, 32.0f, ColorRgba{ 255, 255, 255, 180 });
+  visual.getShape(shapeIndex)->drawOrder = 0;
+  visual.getSprite(spriteIndex)->drawOrder = 0;
+
+  mock.resetCounters();
+  visual.AppendCommands(&renderer);
+  renderer.EndFrame();
+  size_t firstDraw =
+    submittedCommandPosition(mock, CommandType::DrawIndexed, 0);
+  size_t firstTexture =
+    submittedCommandPosition(mock, CommandType::SetTexture, 0);
+  testTrue(g,
+           firstDraw < firstTexture,
+           "equal order preserves shape-before-sprite insertion sequence");
+
+  visual.getSprite(spriteIndex)->drawOrder = -1;
+  mock.resetCounters();
+  visual.AppendCommands(&renderer);
+  renderer.EndFrame();
+  firstDraw = submittedCommandPosition(mock, CommandType::DrawIndexed, 0);
+  firstTexture = submittedCommandPosition(mock, CommandType::SetTexture, 0);
+  testTrue(g,
+           firstTexture < firstDraw,
+           "explicit sprite order moves it before the shape");
+}
+
+static SpriteAnimationClip
+makeAnimationClip(SpriteLoopMode mode)
+{
+  SpriteAnimationClip clip;
+  clip.loopMode = mode;
+  for (unsigned int i = 0; i < 3; ++i) {
+    SpriteAnimationFrame frame;
+    frame.region = TextureRegion::gridCell(4, 1, i, 0);
+    frame.durationSeconds = 0.1;
+    clip.frames.push_back(frame);
+  }
+  return clip;
+}
+
+static void
+testSpriteAnimationModes()
+{
+  testSection("SpriteAnimator: once, loop, ping-pong, pause, and reset");
+  SpriteAnimationClip onceClip = makeAnimationClip(SpriteLoopMode::Once);
+  SpriteAnimator once;
+  once.setClip(&onceClip);
+  once.update(0.31);
+  testEqSize(g, once.getFrameIndex(), 2u, "once stops on final frame");
+  testTrue(g, !once.isPlaying(), "once mode pauses at completion");
+
+  SpriteAnimationClip loopClip = makeAnimationClip(SpriteLoopMode::Loop);
+  SpriteAnimator loop;
+  loop.setClip(&loopClip);
+  loop.update(0.31);
+  testEqSize(g, loop.getFrameIndex(), 0u, "loop wraps to first frame");
+  loop.pause();
+  loop.update(1.0);
+  testEqSize(g, loop.getFrameIndex(), 0u, "paused animator does not advance");
+  loop.play();
+  loop.update(0.11);
+  testEqSize(g, loop.getFrameIndex(), 1u, "play resumes advancement");
+  loop.reset();
+  testEqSize(g, loop.getFrameIndex(), 0u, "reset restores first frame");
+
+  SpriteAnimationClip pingPongClip =
+    makeAnimationClip(SpriteLoopMode::PingPong);
+  SpriteAnimator pingPong;
+  pingPong.setClip(&pingPongClip);
+  pingPong.update(0.11);
+  testEqSize(g, pingPong.getFrameIndex(), 1u, "ping-pong advances");
+  pingPong.update(0.11);
+  testEqSize(g, pingPong.getFrameIndex(), 2u, "ping-pong reaches end");
+  pingPong.update(0.11);
+  testEqSize(g, pingPong.getFrameIndex(), 1u, "ping-pong reverses");
+  pingPong.update(0.11);
+  testEqSize(g, pingPong.getFrameIndex(), 0u, "ping-pong reaches start");
+  testTrue(g,
+           nearFloat(pingPong.currentRegion().u0, 0.0f),
+           "current region follows frame index");
+}
+
+static void
+testCustomStyleRegistry()
+{
+  testSection("Renderer: custom 2D style registry lifecycle");
+  NullRenderWindow window(320, 240);
+  EnvVars env;
+  Camera camera(glm::vec2(0.0f, 0.0f), 1.0f, &env);
+  MockBackend mock;
+  mock.Initialize();
+  Renderer renderer(&window, &env, &camera, &mock, false);
+  GameVisual visual;
+  visual.prepare(&renderer);
+
+  ShaderSources sources;
+  sources.vertexSource = "custom vertex";
+  sources.fragmentSource = "custom fragment";
+  ShaderHandle shader = renderer.enrollShader(sources);
+  RenderStyle style = *renderer.getStyle(RenderStyleId::Sprite);
+  style.shaderHandle = shader;
+  RenderStyleHandle styleHandle = renderer.createStyle(style);
+  testTrue(g, styleHandle.isValid(), "custom style gets typed handle");
+
+  unsigned char pixels[4] = { 255, 255, 255, 255 };
+  TextureHandle texture = renderer.enrollTexture(pixels, 1, 1, 4);
+  size_t spriteIndex =
+    visual.addSprite(texture, 0.0f, 0.0f, 16.0f, 16.0f, ColorRgba{});
+  visual.getSprite(spriteIndex)->styleHandle = styleHandle;
+  mock.resetCounters();
+  visual.AppendCommands(&renderer);
+  renderer.EndFrame();
+
+  const RenderCommand* shaderBind =
+    findSubmittedCommand(mock, CommandType::SetShader, 0);
+  testTrue(g,
+           shaderBind != nullptr && shaderBind->bindShader.handle == shader,
+           "primitive binds custom style shader through normal contract");
+  testTrue(g, renderer.destroyStyle(styleHandle), "custom style destroys");
+  testTrue(g,
+           renderer.getStyle(styleHandle) == nullptr,
+           "destroyed style handle is stale");
+  testTrue(g,
+           !renderer.destroyStyle(styleHandle),
+           "stale style destroy safely no-ops");
+}
+
 static int
 runGameVisualCase(void (*testFunction)())
 {
@@ -250,4 +549,17 @@ registerGameVisualTests(IllumoTestRegistry& registry)
   registry.add("Illumo.GameVisual.EmptyAndInvisible", []() {
     return runGameVisualCase(testGameVisualEmptyAndInvisible);
   });
+  registry.add("Illumo.GameVisual.TransformAndAtlas", []() {
+    return runGameVisualCase(testGameVisualTransformAndAtlas);
+  });
+  registry.add("Illumo.GameVisual.DynamicCapacity", []() {
+    return runGameVisualCase(testGameVisualDynamicCapacity);
+  });
+  registry.add("Illumo.GameVisual.CrossTypeOrder", []() {
+    return runGameVisualCase(testGameVisualCrossTypeOrder);
+  });
+  registry.add("Illumo.GameVisual.AnimationModes",
+               []() { return runGameVisualCase(testSpriteAnimationModes); });
+  registry.add("Illumo.GameVisual.CustomStyleRegistry",
+               []() { return runGameVisualCase(testCustomStyleRegistry); });
 }

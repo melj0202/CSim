@@ -105,16 +105,26 @@ GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue,
         }
         break;
 
-      case CommandType::SetScissor:
-        glEnable(GL_SCISSOR_TEST);
-        glScissor(
-          cmd.scissor.x, cmd.scissor.y, cmd.scissor.width, cmd.scissor.height);
+      case CommandType::SetScissorState:
+        if (cmd.scissor.enabled) {
+          glEnable(GL_SCISSOR_TEST);
+          glScissor(cmd.scissor.x,
+                    cmd.scissor.y,
+                    cmd.scissor.width,
+                    cmd.scissor.height);
+        } else {
+          glDisable(GL_SCISSOR_TEST);
+        }
         break;
 
       case CommandType::SetShader: {
-        GLShaderProgram* program = resolveProgram(tables, cmd.bind.handle);
+        GLShaderProgram* program =
+          resolveProgram(tables, cmd.bindShader.handle);
         if (!program) {
           Logger::LogWarning("SetShader: unknown shader handle");
+          glUseProgram(0);
+          _boundProgram = 0;
+          _activeProgram = 0;
           break;
         }
         GLuint id = static_cast<GLuint>(program->GetID());
@@ -127,9 +137,11 @@ GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue,
       }
 
       case CommandType::SetMesh: {
-        GLMesh* mesh = resolveMesh(tables, cmd.bind.handle);
+        GLMesh* mesh = resolveMesh(tables, cmd.bindMesh.handle);
         if (!mesh) {
           Logger::LogWarning("SetMesh: unknown mesh handle");
+          glBindVertexArray(0);
+          _boundVao = 0;
           break;
         }
         const GLuint vao = mesh->getVAOID();
@@ -140,32 +152,13 @@ GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue,
         break;
       }
 
-      case CommandType::SetVertexBuffer: {
-        // Legacy: bind VBO from mesh handle (prefer SetMesh).
-        GLMesh* mesh = resolveMesh(tables, cmd.bind.handle);
-        if (!mesh) {
-          break;
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->getVBOID());
-        break;
-      }
-
-      case CommandType::SetIndexBuffer: {
-        GLMesh* mesh = resolveMesh(tables, cmd.bind.handle);
-        if (!mesh) {
-          break;
-        }
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBOID());
-        break;
-      }
-
       case CommandType::SetTexture: {
-        GLTexture* texture = resolveTexture(tables, cmd.bind.handle);
+        GLTexture* texture = resolveTexture(tables, cmd.bindTexture.handle);
         if (!texture) {
           Logger::LogWarning("SetTexture: unknown texture handle");
           break;
         }
-        const unsigned int slot = cmd.bind.slot;
+        const unsigned int slot = cmd.bindTexture.slot;
         const GLuint texId = static_cast<GLuint>(texture->getID());
         if (slot < 8 && _boundTexture[slot] == texId) {
           break;
@@ -262,6 +255,10 @@ GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue,
         break;
 
       case CommandType::Draw: {
+        if (_activeProgram == 0 || _boundVao == 0) {
+          Logger::LogWarning("Draw: missing valid shader or mesh; ignored");
+          break;
+        }
         GLenum mode = mapPrimitives(_currentGLState.primitives);
         glDrawArrays(mode,
                      static_cast<GLint>(cmd.draw.first),
@@ -270,6 +267,11 @@ GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue,
       }
 
       case CommandType::DrawIndexed: {
+        if (_activeProgram == 0 || _boundVao == 0) {
+          Logger::LogWarning(
+            "DrawIndexed: missing valid shader or mesh; ignored");
+          break;
+        }
         GLenum mode = mapPrimitives(_currentGLState.primitives);
         const void* offset = reinterpret_cast<const void*>(
           static_cast<uintptr_t>(cmd.drawIndexed.firstIndex) *
@@ -282,6 +284,11 @@ GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue,
       }
 
       case CommandType::DrawInstanced: {
+        if (_activeProgram == 0 || _boundVao == 0) {
+          Logger::LogWarning(
+            "DrawInstanced: missing valid shader or mesh; ignored");
+          break;
+        }
         GLenum mode = mapPrimitives(_currentGLState.primitives);
         glDrawArraysInstanced(
           mode,
@@ -302,13 +309,6 @@ GLDevice::ExecuteCommandQueue(CommandQueue& commandQueue,
                                cmd.updateBuffer.offsetBytes);
         break;
       }
-
-      case CommandType::DrawBatched:
-      case CommandType::SetUniformBuffer:
-      case CommandType::BeginRenderPass:
-      case CommandType::EndRenderPass:
-        // Not implemented yet.
-        break;
 
       default:
         break;

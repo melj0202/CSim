@@ -138,5 +138,6 @@ vendored dependency notes stay beside the assets they govern.
   \item Make the startup seed ruleset-aware.
   \item Add an ergonomic Wireworld head/tail mouse brush.
   \item Keep native-dialog smoke coverage proportional to platform changes.
-  \item Define an explicit policy for the fixed 2,048-command queue capacity.
+  \item The command queue now reserves 2,048, grows to a configurable 65,536
+        default ceiling, and reports high-water/rejection metrics (D-R16).
 \end{enumerate}

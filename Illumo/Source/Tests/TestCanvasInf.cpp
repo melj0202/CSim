@@ -1554,7 +1554,9 @@ testTextureCapacityAndLifecycle()
   mock.Initialize();
   Renderer renderer(&window, &env, &camera, &mock, false);
   SparseCellGrid grid;
-  unsigned long textureHandle = 0;
+  std::uint32_t textureSlot = 0u;
+  std::uint32_t textureGeneration = 0u;
+  std::size_t replacementCount = 0u;
 
   {
     CanvasView view(80, 60, &grid, &window, &camera, &renderer);
@@ -1566,8 +1568,8 @@ testTextureCapacityAndLifecycle()
     const std::size_t grownTextureCreates = countTextureCreates(mock);
     testEqSize(g,
                grownTextureCreates,
-               initialTextureCreates + 1u,
-               "first capacity growth replaces the display texture once");
+               initialTextureCreates,
+               "capacity growth retains one typed display texture handle");
     testEqInt(g,
               view.getTextureWidth(),
               160,
@@ -1584,26 +1586,40 @@ testTextureCapacityAndLifecycle()
 
     for (std::size_t i = 0; i < mock.getCreateCount(); ++i) {
       const MockBackend::CreateRecord& record = mock.getCreate(i);
-      if (record.kind != MockBackend::CreateRecord::Kind::TextureData) {
-        continue;
-      }
-      if (textureHandle == 0) {
-        textureHandle = record.tableID;
-      } else {
+      if (record.kind == MockBackend::CreateRecord::Kind::TextureData) {
+        textureSlot = record.slot;
+        textureGeneration = record.generation;
+      } else if (record.kind ==
+                 MockBackend::CreateRecord::Kind::ReplaceTexture) {
+        replacementCount += 1u;
         testTrue(g,
-                 record.tableID == textureHandle,
-                 "capacity replacement preserves the opaque texture handle");
+                 record.slot == textureSlot &&
+                   record.generation == textureGeneration,
+                 "capacity replacement preserves the typed texture handle");
       }
     }
+    testEqSize(g,
+               replacementCount,
+               1u,
+               "first capacity growth replaces the display texture once");
   }
 
+  std::size_t destroyedTextureCount = 0u;
+  for (std::size_t i = 0; i < mock.getCreateCount(); ++i) {
+    const MockBackend::CreateRecord& record = mock.getCreate(i);
+    if (record.kind != MockBackend::CreateRecord::Kind::DestroyTexture) {
+      continue;
+    }
+    destroyedTextureCount += 1u;
+    testTrue(g,
+             record.slot == textureSlot &&
+               record.generation == textureGeneration,
+             "view releases the enrolled typed texture handle");
+  }
   testEqSize(g,
-             mock.getDestroyedTextureCount(),
+             destroyedTextureCount,
              1u,
              "view destruction releases its backend texture");
-  testTrue(g,
-           mock.getDestroyedTexture(0) == textureHandle,
-           "view releases the enrolled texture handle");
 }
 
 static void
@@ -1736,7 +1752,7 @@ testCanvasViewUsesWorldCellQuad()
                sprite->rect.h == expectedHeight,
              "display sprite follows padded cache cell boundaries");
     testTrue(g,
-             sprite->v0 == 1.0f && sprite->v1 == 0.0f,
+             sprite->region.v0 == 1.0f && sprite->region.v1 == 0.0f,
              "display sprite keeps world-up rows upright");
   }
 }

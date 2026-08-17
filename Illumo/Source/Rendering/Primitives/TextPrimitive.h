@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PrimitiveTypes.h"
+#include "Rendering/ResourceHandle.h"
 #include <string>
 
 // Screen/world text run expanded via stb_easy_font into colored quads on the
@@ -12,5 +13,7 @@ struct TextPrimitive
   float y = 0.0f;
   float sizePt = 12.0f; // 12 pt → scale 1.0 (matches historical GLString)
   ColorRgba color;
+  RenderStyleHandle styleHandle{};
+  int drawOrder = 0;
   bool visible = true;
 };

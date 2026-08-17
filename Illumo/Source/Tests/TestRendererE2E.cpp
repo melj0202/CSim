@@ -102,9 +102,9 @@ public:
 class TokenQuadDrawable : public DrawableBase
 {
 public:
-  unsigned long meshHandle = 0;
-  unsigned long shaderHandle = 0;
-  unsigned long textureHandle = 0;
+  MeshHandle meshHandle{};
+  ShaderHandle shaderHandle{};
+  TextureHandle textureHandle{};
   bool enrolled = false;
   int appendCallCount = 0;
   int drawCount = 0;
@@ -116,18 +116,15 @@ public:
       -1, -1, 0, 0, 0, 1, 0, 0, -1, 1,  0, 1, 1, 0, 0, 1,
     };
     unsigned int idx[6] = { 0, 1, 2, 0, 2, 3 };
-    meshHandle = renderer->allocateHandle();
-    renderer->enrollMesh(verts, sizeof(verts), idx, sizeof(idx), meshHandle);
+    meshHandle = renderer->enrollMesh(verts, sizeof(verts), idx, sizeof(idx));
 
     ShaderSources sources;
     sources.vertexSource = "void main(){}";
     sources.fragmentSource = "void main(){}";
-    shaderHandle = renderer->allocateHandle();
-    renderer->enrollShader(sources, shaderHandle);
+    shaderHandle = renderer->enrollShader(sources);
 
     unsigned char px[4] = { 255, 0, 255, 255 };
-    textureHandle = renderer->allocateHandle();
-    renderer->enrollTexture(px, 1, 1, 4, textureHandle);
+    textureHandle = renderer->enrollTexture(px, 1, 1, 4);
     enrolled = true;
   }
 
@@ -202,12 +199,13 @@ testRendererInjectsMockBackend()
   e2eTrue(renderer.getBackend() == &mock, "getBackend is injected mock");
   e2eTrue(!renderer.ownsBackend(), "does not own injected backend");
 
-  unsigned long h = renderer.allocateHandle();
-  renderer.enrollMesh(nullptr, 64, nullptr, 0, h);
+  MeshHandle handle = renderer.enrollMesh(nullptr, 64, nullptr, 0);
   e2eEqSize(mock.getCreateCount(), 1u, "enrollMesh hits mock CreateMesh");
-  e2eEqSize(static_cast<size_t>(mock.getCreate(0).tableID),
-            static_cast<size_t>(h),
-            "create tableID matches handle");
+  e2eEqSize(
+    mock.getCreate(0).slot, handle.slot, "create record matches handle slot");
+  e2eEqSize(mock.getCreate(0).generation,
+            handle.generation,
+            "create record matches handle generation");
 }
 
 static void
@@ -451,8 +449,8 @@ testRendererOwnsInjectedBackend()
   e2eTrue(renderer->getBackend() == mock, "getBackend is owned mock");
   e2eTrue(renderer->ownsBackend(), "ownsBackend true for composition inject");
 
-  unsigned long handle = renderer->allocateHandle();
-  renderer->enrollMesh(nullptr, 32, nullptr, 0, handle);
+  MeshHandle handle = renderer->enrollMesh(nullptr, 32, nullptr, 0);
+  e2eTrue(handle.isValid(), "owned renderer returns typed mesh handle");
   e2eEqSize(mock->getCreateCount(), 1u, "enroll hits owned mock CreateMesh");
 
   renderer->BeginFrame();

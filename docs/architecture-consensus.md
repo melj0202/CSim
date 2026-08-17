@@ -1,7 +1,7 @@
 # Illumo — Architecture consensus (unified)
 
 **Status:** Single living document — **authoritative for later sessions**  
-**Last updated:** 2026-08-08
+**Last updated:** 2026-08-09
 
 This file **merges and supersedes** scattered design memory into one coherent story. Read this first; treat external PDFs and old agenda notes as **history** (§2).
 
@@ -21,7 +21,7 @@ This file **merges and supersedes** scattered design memory into one coherent st
 Optional deeper reading (not required to resume work):
 
 - `docs/latex/architecture-map.tex` → `docs/output/architecture-map.pdf` — landscape chart-only package/class map
-- `docs/latex/illumo.tex` — design notes PDF entrypoint (prose chapters under `sections/`)
+- `docs/latex/illumo.tex` — canonical prose-book PDF entrypoint (chapters under `sections/`)
 - `docs/latex/sections/09-design-decision-log.tex` — append-only formal decision prose
 - `docs/sessions/2026-08-04-illumo-console-and-documentation.md` — this session's implementation record
 
@@ -174,8 +174,9 @@ Agreement across reviews:
 - Layered modular monolith is **appropriate**  
 - App owns modules; token path + MockBackend are real strengths  
 - Scene-as-list is correct; dead graph/EntityTable should stay gone  
-- Main risks: incomplete module Start handling, Canvas dual role, and command-queue overflow
-- Highest value: product correctness + one canonical Canvas model in docs — **not** ECS or multi-pass  
+- Main risks: native platform gaps and explicit resource/failure handling at
+  rendering and service boundaries; the renderer now bounds queue/resource growth explicitly
+- Highest value: product correctness + one canonical sparse-domain/bounded-view model in docs — **not** ECS or multi-pass
 
 ---
 
@@ -208,7 +209,7 @@ It is an **engine-shaped application**, not a cleanly separated “engine produc
 | **Render split** | Enroll once; emit tokens per frame; backend executes (D-R1–D-R8, D-R10). |
 | **Rulesets** | Strategy hierarchy; pure `nextState` + `evalCell`; double-buffered generation (D-P3). |
 | **Scene model** | Per-frame drawable list only (D-E3, D-E4). |
-| **Tests** | Headless `IllumoTests`: granular process-isolated CTest cases spanning rules, Canvas, game commands/save-load, input/services, assets, tokens, UI, and renderer injection; Clang/LLVM production-line gate (D-T1). |
+| **Tests** | Headless `IllumoTests`: 136 source-registered, granular process-isolated CTest cases spanning rules, sparse/compatibility canvas, game commands/save-load, input/services, runtime utilities, tokens, UI, and renderer injection; Clang/LLVM production-line gate (D-T1). |
 | **Debt hygiene** | Dead experiments under `archive/` rather than half-live. |
 
 ---
@@ -221,13 +222,13 @@ It is an **engine-shaped application**, not a cleanly separated “engine produc
 |---------|------|
 | **App/** | Product composition (`CellMain`). |
 | **Engine/** | Host: Illumo, modules, frozen `IllumoContext`. |
-| **Game/** | CA domain + presentation (`Canvas`, `CellGameModule`, `CellContext`). |
+| **Game/** | CA domain + presentation (`SparseCellGrid`, `CanvasView`, `CellGameModule`, `CellContext`); dense Canvas types are compatibility-only. |
 | **Rulesets/** | CA rules (GoL family, Wireworld, …). |
-| **Rendering/** | Scene list, drawables, Renderer, tokens, OpenGL, Mock. |
+| **Rendering/** | Reusable 2D front end, managed texture/shader assets, Scene list, tokens, OpenGL, Mock. |
 | **Services/** | Log, env, input, console UI, save/load API, allocators. |
 | **Foundation/** | Macros and math aliases (`MathTypes.h`). |
 | **Platform/** | OS entry + native dialogs. |
-| **Assets/** | Runtime asset data. |
+| **`Illumo/Assets/`** | Runtime files outside `Illumo/Source/`; there is no `Source/Assets` package. |
 | **Tests/** | Headless suite. |
 
 House style (D-008 / `docs/contributing.md`): avoid `auto`; avoid namespaces (prefer static classes/structs); no recursion; third-party via PR — unless a later decision waives.
@@ -244,7 +245,7 @@ House style (D-008 / `docs/contributing.md`): avoid `auto`; avoid namespaces (pr
 
 ```
 class IModule {
-  virtual void Start(IllumoContext* context) = 0;
+  virtual bool Start(IllumoContext* context) = 0;
   virtual void Update(double dt) = 0;
   virtual void DispatchDrawables(Scene* scene) = 0;
   virtual void Exit() = 0;
@@ -253,7 +254,7 @@ class IModule {
 
 | Hook | Responsibility |
 |------|----------------|
-| Start | Bind inputs, allocate game state; bail if context incomplete |
+| Start | Bind inputs and allocate game state; return `false` if initialization is incomplete |
 | Update | Simulation / input |
 | DispatchDrawables | Contribute what should draw this frame |
 | Exit | Teardown module-owned state |
@@ -261,7 +262,8 @@ class IModule {
 Product modules: `CellGameModule` always; `DebugModule` only in Debug. Release
 neither compiles nor registers `DebugModule` (D-B1).
 
-**Known hole:** `Start` can fail without preventing later `Update` / `DispatchDrawables` → §8.
+`StartModules` erases a module whose `Start` returns `false`, so only accepted
+modules receive later `Update`, `DispatchDrawables`, and `Exit` calls.
 
 ### 5.4 Frame loop (production)
 
@@ -310,7 +312,7 @@ Game / Rulesets / UI
     |  (no gl* for draw submission)
     v
 Drawable::AppendCommands(Renderer*)
-    |  enroll handles + push tokens
+    |  acquire/enroll typed handles + push tokens
     v
 CommandQueue<RenderCommand>     // tagged union payloads
     |
@@ -325,22 +327,35 @@ IBackend::SubmitCommandQueue
 |-------|-----|
 | **Modules** | Choose what should appear this frame; place drawables into Scene layers. |
 | **Scene** | Per-frame non-owning drawable pointers in ordered layers (World → UI → Debug). One main pass. |
-| **RenderStyle** | Built-in style table on `Renderer`: shader handle + `PipelineState` defaults (Canvas, UiText, Console, Shape, Sprite). |
-| **Primitives / GameVisual** | Value-type shapes/sprites/text on a `GameVisual` host (D-R15). **Canvas**, **CommandLine**, **GLString**/SplashText, and **Cursor** embed/compose via `GameVisual`. |
+| **RenderStyle** | Generational registry on `Renderer`: shader handle + `PipelineState` defaults. Canvas, UiText, Console, Shape, and Sprite are registered built-ins; custom 2D styles use the same camera/texture/resolution contract. |
+| **Primitives / GameVisual** | Value-type shapes/sprites/text on a `GameVisual` host. Parent + local `Transform2D`, atlas regions/flips, integer draw order, stable insertion order, and adjacent-only batching preserve painter semantics. Dynamic quad buffers start at 1,024 and grow to a configurable 65,536 default ceiling. `CanvasView`, `CommandLine`, `GLString`/`SplashText`, and `Cursor` embed or compose through it; dense `Canvas` is a compatibility fixture. |
+| **Primitive UI** | `CommandLine`, `GLString`, and `SplashText` compose fills, outlines, lines, and text through `GameVisual`. `UiTheme` is a shared value-only palette/panel style; it is not a widget tree or layout engine. FPS and mode labels use optional decorated label chrome. |
 | **Drawable** | Content handles; `bindStyle` then content tokens via `AppendCommands`. Immediate `Draw()` only if AppendCommands returns false (tests/stubs). |
 | **Renderer** | Backend-neutral: owns style table; frame setup; walk layers; submit. Depends only on `IBackend*` (D-R11). |
-| **IBackend** | Create resources, explicitly destroy textures, queue, submit, begin/end frame. GPU objects live in backend registries. |
+| **IBackend** | Allocates typed slot+generation handles; validates create/replace/destroy/query operations; queues and submits. GPU objects live in backend registries. |
+| **AssetManager** | Canonical-path texture/shader cache with reference counts, stable per-request fallback resources (the shader fallback follows the custom 2D binding contract), synchronous or one-worker CPU loading, render-thread `pump`, explicit reload, and Debug timestamp polling. The Debug demo manages both its atlas and sprite shader through this path. |
 | **Composition (Illumo::Init)** | Constructs the production backend via `CreateOpenGLBackend` and injects it into `Renderer` with `takeOwnership=true`; calls `ensureBuiltinStyles()`. |
 | **GLBackend / GLDevice** | Real OpenGL under `Rendering/OpenGL/`: handle registries, execute tokens, PBO texture updates, bind-state tracking, blend-func-on-enable (D-R5). |
 | **MockBackend** | Headless under `Rendering/Mock/`: record creates + command order; injected for tests. |
 
-**Layers vs passes (Phase A):** layers are composition buckets on the default framebuffer (single clear). They are not multi-target GPU render passes. A future pass object would own FBO/load-store when targets diverge.
+**Layers vs passes:** layers are composition buckets on the default framebuffer
+(single clear). They are not multi-target GPU render passes. Unimplemented pass
+scaffolding was removed; offscreen targets remain future work.
 
-**Enroll (rare):** `enrollMesh` / `enrollShader` / `enrollTexture` → opaque `unsigned long` table IDs; built-in styles enroll their shaders once via `ensureBuiltinStyles`. Re-enrolling a texture handle replaces and destroys its prior GPU object; `releaseTexture` removes a texture before backend shutdown.
-**Per frame:** `RenderCommand` tagged union (bind, uniform, update texture/buffer, draw, clear, viewport, pipeline).  
+**Acquire/enroll (rare):** backend `Create*` returns non-convertible
+`MeshHandle`, `ShaderHandle`, or `TextureHandle` values with slot+generation;
+managed file textures/shaders normally come from `AssetManager`. Canvas cache
+growth replaces its texture through the same validated handle and destruction
+releases the GL texture, PBOs, and fences before recycling that handle.
+**Per frame:** growable `CommandQueue` reserves 2,048 tokens and grows to a
+configurable 65,536 default ceiling while tracking high-water and rejected
+counts. `RenderCommand` remains a tagged union (bind, uniform, update
+texture/buffer, draw, clear, viewport, scissor state, pipeline).
 **Not current (old engine PDF):** separate Opaque/Transparent/UI pass *objects*, MeshDrawCommand-only world draws, entity mesh tables.
 
-**Production pure-token drawables (D-R10):** Canvas, CommandLine, GLString, SplashText.
+**Production pure-token drawables (D-R10):** CanvasView/GameVisual, Cursor,
+CommandLine, GLString, and SplashText. Dense Canvas remains a compatibility
+fixture.
 
 **Token migration phases 0–6:** complete for planned scope (proof → Scene → Canvas → UI → dead-path cleanup → Mock inject).
 
@@ -601,7 +616,10 @@ The Debug-only console separates general tooling from product behavior:
 - Window mode supports switching between top-mounted and floating modes (via `console_mode [floating|mounted|toggle]` or double-clicking the console title bar). In floating mode, title-bar dragging repositions the window across the screen, and dragging the bottom-right corner grip handle (or running `console_size <W> <H> | reset`) dynamically resizes the console window with real-time UI bounds clipping (D-UI3).
 - Dynamic parameter syntax hints dynamically render usage instructions in the status bar while typing known commands.
 - Utility commands include `repeat <N> <command>`, `history [filter|clear]`, and the `sysinfo` telemetry dashboard. The simulation-provided `status` command reports simulation, canvas, ruleset, and camera state.
-- Console chrome is a refined tactical glass HUD: multi-layer drop shadow and outer neon halo, bezel inset panel, title badge + status chip header, recessed history well with sparse scanlines and a slow beam sweep, elevated command dock with prompt chip, breathing laser caret, gradient scrollbar thumb, and single-batch quad rendering (8,000 UI quads, heap-backed). History output word-wraps to the panel width and scrolls by visual lines so long help text remains fully readable when paging to the oldest entries; PageUp/wheel/scrollbar limits share the same floating-aware layout metrics as the draw path.
+- Console chrome uses a single heap-backed batch with capacity for 8,000 UI
+  quads. The current draw path truncates each history entry to panel width and
+  scrolls by raw history entries. D-UI2 records the intended word-wrap and
+  visual-line metrics, but that behavior is not present in the live path.
 - `Logger` may mirror output into the console while services are alive. The host
   clears that non-owning logger context before destroying the services.
 
@@ -637,7 +655,8 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-UI1** | Console editing and caret placement use measured text geometry; one enlarged batch must fit a full help page. |
 | **D-UI2** | Console history wraps and scrolls by visual lines using shared mounted/floating layout metrics. |
 | **D-UI3** | Console can be mounted or floating; floating mode supports title-bar drag and corner resize. |
-| **D-DOC1** | All first-party project documentation lives under `docs/`, with one current LaTeX entrypoint. |
+| **D-DOC1** | Established one first-party documentation tree; refined by D-DOC2. |
+| **D-DOC2** | Canonical technical documentation remains under `docs/`; `illumo.tex` is the prose book and `architecture-map.tex` the chart pack. Root/nested `AGENTS.md` and `.agent/` are operational-guidance exceptions. |
 | **D-T1** | One exact CTest entry per logical behavior; shared filtered runner only for compile efficiency; Clang/LLVM `IllumoCoverage` enforces at least 85% headless-testable production line coverage. |
 
 ### 6.2 Rendering (D-R\*)
@@ -647,8 +666,8 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-003 / D-R\*** | Token submission via IBackend + RenderCommand; game must not permanently depend on raw GL for draw. |
 | **D-R1** | `RenderCommand` = simple tagged union (C-style), not byte-stream compiler / `std::variant`. |
 | **D-R2** | Each drawable emits tokens via `AppendCommands`; Renderer owns frame setup + submit. |
-| **D-R3** | Opaque `unsigned long` handles + backend registries for v1; strong typedefs deferred. |
-| **D-R4** | Migration phases 1–6 done; shutdown remains the default bulk-destruction point, while D-P23 explicitly replaces/releases the resizeable canvas texture; Windows GL primary. |
+| **D-R3** | Historical v1 raw-handle decision; superseded by typed generational lifecycle in D-R16. |
+| **D-R4** | Migration phases 1–6 done and Windows GL primary; shutdown-only resource lifetime was superseded by D-R16/D-R17. |
 | **D-R5** | On blend enable, always set `glBlendFunc` (console panel transparency). |
 | **D-R6** | Archive dead render queue / SceneObject graph helpers; Scene + Renderer is the path. |
 | **D-R7** | MockBackend + headless tests; no Vulkan/Metal yet. |
@@ -656,10 +675,15 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-R9** | String-named uniforms = debt if a second *real* GPU API appears. |
 | **D-R10** | Production drawables pure-token; hybrid `Draw()` for tests/stubs only. |
 | **D-R11** | Construct concrete backend at composition root (`Illumo::Init` / `CreateOpenGLBackend`); `Renderer` never includes OpenGL types. |
-| **D-R12** | CommandQueue fixed 2048 capacity; overflow drops + logs once per frame. |
+| **D-R12** | Historical fixed-queue policy; superseded by bounded vector growth in D-R16. |
 | **D-R13** | Single production frame path in `Illumo::Render`; `RenderProofQuad` is test-only. |
 | **D-R14** | Scene layers (World/UI/Debug) + Renderer-owned built-in `RenderStyle` table. One main pass; layers ≠ GPU render passes. |
 | **D-R15** | Render primitives (`Shape`/`Sprite`/`Text`) composed on a `GameVisual` host; product drawables embed/compose via GameVisual. |
+| **D-R16** | Typed slot+generation resource/style handles; validated replace/destroy/query; stale operations log and no-op. CommandQueue reserves 2,048, grows, and rejects only at a configurable 65,536 default ceiling. |
+| **D-R17** | AssetManager owns canonical-path texture/shader caching, references, one CPU worker, stable fallbacks, render-thread pump/replacement, explicit reload, and Debug 500 ms timestamp polling. |
+| **D-R18** | Painter-correct 2D stream: parent/local transforms, normalized pivots, atlas regions/flips, stable cross-type draw order, adjacent-only batching, bounded dynamic quad buffers, and caller-updated passive sprite animation. |
+| **D-R19** | Illumo remains a CA application with a reusable 2D renderer, not a general engine. Extract a standalone renderer only after a second real project proves the public boundary. |
+| **D-R20** | Product UI is composed from `GameVisual` shapes/text with shared value-only `UiTheme` styling. Keep console, label, and splash behavior in their existing owners; do not introduce a retained widget tree. |
 | **D-007** | Enroll resources outside the per-frame stream (frame queue = bind/draw/update). |
 | **D-WW1** | Wireworld: ruleset-aware seed + sticky head/tail/conductor brush keys. |
 | **D-C2** | `CellGrid` domain + `Canvas` presentation; rulesets depend only on `CellGrid`. |
@@ -672,7 +696,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | ID | Decision | Note |
 |----|----------|------|
 | **D-P1** | Dirty visual path — idle frames skip full recolor/upload. | Still current |
-| **D-P2** | UI batch: CommandLine one packed update; GLString geometry cache. | Still current |
+| **D-P2** | Primitive UI batch: CommandLine remains one update/draw; GLString caches geometry, including optional panel chrome. | Still current |
 | **D-P3** | Double-buffer `calcGeneration` + sparse dirty AABB. | Still current; refined by D-P5 |
 | **D-P4** | Originally: R8 + palette + dirty-rect PBO; drop dual float RGB. | **Partially superseded:** dirty-rect PBO + bind tracker kept; **RGB fade display restored** as live presentation (see §5.6) |
 | **D-P5** | Single-pass dirty AABB + `CellGrid` front/back swap (no full memcpy). | 2026-08-06 |
@@ -729,9 +753,12 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | More rulesets | **Partly** — Wireworld live; 90/184 stubs |
 | Infinite 16×16 chunk canvas | **Done** — sparse signed-coordinate chunks with separate stored/counting masks, per-target candidates or dense 18×18 halos, bounded view, editing, camera, persistence, and tests |
 | Mouse pan | **Done** (camera controls) |
-| SYCL / large-grid parallel | **Not done** — serial full-grid; deferred |
+| CPU large-grid parallel | **Done where measured** — bounded reusable workers for large candidate and halo work; discovery/merge remain deterministic and serial |
+| SYCL / GPU simulation | **Not done** — optional and deferred |
 
-**Reading of the agenda:** UI/tools first (mostly finished); **scale** (chunks + parallel) remains the open endgame — after product correctness.
+**Reading of the agenda:** UI/tools, sparse chunks, and bounded CPU parallelism
+are live. GPU/SYCL work remains optional and must be justified by product need
+and current measurements.
 
 ---
 
@@ -758,7 +785,10 @@ dialog cancellation. Native dialog UI still needs a platform smoke test.
 
 From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 
-- Command queue **2048** capacity: overflow now **logs once per frame** and tracks drop counts (D-R12); raw pointer payloads must still stay alive until submit  
+- Command queue reserves **2,048** tokens, grows to a configurable **65,536**
+  default ceiling, logs one rejection warning per frame, and exposes high-water
+  and rejection counts (D-R16); raw pointer payloads must still stay alive
+  until submit
 - CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; the repository root forwards to the live `Illumo/CMakeLists.txt` entrypoint
 - Runtime configuration is one `envvars.json` beside the executable; CMake seeds
   it from the tracked `Illumo/envvars.json` only when absent, so launch working
@@ -768,8 +798,8 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 - Hybrid token + immediate Draw path remains for stubs  
 - Native file dialogs and live OpenGL/fullscreen behavior still require manual
   smoke tests; headless MockBackend coverage does not prove them.
-- Deferred boundary work (do when it hurts): further Canvas→CanvasRenderer
-  extraction, capability-oriented module contexts instead of the frozen bag
+- Deferred boundary work (do when it hurts): further CanvasView presentation/
+  upload separation, capability-oriented module contexts instead of the frozen bag
   (D-E5), rename `Scene` → `FrameRenderList` only if the name causes real
   confusion, multi-library CMake split, logger/SaveLoad global removal.
 
@@ -789,7 +819,7 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 |------|--------|
 | String uniforms | D-R9 — GL-shaped until second real backend |
 | Hybrid Draw path | Tests/stubs only; production is tokens |
-| Command queue overflow | **D-R12:** log once per frame + drop counters; capacity still fixed at 2048 |
+| Command queue ceiling | **D-R16:** vector growth from a 2,048 reserve to a configurable 65,536 default ceiling; one warning per rejecting frame plus high-water/rejection metrics |
 | CMake duplication | Resolved 2026-08-02 with shared source lists/settings; no forced package libraries |
 | Renderer ↔ backend | **D-R11:** `CreateOpenGLBackend` at composition; Renderer is `IBackend*`-only; Mock inject for tests |
 | Sparse sim + bounded view memory | Sparse simulation scales with stored and counted cells; mixed targets independently use candidates or halos, dense counted chunks use at most eight reusable workers, and presentation scales with the configured visible view |
@@ -797,7 +827,7 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 | IllumoContext growth | Frozen; third module = explicit deps |
 | Life-like JSON family collapse | Optional cleanup of repetitive RuleSet classes |
 | GPU/SYCL acceleration | Optional after bounded CPU parallel benchmark / product need; CPU sparse stepping is the production baseline |
-| Resource destroy/reload | Shutdown-only for v1 (D-R4); hot-reload later |
+| File asset formats | Current managed scope is textures + shaders; font atlases, model import, and general 3D meshes are deferred |
 
 ---
 
@@ -823,17 +853,18 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 
 ### D. Only if product or learning goals require it
 
-10. Further renderer slimming or GPU sparse stepping if profiling requires it.
-11. Bounded CPU chunk parallelism is production; GPU simulation remains optional.
-12. Non-string uniforms / second real backend (OpenGL factory already at composition).
-13. Data-driven life-like rule family (JSON birth/survive).
-14. Focused controllers (camera / console) if input coupling becomes painful.
-15. Narrow `IllumoContext` into capability bags only when a third module needs different deps (D-E5).
+10. Font atlases, UTF-8 text layout, clipping, and nine-slice UI.
+11. Chunked tilemaps, sprite culling, and particle emitters.
+12. Multiple cameras, offscreen targets, compositing, and post-processing.
+13. Standalone renderer extraction only after a second real project proves the boundary.
+14. Non-string uniforms / second real backend (OpenGL factory already at composition).
+15. Data-driven life-like rule family (JSON birth/survive).
+16. Narrow `IllumoContext` into capability bags only when a third module needs different deps (D-E5).
 
 ### Explicitly deferred (engine PDF + consensus)
 
 - Full Scene/World abstractions, general ECS, cached queries  
-- Render graphs, multi-backend, aggressive batching/instancing  
+- Render graphs, multi-backend, global transparent texture sorting
 - Multithreaded command generation  
 
 ---
@@ -849,8 +880,10 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 7. **Archive experiments** — don’t leave half-live ECS/graph/passes in the hot path.  
 8. **Simplest architecture that preserves the boundaries you care about** (engine PDF principle, applied to the CA product).  
 9. **Code wins over docs** — update this file when consensus shifts.  
-10. **One documentation tree** — current prose, LaTeX, decisions, package maps,
-    and session records live under `docs/`; generated PDF output is not source.
+10. **One technical-documentation tree** — current prose, LaTeX, decisions,
+    package maps, and session records live under `docs/`; root/nested
+    `AGENTS.md` and `.agent/` are operational exceptions (D-DOC2), and
+    generated PDF output is not source.
 
 ---
 
@@ -860,10 +893,10 @@ Most design questions from the LaTeX open list are **resolved** (see §6). Still
 
 | Topic | Working answer |
 |-------|----------------|
-| Resource ownership long-term | Bulk destruction remains at shutdown; the resizeable canvas texture has explicit replace/release lifecycle (D-P23). Refcounts / generational handles remain deferred until hot-reload needs them. |
-| Linux/macOS parity | Freeze until Windows token path solid — Windows path is solid; parity still optional. |
+| Resource ownership long-term | Typed generational handles validate explicit replace/destroy operations; `AssetManager` adds reference-counted file assets, and the resizeable canvas explicitly replaces/releases its texture and PBO ring. |
+| Linux/macOS parity | Both selected bootstraps are known stale and do not match the shared App APIs; keep them unsupported until native configure/build/test/smoke validation succeeds. |
 | Tracy CI policy | Debug-oriented; no strict CI policy yet. |
-| When to introduce chunks / SYCL | After correctness + serial benchmarks, or as an explicit learning goal. |
+| When to introduce SYCL / GPU simulation | Only after a current benchmark and explicit product or learning goal justify a second compute path. Sparse chunks and bounded CPU workers are already live. |
 
 Resolved highlights (do not re-open without a new decision ID):
 
@@ -872,7 +905,8 @@ Resolved highlights (do not re-open without a new decision ID):
 - Who emits tokens → D-R2  
 - Scene graph leftovers → D-E4  
 - IllumoContext growth → D-E5  
-- Canvas domain vs view → D-C1 refined by D-C2 (`CellGrid` + `Canvas`)  
+- Canvas domain vs view → D-C1/D-C2 superseded for production by D-C3
+  (`SparseCellGrid` + bounded `CanvasView`); dense types are compatibility-only
 - String uniforms → D-R9 debt  
 - Backend injection → D-R11  
 - Command queue overflow → D-R12  
@@ -892,7 +926,7 @@ Resolved highlights (do not re-open without a new decision ID):
 
 | When | Action |
 |------|--------|
-| New chat / new session | Read **this file first**. |
+| New task | Read root/closest `AGENTS.md`, then **this file** for current architecture. |
 | Deep dive | Then LaTeX design notes / decision log. |
 | Architecture change | Update **this file** + append a decision log entry in `docs/latex/sections/09-design-decision-log.tex`. |
 | Code lands | Update “code truth” sections here if behavior changed. |
@@ -907,17 +941,21 @@ Resolved highlights (do not re-open without a new decision ID):
 
 | Concern | Typical location |
 |---------|------------------|
-| Frame loop / composition | `Source/App/CellMain.cpp` |
-| Host / services / modules | `Source/Engine/Illumo.*` |
-| CA module / modes | `Source/Game/CellGameModule.*`, `CellContext.*` |
-| Sparse domain cell storage | `Source/Game/SparseCellGrid.*` |
-| Bounded view + fade + GPU enroll | `Source/Game/CanvasView.*` |
-| Compatibility dense storage | `Source/Game/CellGrid.*`, `Source/Game/Canvas.*` |
-| Rules | `Source/Rulesets/*` |
-| Tokens / Renderer | `Source/Rendering/Renderer.*`, `RenderCommand.*` |
-| GL execute | `Source/Rendering/OpenGL/*` |
-| Mock | `Source/Rendering/Mock/*` |
-| Console | `Source/Services/CommandLine.*` (UI drawable may sit in Rendering) |
+| Frame loop / composition | `Illumo/Source/App/CellMain.cpp` |
+| Host / services / modules | `Illumo/Source/Engine/Illumo.*` |
+| CA module / modes | `Illumo/Source/Game/CellGameModule.*`, `CellContext.h` |
+| Sparse domain cell storage | `Illumo/Source/Game/SparseCellGrid.*` |
+| Bounded world-space view + fade | `Illumo/Source/Game/CanvasView.*` |
+| Compatibility dense storage | `Illumo/Source/Game/CellGrid.*`, `Illumo/Source/Game/Canvas.*` |
+| Rules | `Illumo/Source/Rulesets/*` |
+| Tokens / Renderer / resources | `Illumo/Source/Rendering/Renderer.h`, `RenderCommand.h`, `CommandQueue.h`, `ResourceHandle*`, `AssetManager.*` |
+| 2D primitives / animation | `Illumo/Source/Rendering/Primitives/*` |
+| Debug renderer assets | `Illumo/Assets/RendererDemo/*` |
+| GL execute | `Illumo/Source/Rendering/OpenGL/*` |
+| Mock | `Illumo/Source/Rendering/Mock/*` |
+| Console | `Illumo/Source/Services/CommandLine.*` |
+| Platform bootstrap/dialogs | `Illumo/Source/Platform/*` |
+| Headless tests | `Illumo/Source/Tests/*` |
 | Dead experiments | `archive/dead-engine/`, `archive/dead-render/`, `archive/old-states/` |
 
 ### Appendix B — What not to do next
@@ -925,7 +963,8 @@ Resolved highlights (do not re-open without a new decision ID):
 - Do not reintroduce EntityTable / SceneObject graph “for completeness.”  
 - Do not build Opaque/Transparent/UI pass objects unless profiling or a real multi-genre product appears.  
 - Do not make SYCL a hard dependency of Illumo or Game.  
-- Do not document R8-only presentation as current without verifying shaders + Canvas.cpp.  
+- Do not document R8-only presentation as current without verifying
+  `CanvasView.cpp`, `RendererStyles.cpp`, and the active style binding.
 - Do not expand IllumoContext casually for a third module.  
 
 ---

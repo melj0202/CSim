@@ -22,6 +22,44 @@ struct Rect2
   float h = 0.0f;
 };
 
+struct Transform2D
+{
+  float x = 0.0f;
+  float y = 0.0f;
+  float scaleX = 1.0f;
+  float scaleY = 1.0f;
+  float rotationRadians = 0.0f;
+  // Normalized within the transformed primitive or GameVisual content bounds.
+  float pivotX = 0.0f;
+  float pivotY = 0.0f;
+};
+
+struct TextureRegion
+{
+  float u0 = 0.0f;
+  float v0 = 0.0f;
+  float u1 = 1.0f;
+  float v1 = 1.0f;
+
+  static TextureRegion gridCell(unsigned int columns,
+                                unsigned int rows,
+                                unsigned int column,
+                                unsigned int row)
+  {
+    TextureRegion region;
+    if (columns == 0 || rows == 0 || column >= columns || row >= rows) {
+      return region;
+    }
+    const float cellWidth = 1.0f / static_cast<float>(columns);
+    const float cellHeight = 1.0f / static_cast<float>(rows);
+    region.u0 = static_cast<float>(column) * cellWidth;
+    region.v0 = static_cast<float>(row) * cellHeight;
+    region.u1 = region.u0 + cellWidth;
+    region.v1 = region.v0 + cellHeight;
+    return region;
+  }
+};
+
 // How GameVisual interprets primitive coordinates when emitting tokens.
 enum class PrimitiveSpace : unsigned char
 {

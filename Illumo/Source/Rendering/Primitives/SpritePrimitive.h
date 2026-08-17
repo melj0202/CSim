@@ -1,17 +1,20 @@
 #pragma once
 
 #include "PrimitiveTypes.h"
+#include "Rendering/ResourceHandle.h"
 
-// Value-type textured quad. textureHandle is a backend table ID enrolled by
-// the owner (game object / asset path); the primitive only borrows it.
+// Value-type textured quad. The primitive borrows typed resource/style handles
+// enrolled by its owner or acquired through AssetManager.
 struct SpritePrimitive
 {
   Rect2 rect;
-  unsigned long textureHandle = 0;
-  float u0 = 0.0f;
-  float v0 = 0.0f;
-  float u1 = 1.0f;
-  float v1 = 1.0f;
+  TextureHandle textureHandle{};
+  TextureRegion region;
+  Transform2D transform;
+  RenderStyleHandle styleHandle{};
   ColorRgba tint;
+  int drawOrder = 0;
+  bool flipX = false;
+  bool flipY = false;
   bool visible = true;
 };

@@ -1,10 +1,11 @@
 #include "CommandLine.h"
 #include "CellMain.h"
 #include "Rendering/IMesh.h"
+#include "Rendering/Primitives/GameVisual.h"
+#include "Rendering/Primitives/UiTheme.h"
 #include "Rendering/Renderer.h"
 #include "Services/Logger.h"
 #include "thirdparty/stb/stb_easy_font.h"
-#include "Rendering/Primitives/GameVisual.h"
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -217,7 +218,6 @@ CommandLine::CommandLine(IEnvVars* vars,
   , currentPanelY(-1.0f)
   , currentPanelW(-1.0f)
   , currentPanelH(-1.0f)
-  , scanlinePhase(0.0f)
   , parseArena(16 * 1024)
   , aliasExpandStack(4 * 1024)
 {
@@ -1873,28 +1873,62 @@ packSolidQuad(GameVisual* visual,
 }
 
 static unsigned int
-packVerticalGradientQuad(GameVisual* visual,
-                         unsigned int destCap,
-                         unsigned int writeAt,
-                         float x0,
-                         float y0,
-                         float x1,
-                         float y1,
-                         unsigned char topR,
-                         unsigned char topG,
-                         unsigned char topB,
-                         unsigned char topA,
-                         unsigned char bottomR,
-                         unsigned char bottomG,
-                         unsigned char bottomB,
-                         unsigned char bottomA)
+packSolidRect(GameVisual* visual,
+              unsigned int destCap,
+              unsigned int writeAt,
+              float x,
+              float y,
+              float width,
+              float height,
+              ColorRgba color)
 {
-  // Approximate gradient as a solid mid-color rect (primitives are flat).
-  unsigned char r = static_cast<unsigned char>((topR + bottomR) / 2);
-  unsigned char g = static_cast<unsigned char>((topG + bottomG) / 2);
-  unsigned char b = static_cast<unsigned char>((topB + bottomB) / 2);
-  unsigned char a = static_cast<unsigned char>((topA + bottomA) / 2);
-  return packSolidQuad(visual, destCap, writeAt, x0, y0, x1, y1, r, g, b, a);
+  return packSolidQuad(visual,
+                       destCap,
+                       writeAt,
+                       x,
+                       y,
+                       x + width,
+                       y + height,
+                       color.r,
+                       color.g,
+                       color.b,
+                       color.a);
+}
+
+static unsigned int
+packOutlineRect(GameVisual* visual,
+                unsigned int destCap,
+                unsigned int writeAt,
+                float x,
+                float y,
+                float width,
+                float height,
+                ColorRgba color,
+                float lineWidth)
+{
+  if (writeAt + 16 > destCap || visual == nullptr) {
+    return writeAt;
+  }
+  visual->addOutlineRect(x, y, width, height, color, lineWidth);
+  return writeAt + 16;
+}
+
+static unsigned int
+packLine(GameVisual* visual,
+         unsigned int destCap,
+         unsigned int writeAt,
+         float x0,
+         float y0,
+         float x1,
+         float y1,
+         ColorRgba color,
+         float lineWidth)
+{
+  if (writeAt + 4 > destCap || visual == nullptr) {
+    return writeAt;
+  }
+  visual->addLine(x0, y0, x1, y1, color, lineWidth);
+  return writeAt + 4;
 }
 
 // Historical console text used 2× easy-font (sizePt 24).
@@ -2051,394 +2085,172 @@ CommandLine::AppendCommands(Renderer* r)
   float pulse =
     (std::sin(static_cast<float>(caretMilliseconds) * 0.005f) + 1.0f) * 0.5f;
 
-  // Futuristic layered console chrome: dark space glass, pulsing cyan accent
-  // trim, glowing title bar, and crisp input hierarchy.
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0 + 4.0f,
-                         panelY0 + 6.0f,
-                         panelX1 + 4.0f,
-                         panelY1 + 6.0f,
-                         0,
-                         0,
-                         0,
-                         140);
-  packed = packVerticalGradientQuad(&visual, kCap, packed,
-                                    panelX0,
-                                    panelY0,
-                                    panelX1,
-                                    panelY1,
-                                    12,
-                                    22,
-                                    38,
-                                    248,
-                                    6,
-                                    11,
-                                    20,
-                                    242);
-  packed = packVerticalGradientQuad(&visual, kCap, packed,
-                                    panelX0,
-                                    panelY0,
-                                    panelX1,
-                                    panelY0 + headerHeight,
-                                    20,
-                                    48,
-                                    75,
-                                    255,
-                                    14,
-                                    32,
-                                    52,
-                                    255);
-
-  // Pulsing cyber neon top border line and left accent bar
-  unsigned char neonR = static_cast<unsigned char>(30.0f + pulse * 40.0f);
-  unsigned char neonG = static_cast<unsigned char>(200.0f + pulse * 55.0f);
-  unsigned char borderAlpha =
-    static_cast<unsigned char>(160.0f + pulse * 75.0f);
-  packed = packSolidQuad(&visual, kCap, packed,
+  // Primitive-composed console chrome. The panel uses a small, coherent
+  // theme and real outlines/lines; text, selection, caret, and scrolling stay
+  // in the same stable painter stream.
+  const unsigned char revealOpacity =
+    static_cast<unsigned char>(std::clamp(easeProgress, 0.0f, 1.0f) * 255.0f);
+  packed =
+    packSolidRect(&visual,
+                  kCap,
+                  packed,
+                  0.0f,
+                  0.0f,
+                  width,
+                  height,
+                  UiTheme::applyOpacity(UiTheme::canvasShade(), revealOpacity));
+  packed = packSolidRect(&visual,
+                         kCap,
+                         packed,
+                         panelX0 + 5.0f,
+                         panelY0 + 7.0f,
+                         panelX1 - panelX0,
+                         panelY1 - panelY0,
+                         UiTheme::panelShadow());
+  packed = packSolidRect(&visual,
+                         kCap,
+                         packed,
                          panelX0,
                          panelY0,
-                         panelX1,
-                         panelY0 + 2.0f,
-                         neonR,
-                         neonG,
-                         255,
-                         255);
-  packed = packVerticalGradientQuad(&visual, kCap, packed,
-                                    panelX0,
-                                    panelY0,
-                                    panelX0 + 4.0f,
-                                    panelY1,
-                                    0,
-                                    240,
-                                    255,
-                                    255,
-                                    140,
-                                    80,
-                                    255,
-                                    240);
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0,
-                         panelY0 + headerHeight,
-                         panelX1,
-                         panelY0 + headerHeight + 1.0f,
-                         0,
-                         210,
-                         255,
-                         borderAlpha);
-
-  // Cyberpunk HUD Corner Brackets (4 corners)
-  unsigned char bracketR = 0;
-  unsigned char bracketG = static_cast<unsigned char>(220.0f + pulse * 35.0f);
-  unsigned char bracketB = 255;
-  unsigned char bracketA = static_cast<unsigned char>(200.0f + pulse * 55.0f);
-
-  // Top-Left Corner Bracket
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0,
-                         panelY0,
-                         panelX0 + 14.0f,
-                         panelY0 + 3.0f,
-                         bracketR,
-                         bracketG,
-                         bracketB,
-                         bracketA);
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0,
-                         panelY0,
-                         panelX0 + 3.0f,
-                         panelY0 + 14.0f,
-                         bracketR,
-                         bracketG,
-                         bracketB,
-                         bracketA);
-
-  // Top-Right Corner Bracket
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX1 - 14.0f,
-                         panelY0,
-                         panelX1,
-                         panelY0 + 3.0f,
-                         bracketR,
-                         bracketG,
-                         bracketB,
-                         bracketA);
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX1 - 3.0f,
-                         panelY0,
-                         panelX1,
-                         panelY0 + 14.0f,
-                         bracketR,
-                         bracketG,
-                         bracketB,
-                         bracketA);
-
-  // Bottom-Left Corner Bracket
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0,
-                         panelY1 - 3.0f,
-                         panelX0 + 14.0f,
-                         panelY1,
-                         bracketR,
-                         bracketG,
-                         bracketB,
-                         bracketA);
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0,
-                         panelY1 - 14.0f,
-                         panelX0 + 3.0f,
-                         panelY1,
-                         bracketR,
-                         bracketG,
-                         bracketB,
-                         bracketA);
-
-  // Bottom-Right Corner Bracket
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX1 - 14.0f,
-                         panelY1 - 3.0f,
-                         panelX1,
-                         panelY1,
-                         bracketR,
-                         bracketG,
-                         bracketB,
-                         bracketA);
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX1 - 3.0f,
-                         panelY1 - 14.0f,
-                         panelX1,
-                         panelY1,
-                         bracketR,
-                         bracketG,
-                         bracketB,
-                         bracketA);
-
-  // CRT Horizontal Scanline Texture (Dimmer)
-  for (float scanY = historyTop; scanY < historyBottom; scanY += 3.0f) {
-    packed = packSolidQuad(&visual, kCap, packed,
-                           panelX0 + 4.0f,
-                           scanY,
-                           panelX1 - 4.0f,
-                           scanY + 1.0f,
-                           0,
-                           180,
-                           255,
-                           12);
-  }
-
-  // CRT Animated Electron Beam Sweep Line (Dimmer)
-  scanlinePhase += deltaTime * 0.5f; // Slower sweep
-  float laserSweepY =
-    historyTop + std::fmod(scanlinePhase, 1.0f) * (historyBottom - historyTop);
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0 + 4.0f,
-                         laserSweepY - 2.0f,
-                         panelX1 - 4.0f,
-                         laserSweepY + 1.0f,
-                         0,
-                         200,
-                         255,
-                         15);
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0 + 4.0f,
-                         laserSweepY,
-                         panelX1 - 4.0f,
-                         laserSweepY + 2.0f,
-                         0,
-                         245,
-                         255,
-                         60);
-
-  // CRT Phosphor Grain & Static Flicker Particles (More subtle)
-  uint32_t seed = static_cast<uint32_t>(caretMilliseconds);
-  for (int s = 0; s < 25; ++s) {
-    seed = seed * 1664525u + 1013904223u;
-    float staticX =
-      panelX0 + 8.0f +
-      static_cast<float>(seed % static_cast<uint32_t>(
-                                  std::max(10.0f, panelX1 - panelX0 - 24.0f)));
-    seed = seed * 1664525u + 1013904223u;
-    float staticY =
-      historyTop +
-      static_cast<float>(seed % static_cast<uint32_t>(
-                                  std::max(10.0f, historyBottom - historyTop)));
-    unsigned char staticAlpha = static_cast<unsigned char>(4 + (seed % 8));
-    packed = packSolidQuad(&visual, kCap, packed,
-                           staticX,
-                           staticY,
-                           staticX + 2.0f,
-                           staticY + 1.0f,
-                           160,
-                           230,
-                           255,
-                           staticAlpha);
-  }
-
-  // CRT Screen Glass Sheen Reflection
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0 + 10.0f,
-                         historyTop + 2.0f,
-                         panelX0 + 120.0f,
-                         historyTop + 45.0f,
-                         255,
-                         255,
-                         255,
-                         8);
-
-  // CRT Inner Edge Vignette Shadows
-  packed = packVerticalGradientQuad(&visual, kCap, packed,
-                                    panelX0 + 4.0f,
-                                    historyTop,
-                                    panelX1 - 4.0f,
-                                    historyTop + 10.0f,
-                                    0,
-                                    0,
-                                    0,
-                                    120,
-                                    0,
-                                    0,
-                                    0,
-                                    0);
-  packed = packVerticalGradientQuad(&visual, kCap, packed,
-                                    panelX0 + 4.0f,
-                                    historyBottom - 10.0f,
-                                    panelX1 - 4.0f,
-                                    historyBottom,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    120);
-
-  // Floating window extra borders & corner resize grip
-  if (isFloating) {
-    packed = packVerticalGradientQuad(&visual, kCap, packed,
-                                      panelX1 - 3.0f,
-                                      panelY0 + 2.0f,
-                                      panelX1,
-                                      panelY1 - 2.0f,
-                                      0,
-                                      240,
-                                      255,
-                                      255,
-                                      140,
-                                      80,
-                                      255,
-                                      240);
-    packed = packSolidQuad(&visual, kCap, packed,
+                         panelX1 - panelX0,
+                         panelY1 - panelY0,
+                         UiTheme::panelSurface());
+  packed = packOutlineRect(&visual,
+                           kCap,
+                           packed,
                            panelX0,
-                           panelY1 - 2.0f,
-                           panelX1,
-                           panelY1,
-                           neonR,
-                           neonG,
-                           255,
-                           200);
+                           panelY0,
+                           panelX1 - panelX0,
+                           panelY1 - panelY0,
+                           UiTheme::panelBorder(),
+                           1.0f);
 
-    // Prominent cyberpunk corner resize grip handle
-    // (bottom-right)
-    // 1. Dark cyan glass handle backdrop
-    packed = packSolidQuad(&visual, kCap, packed,
-                           panelX1 - 18.0f,
-                           panelY1 - 18.0f,
-                           panelX1 - 2.0f,
-                           panelY1 - 2.0f,
-                           10,
-                           35,
-                           60,
-                           240);
-    // 2. High-visibility neon border framing
-    packed = packSolidQuad(&visual, kCap, packed,
-                           panelX1 - 18.0f,
-                           panelY1 - 18.0f,
-                           panelX1 - 2.0f,
-                           panelY1 - 16.0f,
-                           0,
-                           240,
-                           255,
-                           255);
-    packed = packSolidQuad(&visual, kCap, packed,
-                           panelX1 - 18.0f,
-                           panelY1 - 18.0f,
-                           panelX1 - 16.0f,
-                           panelY1 - 2.0f,
-                           0,
-                           240,
-                           255,
-                           255);
-    // 3. Bright diagonal grip lines (stepped quads)
-    packed = packSolidQuad(&visual, kCap, packed,
-                           panelX1 - 14.0f,
-                           panelY1 - 5.0f,
-                           panelX1 - 5.0f,
-                           panelY1 - 3.0f,
-                           0,
-                           255,
-                           255,
-                           255);
-    packed = packSolidQuad(&visual, kCap, packed,
-                           panelX1 - 10.0f,
-                           panelY1 - 9.0f,
-                           panelX1 - 5.0f,
-                           panelY1 - 7.0f,
-                           0,
-                           255,
-                           255,
-                           255);
-    packed = packSolidQuad(&visual, kCap, packed,
-                           panelX1 - 6.0f,
-                           panelY1 - 13.0f,
-                           panelX1 - 5.0f,
-                           panelY1 - 11.0f,
-                           0,
-                           255,
-                           255,
-                           255);
+  packed = packSolidRect(&visual,
+                         kCap,
+                         packed,
+                         panelX0 + 1.0f,
+                         panelY0 + 1.0f,
+                         panelX1 - panelX0 - 2.0f,
+                         headerHeight - 1.0f,
+                         UiTheme::panelRaised());
+  const ColorRgba animatedAccent = UiTheme::applyOpacity(
+    UiTheme::accent(), static_cast<unsigned char>(205.0f + pulse * 50.0f));
+  packed = packLine(&visual,
+                    kCap,
+                    packed,
+                    panelX0 + 1.0f,
+                    panelY0 + headerHeight,
+                    panelX1 - 1.0f,
+                    panelY0 + headerHeight,
+                    animatedAccent,
+                    2.0f);
+  packed = packSolidRect(&visual,
+                         kCap,
+                         packed,
+                         panelX0 + 10.0f,
+                         panelY0 + 10.0f,
+                         6.0f,
+                         14.0f,
+                         animatedAccent);
+
+  const float historyInsetX = panelX0 + 9.0f;
+  const float historyInsetWidth = std::max(1.0f, panelX1 - panelX0 - 18.0f);
+  const float historyInsetHeight =
+    std::max(1.0f, historyBottom - historyTop + 8.0f);
+  packed = packSolidRect(&visual,
+                         kCap,
+                         packed,
+                         historyInsetX,
+                         historyTop - 4.0f,
+                         historyInsetWidth,
+                         historyInsetHeight,
+                         UiTheme::panelInset());
+  packed = packOutlineRect(&visual,
+                           kCap,
+                           packed,
+                           historyInsetX,
+                           historyTop - 4.0f,
+                           historyInsetWidth,
+                           historyInsetHeight,
+                           UiTheme::divider(),
+                           1.0f);
+
+  packed = packSolidRect(&visual,
+                         kCap,
+                         packed,
+                         panelX0 + 9.0f,
+                         inputTop + 3.0f,
+                         panelX1 - panelX0 - 18.0f,
+                         inputRowHeight - 9.0f,
+                         UiTheme::panelRaised());
+  packed = packOutlineRect(&visual,
+                           kCap,
+                           packed,
+                           panelX0 + 9.0f,
+                           inputTop + 3.0f,
+                           panelX1 - panelX0 - 18.0f,
+                           inputRowHeight - 9.0f,
+                           UiTheme::divider(),
+                           1.0f);
+  packed = packSolidRect(&visual,
+                         kCap,
+                         packed,
+                         panelX0 + 9.0f,
+                         inputTop + 3.0f,
+                         3.0f,
+                         inputRowHeight - 9.0f,
+                         animatedAccent);
+
+  if (isFloating) {
+    packed = packOutlineRect(&visual,
+                             kCap,
+                             packed,
+                             panelX0 + 2.0f,
+                             panelY0 + 2.0f,
+                             panelX1 - panelX0 - 4.0f,
+                             panelY1 - panelY0 - 4.0f,
+                             UiTheme::accentSoft(),
+                             1.0f);
+    for (int grip = 0; grip < 3; ++grip) {
+      const float offset = static_cast<float>(grip) * 4.0f;
+      packed = packLine(&visual,
+                        kCap,
+                        packed,
+                        panelX1 - 15.0f + offset,
+                        panelY1 - 4.0f,
+                        panelX1 - 4.0f,
+                        panelY1 - 15.0f + offset,
+                        UiTheme::accent(),
+                        1.5f);
+    }
   }
-
-  // Input row trough background
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0 + 8.0f,
-                         inputTop,
-                         panelX1 - 8.0f,
-                         panelY1 - 6.0f,
-                         5,
-                         11,
-                         20,
-                         245);
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0 + 8.0f,
-                         inputTop,
-                         panelX0 + 11.0f,
-                         panelY1 - 6.0f,
-                         0,
-                         220,
-                         255,
-                         255);
 
   int totalLines = static_cast<int>(history.size());
   if (totalLines > maxHistoryLines) {
-    float trackTop = historyTop;
-    float trackBottom = historyBottom;
-    float trackHeight = trackBottom - trackTop;
-    float scrollbarWidth = 4.0f;
-    float scrollbarRightMargin = isFloating ? 16.0f : 12.0f;
-    float barX1 = panelX1 - scrollbarWidth - scrollbarRightMargin;
-    float barX2 = panelX1 - scrollbarRightMargin;
+    const float trackTop = historyTop;
+    const float trackBottom = historyBottom;
+    const float trackHeight = trackBottom - trackTop;
+    const float scrollbarWidth = 4.0f;
+    const float scrollbarRightMargin = isFloating ? 16.0f : 12.0f;
+    const float barX1 = panelX1 - scrollbarWidth - scrollbarRightMargin;
+    const float barX2 = panelX1 - scrollbarRightMargin;
 
-    // Track background
-    packed = packSolidQuad(
-      &visual, kCap, packed, barX1, trackTop, barX2, trackBottom, 3, 8, 15, 120);
+    packed = packSolidRect(&visual,
+                           kCap,
+                           packed,
+                           barX1,
+                           trackTop,
+                           barX2 - barX1,
+                           trackHeight,
+                           UiTheme::divider());
 
     float thumbHeight = trackHeight * (static_cast<float>(maxHistoryLines) /
                                        static_cast<float>(totalLines));
     if (thumbHeight < 20.0f) {
       thumbHeight = 20.0f;
     }
-    int maxScroll = totalLines - maxHistoryLines;
-    float scrollPercent =
+    const int maxScroll = totalLines - maxHistoryLines;
+    const float scrollPercent =
       (maxScroll > 0)
         ? (static_cast<float>(scrollOffset) / static_cast<float>(maxScroll))
         : 0.0f;
@@ -2446,21 +2258,28 @@ CommandLine::AppendCommands(Renderer* r)
       (trackBottom - thumbHeight) - scrollPercent * (trackHeight - thumbHeight);
     thumbTop =
       std::clamp(thumbTop, trackTop + 2.0f, trackBottom - thumbHeight - 2.0f);
-    float thumbBottom = thumbTop + thumbHeight;
-    packed = packSolidQuad(&visual, kCap, packed,
+    packed = packSolidRect(&visual,
+                           kCap,
+                           packed,
                            barX1,
                            thumbTop,
-                           barX2,
-                           thumbBottom,
-                           0,
-                           190,
-                           255,
-                           160);
+                           barX2 - barX1,
+                           thumbHeight,
+                           animatedAccent);
   }
 
-  unsigned char titleColor[4] = { 180, 245, 255, 255 };
-  unsigned char promptColor[4] = { 0, 240, 255, 255 };
-  unsigned char inputColor[4] = { 240, 250, 255, 255 };
+  const ColorRgba primaryText = UiTheme::textPrimary();
+  const ColorRgba mutedText = UiTheme::textMuted();
+  const ColorRgba accentText = UiTheme::accent();
+  unsigned char titleColor[4] = {
+    primaryText.r, primaryText.g, primaryText.b, primaryText.a
+  };
+  unsigned char promptColor[4] = {
+    accentText.r, accentText.g, accentText.b, accentText.a
+  };
+  unsigned char inputColor[4] = {
+    primaryText.r, primaryText.g, primaryText.b, primaryText.a
+  };
 
   std::string paramHint = getParameterHint(currentInput);
   std::string statusText;
@@ -2468,34 +2287,37 @@ CommandLine::AppendCommands(Renderer* r)
 
   if (!completionHint.empty()) {
     statusText = completionHint;
-    statusColor[0] = 180;
-    statusColor[1] = 210;
-    statusColor[2] = 255;
+    statusColor[0] = accentText.r;
+    statusColor[1] = accentText.g;
+    statusColor[2] = accentText.b;
     statusColor[3] = 255;
   } else if (!paramHint.empty()) {
     statusText = paramHint;
-    statusColor[0] = 255;
-    statusColor[1] = 220;
-    statusColor[2] = 100;
+    const ColorRgba warningText = UiTheme::warning();
+    statusColor[0] = warningText.r;
+    statusColor[1] = warningText.g;
+    statusColor[2] = warningText.b;
     statusColor[3] = 255;
   } else {
-    statusText = "Tab complete  |  Double-click title to float";
-    statusColor[0] = 130;
-    statusColor[1] = 195;
-    statusColor[2] = 230;
+    statusText = "Tab complete  |  Double-click title: float";
+    statusColor[0] = mutedText.r;
+    statusColor[1] = mutedText.g;
+    statusColor[2] = mutedText.b;
     statusColor[3] = 255;
   }
 
   float headerWidth = panelX1 - panelX0;
   std::string titleStr =
-    isFloating ? "[ILLUMO // FLOATING CONSOLE]" : "[ILLUMO // DEV CONSOLE]";
+    isFloating ? "ILLUMO  /  FLOATING CONSOLE" : "ILLUMO  /  CONSOLE";
   if (headerWidth < 380.0f) {
-    titleStr = "[ILLUMO]";
+    titleStr = "ILLUMO";
   }
   std::string visibleTitle =
     truncateTextToWidth(titleStr, std::max(0.0f, headerWidth - 20.0f));
   if (!visibleTitle.empty()) {
-    packed = packFontLine(&visual, kCap, packed,
+    packed = packFontLine(&visual,
+                          kCap,
+                          packed,
                           panelX0 + 14.0f,
                           panelY0 + 9.0f,
                           visibleTitle.c_str(),
@@ -2509,17 +2331,22 @@ CommandLine::AppendCommands(Renderer* r)
     float closeX0 = panelX1 - 28.0f;
     float closeY0 = panelY0 + 6.0f;
     float closeY1 = panelY0 + 24.0f;
-    packed = packSolidQuad(&visual, kCap, packed,
+    packed = packSolidRect(&visual,
+                           kCap,
+                           packed,
                            closeX0,
                            closeY0,
-                           closeX1,
-                           closeY1,
-                           180,
-                           40,
-                           50,
-                           240);
+                           closeX1 - closeX0,
+                           closeY1 - closeY0,
+                           UiTheme::error());
     unsigned char closeTextColor[4] = { 255, 255, 255, 255 };
-    packed = packFontLine(&visual, kCap, packed, closeX0 + 6.0f, closeY0 + 3.0f, "X", closeTextColor);
+    packed = packFontLine(&visual,
+                          kCap,
+                          packed,
+                          closeX0 + 6.0f,
+                          closeY0 + 3.0f,
+                          "X",
+                          closeTextColor);
   }
 
   float titleWidth = measureFontText(visibleTitle);
@@ -2531,7 +2358,9 @@ CommandLine::AppendCommands(Renderer* r)
     if (!truncatedStatus.empty()) {
       float statusX =
         panelX1 - closeBtnWidth - measureFontText(truncatedStatus) - 16.0f;
-      packed = packFontLine(&visual, kCap, packed,
+      packed = packFontLine(&visual,
+                            kCap,
+                            packed,
                             statusX,
                             panelY0 + 9.0f,
                             truncatedStatus.c_str(),
@@ -2556,19 +2385,22 @@ CommandLine::AppendCommands(Renderer* r)
       const historyBuffer& item = history[static_cast<size_t>(i)];
       unsigned char itemColor[4] = { item.r, item.g, item.b, item.a };
       if (item.content.rfind("SUCCESS:", 0) == 0) {
-        itemColor[0] = 60;
-        itemColor[1] = 255;
-        itemColor[2] = 160;
+        const ColorRgba successText = UiTheme::success();
+        itemColor[0] = successText.r;
+        itemColor[1] = successText.g;
+        itemColor[2] = successText.b;
         itemColor[3] = 255;
       } else if (item.content.rfind("ERROR:", 0) == 0) {
-        itemColor[0] = 255;
-        itemColor[1] = 75;
-        itemColor[2] = 95;
+        const ColorRgba errorText = UiTheme::error();
+        itemColor[0] = errorText.r;
+        itemColor[1] = errorText.g;
+        itemColor[2] = errorText.b;
         itemColor[3] = 255;
       } else if (item.content.rfind("WARNING:", 0) == 0) {
-        itemColor[0] = 255;
-        itemColor[1] = 210;
-        itemColor[2] = 50;
+        const ColorRgba warningText = UiTheme::warning();
+        itemColor[0] = warningText.r;
+        itemColor[1] = warningText.g;
+        itemColor[2] = warningText.b;
         itemColor[3] = 255;
       }
       std::string truncatedLine =
@@ -2578,7 +2410,9 @@ CommandLine::AppendCommands(Renderer* r)
         // boundary to prevent abrupt popping.
         if (currentY >= historyTop - 12.0f &&
             currentY <= historyBottom + 2.0f) {
-          packed = packFontLine(&visual, kCap, packed,
+          packed = packFontLine(&visual,
+                                kCap,
+                                packed,
                                 panelX0 + 14.0f,
                                 currentY,
                                 truncatedLine.c_str(),
@@ -2617,26 +2451,27 @@ CommandLine::AppendCommands(Renderer* r)
     currentInput.substr(visibleStart, visibleEnd - visibleStart);
   float inputY = inputTop + 12.0f;
 
-  // Cyberpunk Prompt Pill Badge Box
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0 + 12.0f,
-                         inputY - 3.0f,
-                         panelX0 + 34.0f,
-                         inputY + 16.0f,
-                         15,
-                         45,
-                         75,
-                         230);
-  packed = packSolidQuad(&visual, kCap, packed,
-                         panelX0 + 12.0f,
-                         inputY - 3.0f,
-                         panelX0 + 14.0f,
-                         inputY + 16.0f,
-                         0,
-                         240,
-                         255,
-                         255);
-  packed = packFontLine(&visual, kCap, packed, panelX0 + 18.0f, inputY, ">", promptColor);
+  // Compact prompt marker keeps the input hierarchy readable without
+  // competing with command text.
+  packed = packSolidRect(&visual,
+                         kCap,
+                         packed,
+                         panelX0 + 15.0f,
+                         inputY - 2.0f,
+                         18.0f,
+                         18.0f,
+                         UiTheme::panelInset());
+  packed = packOutlineRect(&visual,
+                           kCap,
+                           packed,
+                           panelX0 + 15.0f,
+                           inputY - 2.0f,
+                           18.0f,
+                           18.0f,
+                           UiTheme::accentSoft(),
+                           1.0f);
+  packed = packFontLine(
+    &visual, kCap, packed, panelX0 + 18.0f, inputY, ">", promptColor);
 
   if (hasSelection()) {
     std::size_t selectionStart = std::min(cursorPosition, selectionAnchor);
@@ -2650,28 +2485,36 @@ CommandLine::AppendCommands(Renderer* r)
         highlightStart - visibleStart, highlightEnd - highlightStart);
       float highlightX0 = inputTextX + measureFontText(beforeSelection);
       float highlightX1 = highlightX0 + measureFontText(selectedText);
-      packed = packSolidQuad(&visual, kCap, packed,
+      packed = packSolidRect(&visual,
+                             kCap,
+                             packed,
                              highlightX0,
                              inputY - 3.0f,
-                             highlightX1,
-                             inputY + 16.0f,
-                             38,
-                             123,
-                             181,
-                             190);
+                             highlightX1 - highlightX0,
+                             19.0f,
+                             UiTheme::selection());
     }
   }
-  packed = packFontLine(&visual, kCap, packed, inputTextX, inputY, visibleInput.c_str(), inputColor);
+  packed = packFontLine(&visual,
+                        kCap,
+                        packed,
+                        inputTextX,
+                        inputY,
+                        visibleInput.c_str(),
+                        inputColor);
 
-  // Futuristic Ghost Text Auto-Suggestion
+  // Inline completion preview.
   if (cursorPosition == currentInput.size() &&
       visibleEnd == currentInput.size()) {
     std::string ghostText = getGhostSuggestion();
     if (!ghostText.empty()) {
       float ghostX = inputTextX + measureFontText(visibleInput);
       if (ghostX < inputTextX + inputAvailableWidth) {
-        unsigned char ghostColor[4] = { 0, 190, 230, 140 };
-        packed = packFontLine(&visual, kCap, packed, ghostX, inputY, ghostText.c_str(), ghostColor);
+        unsigned char ghostColor[4] = {
+          mutedText.r, mutedText.g, mutedText.b, 150
+        };
+        packed = packFontLine(
+          &visual, kCap, packed, ghostX, inputY, ghostText.c_str(), ghostColor);
       }
     }
   }
@@ -2682,56 +2525,24 @@ CommandLine::AppendCommands(Renderer* r)
     std::string textBeforeCaret =
       visibleInput.substr(0, cursorPosition - visibleStart);
     float caretX = inputTextX + measureFontText(textBeforeCaret);
-    // Futuristic Multi-Layer Laser Caret with Crosshair Ticks
-    // Layer 1: Outer soft aura glow
-    packed = packSolidQuad(&visual, kCap, packed,
-                           caretX - 3.0f,
-                           inputY - 4.0f,
-                           caretX + 5.0f,
-                           inputY + 17.0f,
-                           0,
-                           200,
-                           255,
-                           70);
-    // Layer 2: Mid neon cyan bar
-    packed = packSolidQuad(&visual, kCap, packed,
-                           caretX - 1.0f,
-                           inputY - 3.0f,
-                           caretX + 3.0f,
-                           inputY + 16.0f,
-                           0,
-                           240,
-                           255,
-                           180);
-    // Layer 3: Laser white core stick
-    packed = packSolidQuad(&visual, kCap, packed,
-                           caretX,
-                           inputY - 3.0f,
-                           caretX + 2.0f,
-                           inputY + 16.0f,
-                           220,
-                           255,
-                           255,
-                           255);
-    // Top & Bottom Crosshair Cap Ticks
-    packed = packSolidQuad(&visual, kCap, packed,
-                           caretX - 2.0f,
-                           inputY - 4.0f,
-                           caretX + 4.0f,
-                           inputY - 2.0f,
-                           0,
-                           245,
-                           255,
-                           240);
-    packed = packSolidQuad(&visual, kCap, packed,
-                           caretX - 2.0f,
-                           inputY + 15.0f,
-                           caretX + 4.0f,
-                           inputY + 17.0f,
-                           0,
-                           245,
-                           255,
-                           240);
+    packed = packLine(&visual,
+                      kCap,
+                      packed,
+                      caretX,
+                      inputY - 3.0f,
+                      caretX,
+                      inputY + 16.0f,
+                      UiTheme::accentSoft(),
+                      4.0f);
+    packed = packLine(&visual,
+                      kCap,
+                      packed,
+                      caretX,
+                      inputY - 3.0f,
+                      caretX,
+                      inputY + 16.0f,
+                      UiTheme::textPrimary(),
+                      1.5f);
   }
 
   if (packed < 4) {
@@ -2741,5 +2552,3 @@ CommandLine::AppendCommands(Renderer* r)
   visual.setVisible(true);
   return visual.AppendCommands(r);
 }
-
-

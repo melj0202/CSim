@@ -1,10 +1,11 @@
 #pragma once
 
 #include "PipelineState.h"
+#include "ResourceHandle.h"
 
-// Built-in draw styles owned by Renderer (Phase A). A style pairs a shader
-// table handle with pipeline defaults. Drawables keep content handles (mesh /
-// texture / domain buffers) and call Renderer::bindStyle before content tokens.
+// Registered draw styles owned by Renderer. A style pairs a shader handle with
+// pipeline defaults. GameVisual custom shaders may consume uMVP, uUsePixels,
+// u_resolution and, for sprites, uTexture on texture unit zero.
 enum class RenderStyleId : unsigned char
 {
   Canvas = 0,
@@ -17,7 +18,7 @@ enum class RenderStyleId : unsigned char
 
 struct RenderStyle
 {
-  unsigned long shaderHandle = 0;
+  ShaderHandle shaderHandle{};
   PipelineState pipeline;
   bool ready = false;
 };

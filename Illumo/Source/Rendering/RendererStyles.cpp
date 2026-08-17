@@ -1,5 +1,6 @@
 #include "IShaderProgram.h"
 #include "Renderer.h"
+#include "Services/Logger.h"
 
 // Built-in style shader sources and enrollment (D-R14). Owned by Renderer;
 // production drawables only bind styles and emit content tokens.
@@ -150,65 +151,160 @@ Renderer::ensureBuiltinStyles()
 
   // Canvas: file-backed shaders (same paths as historical Canvas enroll).
   {
-    RenderStyle& style = _styles[renderStyleIndex(RenderStyleId::Canvas)];
+    RenderStyle style;
     fillCanvasPipeline(style.pipeline);
-    style.shaderHandle = allocateHandle();
     ShaderPaths paths;
     paths.vertexPath = "Shader/canvas_vertex.glsl";
     paths.fragmentPath = "Shader/canvas_frag.glsl";
-    enrollShader(paths, style.shaderHandle);
-    style.ready = true;
+    style.shaderHandle = enrollShader(paths);
+    style.ready = style.shaderHandle.isValid();
+    builtinStyleHandles[renderStyleIndex(RenderStyleId::Canvas)] =
+      createStyle(style);
   }
 
   // UI text (GLString / SplashText / FPS overlay).
   {
-    RenderStyle& style = _styles[renderStyleIndex(RenderStyleId::UiText)];
+    RenderStyle style;
     fillUiBlendPipeline(style.pipeline);
-    style.shaderHandle = allocateHandle();
     ShaderSources sources;
     sources.vertexSource = kUiTextVertexShader;
     sources.fragmentSource = kUiTextFragmentShader;
-    enrollShader(sources, style.shaderHandle);
-    style.ready = true;
+    style.shaderHandle = enrollShader(sources);
+    style.ready = style.shaderHandle.isValid();
+    builtinStyleHandles[renderStyleIndex(RenderStyleId::UiText)] =
+      createStyle(style);
   }
 
   // Console panel batch (CommandLine).
   {
-    RenderStyle& style = _styles[renderStyleIndex(RenderStyleId::Console)];
+    RenderStyle style;
     fillUiBlendPipeline(style.pipeline);
-    style.shaderHandle = allocateHandle();
     ShaderSources sources;
     sources.vertexSource = kConsoleVertexShader;
     sources.fragmentSource = kConsoleFragmentShader;
-    enrollShader(sources, style.shaderHandle);
-    style.ready = true;
+    style.shaderHandle = enrollShader(sources);
+    style.ready = style.shaderHandle.isValid();
+    builtinStyleHandles[renderStyleIndex(RenderStyleId::Console)] =
+      createStyle(style);
   }
 
   // Shape primitives (GameVisual).
   {
-    RenderStyle& style = _styles[renderStyleIndex(RenderStyleId::Shape)];
+    RenderStyle style;
     fillUiBlendPipeline(style.pipeline);
-    style.shaderHandle = allocateHandle();
     ShaderSources sources;
     sources.vertexSource = kShapeVertexShader;
     sources.fragmentSource = kShapeFragmentShader;
-    enrollShader(sources, style.shaderHandle);
-    style.ready = true;
+    style.shaderHandle = enrollShader(sources);
+    style.ready = style.shaderHandle.isValid();
+    builtinStyleHandles[renderStyleIndex(RenderStyleId::Shape)] =
+      createStyle(style);
   }
 
   // Sprite primitives (GameVisual).
   {
-    RenderStyle& style = _styles[renderStyleIndex(RenderStyleId::Sprite)];
+    RenderStyle style;
     fillUiBlendPipeline(style.pipeline);
-    style.shaderHandle = allocateHandle();
     ShaderSources sources;
     sources.vertexSource = kSpriteVertexShader;
     sources.fragmentSource = kSpriteFragmentShader;
-    enrollShader(sources, style.shaderHandle);
-    style.ready = true;
+    style.shaderHandle = enrollShader(sources);
+    style.ready = style.shaderHandle.isValid();
+    builtinStyleHandles[renderStyleIndex(RenderStyleId::Sprite)] =
+      createStyle(style);
   }
 
   _builtinStylesReady = true;
+}
+
+RenderStyleHandle
+Renderer::createStyle(const RenderStyle& style)
+{
+  if (!style.ready || !style.shaderHandle.isValid()) {
+    return RenderStyleHandle{};
+  }
+  RenderStyleHandle handle = styleHandles.allocate();
+  RenderStyleEntry entry;
+  entry.generation = handle.generation;
+  entry.style = style;
+  styleRegistry[handle.slot] = entry;
+  return handle;
+}
+
+bool
+Renderer::updateStyle(RenderStyleHandle handle, const RenderStyle& style)
+{
+  std::unordered_map<uint32_t, RenderStyleEntry>::iterator it =
+    styleRegistry.find(handle.slot);
+  if (!styleHandles.isCurrent(handle) || it == styleRegistry.end() ||
+      it->second.generation != handle.generation || !style.ready ||
+      !style.shaderHandle.isValid()) {
+    Logger::LogWarning("updateStyle: invalid or stale style ignored");
+    return false;
+  }
+  it->second.style = style;
+  return true;
+}
+
+bool
+Renderer::destroyStyle(RenderStyleHandle handle)
+{
+  std::unordered_map<uint32_t, RenderStyleEntry>::iterator it =
+    styleRegistry.find(handle.slot);
+  if (!styleHandles.isCurrent(handle) || it == styleRegistry.end() ||
+      it->second.generation != handle.generation) {
+    Logger::LogWarning("destroyStyle: stale style handle ignored");
+    return false;
+  }
+  styleRegistry.erase(it);
+  return styleHandles.release(handle);
+}
+
+const RenderStyle*
+Renderer::getStyle(RenderStyleHandle handle) const
+{
+  std::unordered_map<uint32_t, RenderStyleEntry>::const_iterator it =
+    styleRegistry.find(handle.slot);
+  if (!styleHandles.isCurrent(handle) || it == styleRegistry.end() ||
+      it->second.generation != handle.generation || !it->second.style.ready) {
+    return nullptr;
+  }
+  return &it->second.style;
+}
+
+RenderStyle*
+Renderer::getStyle(RenderStyleHandle handle)
+{
+  std::unordered_map<uint32_t, RenderStyleEntry>::iterator it =
+    styleRegistry.find(handle.slot);
+  if (!styleHandles.isCurrent(handle) || it == styleRegistry.end() ||
+      it->second.generation != handle.generation || !it->second.style.ready) {
+    return nullptr;
+  }
+  return &it->second.style;
+}
+
+bool
+Renderer::bindStyle(RenderStyleHandle handle)
+{
+  const RenderStyle* style = getStyle(handle);
+  if (!style) {
+    Logger::LogWarning("bindStyle: invalid or stale style ignored");
+    return false;
+  }
+  pushPipelineState(style->pipeline);
+  pushSetShader(style->shaderHandle);
+  return true;
+}
+
+RenderStyleHandle
+Renderer::getBuiltinStyleHandle(RenderStyleId id) const
+{
+  const unsigned index = renderStyleIndex(id);
+  if (index >= renderStyleCount()) {
+    return RenderStyleHandle{};
+  }
+  return builtinStyleHandles[index];
 }
 
 const RenderStyle*
@@ -218,11 +314,7 @@ Renderer::getStyle(RenderStyleId id) const
   if (index >= renderStyleCount()) {
     return nullptr;
   }
-  const RenderStyle& style = _styles[index];
-  if (!style.ready) {
-    return nullptr;
-  }
-  return &style;
+  return getStyle(builtinStyleHandles[index]);
 }
 
 RenderStyle*
@@ -233,22 +325,12 @@ Renderer::getStyle(RenderStyleId id)
   if (index >= renderStyleCount()) {
     return nullptr;
   }
-  RenderStyle& style = _styles[index];
-  if (!style.ready) {
-    return nullptr;
-  }
-  return &style;
+  return getStyle(builtinStyleHandles[index]);
 }
 
 bool
 Renderer::bindStyle(RenderStyleId id)
 {
   ensureBuiltinStyles();
-  const RenderStyle* style = getStyle(id);
-  if (!style) {
-    return false;
-  }
-  pushPipelineState(style->pipeline);
-  pushSetShader(style->shaderHandle);
-  return true;
+  return bindStyle(getBuiltinStyleHandle(id));
 }

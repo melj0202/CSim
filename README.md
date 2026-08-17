@@ -7,7 +7,7 @@ An improved version of a previous Game of Life program (OpenGL / GLFW).
 ```
 illumo/
   docs/                 # All first-party documentation and LaTeX sources
-    latex/              # One PDF entrypoint plus chapter sources
+    latex/              # Prose-book and chart-pack PDF entrypoints
     packages/           # Source-package maps formerly scattered by code
     sessions/           # Dated implementation and verification records
     history/            # Superseded/original material
@@ -20,7 +20,6 @@ illumo/
       Rendering/        # Graphics / backend interfaces
       Services/         # Log, input, env, CLI, allocators
       Foundation/       # Macros and shared helpers
-      Assets/           # Runtime asset data
       Platform/         # OS entry + native save/load
       Tests/
     Shader/             # GLSL shaders
@@ -36,24 +35,21 @@ under `docs/`. Start with:
 
 - `docs/README.md` — documentation map and PDF build commands
 - `docs/architecture-consensus.md` — canonical current architecture
-- `docs/latex/illumo.tex` — the only current LaTeX/PDF entrypoint
-- `docs/output/illumo.pdf` — generated locally; not a source of truth
+- `docs/latex/illumo.tex` — the canonical prose-book entrypoint
+- `docs/latex/architecture-map.tex` — the current chart-only entrypoint
+- `docs/output/*.pdf` — generated locally; never sources of truth
 
-**Current stack (short):** token renderer (`AppendCommands` → `IBackend`),
-`SparseCellGrid` domain + published dual-grid simulation / padded `CanvasView`
-camera cache / active-texel RGB fades + tiled multi-rect upload, retained
-node-recycled broad mirror replacement and overlap-skipping incremental catch-up,
-flat-indexed chunk-local cell-candidate scratch /
-per-target candidate-or-halo CA `nextState`, separate stored/counting masks,
-cell-precise state/counting change masks, boundary-gated target discovery,
-lazy candidate-counter initialization, insertion-only flat-index growth checks,
-direct-source coarse-range parallel preparation and evaluation, direct sparse
-result construction in recycled transactional chunk-map nodes,
-cost-adaptive candidate/halo frontier stepping with transactionally cached population totals,
-adaptive exact 18x18 neighborhood memoization, retained complete-halo
-targets/results, cached 256x9 rule transitions and direct
-counting-mask rolling rows, headless `IllumoTests` with
-`MockBackend`.
+**Current stack (short):** reusable 2D token renderer (`AppendCommands` →
+`IBackend`) with typed generational handles, painter-correct primitives,
+dynamic quad buffers, primitive-composed themed UI, and asynchronous
+texture/shader assets. `SparseCellGrid` uses published dual-grid simulation,
+exact retained candidate topology, direct-source parallel preparation and
+evaluation, recycled transactional chunk nodes, adaptive frontier stepping,
+and cached 256x9 transitions. `CanvasView` presents a padded, integer-LOD
+camera cache through a world-space `GameVisual` sprite, with active-texel RGB
+fades and tiled multi-rectangle uploads through a non-waiting PBO ring.
+Headless `IllumoTests` use `MockBackend`. Windows is the supported runtime;
+Linux and macOS retain stale source/CMake scaffolding pending native validation.
 
 **Architecture (single source for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — unified consensus (purpose, history of old plans, current renderer/sim truth, decisions, bugs, debt, work order).
 
@@ -89,7 +85,8 @@ ctest --test-dir build -C Release -N -L Illumo
 ```
 
 CTest registers one process-isolated entry per logical case. `IllumoTests.exe`
-is shared only to avoid recompiling the same production sources 80 times; use
+is shared only to avoid recompiling the same production sources for every
+case; use
 `IllumoTests.exe --list` to print the exact names. Each case gets its own
 working directory under `build/Testing/Illumo/`.
 
@@ -160,6 +157,7 @@ builds only. Type `help` for the live list or `help <command>` for details.
 | Canvas | `clear_canvas`, `randomize [percent]`, `setcell <x> <y> <state>` |
 | Rules and files | `ruleset [name]`, `save <file>`, `load <file>`, `save_dialog`, `load_dialog` |
 | Camera and display | `camera [x y [zoom]]`, `camera_reset`, `fullscreen`, `fps` |
+| Renderer diagnostics | `renderer_demo [on|off]`, `assets`, `asset_reload <all|path>` |
 | Timing | `tps`, `speed`, `fade` |
 | Environment | `get`, `set`, `toggle`, `vars [filter]` |
 | Console/app | `help`, `echo`, `clear`, `close`, `quit` |

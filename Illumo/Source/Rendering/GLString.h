@@ -3,6 +3,7 @@
 
 #include "Drawable.h"
 #include "Rendering/Primitives/GameVisual.h"
+#include "Rendering/Primitives/UiTheme.h"
 #include <cstdint>
 #include <string>
 
@@ -20,6 +21,7 @@ private:
 
   Renderer* renderer;
   GameVisual visual;
+  UiPanelStyle panelStyle;
 
   void syncVisual();
   void markContentDirty() { contentDirty = true; }
@@ -49,6 +51,8 @@ public:
   void setSize(int newSize);
   void setX(int newX);
   void setY(int newY);
+  void setPanelStyle(const UiPanelStyle& style);
+  void clearPanelStyle();
   void DrawImpl();
   bool AppendCommands(Renderer* renderer) override;
 

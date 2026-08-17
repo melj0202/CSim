@@ -50,5 +50,6 @@ IllumoContextHasDebugCore(const IllumoContext* c)
 {
   return c != nullptr && c->envVars != nullptr && c->window != nullptr &&
          c->renderer != nullptr && c->inputManager != nullptr &&
-         c->commandLine != nullptr && c->commandRegistry != nullptr;
+         c->commandLine != nullptr && c->commandRegistry != nullptr &&
+         c->assetManager != nullptr;
 }

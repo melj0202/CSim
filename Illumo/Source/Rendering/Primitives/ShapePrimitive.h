@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PrimitiveTypes.h"
+#include "Rendering/ResourceHandle.h"
 
 enum class ShapeKind : unsigned char
 {
@@ -22,5 +23,8 @@ struct ShapePrimitive
   float y1 = 0.0f;
   float lineWidth = 1.0f; // OutlineRect border / Line thickness in space units
   ColorRgba color;
+  Transform2D transform;
+  RenderStyleHandle styleHandle{};
+  int drawOrder = 0;
   bool visible = true;
 };
