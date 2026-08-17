@@ -40,13 +40,18 @@ under `docs/`. Start with:
 - `docs/output/illumo.pdf` — generated locally; not a source of truth
 
 **Current stack (short):** token renderer (`AppendCommands` → `IBackend`),
-`SparseCellGrid` domain + changed-chunk `CanvasView` sampling / active-texel
-RGB fades + dirty-rect upload, retained flat-indexed chunk-local cell-candidate scratch /
+`SparseCellGrid` domain + published dual-grid simulation / padded `CanvasView`
+camera cache / active-texel RGB fades + tiled multi-rect upload, retained
+node-recycled broad mirror replacement and overlap-skipping incremental catch-up,
+flat-indexed chunk-local cell-candidate scratch /
 per-target candidate-or-halo CA `nextState`, separate stored/counting masks,
-mask-derived target discovery, lazy candidate-counter initialization,
-target-parallel preparation and coarse parallel evaluation, recycled transactional chunk-map nodes,
+cell-precise state/counting change masks, boundary-gated target discovery,
+lazy candidate-counter initialization, insertion-only flat-index growth checks,
+direct-source coarse-range parallel preparation and evaluation, direct sparse
+result construction in recycled transactional chunk-map nodes,
 cost-adaptive candidate/halo frontier stepping with transactionally cached population totals,
-retained complete-halo targets/results, cached 256x9 rule transitions and direct
+adaptive exact 18x18 neighborhood memoization, retained complete-halo
+targets/results, cached 256x9 rule transitions and direct
 counting-mask rolling rows, headless `IllumoTests` with
 `MockBackend`.
 
@@ -139,6 +144,11 @@ illumo.exe --help
 illumo.exe --version
 ```
 
+Presentation is synchronized to the monitor by default (`"vsync": "1"`). Set
+`vsync` to `0` for uncapped profiling; Debug builds also apply `toggle vsync`
+live. The Debug FPS overlay reports frame-paced swap cadence separately from
+CPU submissions so an uncapped submission rate is not presented as display FPS.
+
 ## Developer console commands
 
 The in-app console is provided by `DebugModule`, so it is available in Debug
@@ -154,15 +164,25 @@ builds only. Type `help` for the live list or `help <command>` for details.
 | Environment | `get`, `set`, `toggle`, `vars [filter]` |
 | Console/app | `help`, `echo`, `clear`, `close`, `quit` |
 
-Normal mode guarantees one due generation. It starts a second synchronous
-generation only when the first generation's measured cost projects both inside
-the 4 ms simulation slice for that render frame. `status` reports requested and
-recently achieved TPS, step/frame simulation time, and budget deferral.
+Normal mode keeps at most one generation in flight on a persistent worker and
+publishes completed sparse grids only at frame boundaries. It never builds a
+catch-up backlog; overdue whole steps are dropped while the fractional clock
+remainder is retained. Pause, edit, save/load, ruleset changes, manual stepping,
+and shutdown drain first. `status` reports requested and achieved published TPS
+plus rolling 256-sample simulation, cache-refill, upload-byte, and
+upload-rectangle p50/p95/max values. Broad generations publish a lightweight
+replacement marker rather than a complete chunk snapshot: the spare grid reads
+the immutable published grid directly, updates retained nodes in place, and
+reuses exact candidate topology when the same source grid returns unchanged.
 
-The bounded canvas texture retains 50% headroom after small growth so nearby
-smooth-zoom sizes reuse the same allocation. Replacements preserve the opaque
-handle while deleting the old GL texture/PBOs, and destroying the view releases
-its texture immediately.
+The visible viewport samples from a globally aligned cache padded by two
+16-cell chunks on each side. Camera motion inside that cache changes only the
+MVP. Far zoom uses integer density LOD with 80% refinement hysteresis. Dirty
+16x16-texel tiles merge into at most eight upload rectangles. Uploads through
+64 KiB use direct `glTexSubImage2D`; larger uploads use the first available slot
+in a non-waiting three-PBO/fence ring and fall back to direct upload when all
+slots are busy or mapping fails. Replacements preserve the opaque handle while
+deleting the old GL texture, PBOs, and fences.
 
 Save commands append `.illumo` when no extension is supplied. Loading validates
 the save before changing the canvas and activates the ruleset stored in it.

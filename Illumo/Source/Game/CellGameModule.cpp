@@ -95,12 +95,12 @@ CellGameModule::CellGameModule()
   , simStepSeconds(1.0 / 30.0)
   , requestedSimulationTps(30.0)
   , achievedSimulationTps(0.0)
-  , simulationFrameBudgetSeconds(0.004)
   , lastSimulationStepMilliseconds(0.0)
   , lastSimulationFrameMilliseconds(0.0)
   , lastSimulationSteps(0)
   , simulationDebtDropped(false)
   , simulationBudgetLimited(false)
+  , mirrorDeltaValid(false)
   , wireworldBrush(WireworldRuleSet::CELL_CONDUCTOR)
   , modeSplash(nullptr)
 {
@@ -256,6 +256,68 @@ CellGameModule::updateVisualTargets()
   cellContext->getCanvasView()->rebuildTargetsFromGrid();
 }
 
+bool
+CellGameModule::consumeCompletedSimulation(bool waitForCompletion)
+{
+  SparseCellGrid* completedGrid = nullptr;
+  SparseGenerationDelta completedDelta;
+  double elapsedMilliseconds = 0.0;
+  bool advanceSucceeded = false;
+  SimulationRunnerTimings timings;
+  const bool completed =
+    waitForCompletion
+      ? simulationRunner.waitAndTakeCompleted(&completedGrid,
+                                              &completedDelta,
+                                              &elapsedMilliseconds,
+                                              &advanceSucceeded,
+                                              &timings)
+      : simulationRunner.tryTakeCompleted(&completedGrid,
+                                          &completedDelta,
+                                          &elapsedMilliseconds,
+                                          &advanceSucceeded,
+                                          &timings);
+  if (!completed) {
+    return false;
+  }
+  if (!advanceSucceeded || completedGrid != cellContext->getSpareGrid()) {
+    mirrorDeltaValid = false;
+    return true;
+  }
+  cellContext->publishSpareGrid(completedDelta);
+  mirrorDelta = std::move(completedDelta);
+  mirrorDeltaValid = true;
+  lastSimulationRunnerTimings = timings;
+  lastSimulationStepMilliseconds = elapsedMilliseconds;
+  lastSimulationFrameMilliseconds = elapsedMilliseconds;
+  lastSimulationSteps += 1;
+  simulationStepMetric.add(elapsedMilliseconds);
+  simulationMirrorMetric.add(timings.mirrorMilliseconds);
+  simulationAdvanceMetric.add(timings.advanceMilliseconds);
+  simulationCaptureMetric.add(timings.captureMilliseconds);
+  return true;
+}
+
+void
+CellGameModule::drainSimulation()
+{
+  if (cellContext == nullptr) {
+    return;
+  }
+  while (simulationRunner.isBusy()) {
+    if (!consumeCompletedSimulation(true)) {
+      break;
+    }
+  }
+}
+
+void
+CellGameModule::prepareGridMutation()
+{
+  drainSimulation();
+  mirrorDelta.clear();
+  mirrorDeltaValid = false;
+}
+
 void
 CellGameModule::registerConsoleCommands()
 {
@@ -283,6 +345,7 @@ CellGameModule::registerConsoleCommands()
       return;
     }
 
+    prepareGridMutation();
     if (cellContext->setRuleSet(mode)) {
       cellContext->getCanvasView()->rebuildPalette(cellContext->getRuleSet());
       updateVisualTargets();
@@ -421,6 +484,7 @@ CellGameModule::registerConsoleCommands()
         ic->commandLine->logError("Usage: clear_canvas");
         return;
       }
+      prepareGridMutation();
       cellContext->getGrid()->clear();
       updateVisualTargets();
       cellContext->getCanvasView()->snapVisualToTargets();
@@ -441,6 +505,7 @@ CellGameModule::registerConsoleCommands()
       }
 
       CanvasView* canvas = cellContext->getCanvasView();
+      prepareGridMutation();
       canvas->syncVisibleRegion();
       std::mt19937 generator(std::random_device{}());
       std::uniform_real_distribution<double> distribution(0.0, 100.0);
@@ -476,6 +541,7 @@ CellGameModule::registerConsoleCommands()
         ic->commandLine->logError("Usage: setcell <x> <y> <state 0..255>");
         return;
       }
+      prepareGridMutation();
       cellContext->getGrid()->setCell(CellAddress{ x, y },
                                       static_cast<unsigned char>(state));
       ic->commandLine->logSuccess("Cell (" + std::to_string(x) + ", " +
@@ -559,6 +625,7 @@ CellGameModule::unregisterConsoleCommands()
 void
 CellGameModule::setRunning(bool running)
 {
+  prepareGridMutation();
   currentState = running ? CellState::NORMAL : CellState::EDIT;
   simAccum = 0.0;
   achievedSimulationTps = 0.0;
@@ -575,6 +642,7 @@ CellGameModule::setRunning(bool running)
 void
 CellGameModule::stepSimulation(int generations)
 {
+  prepareGridMutation();
   currentState = CellState::EDIT;
   simAccum = 0.0;
   showModeSplash("EDIT");
@@ -616,7 +684,11 @@ CellGameModule::printStatus() const
     std::to_string(cellContext->getGrid()->getAllocatedChunkCount()) +
     "; fading texels=" + std::to_string(canvas->getFadingTexelCount()) +
     ", last sample=" + std::to_string(canvas->getLastSampledTexelCount()) +
-    ", last fade visits=" + std::to_string(canvas->getLastFadeVisitCount()));
+    ", last fade visits=" + std::to_string(canvas->getLastFadeVisitCount()) +
+    ", cache=" + std::to_string(canvas->getCachedTexelWidth()) + "x" +
+    std::to_string(canvas->getCachedTexelHeight()) + "@" +
+    std::to_string(canvas->getCellsPerTexel()) + " cells/texel" +
+    ", refills=" + std::to_string(canvas->getCacheRefillCount()));
   ic->commandLine->logNormal(
     "Rate: requested=" + std::to_string(requestedSimulationTps) + " tps (" +
     ic->envVars->getVar("tps").value + " x " +
@@ -637,8 +709,15 @@ CellGameModule::printStatus() const
     std::to_string(simulationStats.allocatedChunkNodeCount) +
     ", reused=" + std::to_string(simulationStats.reusedChunkNodeCount) +
     ", retained=" + std::to_string(simulationStats.retainedChunkNodeCount) +
-    ", work ranges=" + std::to_string(simulationStats.candidateWorkRangeCount) +
-    ", changed=" + std::to_string(simulationStats.changedChunkCount) +
+    ", enrollments/growth/output=" +
+    std::to_string(simulationStats.candidateEnrollmentAttemptCount) + "/" +
+    std::to_string(simulationStats.candidateIndexGrowthCount) + "/" +
+    std::to_string(simulationStats.producedChunkCount) + ", prep/work ranges=" +
+    std::to_string(simulationStats.candidatePreparationRangeCount) + "/" +
+    std::to_string(simulationStats.candidateWorkRangeCount) + ", changed=" +
+    std::to_string(simulationStats.changedChunkCount) + " chunks/" +
+    std::to_string(simulationStats.changedCellCount) + " cells (counted=" +
+    std::to_string(simulationStats.countedChangedCellCount) + ")" +
     ", frontier targets=" +
     std::to_string(simulationStats.frontierTargetCount) +
     ", frontier sources=" +
@@ -647,7 +726,23 @@ CellGameModule::printStatus() const
     std::to_string(simulationStats.frontierEstimatedWork) + "/" +
     std::to_string(simulationStats.completeEstimatedWork) + ", prep workers=" +
     std::to_string(simulationStats.candidatePreparationWorkerCount) +
-    ", workers=" + std::to_string(simulationStats.workerCount) + ", path=" +
+    ", workers=" + std::to_string(simulationStats.workerCount) +
+    ", candidate stages=" +
+    std::to_string(simulationStats.candidateDiscoveryMilliseconds) + "/" +
+    std::to_string(simulationStats.candidatePreparationMilliseconds) + "/" +
+    std::to_string(simulationStats.candidateEvaluationMilliseconds) + "/" +
+    std::to_string(simulationStats.candidateChangeTrackingMilliseconds) + "/" +
+    std::to_string(simulationStats.candidateRecycleMilliseconds) + "/" +
+    std::to_string(simulationStats.candidateOutputMilliseconds) + "/" +
+    std::to_string(simulationStats.candidateMergeMilliseconds) + " ms" +
+    ", memo=" + std::to_string(simulationStats.memoHitCount) + "/" +
+    std::to_string(simulationStats.memoProbeCount) +
+    " hits, entries=" + std::to_string(simulationStats.memoEntryCount) +
+    ", bytes=" + std::to_string(simulationStats.memoMemoryBytes) +
+    (simulationStats.chunkMemoActive ? " active" : " adaptive") +
+    ", topology=" +
+    (simulationStats.reusedCandidateTopology ? "reused" : "rebuilt") +
+    ", path=" +
     (simulationStats.usedChangedFrontier
        ? "frontier"
        : (simulationStats.usedMixedTargets
@@ -656,12 +751,40 @@ CellGameModule::printStatus() const
     ", steps this frame=" + std::to_string(lastSimulationSteps) +
     ", step/frame ms=" + std::to_string(lastSimulationStepMilliseconds) + "/" +
     std::to_string(lastSimulationFrameMilliseconds) +
+    ", step p50/p95/max=" + std::to_string(simulationStepMetric.median()) +
+    "/" + std::to_string(simulationStepMetric.p95()) + "/" +
+    std::to_string(simulationStepMetric.maximum()) + " ms" +
+    ", worker mirror/advance/capture=" +
+    std::to_string(lastSimulationRunnerTimings.mirrorMilliseconds) + "/" +
+    std::to_string(lastSimulationRunnerTimings.advanceMilliseconds) + "/" +
+    std::to_string(lastSimulationRunnerTimings.captureMilliseconds) + " ms" +
     (simulationDebtDropped ? ", catch-up dropped" : ""));
+  ic->commandLine->logNormal(
+    "Worker stages p50/p95 ms: mirror=" +
+    std::to_string(simulationMirrorMetric.median()) + "/" +
+    std::to_string(simulationMirrorMetric.p95()) +
+    ", advance=" + std::to_string(simulationAdvanceMetric.median()) + "/" +
+    std::to_string(simulationAdvanceMetric.p95()) +
+    ", capture=" + std::to_string(simulationCaptureMetric.median()) + "/" +
+    std::to_string(simulationCaptureMetric.p95()));
+  ic->commandLine->logNormal(
+    "Presentation: refill p50/p95/max=" +
+    std::to_string(canvas->getCacheRefillMetric().median()) + "/" +
+    std::to_string(canvas->getCacheRefillMetric().p95()) + "/" +
+    std::to_string(canvas->getCacheRefillMetric().maximum()) +
+    " ms, last upload=" + std::to_string(canvas->getLastUploadByteCount()) +
+    " bytes/" + std::to_string(canvas->getLastUploadRectCount()) +
+    " rects, upload bytes p50/p95/max=" +
+    std::to_string(canvas->getUploadByteMetric().median()) + "/" +
+    std::to_string(canvas->getUploadByteMetric().p95()) + "/" +
+    std::to_string(canvas->getUploadByteMetric().maximum()) +
+    ", upload rects p50/p95/max=" +
+    std::to_string(canvas->getUploadRectMetric().median()) + "/" +
+    std::to_string(canvas->getUploadRectMetric().p95()) + "/" +
+    std::to_string(canvas->getUploadRectMetric().maximum()));
   if (simulationBudgetLimited) {
     ic->commandLine->logNormal(
-      "Simulation frame budget: second step deferred after " +
-      std::to_string(lastSimulationFrameMilliseconds) + " ms of " +
-      std::to_string(simulationFrameBudgetSeconds * 1000.0) + " ms");
+      "Simulation worker: due generation deferred while one is in flight");
   }
   ic->commandLine->logNormal("Camera: x=" + std::to_string(cameraPosition.x) +
                              " y=" + std::to_string(cameraPosition.y) +
@@ -706,11 +829,15 @@ CellGameModule::Update(double dt)
   if (cellContext == nullptr || ic == nullptr) {
     return;
   }
+  lastSimulationSteps = 0;
+  lastSimulationFrameMilliseconds = 0.0;
+  consumeCompletedSimulation(false);
 
   // Apply ruleset changes from console (`ruleset SEEDS`) or env ModeString.
   {
     std::string wanted = ic->envVars->getVar("ModeString").value;
     if (!wanted.empty() && wanted != cellContext->getModeString()) {
+      prepareGridMutation();
       if (cellContext->setRuleSet(wanted)) {
         std::string msg = "Active ruleset: " + cellContext->getModeString();
         Logger::LogInfo(msg.c_str());
@@ -744,6 +871,7 @@ CellGameModule::Update(double dt)
   if (!ic->commandLine->isOpen &&
       ic->inputManager->isActionActive("ToggleState")) {
     if (currentState == CellState::NORMAL) {
+      drainSimulation();
       currentState = CellState::EDIT;
       showModeSplash("EDIT");
       Logger::LogInfo("State changed to EDIT");
@@ -786,6 +914,8 @@ CellGameModule::Update(double dt)
 void
 CellGameModule::Exit()
 {
+  drainSimulation();
+  simulationRunner.shutdown();
   unregisterConsoleCommands();
   modeSplash.reset();
   delete cellContext;
@@ -795,67 +925,40 @@ CellGameModule::Exit()
 void
 CellGameModule::Normal(double dt)
 {
-  // Pick up tps / speedFactor changes from envvars.json or console (`tps 60`).
   syncSimRateFromEnv();
-
-  // Advance simulation on the tps clock, not every render frame.
   if (dt < 0.0) {
     dt = 0.0;
   }
-  // Avoid huge single-frame jumps after a breakpoint / alt-tab.
   if (dt > 0.25) {
     dt = 0.25;
   }
 
   simAccum += dt;
-
-  // Favor camera/input responsiveness over catching up indefinitely. Always
-  // complete one due generation. Start a second only when the first
-  // generation's measured cost projects that both fit in the frame slice.
-  const int maxSteps = 2;
-  const std::chrono::steady_clock::time_point simulationFrameStart =
-    std::chrono::steady_clock::now();
-  double longestStepSeconds = 0.0;
-  int steps = 0;
   simulationBudgetLimited = false;
-  while (simAccum >= simStepSeconds && steps < maxSteps) {
-    if (steps > 0) {
-      const double elapsedSeconds =
-        std::chrono::duration<double>(std::chrono::steady_clock::now() -
-                                      simulationFrameStart)
-          .count();
-      if (elapsedSeconds + longestStepSeconds > simulationFrameBudgetSeconds) {
-        FrameMarkNamed("Sim.frameBudgetLimited");
-        simulationBudgetLimited = true;
-        break;
-      }
+  if (simAccum >= simStepSeconds && !simulationRunner.isBusy()) {
+    SparseGenerationDelta transferDelta;
+    const bool useMirrorDelta = mirrorDeltaValid;
+    if (useMirrorDelta) {
+      transferDelta = std::move(mirrorDelta);
     }
-
-    const std::chrono::steady_clock::time_point stepStart =
-      std::chrono::steady_clock::now();
-    this->cellContext->getGrid()->advance(*this->cellContext->getRuleSet());
-    const double stepSeconds = std::chrono::duration<double>(
-                                 std::chrono::steady_clock::now() - stepStart)
-                                 .count();
-    longestStepSeconds = std::max(longestStepSeconds, stepSeconds);
-    simAccum -= simStepSeconds;
-    steps += 1;
+    if (simulationRunner.start(cellContext->getSpareGrid(),
+                               cellContext->getGrid(),
+                               cellContext->getRuleSet(),
+                               std::move(transferDelta),
+                               useMirrorDelta)) {
+      mirrorDeltaValid = false;
+      simAccum -= simStepSeconds;
+    }
+  } else if (simAccum >= simStepSeconds) {
+    FrameMarkNamed("Sim.inFlightDeferred");
+    simulationBudgetLimited = true;
   }
 
-  const double simulationFrameSeconds =
-    steps == 0 ? 0.0
-               : std::chrono::duration<double>(
-                   std::chrono::steady_clock::now() - simulationFrameStart)
-                   .count();
-  lastSimulationStepMilliseconds = longestStepSeconds * 1000.0;
-  lastSimulationFrameMilliseconds = simulationFrameSeconds * 1000.0;
-  lastSimulationSteps = steps;
-  simulationDebtDropped = false;
-
   if (dt > 0.0) {
-    const double instantaneousTps = static_cast<double>(steps) / dt;
+    const double instantaneousTps =
+      static_cast<double>(lastSimulationSteps) / dt;
     const double blend = 1.0 - std::exp(-dt * 2.0);
-    if (achievedSimulationTps == 0.0 && steps > 0) {
+    if (achievedSimulationTps == 0.0 && lastSimulationSteps > 0) {
       achievedSimulationTps = instantaneousTps;
     } else {
       achievedSimulationTps +=
@@ -863,8 +966,7 @@ CellGameModule::Normal(double dt)
     }
   }
 
-  // Drop whole overdue steps once the per-frame budget is exhausted. Retain
-  // the fractional remainder so the configured cadence resumes smoothly.
+  simulationDebtDropped = false;
   if (simAccum >= simStepSeconds) {
     FrameMarkNamed("Sim.debtDropped");
     simAccum = std::fmod(simAccum, simStepSeconds);
@@ -898,6 +1000,7 @@ CellGameModule::Edit(double dt)
       ic->inputManager->isMouseButtonPressed(KeyCode::MouseRight);
 
     if (isLeftPressed || isRightPressed) {
+      mirrorDeltaValid = false;
       // Binary CAs: left = alive (0), right = dead (1).
       // Wireworld: left = active brush (1/H head, 3/T tail, 4 conductor),
       // right = empty.
@@ -942,8 +1045,10 @@ CellGameModule::Edit(double dt)
       lastMouseY = currentY;
     } else {
       wasPressed = false;
-      if (ic->inputManager->isKeyPressed(KeyCode::C))
+      if (ic->inputManager->isKeyPressed(KeyCode::C)) {
+        mirrorDeltaValid = false;
         this->cellContext->getGrid()->clear();
+      }
     }
   } else {
     wasPressed = false;
@@ -982,6 +1087,7 @@ CellGameModule::SaveCellGame(std::string filename)
     ic->commandLine->logError("Save path is empty");
     return false;
   }
+  drainSimulation();
 
   std::ofstream file(filename, std::ios::binary | std::ios::trunc);
   if (!file.is_open()) {
@@ -1178,6 +1284,7 @@ CellGameModule::LoadCellGame(std::string filename)
   }
 
   // All parsing and allocation above completed against temporary state.
+  prepareGridMutation();
   cellContext->setRuleSet(ruleString);
   cellContext->getGrid()->swap(loadedGrid);
   cellContext->getCanvasView()->rebuildPalette(cellContext->getRuleSet());

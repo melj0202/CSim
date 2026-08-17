@@ -87,3 +87,9 @@ must not contain or construct the Debug module.
   \foreach \a/\b in {1/2,2/3,3/4,4/5,5/6} \draw[arr] (\a) -- (\b);
 \end{tikzpicture}
 \end{center}
+
+\symbolref{RenderWindow} defaults to a GLFW swap interval of one. The persisted
+\texttt{vsync} value can switch synchronized presentation off for uncapped
+profiling and is observed at the frame boundary so Debug's generic environment
+commands can change it live. The Debug overlay reports paced swap completions
+separately from CPU frame submissions (D-P32).

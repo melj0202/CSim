@@ -32,6 +32,7 @@ public:
   }
   void handleResize(int width, int height) override;
   bool shouldWindowClose() override;
+  bool isFramePaced() const override { return vsyncEnabled; }
   void swapBuffers() override;
   void requestClose() override;
 
@@ -47,6 +48,9 @@ private:
   int windowedHeight;
   std::string windowTitle;
   bool isFullScreen;
+  bool vsyncEnabled;
+  bool swapIntervalInitialized;
   void centerWindow();
+  void syncPresentationMode();
   bool getShaderCompileStatus(const unsigned int shaderProgram);
 };

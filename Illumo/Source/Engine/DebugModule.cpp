@@ -4,8 +4,8 @@
 #include "DebugModule.h"
 #include "InputManager.h"
 #include "Logger.h"
+#include "Rendering/PresentationTiming.h"
 #include <GLFW/glfw3.h>
-#include <sstream>
 
 DebugModule::DebugModule()
   : fpsLabel(nullptr)
@@ -74,9 +74,10 @@ DebugModule::updateFpsCounter(double dt)
     fpsFrames = 0;
     fpsAccum = 0.0;
 
-    std::ostringstream oss;
-    oss << "FPS: " << fpsDisplay;
-    fpsLabel->setContent(oss.str());
+    const IBackend* backend = ic->renderer->getBackend();
+    const int pacedFps = backend != nullptr ? backend->getFPS() : 0;
+    fpsLabel->setContent(
+      buildFrameRateLabel(ic->window->isFramePaced(), pacedFps, fpsDisplay));
   }
 }
 

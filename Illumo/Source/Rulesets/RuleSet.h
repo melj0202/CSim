@@ -2,6 +2,7 @@
 #include "Game/CellGrid.h"
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 
 constexpr auto MAX_RULETAG_SIZE = 128;
@@ -65,6 +66,7 @@ public:
   // loops index this table instead of repeating virtual calls and rule
   // branches.
   const TransitionTable& getTransitionTable() const;
+  std::uint64_t getTransitionRevision() const { return transitionRevision; }
 
   static std::size_t transitionIndex(unsigned char cell,
                                      unsigned char aliveNeighbors)
@@ -74,7 +76,11 @@ public:
   }
 
 protected:
-  void invalidateTransitionTable() const { transitionTableReady = false; }
+  void invalidateTransitionTable() const
+  {
+    transitionTableReady = false;
+    transitionRevision += 1u;
+  }
 
   // Toroidal Moore count of cells with value 0 (project "alive" encoding).
   static int countAliveNeighbors(const unsigned char* grid,
@@ -98,6 +104,7 @@ private:
   static int workerOverride;
   mutable TransitionTable transitionTable{};
   mutable bool transitionTableReady = false;
+  mutable std::uint64_t transitionRevision = 0u;
 
   void evalRows(const unsigned char* src,
                 unsigned char* dst,

@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iterator>
 #include <string>
+#include <thread>
 #include <vector>
 
 static TestCounters g;
@@ -621,6 +622,14 @@ testUpdateStateAndTiming()
   InputManagerTestAccess::setAction(
     fixture.input, KeyCode::E, InputAction::None);
   fixture.module.Update(0.04);
+  bool publishedGeneration = false;
+  for (int attempt = 0; attempt < 10000 && !publishedGeneration; ++attempt) {
+    std::this_thread::yield();
+    fixture.module.Update(0.0);
+    publishedGeneration =
+      CellGameModuleTestAccess::getLastSimulationSteps(fixture.module) == 1;
+  }
+  testTrue(g, publishedGeneration, "normal update publishes async generation");
   testEqUChar(g,
               canvas->getCanvasPixel(2, 1),
               0,
@@ -630,14 +639,15 @@ testUpdateStateAndTiming()
   fixture.env.setVar("speedFactor", 1000.0);
   fixture.env.setVar("cellFadeSpeed", -2.0);
   fixture.module.Update(1.0);
+  CellGameModuleTestAccess::drainSimulation(fixture.module);
   testTrue(g,
            CellGameModuleTestAccess::getState(fixture.module) ==
              CellState::NORMAL,
            "large delta and rate remain bounded");
   testTrue(g,
            CellGameModuleTestAccess::getLastSimulationSteps(fixture.module) <=
-             2,
-           "normal update limits simulation work to two generations per frame");
+             1,
+           "normal update publishes at most one generation per frame");
   testTrue(g,
            CellGameModuleTestAccess::getSimulationDebtDropped(fixture.module),
            "normal update drops excessive catch-up debt");
@@ -664,10 +674,10 @@ testUpdateStateAndTiming()
 static void
 testFrameSimulationBudget()
 {
-  testSection("CellGameModule: frame simulation budget");
+  testSection("CellGameModule: asynchronous simulation budget");
   CellGameFixture fixture(5, 5);
-  fixture.env.setVar("tps", 1000);
-  fixture.env.setVar("speedFactor", 100.0);
+  fixture.env.setVar("tps", 30);
+  fixture.env.setVar("speedFactor", 1.0);
 
   InputManagerTestAccess::setAction(
     fixture.input, KeyCode::E, InputAction::Press);
@@ -675,46 +685,82 @@ testFrameSimulationBudget()
   InputManagerTestAccess::setAction(
     fixture.input, KeyCode::E, InputAction::None);
 
-  CellGameModuleTestAccess::setSimulationFrameBudgetSeconds(fixture.module,
-                                                            0.0);
   fixture.module.Update(0.25);
   testEqInt(g,
             CellGameModuleTestAccess::getLastSimulationSteps(fixture.module),
-            1,
-            "zero frame budget still completes one due generation");
-  testTrue(g,
-           CellGameModuleTestAccess::getSimulationBudgetLimited(fixture.module),
-           "measured frame budget prevents a second synchronous generation");
+            0,
+            "scheduled generation does not block its render frame");
   testTrue(g,
            CellGameModuleTestAccess::getSimulationDebtDropped(fixture.module),
-           "budget-limited frame drops excess catch-up debt");
-  testTrue(g,
-           CellGameModuleTestAccess::getAchievedSimulationTps(fixture.module) >
-             0.0,
-           "normal updates track achieved simulation rate separately");
+           "in-flight scheduling drops excess catch-up debt");
+  CellGameModuleTestAccess::drainSimulation(fixture.module);
+  testEqInt(g,
+            CellGameModuleTestAccess::getLastSimulationSteps(fixture.module),
+            1,
+            "drain publishes the single in-flight generation");
   testTrue(g,
            CellGameModuleTestAccess::getLastSimulationFrameMilliseconds(
              fixture.module) >= 0.0,
-           "normal updates expose measured simulation frame time");
+           "published generations expose measured worker time");
   fixture.executeThroughConsole("status");
   testTrue(g,
            historyContains(fixture.console, "achieved="),
            "status reports achieved simulation rate separately");
   testTrue(g,
-           historyContains(fixture.console, "second step deferred"),
-           "status reports frame-budget deferral");
+           historyContains(fixture.console, "step p50/p95/max"),
+           "status reports rolling worker-generation latency");
+}
 
-  CellGameModuleTestAccess::setSimulationFrameBudgetSeconds(fixture.module,
-                                                            1.0);
+static void
+testAsyncTransitionDraining()
+{
+  testSection("CellGameModule: async state transitions drain safely");
+  CellGameFixture fixture(16, 12);
+  const std::string savePath = "async-transition.illumo";
+
+  fixture.execute("run");
   fixture.module.Update(0.25);
-  testEqInt(g,
-            CellGameModuleTestAccess::getLastSimulationSteps(fixture.module),
-            2,
-            "ample frame budget permits the bounded second generation");
-  testTrue(
-    g,
-    !CellGameModuleTestAccess::getSimulationBudgetLimited(fixture.module),
-    "second generation is not marked budget-limited when it fits");
+  testTrue(g,
+           CellGameModuleTestAccess::isSimulationBusy(fixture.module),
+           "running update leaves one generation in flight or completed");
+  fixture.execute("pause");
+  testTrue(g,
+           !CellGameModuleTestAccess::isSimulationBusy(fixture.module) &&
+             CellGameModuleTestAccess::getState(fixture.module) ==
+               CellState::EDIT,
+           "pause publishes and drains before entering edit mode");
+
+  fixture.execute("run");
+  fixture.module.Update(0.25);
+  fixture.execute("save", { savePath });
+  testTrue(g,
+           !CellGameModuleTestAccess::isSimulationBusy(fixture.module) &&
+             std::filesystem::exists(savePath),
+           "save drains before reading the published grid");
+
+  fixture.module.Update(0.25);
+  fixture.execute("ruleset", { "SEEDS" });
+  CellContext* context =
+    CellGameModuleTestAccess::getCellContext(fixture.module);
+  testTrue(g,
+           !CellGameModuleTestAccess::isSimulationBusy(fixture.module) &&
+             context->getModeString() == "SEEDS",
+           "ruleset change drains before replacing the transition table");
+
+  fixture.module.Update(0.25);
+  fixture.execute("step", { "2" });
+  testTrue(g,
+           !CellGameModuleTestAccess::isSimulationBusy(fixture.module) &&
+             CellGameModuleTestAccess::getState(fixture.module) ==
+               CellState::EDIT,
+           "manual stepping drains and returns to edit mode");
+
+  fixture.execute("run");
+  fixture.module.Update(0.25);
+  fixture.execute("load", { savePath });
+  testTrue(g,
+           !CellGameModuleTestAccess::isSimulationBusy(fixture.module),
+           "load drains before replacing published sparse state");
 }
 
 static int
@@ -757,5 +803,8 @@ registerCellGameModuleTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.CellGame.FrameSimulationBudget", []() {
     return runCellGameModuleCase(testFrameSimulationBudget);
+  });
+  registry.add("Illumo.CellGame.AsyncTransitionDraining", []() {
+    return runCellGameModuleCase(testAsyncTransitionDraining);
   });
 }

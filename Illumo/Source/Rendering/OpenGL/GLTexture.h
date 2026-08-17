@@ -2,10 +2,12 @@
 
 #include "GL/glew.h"
 #include "ITexture.h"
+#include "TextureUploadPolicy.h"
 #include "thirdparty/stb/stb_image.h"
 #include <array>
 #include <cstring>
 #include <string>
+#include <tracy/Tracy.hpp>
 
 class GLTexture : public ITexture
 {
@@ -15,7 +17,8 @@ public:
     , m_id(0)
     , m_size({ 0, 0 })
     , m_channels(4)
-    , m_pbo{ 0, 0 }
+    , m_pbo{ 0, 0, 0 }
+    , m_pboFence{ nullptr, nullptr, nullptr }
     , m_pboIndex(0)
     , m_pboBytes(0)
   {
@@ -31,7 +34,8 @@ public:
     , m_id(0)
     , m_size({ width, height })
     , m_channels(normalizeChannels(channels))
-    , m_pbo{ 0, 0 }
+    , m_pbo{ 0, 0, 0 }
+    , m_pboFence{ nullptr, nullptr, nullptr }
     , m_pboIndex(0)
     , m_pboBytes(0)
   {
@@ -44,7 +48,8 @@ public:
     , m_id(0)
     , m_size({ 0, 0 })
     , m_channels(4)
-    , m_pbo{ 0, 0 }
+    , m_pbo{ 0, 0, 0 }
+    , m_pboFence{ nullptr, nullptr, nullptr }
     , m_pboIndex(0)
     , m_pboBytes(0)
   {
@@ -84,6 +89,7 @@ public:
                       const void* data,
                       int srcRowStridePixels)
   {
+    ZoneScopedN("GLTexture.UpdateSubImage");
     if (!data || width <= 0 || height <= 0 || m_id == 0) {
       return;
     }
@@ -104,102 +110,150 @@ public:
     const bool usePacked = (width < m_size[0] || height < m_size[1]);
     const size_t stageBytes = usePacked ? packedBytes : fullBytes;
 
-    ensurePBOs(fullBytes);
+    if (TextureUploadPolicy::useDirectUpload(packedBytes)) {
+      directUpload(x, y, width, height, format, data, rowStride);
+      return;
+    }
 
-    m_pboIndex = 1 - m_pboIndex;
+    ensurePBOs(fullBytes);
+    std::array<TextureUploadSlotState, TextureUploadPolicy::kPboCount>
+      slotStates;
+    {
+      ZoneScopedN("GLTexture.selectPBO");
+      for (int candidate = 0; candidate < TextureUploadPolicy::kPboCount;
+           ++candidate) {
+        if (m_pboFence[candidate] == nullptr) {
+          slotStates[static_cast<std::size_t>(candidate)] =
+            TextureUploadSlotState::Unused;
+          continue;
+        }
+        const GLenum waitResult = glClientWaitSync(m_pboFence[candidate], 0, 0);
+        if (waitResult == GL_ALREADY_SIGNALED ||
+            waitResult == GL_CONDITION_SATISFIED) {
+          slotStates[static_cast<std::size_t>(candidate)] =
+            TextureUploadSlotState::Signaled;
+        } else {
+          slotStates[static_cast<std::size_t>(candidate)] =
+            TextureUploadSlotState::Busy;
+        }
+      }
+    }
+    const int availablePbo =
+      TextureUploadPolicy::selectAvailableSlot(m_pboIndex, slotStates);
+    if (availablePbo < 0) {
+      directUpload(x, y, width, height, format, data, rowStride);
+      return;
+    }
+    if (m_pboFence[availablePbo] != nullptr) {
+      glDeleteSync(m_pboFence[availablePbo]);
+      m_pboFence[availablePbo] = nullptr;
+    }
+
+    m_pboIndex = availablePbo;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo[m_pboIndex]);
 
     // Map only the staging range; invalidate to avoid GPU readback stalls.
     // Reuses the existing PBO allocation (no glBufferData orphan each frame).
-    void* mapped =
-      glMapBufferRange(GL_PIXEL_UNPACK_BUFFER,
-                       0,
-                       static_cast<GLsizeiptr>(stageBytes),
-                       GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+    void* mapped = nullptr;
+    {
+      ZoneScopedN("GLTexture.mapPBO");
+      mapped = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER,
+                                0,
+                                static_cast<GLsizeiptr>(stageBytes),
+                                GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+    }
     if (!mapped) {
-      // Fallback: direct client upload without PBO.
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-      glBindTexture(GL_TEXTURE_2D, m_id);
-      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-      if (rowStride != width) {
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, rowStride);
-      }
-      glTexSubImage2D(
-        GL_TEXTURE_2D, 0, x, y, width, height, format, GL_UNSIGNED_BYTE, data);
-      if (rowStride != width) {
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-      }
+      directUpload(x, y, width, height, format, data, rowStride);
       return;
     }
 
     unsigned char* dstBase = static_cast<unsigned char*>(mapped);
-    if (usePacked) {
-      for (int row = 0; row < height; ++row) {
-        unsigned char* dst = dstBase + static_cast<size_t>(row) * copyRowBytes;
-        const unsigned char* src =
-          srcBase + static_cast<size_t>(row) * srcRowBytes;
-        std::memcpy(dst, src, copyRowBytes);
-      }
-    } else {
-      // Full-texture layout: copy dirty rows at their native offsets.
-      const size_t dstRowBytes = static_cast<size_t>(m_size[0]) * bytesPerPixel;
-      const size_t dstOrigin =
-        (static_cast<size_t>(y) * static_cast<size_t>(m_size[0]) +
-         static_cast<size_t>(x)) *
-        bytesPerPixel;
-      for (int row = 0; row < height; ++row) {
-        unsigned char* dst =
-          dstBase + dstOrigin + static_cast<size_t>(row) * dstRowBytes;
-        const unsigned char* src =
-          srcBase + static_cast<size_t>(row) * srcRowBytes;
-        std::memcpy(dst, src, copyRowBytes);
+    {
+      ZoneScopedN("GLTexture.copyPBO");
+      if (usePacked) {
+        for (int row = 0; row < height; ++row) {
+          unsigned char* dst =
+            dstBase + static_cast<size_t>(row) * copyRowBytes;
+          const unsigned char* src =
+            srcBase + static_cast<size_t>(row) * srcRowBytes;
+          std::memcpy(dst, src, copyRowBytes);
+        }
+      } else {
+        const size_t dstRowBytes =
+          static_cast<size_t>(m_size[0]) * bytesPerPixel;
+        const size_t dstOrigin =
+          (static_cast<size_t>(y) * static_cast<size_t>(m_size[0]) +
+           static_cast<size_t>(x)) *
+          bytesPerPixel;
+        for (int row = 0; row < height; ++row) {
+          unsigned char* dst =
+            dstBase + dstOrigin + static_cast<size_t>(row) * dstRowBytes;
+          const unsigned char* src =
+            srcBase + static_cast<size_t>(row) * srcRowBytes;
+          std::memcpy(dst, src, copyRowBytes);
+        }
       }
     }
-    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+    {
+      ZoneScopedN("GLTexture.unmapPBO");
+      glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+    }
 
-    glBindTexture(GL_TEXTURE_2D, m_id);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    if (usePacked) {
-      glTexSubImage2D(GL_TEXTURE_2D,
-                      0,
-                      x,
-                      y,
-                      width,
-                      height,
-                      format,
-                      GL_UNSIGNED_BYTE,
-                      reinterpret_cast<const GLvoid*>(0));
-    } else {
-      const size_t dstOrigin =
-        (static_cast<size_t>(y) * static_cast<size_t>(m_size[0]) +
-         static_cast<size_t>(x)) *
-        bytesPerPixel;
-      const GLvoid* pboOffset = reinterpret_cast<const GLvoid*>(dstOrigin);
-      if (m_size[0] != width) {
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, m_size[0]);
+    {
+      ZoneScopedN("GLTexture.submitPBO");
+      glBindTexture(GL_TEXTURE_2D, m_id);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+      if (usePacked) {
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        x,
+                        y,
+                        width,
+                        height,
+                        format,
+                        GL_UNSIGNED_BYTE,
+                        reinterpret_cast<const GLvoid*>(0));
+      } else {
+        const size_t dstOrigin =
+          (static_cast<size_t>(y) * static_cast<size_t>(m_size[0]) +
+           static_cast<size_t>(x)) *
+          bytesPerPixel;
+        const GLvoid* pboOffset = reinterpret_cast<const GLvoid*>(dstOrigin);
+        if (m_size[0] != width) {
+          glPixelStorei(GL_UNPACK_ROW_LENGTH, m_size[0]);
+        }
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        x,
+                        y,
+                        width,
+                        height,
+                        format,
+                        GL_UNSIGNED_BYTE,
+                        pboOffset);
+        if (m_size[0] != width) {
+          glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+        }
       }
-      glTexSubImage2D(GL_TEXTURE_2D,
-                      0,
-                      x,
-                      y,
-                      width,
-                      height,
-                      format,
-                      GL_UNSIGNED_BYTE,
-                      pboOffset);
-      if (m_size[0] != width) {
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-      }
+      m_pboFence[m_pboIndex] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     }
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
   }
 
   void Destroy() override
   {
+    for (int index = 0; index < kPboCount; ++index) {
+      if (m_pboFence[index] != nullptr) {
+        glDeleteSync(m_pboFence[index]);
+        m_pboFence[index] = nullptr;
+      }
+    }
     if (m_pbo[0] != 0) {
-      glDeleteBuffers(2, m_pbo);
+      glDeleteBuffers(kPboCount, m_pbo);
       m_pbo[0] = 0;
       m_pbo[1] = 0;
+      m_pbo[2] = 0;
       m_pboBytes = 0;
     }
     if (m_id != 0) {
@@ -209,6 +263,8 @@ public:
   }
 
 private:
+  static constexpr int kPboCount = TextureUploadPolicy::kPboCount;
+
   static int normalizeChannels(int channels)
   {
     if (channels == 1) {
@@ -251,13 +307,20 @@ private:
       return;
     }
     if (m_pbo[0] != 0) {
-      glDeleteBuffers(2, m_pbo);
+      for (int index = 0; index < kPboCount; ++index) {
+        if (m_pboFence[index] != nullptr) {
+          glDeleteSync(m_pboFence[index]);
+          m_pboFence[index] = nullptr;
+        }
+      }
+      glDeleteBuffers(kPboCount, m_pbo);
       m_pbo[0] = 0;
       m_pbo[1] = 0;
+      m_pbo[2] = 0;
     }
-    glGenBuffers(2, m_pbo);
+    glGenBuffers(kPboCount, m_pbo);
     m_pboBytes = bytes;
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < kPboCount; ++i) {
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbo[i]);
       glBufferData(GL_PIXEL_UNPACK_BUFFER,
                    static_cast<GLsizeiptr>(bytes),
@@ -266,6 +329,28 @@ private:
     }
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     m_pboIndex = 0;
+  }
+
+  void directUpload(int x,
+                    int y,
+                    int width,
+                    int height,
+                    GLenum format,
+                    const void* data,
+                    int rowStride)
+  {
+    ZoneScopedN("GLTexture.directUpload");
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, m_id);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    if (rowStride != width) {
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, rowStride);
+    }
+    glTexSubImage2D(
+      GL_TEXTURE_2D, 0, x, y, width, height, format, GL_UNSIGNED_BYTE, data);
+    if (rowStride != width) {
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    }
   }
 
   void UploadToGPU(const unsigned char* data,
@@ -311,8 +396,9 @@ private:
   std::array<int, 2> m_size;
   int m_channels;
 
-  // Async upload: double-buffered pixel unpack buffers.
-  GLuint m_pbo[2];
+  // Async upload: non-blocking triple-buffered pixel unpack buffers.
+  GLuint m_pbo[kPboCount];
+  GLsync m_pboFence[kPboCount];
   int m_pboIndex;
   size_t m_pboBytes;
 };

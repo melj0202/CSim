@@ -1,6 +1,7 @@
 #include "RenderWindow.h"
 #include "CommandLine.h"
 #include "Logger.h"
+#include "PresentationTiming.h"
 #include "Services/IEnvVars.h"
 #include "Services/InputManager.h"
 #include "thirdparty/stb/stb_easy_font.h"
@@ -44,6 +45,8 @@ RenderWindow::RenderWindow(const int width,
   this->envVars = envVars;
   this->isFullScreen =
     envVars ? envVars->getVar("fullscreen").valueAsBool : false;
+  this->vsyncEnabled = true;
+  this->swapIntervalInitialized = false;
   this->window = nullptr;
 
   /* Initialize the library */
@@ -109,8 +112,21 @@ RenderWindow::RenderWindow(const int width,
     versionGL ? reinterpret_cast<const char*>(versionGL) : "Unknown";
   std::string fullGLString = "OpenGL Context: " + versionStr;
   Logger::LogInfo(fullGLString.c_str());
-  glfwSwapInterval(0);
+  syncPresentationMode();
   // END WINDOW CREATION
+}
+
+void
+RenderWindow::syncPresentationMode()
+{
+  const bool requestedVsync = isVsyncRequested(envVars);
+  if (swapIntervalInitialized && requestedVsync == vsyncEnabled) {
+    return;
+  }
+
+  glfwSwapInterval(requestedVsync ? 1 : 0);
+  vsyncEnabled = requestedVsync;
+  swapIntervalInitialized = true;
 }
 
 void
@@ -224,6 +240,7 @@ void
 RenderWindow::swapBuffers()
 {
   if (window != nullptr) {
+    syncPresentationMode();
     glfwSwapBuffers(window);
   }
 }

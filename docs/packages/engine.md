@@ -14,6 +14,11 @@ production path: clear frame list → module drawables → token submit (D-R13);
 there is no env-gated alternate product frame path. The host never hard-codes
 game modules; product composition belongs to `App/CellMain.cpp`.
 
+`RenderWindow` defaults to monitor-synchronized presentation and observes the
+persisted `vsync` value for live transitions to or from uncapped profiling.
+Debug's FPS label distinguishes paced swap completions from CPU submissions
+(D-P32).
+
 `EntityTable`, `ModuleObject`, and the unused scene-graph scaffolding are
 archived under the repository `archive/` tree; they are not part of the live
 engine path.

@@ -294,6 +294,13 @@ terminate after printing their output.
 Typical combined draw order (Scene layers, one main pass): World canvas;
 UI splash + console + editor cursor; Debug FPS (Debug builds via DebugModule).
 
+`RenderWindow` defaults to swap interval one. The persisted `vsync` environment
+value can select synchronized or uncapped presentation and is reapplied only
+when it changes, so Debug's generic `toggle vsync` command works live. The FPS
+overlay labels synchronized swap-completion cadence as `Paced FPS` and reports
+main-loop submissions separately; uncapped mode reports paced FPS as off rather
+than presenting CPU submissions as monitor output (D-P32).
+
 ### 5.5 Rendering architecture (shipped)
 
 **Mental model:** Game never issues draw `gl*` for the live path. It enrolls resources and emits **tokens**.
@@ -344,9 +351,9 @@ The live path is intentionally a full replacement of the finite dense runtime:
 | Layer | Type | Contents |
 |-------|------|----------|
 | **Domain** | `SparseCellGrid` | signed 64-bit cells in a hash map of non-background 16×16 chunks |
-| **Simulation** | `SparseCellGrid::advance` | authoritative and inactive maps maintain transactional stored/counted/candidate-preferred totals, so a retained changed-chunk frontier makes settled steps O(1) in allocated chunks; up to 4,096 changed addresses are retained, local candidate/preparation work is compared with a cached-total complete estimate, and cheaper frontiers use per-target candidates or halos before patching the prior map; broader mixed worlds use the same flat-indexed candidates or direct-counting-mask dense halos independently per target; candidate targets come directly from counting-mask edges/corners, counters initialize lazily, serial preparation is source-centric, and large/forced parallel preparation owns one target per work item; complete-halo targets/index/results retain high-water storage; all paths index a cached 256x9 transition table; 16,384+ work cells use coarse ~2,048-cell ranges and up to four automatic workers; complete paths reuse an inactive chunk map and recycled nodes; dense 32+ target sets use up to eight workers; no toroidal wrapping; revision changes only for a content change |
-| **View** | `CanvasView` | one-revision changed chunks resample only visible near-zoom tiles; revision gaps, camera/palette changes, replacement, and overview density use a complete bounded resample; exact cells while they fit, 4-screen-pixel density overview at far zoom, retained active-texel CPU RGB fades, newly revealed-region snapping |
-| **GPU** | `CanvasView` + `GameVisual` | one reusable nearest-filtered RGB staging texture update and one world-space quad; near texels and cursor outlines share 16×16 cell bounds |
+| **Simulation** | `SimulationRunner` + two `SparseCellGrid`s | one worker generation may be in flight; the main thread reads only the published grid and publishes completions at frame boundaries. Incremental completions apply `SparseGenerationDelta` before the former display grid is reused. Broad completions carry a lightweight replacement marker: the spare advances directly from the immutable published grid and updates its own authoritative nodes in place, avoiding a full snapshot and mirror pass. Overdue whole steps are dropped without a backlog, and edits, persistence, ruleset changes, manual stepping, and shutdown drain first. `SparseCellGrid::advance` retains the transactional totals/frontier/candidate/halo/node-reuse paths described below. |
+| **View** | `CanvasView` | visible dimensions remain diagnostics while sampling uses a globally aligned cache padded by two chunks per side; motion inside it changes only the MVP. Near LOD is one texel/cell; far LOD is an integer density level with immediate coarsening and 80% refinement hysteresis. One-revision changed chunks map to deduplicated exact or overview cache bins; cache exit, revision gaps, resize, palette change, and replacement refill the bounded cache. Active-texel CPU RGB fades snap newly revealed cells. |
+| **GPU** | `CanvasView` + `GameVisual` | one reusable nearest-filtered RGB staging texture and one world-space quad; dirty 16×16-texel tiles merge into at most eight update rectangles or their AABB. Uploads through 64 KiB are direct; larger requests use a non-waiting three-PBO/fence ring with direct fallback. |
 
 Rulesets provide stateless `nextState` and `evalCell` functions. Each ruleset's
 complete 256-state by 9-neighbor transition table is built once before worker
@@ -358,13 +365,15 @@ multi-state byte values.
 
 Negative chunk coordinates use centralized floor division/modulo. Chunk output
 is sorted by `(chunkY, chunkX)` for deterministic saves and tests. The view
-visits only chunks intersecting its source bounds and resamples only after a
-grid revision, palette update, or camera-region change. The grid publishes a
+visits only chunks intersecting its cache bounds. The cache is globally aligned
+and extends two 16-cell chunks beyond the visible viewport on every side, so
+sub-cache pan/zoom changes only the camera MVP. The grid publishes a
 revision-scoped changed-chunk list for edits and completed generations. When
-exact cells are shown and exactly one revision is unseen, the view resamples
-only the visible portions of those 16x16 chunks, including removed chunks.
-Revision gaps, palette/camera changes, whole-grid replacement, and density
-overview sampling use a complete bounded resample. A retained active-texel set
+exactly one revision is unseen, the view maps changed chunks to deduplicated
+exact-cell or overview bins. Revision gaps, cache exit, palette changes,
+whole-grid replacement, LOD changes, and resize use a complete bounded refill.
+Far LOD coarsens immediately to fit and refines only at 80% budget occupancy.
+A retained active-texel set
 makes fade ticks and zero-speed snaps proportional to colors still changing;
 reapplying an unchanged zero fade speed does no scan. At far zoom it limits
 the active texture to `max(CanvasX/Y, window / 4)` texels and accumulates
@@ -372,8 +381,13 @@ palette density into each overview texel. This presentation budget neither
 caps chunks nor discards simulation cells. Rendering never creates per-chunk
 GPU resources: only the bounded view texture and quad enter the token stream.
 For small required dimension increases, the CPU and GPU texture allocation
-reserves 50% headroom; nearby smooth-zoom sizes reuse it. A replacement keeps
-the same opaque handle while `GLBackend` destroys the old texture and PBO pair,
+reserves 50% headroom; nearby smooth-zoom sizes reuse it. Dirty 16x16-texel
+tiles merge horizontally and vertically into at most eight rectangles when
+their combined area is at most half the enclosing AABB, otherwise the AABB is
+used. `GLTexture` uploads rectangles through 64 KiB directly; larger requests
+select a signaled slot from a three-PBO ring without waiting and fall back to
+direct upload when all slots are busy or mapping fails. A replacement keeps the
+same opaque handle while `GLBackend` destroys the old texture, PBOs, and fences,
 and `CanvasView` explicitly releases the handle during destruction.
 
 Sparse stepping keeps result installation serial. Each chunk carries separate
@@ -391,9 +405,19 @@ table, and each slot points into contiguous scratch containing a 256-bit
 candidate mask plus 256 neighbor counts. Target discovery checks the four edge
 masks and corner bits directly. Candidate counters are initialized when a bit
 is first enrolled, avoiding a 256-byte clear for every target. The direct
-serial path keeps source-centric accumulation for locality; large or forced
-parallel preparation instead reads each target's 3x3 source neighborhood and
-writes only that target's scratch record through the reusable pool. Each target independently uses those
+serial path keeps source-centric accumulation for locality. During large or
+forced parallel preparation, discovery records each target's direct 3x3 source
+references beside its neighbor counts. Workers claim retained coarse target
+ranges and count from those references without repeated chunk-map lookups. For
+direct dual-grid generations, an object-local topology epoch changes only when
+chunk presence or counted edge/corner participation changes. When the same
+source grid returns with the same epoch, its target index and source references
+are reused exactly; only candidate masks and counts are rebuilt. An
+index-aligned destination pointer also avoids output-map lookup and stale-node
+scanning when the destination topology is unchanged. In-place output preserves
+the node addresses that make this reuse safe. Candidate-index lookup probes for an existing target before considering
+growth; only a new insertion that would cross the 75% load boundary resizes the
+retained flat table. Each target independently uses those
 candidates when its counted-neighbor contributions are below the calibrated
 threshold, or a direct 18×18 halo otherwise. Thus mixed dense/sparse worlds do
 not inherit one global decision, and dense Wireworld conductors remain candidate
@@ -407,24 +431,48 @@ vectors rather than a generation-local hash set, target sort, and disposable
 buffers. Evaluation extracts each 18-bit counted row directly from the 3x3
 chunks' counting masks and reduces it through three rolling horizontal rows;
 no 18x18 byte halo is materialized and cell states are read only for the target
-core. Coarse mixed/candidate
+core. Halo targets may use an exact, on-demand memo keyed by all 324 states in
+that 18x18 neighborhood. The bounded four-way cache is sharded by the main and
+worker slots, so evaluation needs no locks; a hash selects candidates but a
+full key comparison is required for a hit. It samples 16 targets per shard,
+activates at a 25% hit rate, and cools down for 32 generations after
+unprofitable sampling or three active generations below 10%. Ruleset type or
+transition-table revision changes invalidate every entry. Candidate-only and
+sub-32-target generations bypass it. Coarse mixed/candidate
 evaluation uses up to four automatic workers once there are at least 16,384
-work cells. Its retained ranges contain roughly 2,048 work cells each, avoiding
-one atomic claim per mostly empty target chunk; all-candidate small worlds keep
+work cells. Preparation uses about eight retained ranges per worker, capped at
+256 target chunks per range; evaluation ranges contain roughly 2,048 work cells.
+Both avoid one atomic claim per mostly empty target chunk. All-candidate small worlds keep
 the original direct serial output loop. Both
 evaluators build transactionally into a retained inactive map. Nodes from the
-prior inactive generation are extracted into a retained handle vector, assigned
-new addresses/data, and reinserted; allocation occurs only when output exceeds
-the previous node high-water count. The normal simulation loop completes at
-most two generations per rendered frame. One due generation is guaranteed; a
-second starts only when the first generation's measured duration projects both
-inside a 4 ms simulation frame slice. Excess catch-up debt is dropped, and
-status separates requested/achieved TPS from step and frame simulation timing.
+prior inactive generation are extracted into a retained handle vector after its
+aggregate statistics reset once. Sparse candidate output acquires and rekeys a
+node first, then constructs the result directly in mapped storage; dense halo
+output retains its complete-array bulk-copy path. Target-sized bucket headroom
+is preserved because exact output reservation measured slower. Allocation occurs
+only when output exceeds the previous node high-water count. A persistent `SimulationRunner` advances
+the spare grid while the main thread reads the published grid. Completion
+publishes only at a frame boundary with a sparse generation delta; the former
+display grid consumes that delta before becoming the next worker grid. Only one
+generation may be outstanding and no backlog is formed. Excess whole-step debt
+is dropped while fractional remainder is retained. Pause/edit, persistence,
+ruleset changes, manual stepping, and shutdown drain first. Status computes
+achieved TPS from published completions and retains rolling 256-sample p50/p95/
+max values for worker generations and their mirror/advance/capture stages,
+cache refills, requested upload bytes, and upload rectangles. Full sparse
+replacements publish only a marker; `advanceFrom` reads the published map and
+writes the spare grid's map directly, so no replacement records are captured or
+mirrored. Incremental catch-up uses the prior grid's own
+changed-address journal and a retained incoming-address index, so an incoming
+record overwrites its final state once instead of first replaying an obsolete
+intermediate snapshot.
 
 The inactive map also preserves the prior generation for changed-region
-stepping. Edits and committed generations record changed chunk addresses in a
-retained generation-stamped flat set. On the next step, those chunks and their
-eight neighbors form the only possible change region. Sparse local sources build
+stepping. Edits and committed generations record exact per-chunk state-change
+and counting-change bitmasks in retained generation-stamped flat sets. On the
+next step, each changed chunk enrolls itself; a neighboring chunk is enrolled
+only when a counting-status change touches the shared edge or corner. A
+state-only change cannot affect a neighbor's transition. Sparse local sources build
 exact candidate masks only for those targets and choose candidates or halos from
 counted-neighbor contribution work. The grid compares target/source bookkeeping,
 candidate construction, neighbor contributions, and evaluation cells with a
@@ -459,7 +507,8 @@ class RuleSet {
 
 1. Read the cached stored/counting totals and candidate-preferred chunk count.
    If the retained changed frontier is empty, return immediately without
-   visiting allocated chunks. Otherwise build its one-chunk expansion. For
+   visiting allocated chunks. Otherwise enroll each changed chunk and only the
+   neighbors touched by its exact counting-change edge/corner bits. For
    sparse local sources, build target-local candidate masks and select candidate
    or halo evaluation independently.
 2. Compare exact frontier preparation/evaluation work units with a complete-path
@@ -481,9 +530,14 @@ class RuleSet {
    address/result vector capacity, and evaluate serially or through the bounded
    pool for 32+ targets. Construct rolling neighbor rows directly from chunk
    counting masks without a temporary 18×18 byte halo.
-6. Build the complete next map serially using retained buckets and recycled
-   chunk nodes, compare it to the authoritative map, then swap transactionally
-   only when contents differ. Empty space is implicit, so births never wrap.
+6. For at least 32 halo targets, sample an exact sharded 18×18-state memo. Use
+   it only after the observed hit rate pays for key construction, and bypass or
+   cool it down on unique neighborhoods. Invalidate on transition changes.
+7. Build the complete next map serially using retained buckets and recycled
+   chunk nodes. Construct sparse candidate output directly in mapped node
+   storage; keep dense halo output as a bulk array copy. Compare to the
+   authoritative map, then swap transactionally only when contents differ.
+   Empty space is implicit, so births never wrap.
 
 Before evaluation, the active ruleset lazily materializes all 2,304 transition
 results. Hot loops share that immutable table, eliminating virtual dispatch and
@@ -624,7 +678,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-P5** | Single-pass dirty AABB + `CellGrid` front/back swap (no full memcpy). | 2026-08-06 |
 | **D-P6** | Fade loop hoists + packed dirty-rect PBO staging (keep CPU RGB fade). | 2026-08-06 |
 | **D-P7** | Optional row-parallel `calcGeneration` (≥512² auto, override for tests). | 2026-08-06 |
-| **D-P8** | Reusable bounded worker pool for large sparse target sets; normal mode drops excess catch-up debt after two generations per frame. | 2026-08-07 |
+| **D-P8** | Reusable bounded worker pool for large sparse target sets; normal mode drops excess catch-up debt. | Worker pool current; scheduling refined by D-P26 |
 | **D-P9** | Occupancy-masked cell candidates for sparse chunks; full chunk halos remain the dense fallback. | 2026-08-08 |
 | **D-P10** | Replace per-world-cell candidate hash nodes with retained contiguous per-chunk masks and neighbor counts. | 2026-08-08 |
 | **D-P11** | Replace candidate-address sorting and binary searches with a retained generation-stamped open-addressed flat index. | 2026-08-08 |
@@ -637,9 +691,18 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-P18** | Replace the 64-target frontier cutoff with bounded adaptive work comparison and per-target candidate/halo frontier evaluation. | 2026-08-09 |
 | **D-P19** | Derive candidate boundaries from masks, initialize counters lazily, and use target-owned worker preparation for large workloads. | 2026-08-09 |
 | **D-P20** | Retain complete-halo targets/index/results and build rolling neighbor rows directly from chunk counting masks. | 2026-08-09 |
-| **D-P21** | Publish revision-scoped changed chunks for near-view dirty-tile sampling and retain active fading texels. | 2026-08-09 |
-| **D-P22** | Gate the optional second synchronous generation by measured frame cost and report requested versus achieved TPS. | 2026-08-09 |
-| **D-P23** | Grow canvas texture capacity geometrically and destroy replaced/released GL textures and PBOs. | 2026-08-09 |
+| **D-P21** | Publish revision-scoped changed chunks for dirty-tile sampling and retain active fading texels. | Refined for every LOD by D-P24 |
+| **D-P22** | Gate the optional second synchronous generation by measured frame cost and report requested versus achieved TPS. | Superseded by D-P26 |
+| **D-P23** | Grow canvas texture capacity geometrically and destroy replaced/released GL textures and PBOs. | Refined by D-P25 |
+| **D-P24** | Separate the visible viewport from a padded aligned camera cache with stable integer LOD and incremental overview bins. | 2026-08-09 |
+| **D-P25** | Merge dirty texel tiles into bounded rectangles and use direct small uploads plus a non-waiting three-PBO/fence ring. | 2026-08-09 |
+| **D-P26** | Publish one evidence-gated worker generation from dual sparse grids at frame boundaries with no backlog. | 2026-08-09 |
+| **D-P27** | Retain exact state/counting change masks and enroll neighboring frontier targets only at affected edges or corners. | 2026-08-11 |
+| **D-P28** | Use bounded, sharded, evidence-adaptive exact memoization for repeated 18×18 halo states. | 2026-08-11 |
+| **D-P29** | Eliminate duplicate inactive-delta snapshots, skip superseded incremental mirror writes, and rebuild broad mirrors with recycled chunk nodes. | 2026-08-11 |
+| **D-P30** | Link candidate targets to source chunks during discovery and prepare them through retained coarse ranges. | 2026-08-11 |
+| **D-P31** | Probe duplicate candidate enrollments before growth checks and construct sparse results directly in recycled nodes. | 2026-08-16 |
+| **D-P32** | Default to configurable synchronized presentation and distinguish paced swap cadence from CPU submissions. | 2026-08-16 |
 
 ### 6.4 Engine shape (D-E\*, D-C\*, D-F\*)
 

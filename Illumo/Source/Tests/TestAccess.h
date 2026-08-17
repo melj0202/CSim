@@ -41,10 +41,14 @@ public:
     return module.lastSimulationFrameMilliseconds;
   }
 
-  static void setSimulationFrameBudgetSeconds(CellGameModule& module,
-                                              double seconds)
+  static void drainSimulation(CellGameModule& module)
   {
-    module.simulationFrameBudgetSeconds = seconds;
+    module.drainSimulation();
+  }
+
+  static bool isSimulationBusy(const CellGameModule& module)
+  {
+    return module.simulationRunner.isBusy();
   }
 
   static bool save(CellGameModule& module, const std::string& filename)

@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <tracy/Tracy.hpp>
 
 GLBackend::GLBackend(IRenderWindow* window)
 {
@@ -48,7 +49,10 @@ GLBackend::BeginFrame()
 void
 GLBackend::EndFrame()
 {
-  window->swapBuffers();
+  {
+    ZoneScopedN("GLBackend.swapBuffers");
+    window->swapBuffers();
+  }
   static long frameCount = 0;
   static double lastFpsTime = 0.0;
   frameCount++;
@@ -64,6 +68,7 @@ GLBackend::EndFrame()
 void
 GLBackend::SubmitCommandQueue()
 {
+  ZoneScopedN("GLBackend.SubmitCommandQueue");
   GLResourceTables tables;
   tables.meshes = &_vaoRegistryLookup;
   tables.programs = &_programRegistryLookup;

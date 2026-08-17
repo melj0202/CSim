@@ -7,7 +7,8 @@ Cross-cutting facilities used by Engine/Game/Rendering:
   \item \textbf{Logging} --- \symbolref{Logger} (file + terminal; level from env).
   \item \textbf{Config} --- \symbolref{EnvVars} / \symbolref{IEnvVars}
         (defaults filled in \symbolref{Illumo::Init}: canvas size, fps/tps,
-        mode string, \ldots). The production file is \texttt{envvars.json}
+        synchronized presentation via \texttt{vsync}, mode string, \ldots).
+        The production file is \texttt{envvars.json}
         beside the executable, seeded from the tracked default only when absent;
         it never depends on the launch working directory.
   \item \textbf{Input} --- \symbolref{InputManager}, \symbolref{InputContext},

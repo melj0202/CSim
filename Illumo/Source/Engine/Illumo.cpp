@@ -52,6 +52,9 @@ Illumo::Init()
   if (envVars->getVar("fps").value == "") {
     envVars->setVar("fps", "60");
   }
+  if (envVars->getVar("vsync").value == "") {
+    envVars->setVar("vsync", true);
+  }
   if (envVars->getVar("CanvasX").value == "") {
     envVars->setVar("CanvasX", 80);
   }
@@ -153,6 +156,7 @@ Illumo::Update(double dt)
 void
 Illumo::Render()
 {
+  ZoneScopedN("Illumo.Render");
   // Single production frame path (D-R13): modules contribute drawables,
   // Renderer emits tokens + optional hybrid immediate fallback for stubs.
   // Token proof lives only as Renderer::RenderProofQuad for headless tests.
@@ -163,8 +167,14 @@ Illumo::Render()
 
   if (renderer) {
     renderer->BeginFrame();
-    renderer->RenderScene(context.scene, context.camera);
-    renderer->EndFrame();
+    {
+      ZoneScopedN("Illumo.RenderScene");
+      renderer->RenderScene(context.scene, context.camera);
+    }
+    {
+      ZoneScopedN("Illumo.EndFrame");
+      renderer->EndFrame();
+    }
   }
 }
 

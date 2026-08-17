@@ -2,6 +2,8 @@
 #include "CellContext.h"
 #include "Cursor.h"
 #include "Engine/IModule.h"
+#include "Foundation/RollingMetric.h"
+#include "Game/SimulationRunner.h"
 #include "Rendering/Scene.h"
 #include "Rendering/SplashText.h"
 #include <memory>
@@ -44,6 +46,9 @@ private:
   void updateWireworldBrushFromInput();
   void showModeSplash(const char* label);
   void updateEditorCursor();
+  bool consumeCompletedSimulation(bool waitForCompletion);
+  void drainSimulation();
+  void prepareGridMutation();
   CellContext* cellContext;
   CellState currentState;
   InputContext inputContext;
@@ -51,12 +56,19 @@ private:
   double simStepSeconds;
   double requestedSimulationTps;
   double achievedSimulationTps;
-  double simulationFrameBudgetSeconds;
   double lastSimulationStepMilliseconds;
   double lastSimulationFrameMilliseconds;
+  RollingMetric simulationStepMetric;
+  RollingMetric simulationMirrorMetric;
+  RollingMetric simulationAdvanceMetric;
+  RollingMetric simulationCaptureMetric;
   int lastSimulationSteps;
   bool simulationDebtDropped;
   bool simulationBudgetLimited;
+  SimulationRunner simulationRunner;
+  SimulationRunnerTimings lastSimulationRunnerTimings;
+  SparseGenerationDelta mirrorDelta;
+  bool mirrorDeltaValid;
   // Wireworld left-paint state: 0 head, 1 empty, 2 tail, 3 conductor.
   // Selected with keys 1/H, 2, 3/T, 4 while the console is closed.
   unsigned char wireworldBrush;

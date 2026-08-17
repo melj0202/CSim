@@ -10,5 +10,6 @@
  "showFPS": "1",
  "speedFactor": "1",
  "tps": "12",
+ "vsync": "1",
  "cellFadeSpeed": "6"
 }

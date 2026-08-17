@@ -110,25 +110,30 @@ Canvas truth (verify here before trusting older notes):
   retained result storage instead of a local hash set, sorting, and disposable
   vectors. All evaluators index a per-ruleset 256x9 transition table; dense
   halo targets build rolling rows directly from chunk counting masks without
-  materializing an 18x18 byte halo. Normal mode always completes one due
-  generation, but starts a second synchronous generation only when the first
-  generation's measured cost projects both inside a 4 ms frame slice; excess
-  catch-up debt is dropped. Status separates requested/achieved TPS and reports
-  step/frame timing plus budget deferral. The grid is non-toroidal and its
-  revision changes only when cell contents actually change.
-- Production presentation: `CanvasView` samples the camera-visible region into
-  an exact nearest-filtered RGB texture while one texel per cell fits. At far
-  zoom it uses a revision-gated, density-colored overview capped at roughly
-  four screen pixels per texel; this is a presentation cap, not a simulation
-  chunk cap. At exact-cell zoom, one-revision grid changes publish changed
-  chunks so the view resamples only their visible 16x16 tiles. Revision gaps,
-  overview density, palette changes, camera changes, and grid replacement use
-  a complete bounded resample. A retained active-texel set makes fade/snap work
-  proportional to colors still changing. Its CPU/GPU texture capacity grows by
-  50% for small increases, re-enrollment replaces and destroys the prior GL
-  texture/PBOs under the same handle, and view destruction explicitly releases
-  that handle. It owns one reusable RGB texture plus one world-space quad
-  aligned to 16x16 cell bounds.
+  materializing an 18x18 byte halo. A persistent `SimulationRunner` advances a
+  spare sparse grid while the main thread reads the published one. Completed
+  generations publish only at frame boundaries with `SparseGenerationDelta`;
+  the former display grid consumes the delta before reuse. Only one generation
+  may be outstanding, overdue whole steps are dropped, and state mutations,
+  persistence, ruleset changes, manual stepping, and shutdown drain first.
+  Status derives achieved TPS from published completions and reports rolling
+  generation latency. The grid is non-toroidal and its revision changes only
+  when cell contents actually change.
+- Production presentation: `CanvasView` separates visible diagnostics from a
+  globally aligned cache padded by two 16-cell chunks on every side. Camera
+  motion inside it changes only the MVP. Near zoom is one exact nearest-filtered
+  texel per cell; far zoom uses integer density LOD with immediate coarsening
+  and 80% refinement hysteresis. One-revision changes map changed chunks to
+  deduplicated exact or overview bins; revision gaps, cache exit, LOD/resize,
+  palette changes, and replacement refill the bounded cache. Dirty 16x16-texel
+  tiles merge into at most eight rectangles or their AABB. Uploads through
+  64 KiB are direct; larger requests use a non-waiting three-PBO/fence ring and
+  direct fallback. Re-enrollment and destruction delete GL textures, buffers,
+  and fences. A retained active-texel set makes fade/snap work proportional to
+  changing colors. It owns one reusable RGB texture plus one world-space quad.
+  `RenderWindow` defaults to monitor-synchronized swapping; persisted `vsync=0`
+  remains the explicit uncapped profiling mode. Debug FPS output separates
+  paced swap completions from CPU submissions.
 - Persistence always writes sparse version 2 and reads both that format and the
   prior dense format. Legacy `CellGrid`/`Canvas` remain compatibility fixtures,
   not a second production runtime path.

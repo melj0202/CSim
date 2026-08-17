@@ -7,8 +7,8 @@ path is enroll + tokens + submit via \symbolref{Renderer}/\symbolref{IBackend}.
 Drawables emit tokens through \texttt{AppendCommands}; GL draw submission is
 confined to \pathref{Rendering/OpenGL/} (plus window bootstrap). Headless
 \pathref{Rendering/Mock/MockBackend.h} powers \texttt{IllumoTests}. CanvasView
-presentation is \textbf{bounded CPU RGB fade + one RGB display texture/quad}
-with dirty-rect PBO uploads (see canonical note in
+presentation is \textbf{a padded camera cache + bounded CPU RGB fade + one RGB
+display texture/quad} with tiled multi-rect uploads (see canonical note in
 \pathref{docs/architecture-consensus.md}).
 No second real GPU API.
 \end{statusbox}
@@ -58,21 +58,26 @@ No second real GPU API.
         16$\times$16 chunks and changes its revision only for a cell-content
         change. The view visits only chunks intersecting its camera source
         bounds.
-  \item View: CPU palette via \texttt{evalCell} $\rightarrow$ \texttt{targetRgb};
+  \item View: visible diagnostics are separate from a globally aligned cache
+        padded by two 16-cell chunks on every side. Motion inside the cache
+        changes only the camera MVP. CPU palette via \texttt{evalCell}
+        $\rightarrow$ \texttt{targetRgb};
         \texttt{displayRgb} eases toward targets, newly revealed cells snap,
         and packed RGB is staged for upload. Unchanged grid, palette, and
         camera bounds skip resampling entirely.
   \item Zoom: normal views retain one nearest-filtered texel per 16$\times$16
-        world cell. Far views use a density-colored overview bounded to about
-        four screen pixels per texel; this is a visual budget, never a chunk
-        or world-cell cap.
+        world cell. Far views use a stable integer density LOD bounded to about
+        four screen pixels per texel; it coarsens immediately to fit and refines
+        only when the next level fits within 80\% of the budget. Changed chunks
+        map to deduplicated exact or overview cache bins.
   \item GPU: one reusable nearest-filtered RGB display texture and one
         world-space quad aligned to the same 16$\times$16 cell bounds as the
-        editor cursor, updated via at most one dirty-rect
-        \texttt{UpdateTexture} token per submission (PBO path; optional
-        \texttt{srcRowStride}). Small dimension increases reserve 50\% texture
-        headroom. Re-enrollment destroys the prior GL texture/PBO pair under
-        the same handle, and view destruction explicitly releases the texture.
+        editor cursor. Dirty 16$\times$16-texel tiles merge into at most eight
+        \texttt{UpdateTexture} rectangles when their area is at most half the
+        enclosing AABB; otherwise the AABB is submitted. Small dimension
+        increases reserve 50\% texture headroom. Re-enrollment destroys the
+        prior GL texture, PBOs, and fences under the same handle, and view
+        destruction explicitly releases the texture.
   \item Shaders: \pathref{Shader/canvas\_vertex.glsl},
         \pathref{Shader/canvas\_frag.glsl} --- sample \texttt{uDisplayTexture}.
   \item History: D-P4 briefly used GPU R8 + $256\times 1$ palette (snap colors).
@@ -91,11 +96,21 @@ release (handles = \texttt{unsigned long} table IDs).
 including pipeline, bind, uniforms, \texttt{UpdateTexture}, \texttt{UpdateBuffer},
 clear, draw (D-R1).
 
-\symbolref{GLTexture::UpdateSubImage}: PBO ping-pong + dirty-rect packing;
-fallback to client \texttt{glTexSubImage2D} if map fails.
+\symbolref{GLTexture::UpdateSubImage}: rectangles through 64\,KiB use direct
+\texttt{glTexSubImage2D}. Larger uploads select a signaled slot from a
+three-PBO/\texttt{GLsync} ring without waiting; all-busy and map-failure cases
+fall back to the direct path. Replacement/destruction deletes every fence and
+buffer and retains the OpenGL 3.3 baseline.
 
 \symbolref{GLDevice}: bind-state tracker (skip redundant program/VAO/texture/
 viewport within a submit); uniform location cache; blend-func-on-enable (D-R5).
+
+Presentation defaults to monitor synchronization through
+\texttt{glfwSwapInterval(1)}. The persisted \texttt{vsync} value selects that
+frame-paced mode or an explicit uncapped profiling mode and may change live at
+a swap boundary. Debug labels swap-completion cadence as \texttt{Paced FPS} and
+main-loop work as \texttt{Submit FPS}; uncapped mode reports paced FPS as off
+instead of treating thousands of CPU submissions as displayed frames (D-P32).
 
 \subsection{UI tokens}
 \begin{itemize}

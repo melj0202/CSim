@@ -1,6 +1,7 @@
 #include "Engine/IllumoContext.h"
 #include "Rendering/AssetManager.h"
 #include "Rendering/BackendConfig.h"
+#include "Rendering/PresentationTiming.h"
 #include "Rendering/SplashText.h"
 #include "Services/InputContext.h"
 #include "Services/SysCmdLine.h"
@@ -201,6 +202,36 @@ testBackendConfigTokens()
 }
 
 static void
+testPresentationTimingPolicy()
+{
+  testSection("PresentationTiming: vsync policy and FPS labels");
+  testTrue(g,
+           isVsyncRequested(nullptr),
+           "missing environment defaults to synchronized presentation");
+
+  EnvVars env;
+  testTrue(g,
+           isVsyncRequested(&env),
+           "missing vsync value defaults to synchronized presentation");
+  env.setVar("vsync", false);
+  testTrue(
+    g, !isVsyncRequested(&env), "disabled vsync selects uncapped presentation");
+  env.setVar("vsync", true);
+  testTrue(g,
+           isVsyncRequested(&env),
+           "enabled vsync selects frame-paced presentation");
+
+  testTrue(g,
+           buildFrameRateLabel(true, 144, 144) ==
+             "Paced FPS: 144 | Submit FPS: 144",
+           "paced label separates swap cadence from submissions");
+  testTrue(g,
+           buildFrameRateLabel(false, 999, 4812) ==
+             "Paced FPS: off | Submit FPS: 4812",
+           "uncapped label does not misreport submissions as presented FPS");
+}
+
+static void
 testAssetManagerEnrollment()
 {
   testSection("AssetManager: enroll assets and track counts");
@@ -364,8 +395,8 @@ testSystemArgumentParsing()
   char cw[] = "-cw";
   char wh[] = "-wh";
   char height[] = "768";
-  char* arguments[] = { executable, ch, canvasHeight, ww, width,
-                        cw,         canvasWidth, wh, height };
+  char* arguments[] = { executable, ch,          canvasHeight, ww,    width,
+                        cw,         canvasWidth, wh,           height };
   SysCmdLine::ParseCommandLine(9, arguments, &env);
   testTrue(g, env.getVar("WinX").value == "1024", "window width parsed");
   testTrue(g, env.getVar("WinY").value == "768", "window height parsed");
@@ -468,6 +499,9 @@ registerRuntimeUtilityTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.BackendConfig.TokenConversion",
                []() { return runRuntimeUtilityCase(testBackendConfigTokens); });
+  registry.add("Illumo.Presentation.FramePacingPolicy", []() {
+    return runRuntimeUtilityCase(testPresentationTimingPolicy);
+  });
   registry.add("Illumo.AssetManager.Enrollment", []() {
     return runRuntimeUtilityCase(testAssetManagerEnrollment);
   });

@@ -85,6 +85,7 @@ set(ILLUMO_APP_SOURCES
 # implementations while the application links its native platform source.
 set(ILLUMO_HEADLESS_FEATURE_SOURCES
     Source/Game/CellGameModule.cpp
+    Source/Game/SimulationRunner.cpp
     Source/Services/SysCmdLine.cpp
     Source/Rendering/SplashText.cpp
 )

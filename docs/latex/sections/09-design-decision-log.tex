@@ -1091,6 +1091,258 @@ replacement path.\\
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-P24 --- Exact padded camera cache and stable LOD}
+\begin{decisionbox}[title={D-P24 \quad 2026-08-09}]
+\textbf{Decision:} Separate visible-resolution diagnostics from a globally
+aligned sampled cache padded by two 16-cell chunks on every side. Keep exact
+one-texel-per-cell output near zoom. Use integer density LOD far away, coarsen
+immediately to fit, and refine only when the next level fits within 80\% of the
+budget. Map one-revision changed chunks to deduplicated exact or overview bins.\\
+\textbf{Why:} Continuous pan and smooth zoom previously changed source bounds
+often enough to resample and reapply the complete active view every frame.\\
+\textbf{Consequences:} Sub-cache camera motion changes only the MVP. Cache exit,
+LOD/resize, palette changes, revision gaps, and replacement trigger exact
+bounded refills. Status exposes visible/cache dimensions, LOD, refill count,
+and rolling refill latency; deterministic and warmed camera tests cover reuse,
+boundaries, hysteresis, and overview updates.\\
+\textbf{Refines:} D-C5 bounded overview and D-P21 changed-tile sampling.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P25 --- Bounded tiled uploads and non-waiting PBO ring}
+\begin{decisionbox}[title={D-P25 \quad 2026-08-09}]
+\textbf{Decision:} Track dirty 16-by-16 texel tiles, merge adjacent runs into at
+most eight rectangles when they cover at most half their enclosing AABB, and
+otherwise submit the AABB. Upload rectangles through 64\,KiB directly. For
+larger requests, select a signaled slot from three PBOs with \texttt{GLsync}
+fences without waiting; use direct upload when every slot is busy or mapping
+fails.\\
+\textbf{Why:} One dirty AABB could copy a large unchanged gap, while mapping the
+same PBO path synchronously could couple upload availability to frame latency.\\
+\textbf{Consequences:} \texttt{RenderCommand::UpdateTexture} and the
+renderer/backend boundary remain unchanged and OpenGL 3.3 is sufficient.
+Texture replacement and destruction delete all fences and buffers. Tracy zones
+separate selection, map, copy, unmap, and submission; status retains rolling
+requested bytes and rectangle counts.\\
+\textbf{Refines:} D-P4/D-P6 dirty upload staging and D-P23 explicit release.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P26 --- Evidence-gated published simulation runner}
+\begin{decisionbox}[title={D-P26 \quad 2026-08-09}]
+\textbf{Decision:} Because the warmed 16,384-colony fixture exceeds the 4\,ms
+p95 gate, keep two sparse grids and one persistent simulation runner. The main
+thread owns the published grid while the worker exclusively mutates the spare.
+Publish completed generations only at frame boundaries and carry a
+\texttt{SparseGenerationDelta} so the former display grid can be synchronized
+before reuse. Permit one request and no backlog; drop overdue whole steps while
+retaining the fractional accumulator remainder.\\
+\textbf{Why:} A single representative generation can exceed the complete
+16.7\,ms frame budget even after CPU hot-path improvements, so any synchronous
+policy still exposes that cost as input and render lag.\\
+\textbf{Consequences:} Canvas cache reads never lock against simulation.
+Achieved TPS counts completed publications. Pause/edit, persistence, ruleset
+changes, manual stepping, and shutdown drain first. Snapshot records include
+cell and occupancy/counting masks, broad mirrors update retained chunk nodes in
+place, and the worker catches allocation failures without terminating the
+process. Focused coverage checks deterministic two-generation alternation,
+unchanged sparse chunks, debt dropping, state-transition drains, and shutdown
+with work outstanding.\\
+\textbf{Supersedes:} D-P22 measured second synchronous step.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P27 --- Cell-precise frontier activity}
+\begin{decisionbox}[title={D-P27 \quad 2026-08-11}]
+\textbf{Decision:} Retain a 256-bit state-change mask and a separate
+counting-status-change mask for every changed chunk. Always reevaluate the
+changed chunk itself. Enroll a neighboring target only when a counting change
+touches its shared edge or corner. Carry the masks through edits, complete and
+frontier generations, sparse publication deltas, mirror application, and grid
+swaps.\\
+\textbf{Why:} Chunk-address-only tracking expanded every local change to a
+3-by-3 target region even when activity stayed in the chunk interior. Stored
+states such as Wireworld conductors also caused neighbor work despite not
+contributing to Moore counts.\\
+\textbf{Consequences:} An interior blinker in a large settled world evaluates
+one target chunk; boundary activity enrolls only the touching targets, and
+non-counting stored chunks do not create neighbor work. Status reports exact
+state/counting changed-cell totals. Focused tests cover interior, edge, binary,
+and conductor cases plus byte identity with complete stepping.\\
+\textbf{Refines:} D-P14 retained frontiers and D-P15 separate counting masks.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P28 --- Adaptive exact halo memoization}
+\begin{decisionbox}[title={D-P28 \quad 2026-08-11}]
+\textbf{Decision:} Memoize halo results on demand with the complete
+18-by-18 byte input state as the key. Use nine thread-exclusive shards (main
+plus eight worker slots), 512 four-way entries per shard, hash-based set
+selection, and mandatory full-key comparison. Sample up to 16 targets per shard
+and activate at a 25\% hit rate. After three active generations below 10\%,
+cool down for 32 generations. Bypass fewer than 32 halo targets and every
+candidate-only workload; invalidate on ruleset type or transition-table
+revision changes.\\
+\textbf{Why:} Repeated isolated chunks often present identical halo states,
+making neighbor reduction and 256 transition evaluations redundant. A global
+cache or hash-only acceptance would add contention or risk incorrect output.
+Unique worlds must not pay permanent key-building overhead.\\
+\textbf{Consequences:} Each grid allocates shards lazily and remains below the
+dual-grid 8\,MiB budget. Exact cached and uncached generations are byte
+identical, including after ruleset changes. Three Release samples of 256
+repeated dense chunks improved by 10.9--12.5\%; the 24-by-24 random control
+changed by +0.8--1.3\%, and the candidate-only control's median change stayed
+within 1\% with zero probes. Status exposes hits, probes, entries, bytes, and
+activation state.\\
+\textbf{Refines:} D-P16 cached transitions and D-P20 retained halo evaluation.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P29 --- Allocation-free broad mirror replacement}
+\begin{decisionbox}[title={D-P29 \quad 2026-08-11}]
+\textbf{Decision:} Do not copy the completed sparse delta into the worker
+grid's inactive-catch-up state. For incremental publication, use that grid's
+existing changed-address journal and a retained index of incoming addresses;
+skip an old address when the incoming record already supplies its final state.
+For a full sparse replacement, extract every destination-map node into the
+grid's retained recycler, rewrite keys and chunk data from the replacement
+records, reinsert them, and accumulate aggregate statistics during insertion.
+Report mirror, simulation advance, delta capture, and total worker latency as
+separate Tracy zones and rolling status metrics.\\
+\textbf{Why:} The 16,384-colony fixture exceeds the bounded frontier journal
+and therefore publishes full sparse replacements. Its mirror path allocated a
+temporary address set, performed per-record lookup/update, scanned the old map
+to erase absent chunks, and then scanned again for statistics. Incremental
+grids also retained a complete duplicate delta and could replay a state that
+the next incoming delta immediately replaced.\\
+\textbf{Consequences:} Full replacement performs one extraction pass and one
+insertion pass with retained nodes and no temporary hash set. Incremental
+catch-up retains only existing grid journals and writes each superseded address
+once. Deterministic tests cover overlapping and non-overlapping incremental
+changes plus a greater-than-4,096-change full replacement. In two comparable
+Release runs, dispersed mirror p95 fell from 17.7\,ms to 5.0--5.1\,ms and total
+async p95 fell from 49.4\,ms to 28.3--28.6\,ms; the remaining dominant stage is
+the 21.3--21.4\,ms generation advance.\\
+\textbf{Refines:} D-P12 retained chunk nodes and D-P26 dual-grid publication.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P30 --- Coarse direct-source candidate preparation}
+\begin{decisionbox}[title={D-P30 \quad 2026-08-11}]
+\textbf{Decision:} Keep the source-centric serial builder. For large or forced
+parallel candidate preparation, link each target to its existing 3-by-3 source
+chunks during target discovery. Store those nine pointer representations in
+the first bytes of the otherwise uninitialized neighbor-count scratch, copy
+them into worker-local storage before counting begins, and then reuse the bytes
+for lazily initialized counts. Schedule retained target ranges sized to about
+eight ranges per worker and no more than 256 targets, rather than claiming one
+atomic work item per target. Keep the automatic candidate-worker cap at four.\\
+\textbf{Why:} The 16,384-colony complete candidate path created 65,536 target
+chunks. Target-parallel preparation repeated up to nine hash-map lookups and
+one atomic claim for every target, while the later candidate evaluation was
+already comparatively small. Adding permanent source-pointer arrays would
+inflate every retained scratch record, including the serial path.\\
+\textbf{Consequences:} The parallel path removes repeated source lookups and
+reduces 65,536 work claims to 256 without increasing steady scratch-record
+size. In comparable Release samples, candidate preparation fell from about
+7.33\,ms to 1.58--1.83\,ms and four-worker throughput rose from about 48.5 to
+68.9--69.5 generations per second; retained serial throughput remained about
+43 generations per second. Dispersed asynchronous advance p95 fell from about
+19.82\,ms to 14.74--15.53\,ms and total worker-cycle p95 from about 26.28\,ms to
+21.46--22.29\,ms. An eight-worker production cap, keyed in-place output merge, and
+worker-materialized output chunks were measured and rejected because they
+worsened frame latency or total throughput. Stage timings and preparation and
+evaluation range counts remain informational diagnostics.\\
+\textbf{Refines:} D-P19 target-owned parallel preparation and D-P13 coarse
+candidate evaluation.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P31 --- Duplicate-first discovery and direct sparse output}
+\begin{decisionbox}[title={D-P31 \quad 2026-08-16}]
+\textbf{Decision:} Probe the retained candidate index before calculating
+capacity. Check the 75\% load boundary and grow only after a probe finds a new
+target. Count non-background output in independent evaluation ranges for exact
+diagnostics, but retain target-sized bucket headroom. Before recycling every
+inactive node, reset its aggregate statistics once. Candidate output acquires
+and rekeys a recycled node first, constructs sparse cells directly in its
+mapped storage, and adds statistics after construction. Keep dense halo output
+on its complete-array bulk-copy path.\\
+\textbf{Why:} The 16,384-colony path made 131,072 enrollment attempts for
+65,536 unique targets, so half of the old capacity checks could never insert.
+Sparse merge also cleared a temporary 256-cell chunk and then copied the whole
+chunk into a node. Exact output reservation, however, reduced bucket headroom
+and increased collision cost; sparse bit-walking also regressed dense output.\\
+\textbf{Consequences:} Three same-machine Release baselines had medians of
+52.6 generations per second, 7.06\,ms discovery, and 5.92\,ms merge. The scoped
+variant measured 59.4 generations per second, 6.19\,ms discovery, and 5.86\,ms
+merge. A direct-versus-temporary-copy A/B measured 5.86 versus 6.33\,ms median
+merge. Across three warmed frame samples, asynchronous worker-cycle and advance
+p95 medians improved by about 4.7\% and 4.9\%; synchronous p95 varied upward by
+3.8\%, within the 5\% noise/regression gate. Status reports enrollments, index
+growth, produced chunks, and change/recycle/output substages. Exact output
+reservation and dense direct construction are rejected.\\
+\textbf{Refines:} D-P11 candidate indexing, D-P12 retained nodes, and D-P30
+direct-source preparation.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P32 --- Synchronized presentation cadence}
+\begin{decisionbox}[title={D-P32 \quad 2026-08-16}]
+\textbf{Decision:} Default the Windows OpenGL path to swap interval one. Read
+the persisted \texttt{vsync} value at swap boundaries and change GLFW's swap
+interval only when that value changes; retain explicit uncapped mode for
+profiling. In Debug, report frame-paced swap completions separately from CPU
+frame submissions and show paced FPS as off while uncapped.\\
+\textbf{Why:} Camera-only Tracy runs with swap interval zero completed 99\% of
+CPU frames within 0.61\,ms and never exceeded 3.18\,ms, yet the overlay claimed
+about 4,500--5,000 FPS while visible camera motion juddered. The same optimized
+build with swap interval one locked to the 144\,Hz display: frame-start p50,
+p95, and p99 were 6.94, 7.00, and 7.09\,ms, and p99.9 was 7.38\,ms. Four longer
+intervals coincided with automation screenshot capture rather than camera
+cache or upload work.\\
+\textbf{Consequences:} Default motion is paced by the display instead of an
+unbounded submission loop. Users can persist \texttt{vsync=0} or toggle it in
+Debug for throughput profiling. The existing \texttt{IBackend::getFPS}
+swap-completion counter supplies paced cadence only when synchronization is
+active; the overlay never labels uncapped submissions as presented frames.
+Headless coverage verifies the default/fallback policy and both label forms.\\
+\textbf{Refines:} D-R13's single frame path and D-P24 camera-cache presentation.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-P33 --- Direct broad generations and exact topology reuse}
+\begin{decisionbox}[title={D-P33 \quad 2026-08-17}]
+\textbf{Decision:} Publish broad generations as a lightweight replacement
+marker without chunk snapshots. Let the spare grid read the immutable published
+grid through \texttt{advanceFrom} and update its own authoritative chunk nodes
+in place. Retain each target's 3-by-3 source pointers and an index-aligned
+destination pointer. Give each grid an object-local topology epoch that changes
+only when chunk presence or counted edge/corner participation changes; reuse the
+candidate target index and pointers only when both source identity and epoch
+match.\
+\textbf{Why:} Full replacement capture and mirror work duplicated the broad
+generation, while every dispersed step rediscovered 65,536 targets and looked
+up 32,768 output nodes. The two alternating grids revisit the same parity of
+oscillator topology, so exact object-local reuse is available even though the
+logical world topology changes every generation.\
+\textbf{Consequences:} Broad mirror and capture p50/p95 are zero in the
+16,384-colony fixture. Candidate topology was reused in 327 of 330 warmed and
+measured generations; a representative asynchronous p95 improved from about
+17.7--20.3\,ms after direct publication to 9.7--11.3\,ms with topology and
+output-slot reuse, while remaining byte-identical. An edit that changes
+topology invalidates reuse before any retained pointer is read. A 32,768-chunk
+contiguous-storage prototype made its isolated copy kernel 1.24 times faster,
+but its estimated whole-generation ceiling was only about 0.6\,ms, so the
+authoritative hash-map refactor is rejected. A two/four/eight-worker A/B measured
+11.97/9.67/10.62\,ms p95, retaining the four-worker automatic cap. A paced Tracy
+pan/zoom run at 144\,Hz measured 6.94/7.00/8.10\,ms frame-start p50/p95/max in
+the refill window and only six refills across 36,892 frames.\
+\textbf{Refines:} D-P26 publication, D-P30 source-linked preparation, D-P31
+direct sparse output, and D-P32 paced presentation.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
 \subsection*{Template for new entries}
 \begin{lstlisting}[language={}]
 \subsection*{D-0XX --- short title}

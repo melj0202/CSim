@@ -46,6 +46,7 @@ public:
     return std::array<int, 2>{ width, height };
   }
   bool shouldWindowClose() override { return false; }
+  bool isFramePaced() const override { return false; }
   void swapBuffers() override {}
   void requestClose() override { closeRequested = true; }
 };

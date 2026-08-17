@@ -8,16 +8,20 @@ struct IllumoTestCase
 {
   std::string name;
   std::function<int()> function;
+  int timeoutSeconds = 30;
 };
 
 class IllumoTestRegistry
 {
 public:
-  void add(const std::string& name, const std::function<int()>& function)
+  void add(const std::string& name,
+           const std::function<int()>& function,
+           int timeoutSeconds = 30)
   {
     IllumoTestCase testCase;
     testCase.name = name;
     testCase.function = function;
+    testCase.timeoutSeconds = timeoutSeconds;
     testCases.push_back(testCase);
   }
 

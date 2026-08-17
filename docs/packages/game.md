@@ -27,9 +27,15 @@ bounded presentation view.
   Index and scratch capacity survive generation resets,
   avoiding per-world-cell hash nodes, sorting, binary searches, and repeated
   candidate allocation. Serial preparation remains source-centric for cache
-  locality. Large or explicitly parallel preparation is target-centric, so
-  independent scratch records can use the same reusable pool without shared
-  writes. Candidate sets with at least 16,384 cells are divided
+  locality. Large or explicitly parallel preparation is target-centric:
+  discovery stores direct 3x3 source references in the not-yet-used neighbor
+  count bytes, and workers copy those references locally before count
+  initialization reuses the storage. Retained coarse ranges, capped at 256
+  targets and sized to about eight ranges per worker, eliminate repeated map
+  lookups and per-target atomic claims without shared writes. Flat-index lookup
+  checks for an existing target before testing capacity, so duplicate enrollment
+  never performs a growth calculation. Candidate sets
+  with at least 16,384 cells are divided
   into retained ranges of roughly 2,048 candidate cells and evaluated through
   the reusable pool with up to four automatic workers. Each range writes
   independent result slots; small sets retain the direct serial path. Complete
@@ -46,12 +52,22 @@ bounded presentation view.
   three-row stencil; it does not materialize an 18x18 byte halo or rescan cell
   states for counts. Empty results are not stored.
 - Both paths write into a retained inactive chunk map. Old inactive nodes are
-  extracted into a retained handle vector and reinserted with new keys/data,
-  preserving transactional map comparison/swap while eliminating steady-state
-  node allocation at a stable chunk-count high-water mark.
+  extracted into a retained handle vector after aggregate statistics reset once.
+  Sparse candidate results acquire and rekey a node before constructing cells
+  directly in its mapped storage; dense halo results retain their complete-array
+  bulk copy. Direct dual-grid generations instead update the spare grid's
+  authoritative nodes in place. Each grid retains an exact topology epoch,
+  candidate target/source references, and index-aligned output pointers; a
+  returning source grid with unchanged chunk presence and counted edge/corner
+  participation skips target discovery and output-map lookup. Topology changes
+  invalidate the reuse before any retained pointer is read. Target-sized bucket
+  headroom is retained because exact output reservation regressed measured
+  insertion cost. Transactional map comparison/swap and zero steady-state
+  allocation remain intact for non-direct generations.
 - The inactive map also remains the prior-generation baseline. Retained flat
-  address sets track changed chunks and expand them by one chunk in every
-  direction. Up to 4,096 changed addresses are retained. Sparse local sources
+  address sets track exact state-change and counting-change masks per chunk.
+  Each changed chunk enrolls itself; only counting changes on a shared edge or
+  corner enroll the corresponding neighbor. Up to 4,096 changed addresses are retained. Sparse local sources
   build candidate masks only for frontier targets and choose candidate or halo
   evaluation independently. Exact local target/source bookkeeping, candidate,
   neighbor-contribution, and evaluation work is compared with a complete-path
@@ -59,6 +75,11 @@ bounded presentation view.
   retained map; broad changes fall back to complete candidates or halos. Empty
   frontiers return immediately. Editing and ruleset-type changes repopulate or
   invalidate the frontier explicitly.
+- Halo evaluation has a bounded on-demand memo keyed by the exact 18x18 cell
+  state. Main-thread and worker shards require no locks; hashes select a
+  four-way set and full keys prove hits. Adaptive sampling activates only for
+  repeated neighborhoods, cools down after low hit rates, and is bypassed for
+  candidate-only or small halo workloads. Ruleset transition changes clear it.
 - Its revision changes only when a generation or edit changes the stored cell
   contents, allowing dependent views to skip idle resampling.
 - Rulesets supply pure `nextState` and `evalCell` behavior. Each ruleset's
@@ -68,25 +89,29 @@ bounded presentation view.
 
 ## CanvasView (presentation)
 
-- Samples contiguous 16x16 world cells around the camera. Near zoom uses one
-  exact texel per cell; far zoom uses a density-colored overview bounded to
-  roughly four screen pixels per texel.
+- Separates the visible viewport from a globally aligned sampled cache padded
+  by two 16-cell chunks on every side. Camera motion within the cache changes
+  only the MVP. Near zoom uses one exact texel per cell; far zoom uses a stable
+  integer density LOD bounded to roughly four screen pixels per texel. LOD
+  coarsens immediately to fit and refines only when the next level fits within
+  80% of the output budget.
 - Owns one reusable RGB texture and one world-space, cell-aligned quad through
   `GameVisual`. Small capacity increases reserve 50% headroom so nearby zoom
   changes do not reallocate. Re-enrollment preserves the handle while the
-  backend destroys its prior GL texture/PBO pair; view destruction explicitly
-  releases the texture.
+  backend destroys its prior GL texture, PBOs, and fences; view destruction
+  explicitly releases the texture.
 - Uses nearest filtering so discrete cell colors stay sharp; the editor cursor
   uses the same centered cell bounds.
 - CPU palette targets fade through `displayRgb`; newly revealed cells snap to
   their current color. A retained active-texel set makes each fade tick and
   zero-speed snap visit only colors still changing; repeated unchanged
   `setFadeSpeed(0)` calls are constant-time. Stable grid/camera/palette state
-  skips resampling and texture upload. At exact-cell zoom, a one-revision grid
-  change publishes current or removed chunks and resamples only their visible
-  16x16 tiles. Revision gaps, overview density, palette/camera changes, and
-  whole-grid replacement fall back to a complete bounded resample. Dirty
-  updates remain bounded to at most one update per drawable submission.
+  skips resampling and texture upload. A one-revision grid change publishes
+  current or removed chunks and resamples only affected cache texels at both
+  exact and overview LODs. Revision gaps, cache exit, resize, palette changes,
+  and whole-grid replacement fall back to a complete bounded refill. Dirty
+  16x16-texel tiles merge into at most eight rectangles when that covers no
+  more than half the enclosing AABB; otherwise one AABB is submitted.
 - Overview sampling visits only sparse chunks intersecting the visible source
   region. The visual texel budget does not limit stored chunks or world cells.
 - `CellGameModule` dispatches the view on the World layer and the cursor/splash
@@ -94,20 +119,32 @@ bounded presentation view.
 
 ## CellGameModule
 
-EDIT / NORMAL; simulation uses `tps` x `speedFactor` and guarantees one due
-generation. It starts an optional second synchronous generation only when the
-first generation's measured cost projects both inside a 4 ms simulation slice,
-then drops excess catch-up debt. Painting, Bresenham strokes, `setcell`,
+EDIT / NORMAL; simulation uses `tps` x `speedFactor` and keeps at most one
+generation in flight on a persistent runner. The published grid is immutable
+while the worker advances its mirror; completion and its changed-chunk delta
+publish only at a frame boundary. There is no backlog, and overdue whole steps
+are dropped while fractional time is retained. Pause, edit, save/load, ruleset
+changes, manual stepping, and shutdown drain first. Painting, Bresenham strokes, `setcell`,
 randomization, and clearing operate directly on signed world coordinates.
 Startup patterns are centered around `(0, 0)` and simulation is non-toroidal.
+
+The inactive mirror does not retain a second copy of the outgoing delta.
+Incremental catch-up uses its existing changed-address journal and skips prior
+states replaced by an incoming record. Broad full replacements carry no chunk
+snapshot: the spare grid advances directly from the immutable published grid
+and updates its own retained nodes in place.
 
 `status` reports output chunk nodes allocated, reused, and retained alongside
 the simulation path, stored/counting cell counts, candidate-preferred chunk and
 candidate/halo target counts, changed/frontier source and target counts,
-frontier/complete work estimates, candidate work ranges, preparation/evaluation
-workers, fading texels, last sampled/faded texel work, and frame-step debt.
-It also separates requested and recently achieved TPS and reports the longest
-step, total frame simulation time, and second-step budget deferral.
+exact changed/counting cell counts, frontier/complete work estimates, memo
+hits/probes/entries/memory, candidate preparation/evaluation ranges and workers,
+candidate enrollments/index growth/produced chunks, candidate discovery/
+preparation/evaluation/change/recycle/output/merge stage timings, fading texels,
+last sampled/faded texel work, and frame-step debt.
+It also separates requested and achieved published TPS and reports rolling
+256-sample p50/p95/max values for worker generations, mirror/advance/capture
+stages, cache refills, requested upload bytes, and upload rectangles.
 
 Save always writes version 2 sparse files containing the ruleset, camera, and
 deterministically sorted chunks. Load validates temporary state first, reads

@@ -1,7 +1,9 @@
 // Simulation performance and generation-path correctness tests.
 
+#include "Foundation/RollingMetric.h"
 #include "Game/Canvas.h"
 #include "Game/CellGrid.h"
+#include "Game/SimulationRunner.h"
 #include "Game/SparseCellGrid.h"
 #include "Rulesets/GameOfLifeRuleSet.h"
 #include "Rulesets/WireworldRuleSet.h"
@@ -289,13 +291,15 @@ static double
 benchSparseGensPerSecond(int chunksPerSide,
                          int generations,
                          int workers,
-                         SparseAdvanceStats* stats)
+                         SparseAdvanceStats* stats,
+                         int memoMode = 0)
 {
   SparseCellGrid grid;
   seedSparseBenchmark(&grid, chunksPerSide, 101u);
   GameOfLifeRuleSet rules(nullptr);
   SparseCellGrid::setWorkerOverrideForTesting(workers);
   SparseCellGrid::setCellCandidateOverrideForTesting(-1);
+  SparseCellGrid::setChunkMemoOverrideForTesting(memoMode);
 
   grid.advance(rules);
   const auto t0 = std::chrono::steady_clock::now();
@@ -308,6 +312,7 @@ benchSparseGensPerSecond(int chunksPerSide,
   }
   SparseCellGrid::setWorkerOverrideForTesting(0);
   SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  SparseCellGrid::setChunkMemoOverrideForTesting(0);
 
   const double seconds = std::chrono::duration<double>(t1 - t0).count();
   if (seconds <= 0.0) {
@@ -322,7 +327,8 @@ benchSparseWideGensPerSecond(int colonyCount,
                              int candidateMode,
                              SparseAdvanceStats* stats,
                              bool reuseChunkNodes = true,
-                             int workers = 1)
+                             int workers = 1,
+                             int memoMode = 0)
 {
   SparseCellGrid grid;
   seedSparseWideBlinkers(&grid, colonyCount);
@@ -330,6 +336,7 @@ benchSparseWideGensPerSecond(int colonyCount,
   SparseCellGrid::setWorkerOverrideForTesting(workers);
   SparseCellGrid::setCellCandidateOverrideForTesting(candidateMode);
   SparseCellGrid::setChunkNodeReuseOverrideForTesting(reuseChunkNodes);
+  SparseCellGrid::setChunkMemoOverrideForTesting(memoMode);
 
   grid.advance(rules);
   const std::chrono::steady_clock::time_point t0 =
@@ -345,6 +352,7 @@ benchSparseWideGensPerSecond(int colonyCount,
   SparseCellGrid::setWorkerOverrideForTesting(0);
   SparseCellGrid::setCellCandidateOverrideForTesting(0);
   SparseCellGrid::setChunkNodeReuseOverrideForTesting(true);
+  SparseCellGrid::setChunkMemoOverrideForTesting(0);
 
   const double seconds = std::chrono::duration<double>(t1 - t0).count();
   if (seconds <= 0.0) {
@@ -380,6 +388,64 @@ benchSparseFrontierGensPerSecond(int blockCount,
   SparseCellGrid::setCellCandidateOverrideForTesting(0);
 
   const double seconds = std::chrono::duration<double>(t1 - t0).count();
+  return seconds > 0.0 ? static_cast<double>(generations) / seconds : 0.0;
+}
+
+static void
+seedRepeatedDenseChunks(SparseCellGrid* grid, int chunkCount)
+{
+  if (grid == nullptr) {
+    return;
+  }
+
+  SparseChunkRecord record;
+  record.cells.fill(SparseCellGrid::BackgroundState);
+  for (int localY = 2; localY < SparseCellGrid::kChunkDim - 2; ++localY) {
+    for (int localX = 2; localX < SparseCellGrid::kChunkDim - 2; ++localX) {
+      const unsigned int value = static_cast<unsigned int>(
+        localX * 17 + localY * 31 + localX * localY * 7);
+      if ((value % 11u) < 5u) {
+        record.cells[static_cast<std::size_t>(
+          localY * SparseCellGrid::kChunkDim + localX)] = 0;
+      }
+    }
+  }
+
+  for (int index = 0; index < chunkCount; ++index) {
+    record.chunkX = static_cast<std::int64_t>(index) * 4;
+    record.chunkY = static_cast<std::int64_t>(index % 3) * 4;
+    grid->assignChunk(record);
+  }
+}
+
+static double
+benchRepeatedDenseGensPerSecond(int chunkCount,
+                                int generations,
+                                int memoMode,
+                                SparseAdvanceStats* stats)
+{
+  SparseCellGrid grid;
+  seedRepeatedDenseChunks(&grid, chunkCount);
+  GameOfLifeRuleSet rules(nullptr);
+  SparseCellGrid::setWorkerOverrideForTesting(4);
+  SparseCellGrid::setCellCandidateOverrideForTesting(-1);
+  SparseCellGrid::setChunkMemoOverrideForTesting(memoMode);
+
+  grid.advance(rules);
+  const std::chrono::steady_clock::time_point start =
+    std::chrono::steady_clock::now();
+  for (int generation = 0; generation < generations; ++generation) {
+    grid.advance(rules);
+  }
+  const double seconds =
+    std::chrono::duration<double>(std::chrono::steady_clock::now() - start)
+      .count();
+  if (stats != nullptr) {
+    *stats = grid.getLastAdvanceStats();
+  }
+  SparseCellGrid::setWorkerOverrideForTesting(0);
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+  SparseCellGrid::setChunkMemoOverrideForTesting(0);
   return seconds > 0.0 ? static_cast<double>(generations) / seconds : 0.0;
 }
 
@@ -574,7 +640,9 @@ testSparseMicroBenchReport()
               "allocating gens/s=%.1f retained serial gens/s=%.1f "
               "parallel(4) gens/s=%.1f parallel(8) gens/s=%.1f "
               "candidate-cells=%zu targets=%zu "
-              "ranges=%zu chunk-node-allocs=%zu reused=%zu retained=%zu\n",
+              "prep/eval-ranges=%zu/%zu chunk-node-allocs=%zu reused=%zu "
+              "retained=%zu enrollments/growth/output=%zu/%zu/%zu "
+              "stages=%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f ms\n",
               largeColonyCount,
               allocatingCandidateGps,
               largeCandidateGps,
@@ -582,10 +650,21 @@ testSparseMicroBenchReport()
               parallelEightCandidateGps,
               largeCandidateStats.candidateCellCount,
               largeCandidateStats.targetChunkCount,
+              parallelCandidateStats.candidatePreparationRangeCount,
               parallelCandidateStats.candidateWorkRangeCount,
               largeCandidateStats.allocatedChunkNodeCount,
               largeCandidateStats.reusedChunkNodeCount,
-              largeCandidateStats.retainedChunkNodeCount);
+              largeCandidateStats.retainedChunkNodeCount,
+              parallelCandidateStats.candidateEnrollmentAttemptCount,
+              parallelCandidateStats.candidateIndexGrowthCount,
+              parallelCandidateStats.producedChunkCount,
+              parallelCandidateStats.candidateDiscoveryMilliseconds,
+              parallelCandidateStats.candidatePreparationMilliseconds,
+              parallelCandidateStats.candidateEvaluationMilliseconds,
+              parallelCandidateStats.candidateChangeTrackingMilliseconds,
+              parallelCandidateStats.candidateRecycleMilliseconds,
+              parallelCandidateStats.candidateOutputMilliseconds,
+              parallelCandidateStats.candidateMergeMilliseconds);
   testTrue(g, largeCandidateGps > 0.0, "large wide candidate bench ran");
   testTrue(g, parallelCandidateGps > 0.0, "large parallel candidate bench ran");
   testTrue(g,
@@ -658,6 +737,233 @@ testSparseMicroBenchReport()
              conductorCandidateStats.countedCellCount,
              0u,
              "Wireworld conductor bench counts no head neighbors");
+
+  SparseAdvanceStats uncachedRepeatedStats;
+  SparseAdvanceStats cachedRepeatedStats;
+  const double uncachedRepeatedGps =
+    benchRepeatedDenseGensPerSecond(256, 8, -1, &uncachedRepeatedStats);
+  const double cachedRepeatedGps =
+    benchRepeatedDenseGensPerSecond(256, 8, 0, &cachedRepeatedStats);
+  const double repeatedImprovement =
+    uncachedRepeatedGps > 0.0
+      ? (cachedRepeatedGps / uncachedRepeatedGps - 1.0) * 100.0
+      : 0.0;
+  std::printf("BENCH: Sparse repeated dense chunks=256 uncached gens/s=%.1f "
+              "adaptive-memo gens/s=%.1f improvement=%.1f%% "
+              "hits/probes=%zu/%zu memory=%zu\n",
+              uncachedRepeatedGps,
+              cachedRepeatedGps,
+              repeatedImprovement,
+              cachedRepeatedStats.memoHitCount,
+              cachedRepeatedStats.memoProbeCount,
+              cachedRepeatedStats.memoMemoryBytes);
+  testTrue(g,
+           uncachedRepeatedGps > 0.0 && cachedRepeatedGps > 0.0,
+           "repeated dense memo comparison ran");
+
+  SparseAdvanceStats uncachedRandomStats;
+  SparseAdvanceStats cachedRandomStats;
+  const double uncachedRandomGps =
+    benchSparseGensPerSecond(24, 20, 4, &uncachedRandomStats, -1);
+  const double cachedRandomGps =
+    benchSparseGensPerSecond(24, 20, 4, &cachedRandomStats, 0);
+  const double randomChange =
+    uncachedRandomGps > 0.0
+      ? (cachedRandomGps / uncachedRandomGps - 1.0) * 100.0
+      : 0.0;
+  std::printf("BENCH: Sparse random dense 24x24 uncached gens/s=%.1f "
+              "adaptive-memo gens/s=%.1f change=%.1f%% probes=%zu\n",
+              uncachedRandomGps,
+              cachedRandomGps,
+              randomChange,
+              cachedRandomStats.memoProbeCount);
+
+  SparseAdvanceStats uncachedSparseStats;
+  SparseAdvanceStats cachedSparseStats;
+  const double uncachedSparseGps = benchSparseWideGensPerSecond(
+    4096, 20, 1, &uncachedSparseStats, true, 4, -1);
+  const double cachedSparseGps =
+    benchSparseWideGensPerSecond(4096, 20, 1, &cachedSparseStats, true, 4, 0);
+  const double sparseChange =
+    uncachedSparseGps > 0.0
+      ? (cachedSparseGps / uncachedSparseGps - 1.0) * 100.0
+      : 0.0;
+  std::printf("BENCH: Sparse candidate-only colonies=4096 uncached "
+              "gens/s=%.1f adaptive-memo gens/s=%.1f change=%.1f%% "
+              "probes=%zu\n",
+              uncachedSparseGps,
+              cachedSparseGps,
+              sparseChange,
+              cachedSparseStats.memoProbeCount);
+}
+
+static double
+reportSparseFrameLatency(const char* name,
+                         SparseCellGrid* grid,
+                         const RuleSet& rules)
+{
+  const int warmupGenerations = 30;
+  const int measuredGenerations = 300;
+  for (int generation = 0; generation < warmupGenerations; ++generation) {
+    grid->advance(rules);
+  }
+
+  RollingMetric metric;
+  for (int generation = 0; generation < measuredGenerations; ++generation) {
+    const std::chrono::steady_clock::time_point start =
+      std::chrono::steady_clock::now();
+    grid->advance(rules);
+    const double milliseconds = std::chrono::duration<double, std::milli>(
+                                  std::chrono::steady_clock::now() - start)
+                                  .count();
+    metric.add(milliseconds);
+  }
+  std::printf("BENCH: Frame latency %s N=%d p50/p95/max=%.3f/%.3f/%.3f ms\n",
+              name,
+              measuredGenerations,
+              metric.median(),
+              metric.p95(),
+              metric.maximum());
+  testEqSize(g,
+             metric.size(),
+             RollingMetric::kCapacity,
+             "frame-latency bench retains the latest 256 samples");
+  return metric.p95();
+}
+
+static double
+reportAsyncSparseFrameLatency(const char* name,
+                              SparseCellGrid* published,
+                              SparseCellGrid* working,
+                              const RuleSet& rules)
+{
+  const int warmupGenerations = 30;
+  const int measuredGenerations = 300;
+  SimulationRunner runner;
+  SparseGenerationDelta mirrorDelta;
+  bool mirrorDeltaValid = false;
+  RollingMetric metric;
+  RollingMetric mirrorMetric;
+  RollingMetric advanceMetric;
+  RollingMetric captureMetric;
+  RollingMetric discoveryMetric;
+  RollingMetric preparationMetric;
+  RollingMetric evaluationMetric;
+  RollingMetric changeMetric;
+  RollingMetric recycleMetric;
+  RollingMetric outputMetric;
+  int topologyReuseCount = 0;
+  bool succeeded = true;
+  for (int generation = 0; generation < warmupGenerations + measuredGenerations;
+       ++generation) {
+    SparseGenerationDelta transferDelta;
+    if (mirrorDeltaValid) {
+      transferDelta = std::move(mirrorDelta);
+    }
+    succeeded = runner.start(
+      working, published, &rules, std::move(transferDelta), mirrorDeltaValid);
+    SparseCellGrid* completedGrid = nullptr;
+    double elapsedMilliseconds = 0.0;
+    bool advanceSucceeded = false;
+    SimulationRunnerTimings timings;
+    if (succeeded) {
+      succeeded = runner.waitAndTakeCompleted(&completedGrid,
+                                              &mirrorDelta,
+                                              &elapsedMilliseconds,
+                                              &advanceSucceeded,
+                                              &timings) &&
+                  advanceSucceeded && completedGrid == working;
+    }
+    if (!succeeded) {
+      break;
+    }
+    SparseCellGrid* previousPublished = published;
+    published = working;
+    working = previousPublished;
+    mirrorDeltaValid = true;
+    if (published->getLastAdvanceStats().reusedCandidateTopology) {
+      topologyReuseCount += 1;
+    }
+    if (generation >= warmupGenerations) {
+      const SparseAdvanceStats& stats = published->getLastAdvanceStats();
+      metric.add(elapsedMilliseconds);
+      mirrorMetric.add(timings.mirrorMilliseconds);
+      advanceMetric.add(timings.advanceMilliseconds);
+      captureMetric.add(timings.captureMilliseconds);
+      discoveryMetric.add(stats.candidateDiscoveryMilliseconds);
+      preparationMetric.add(stats.candidatePreparationMilliseconds);
+      evaluationMetric.add(stats.candidateEvaluationMilliseconds);
+      changeMetric.add(stats.candidateChangeTrackingMilliseconds);
+      recycleMetric.add(stats.candidateRecycleMilliseconds);
+      outputMetric.add(stats.candidateOutputMilliseconds);
+    }
+  }
+  runner.shutdown();
+  std::printf("BENCH: Frame latency %s N=%d p50/p95/max=%.3f/%.3f/%.3f ms\n",
+              name,
+              measuredGenerations,
+              metric.median(),
+              metric.p95(),
+              metric.maximum());
+  std::printf("BENCH: Async stages %s mirror p50/p95=%.3f/%.3f ms "
+              "advance=%.3f/%.3f ms capture=%.3f/%.3f ms topology-reuse=%d\n",
+              name,
+              mirrorMetric.median(),
+              mirrorMetric.p95(),
+              advanceMetric.median(),
+              advanceMetric.p95(),
+              captureMetric.median(),
+              captureMetric.p95(),
+              topologyReuseCount);
+  std::printf("BENCH: Async candidate stages %s p50 discovery/prep/eval/"
+              "change/recycle/output=%.3f/%.3f/%.3f/%.3f/%.3f/%.3f ms\n",
+              name,
+              discoveryMetric.median(),
+              preparationMetric.median(),
+              evaluationMetric.median(),
+              changeMetric.median(),
+              recycleMetric.median(),
+              outputMetric.median());
+  testTrue(
+    g, succeeded, "async frame-latency bench publishes every generation");
+  testEqSize(g,
+             metric.size(),
+             RollingMetric::kCapacity,
+             "async frame-latency bench retains the latest 256 samples");
+  return metric.p95();
+}
+
+static void
+testFrameLatencyBenchReport()
+{
+  testSection("Sim: warmed frame-latency report (informational)");
+  GameOfLifeRuleSet rules(nullptr);
+  SparseCellGrid::setWorkerOverrideForTesting(0);
+  SparseCellGrid::setCellCandidateOverrideForTesting(0);
+
+  SparseCellGrid dense;
+  seedSparseBenchmark(&dense, 24, 901u);
+  reportSparseFrameLatency("dense-24x24-chunks", &dense, rules);
+
+  SparseCellGrid sparseWide;
+  seedSparseWideBlinkers(&sparseWide, 256);
+  reportSparseFrameLatency("sparse-wide-256-colonies", &sparseWide, rules);
+
+  SparseCellGrid dispersed;
+  seedSparseWideBlinkers(&dispersed, 16384);
+  const double synchronousP95 =
+    reportSparseFrameLatency("dispersed-16384-colonies", &dispersed, rules);
+
+  SparseCellGrid asyncPublished;
+  SparseCellGrid asyncWorking;
+  seedSparseWideBlinkers(&asyncPublished, 16384);
+  const double asynchronousP95 = reportAsyncSparseFrameLatency(
+    "async-dispersed-16384-colonies", &asyncPublished, &asyncWorking, rules);
+  const double overheadPercent =
+    synchronousP95 > 0.0 ? (asynchronousP95 / synchronousP95 - 1.0) * 100.0
+                         : 0.0;
+  std::printf("BENCH: Async dispersed p95 overhead=%.1f%% (informational)\n",
+              overheadPercent);
 }
 
 static int
@@ -668,11 +974,13 @@ runSimCase(void (*testFunction)())
   SparseCellGrid::setWorkerOverrideForTesting(0);
   SparseCellGrid::setCellCandidateOverrideForTesting(0);
   SparseCellGrid::setChunkNodeReuseOverrideForTesting(true);
+  SparseCellGrid::setChunkMemoOverrideForTesting(0);
   testFunction();
   RuleSet::setWorkerOverride(0);
   SparseCellGrid::setWorkerOverrideForTesting(0);
   SparseCellGrid::setCellCandidateOverrideForTesting(0);
   SparseCellGrid::setChunkNodeReuseOverrideForTesting(true);
+  SparseCellGrid::setChunkMemoOverrideForTesting(0);
   return g.failures;
 }
 
@@ -691,4 +999,8 @@ registerSimTests(IllumoTestRegistry& registry)
                []() { return runSimCase(testMicroBenchReport); });
   registry.add("Illumo.Sim.SparseMicroBench",
                []() { return runSimCase(testSparseMicroBenchReport); });
+  registry.add(
+    "Illumo.Sim.FrameLatencyBench",
+    []() { return runSimCase(testFrameLatencyBenchReport); },
+    180);
 }

@@ -10,6 +10,7 @@
 #include "GLFW/glfw3.h"
 #include "Logger.h"
 #include <memory>
+#include <tracy/Tracy.hpp>
 
 void
 CellMain(int argc, char** argv)
@@ -32,12 +33,19 @@ CellMain(int argc, char** argv)
   double lastTime = glfwGetTime();
 
   while (!illumo->ShouldClose()) {
+    FrameMark;
     double currentTime = glfwGetTime();
     double dt = currentTime - lastTime;
     lastTime = currentTime;
 
-    illumo->Update(dt);
-    illumo->Render();
+    {
+      ZoneScopedN("Frame.Update");
+      illumo->Update(dt);
+    }
+    {
+      ZoneScopedN("Frame.Render");
+      illumo->Render();
+    }
   }
 
   illumo->Shutdown();

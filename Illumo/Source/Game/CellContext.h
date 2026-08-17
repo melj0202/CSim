@@ -39,6 +39,7 @@ public:
         cy = 60;
     }
     grid = new SparseCellGrid();
+    spareGrid = new SparseCellGrid();
     canvasView = new CanvasView(static_cast<int>(cx),
                                 static_cast<int>(cy),
                                 grid,
@@ -54,6 +55,7 @@ public:
     delete ruleSet;
     delete canvasView;
     delete grid;
+    delete spareGrid;
   }
 
   static std::string NormalizeModeString(std::string modeString)
@@ -126,6 +128,14 @@ public:
   CanvasView* getCellCanvas() const { return canvasView; }
   CanvasView* getCanvasView() const { return canvasView; }
   SparseCellGrid* getGrid() const { return grid; }
+  SparseCellGrid* getSpareGrid() const { return spareGrid; }
+  void publishSpareGrid(const SparseGenerationDelta& delta)
+  {
+    SparseCellGrid* previous = grid;
+    grid = spareGrid;
+    spareGrid = previous;
+    canvasView->adoptGrid(grid, delta);
+  }
   RuleSet* getRuleSet() const { return ruleSet; }
   std::string getModeString() const { return ModeString; }
   CommandLine* getCommandLine() const { return commandLine; }
@@ -133,6 +143,7 @@ public:
 private:
   RuleSet* ruleSet;
   SparseCellGrid* grid;
+  SparseCellGrid* spareGrid;
   CanvasView* canvasView;
   std::string ModeString;
   CommandLine* commandLine;

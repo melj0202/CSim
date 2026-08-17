@@ -129,7 +129,8 @@ writeCTestFile(const IllumoTestRegistry& registry,
            << "]==] --run [==[" << testCase.name << "]==])\n";
     output << "set_tests_properties([==[" << testCase.name
            << "]==] PROPERTIES WORKING_DIRECTORY [==[" << caseDirectory.string()
-           << "]==] LABELS [==[Illumo]==] TIMEOUT 30)\n";
+           << "]==] LABELS [==[Illumo]==] TIMEOUT " << testCase.timeoutSeconds
+           << ")\n";
   }
 
   if (!output.good()) {

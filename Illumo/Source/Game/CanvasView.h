@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Foundation/RollingMetric.h"
 #include "Game/SparseCellGrid.h"
 #include "Rendering/Drawable.h"
 #include "Rendering/Primitives/GameVisual.h"
@@ -31,14 +32,22 @@ public:
 
   // Active display texels. These are one-to-one with cells near the camera and
   // become a bounded density overview only when zooming far out.
-  int getViewWidth() const { return activeViewWidth; }
-  int getViewHeight() const { return activeViewHeight; }
+  int getViewWidth() const { return visibleViewWidth; }
+  int getViewHeight() const { return visibleViewHeight; }
   int getTextureWidth() const { return textureWidth; }
   int getTextureHeight() const { return textureHeight; }
+  int getCachedTexelWidth() const { return activeViewWidth; }
+  int getCachedTexelHeight() const { return activeViewHeight; }
+  int getCacheCellWidth() const { return cacheCellWidth; }
+  int getCacheCellHeight() const { return cacheCellHeight; }
+  int getCellsPerTexel() const { return cellsPerTexel; }
+  CellAddress getCacheFirstCell() const { return cacheFirstCell; }
+  std::size_t getCacheRefillCount() const { return cacheRefillCount; }
   int getVisibleCellWidth() const { return visibleCellWidth; }
   int getVisibleCellHeight() const { return visibleCellHeight; }
   CellAddress getVisibleFirstCell() const { return visibleFirstCell; }
   SparseCellGrid* getGrid() const { return grid; }
+  void adoptGrid(SparseCellGrid* nextGrid, const SparseGenerationDelta& delta);
 
   static std::int64_t worldToCell(double worldCoordinate);
 
@@ -76,6 +85,14 @@ public:
   std::size_t getFadingTexelCount() const { return fadingTexels.size(); }
   std::size_t getLastSampledTexelCount() const { return lastSampledTexelCount; }
   std::size_t getLastFadeVisitCount() const { return lastFadeVisitCount; }
+  std::size_t getLastUploadByteCount() const { return lastUploadByteCount; }
+  std::size_t getLastUploadRectCount() const { return lastUploadRectCount; }
+  const RollingMetric& getCacheRefillMetric() const
+  {
+    return cacheRefillMetric;
+  }
+  const RollingMetric& getUploadByteMetric() const { return uploadByteMetric; }
+  const RollingMetric& getUploadRectMetric() const { return uploadRectMetric; }
   std::size_t getLastSnapVisitCountForTesting() const
   {
     return lastSnapVisitCount;
@@ -90,6 +107,17 @@ private:
   static const int kPaletteSize = 256;
   static constexpr float kCellSize = 16.0f;
   static const int kOverviewPixelsPerTexel = 4;
+  static const int kCachePaddingChunks = 2;
+  static const int kDirtyTileDim = 16;
+  static const std::size_t kMaximumUploadRects = 8u;
+
+  struct UploadRect
+  {
+    int x = 0;
+    int y = 0;
+    int width = 0;
+    int height = 0;
+  };
 
   int baseViewWidth;
   int baseViewHeight;
@@ -97,9 +125,15 @@ private:
   int textureHeight;
   int activeViewWidth;
   int activeViewHeight;
+  int visibleViewWidth;
+  int visibleViewHeight;
   int visibleCellWidth;
   int visibleCellHeight;
   CellAddress visibleFirstCell;
+  int cacheCellWidth;
+  int cacheCellHeight;
+  int cellsPerTexel;
+  CellAddress cacheFirstCell;
   SparseCellGrid* grid;
   unsigned char paletteRgb[kPaletteSize * 3];
   unsigned char* texBuffer;
@@ -108,9 +142,18 @@ private:
   float* sampledRgb;
   std::vector<int> fadingTexels;
   std::vector<unsigned char> fadingFlags;
+  std::vector<int> changedSampleTexels;
+  std::vector<unsigned char> changedSampleFlags;
+  std::vector<unsigned char> dirtyTiles;
   std::size_t lastSampledTexelCount;
   std::size_t lastFadeVisitCount;
   std::size_t lastSnapVisitCount;
+  std::size_t lastUploadByteCount;
+  std::size_t lastUploadRectCount;
+  std::size_t cacheRefillCount;
+  RollingMetric cacheRefillMetric;
+  RollingMetric uploadByteMetric;
+  RollingMetric uploadRectMetric;
   float fadeSpeed;
 
   GameVisual visual;
@@ -122,6 +165,8 @@ private:
   int uploadMinY;
   int uploadMaxX;
   int uploadMaxY;
+  int dirtyTileColumns;
+  int dirtyTileRows;
   CellAddress quadFirstCell;
   int quadCellWidth;
   int quadCellHeight;
@@ -138,12 +183,25 @@ private:
   void resizeBuffers(int width, int height);
   void resetUploadBounds();
   void markFullActiveUpload();
+  void markDirtyTile(int x, int y);
+  void buildUploadRects(std::vector<UploadRect>* rectangles) const;
   void rebuildWorldQuad();
   void sampleGrid(bool snap);
   bool sampleChangedChunks(std::uint64_t previousRevision);
+  void sampleCacheTexel(int x, int y, bool snap);
+  void markChangedCacheChunk(const ChunkAddress& address);
+  void resampleMarkedCacheTexels();
   void applySampledTargets(bool snap);
   void clearFadingTexels();
   int getSlotSampleCount(int x, int y) const;
+  int resolveCellsPerTexel(int required,
+                           int outputBudgetWidth,
+                           int outputBudgetHeight,
+                           int nextVisibleCellWidth,
+                           int nextVisibleCellHeight) const;
+  bool cacheContains(const CellAddress& firstCell,
+                     int cellWidth,
+                     int cellHeight) const;
   void includeUpload(int x, int y);
   void writeTexel(int index, int x, int y);
   void setTargetForSlot(int index, float r, float g, float b, bool snap);
