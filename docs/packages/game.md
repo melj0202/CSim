@@ -1,13 +1,14 @@
 # Game
 
-The live game path is an unbounded sparse cellular-automata world plus a
-bounded presentation view.
+The live game path is a sparse cellular-automata world with configurable
+infinite or finite toroidal topology plus a bounded presentation view.
 
 ## SparseCellGrid (simulation domain)
 
 - Authoritative signed 64-bit cell coordinates.
-- Hash-map storage of non-background 16x16 chunks; there is no fixed chunk
-  count or allocator-pool cap.
+- Hash-map storage of non-background 16x16 chunks. Infinite mode has no fixed
+  chunk count or allocator-pool cap; finite mode canonicalizes cells into a
+  configured chunk rectangle and wraps both axes.
 - Negative coordinates use centralized floor division/modulo. All byte states
   are preserved, including Brian's Brain and Wireworld values.
 - Each chunk maintains compact masks for stored non-background cells and cells
@@ -114,8 +115,8 @@ bounded presentation view.
   more than half the enclosing AABB; otherwise one AABB is submitted.
 - Overview sampling visits only sparse chunks intersecting the visible source
   region. The visual texel budget does not limit stored chunks or world cells.
-- `CellGameModule` dispatches the view on the World layer and the cursor/splash
-  on UI.
+- `CellGameModule` dispatches the view on the World layer and the cursor,
+  splash, and configuration overlay on UI.
 
 ## CellGameModule
 
@@ -126,7 +127,22 @@ publish only at a frame boundary. There is no backlog, and overdue whole steps
 are dropped while fractional time is retained. Pause, edit, save/load, ruleset
 changes, manual stepping, and shutdown drain first. Painting, Bresenham strokes, `setcell`,
 randomization, and clearing operate directly on signed world coordinates.
-Startup patterns are centered around `(0, 0)` and simulation is non-toroidal.
+Startup patterns are centered around `(0, 0)`. Infinite mode is non-toroidal;
+positive chunk width and height select a finite torus. `0 x 0` selects the
+infinite canvas, while mixed zero/positive dimensions are rejected. Finite
+presentation is clipped to the centered canonical rectangle; camera space
+outside it remains blank even though generation neighbors wrap at its edges.
+
+F1 opens a primitive-composed settings overlay in both Release and Debug. It
+edits ruleset, world chunk dimensions, TPS, simulation speed, fade speed,
+VSync, and fullscreen. Applying a topology change drains the worker and starts
+a fresh centered world; other valid settings update the live runtime and the
+persisted environment. The overlay uses larger high-contrast setting text,
+human-readable ruleset names, split control help, and a selected-row
+description. Exit requests window closure through `IRenderWindow`, allowing the
+App loop to perform normal engine shutdown. Frame-delta-driven scalar state
+provides an eased reveal, staggered rows, a gliding selection highlight, and a
+short pulse after values change; input remains live during every transition.
 
 The inactive mirror does not retain a second copy of the outgoing delta.
 Incremental catch-up uses its existing changed-address journal and skips prior
@@ -146,10 +162,11 @@ It also separates requested and achieved published TPS and reports rolling
 256-sample p50/p95/max values for worker generations, mirror/advance/capture
 stages, cache refills, requested upload bytes, and upload rectangles.
 
-Save always writes version 2 sparse files containing the ruleset, camera, and
-deterministically sorted chunks. Load validates temporary state first, reads
-both version 2 and the prior dense format, imports legacy cells around the
-world origin, and restores saved ruleset/camera metadata.
+Save always writes version 3 sparse files containing the ruleset, camera,
+topology, and deterministically sorted canonical chunks. Load validates
+temporary state first, reads versions 3 and 2 plus the prior dense format,
+treats older formats as infinite, imports legacy cells around the world origin,
+and restores saved ruleset/camera metadata.
 
 Wireworld retains the sticky head/empty/tail/conductor brush (`1`/`H`, `2`,
 `3`/`T`, `4`).

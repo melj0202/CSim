@@ -48,7 +48,7 @@ Optional deeper reading (not required to resume work):
 
 ## 0. One-line summary
 
-**Illumo is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock). Production state is an unbounded signed-coordinate `SparseCellGrid`; `CanvasView` presents a bounded camera region with RGB fade and one reusable texture/quad. The composition root injects `IBackend`; the production frame path is module dispatch → tokens; mode splash is module-owned. Dense `CellGrid`/`Canvas` remain compatibility fixtures only.**
+**Illumo is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock). Production state is a signed-coordinate `SparseCellGrid` with infinite or finite toroidal topology; `CanvasView` presents a bounded camera region with RGB fade and one reusable texture/quad. The composition root injects `IBackend`; the production frame path is module dispatch → tokens; product UI remains primitive-composed. Dense `CellGrid`/`Canvas` remain compatibility fixtures only.**
 
 ---
 
@@ -209,7 +209,7 @@ It is an **engine-shaped application**, not a cleanly separated “engine produc
 | **Render split** | Enroll once; emit tokens per frame; backend executes (D-R1–D-R8, D-R10). |
 | **Rulesets** | Strategy hierarchy; pure `nextState` + `evalCell`; double-buffered generation (D-P3). |
 | **Scene model** | Per-frame drawable list only (D-E3, D-E4). |
-| **Tests** | Headless `IllumoTests`: 136 source-registered, granular process-isolated CTest cases spanning rules, sparse/compatibility canvas, game commands/save-load, input/services, runtime utilities, tokens, UI, and renderer injection; Clang/LLVM production-line gate (D-T1). |
+| **Tests** | Headless `IllumoTests`: 172 source-registered, granular process-isolated CTest cases spanning rules, infinite/toroidal sparse topology, bounded finite presentation, compatibility canvas, configuration UI, game commands/save-load, input/services, runtime utilities, tokens, and renderer injection; Clang/LLVM production-line gate (D-T1). |
 | **Debt hygiene** | Dead experiments under `archive/` rather than half-live. |
 
 ---
@@ -354,18 +354,18 @@ texture/buffer, draw, clear, viewport, scissor state, pipeline).
 **Not current (old engine PDF):** separate Opaque/Transparent/UI pass *objects*, MeshDrawCommand-only world draws, entity mesh tables.
 
 **Production pure-token drawables (D-R10):** CanvasView/GameVisual, Cursor,
-CommandLine, GLString, and SplashText. Dense Canvas remains a compatibility
+ConfigurationMenu, CommandLine, GLString, and SplashText. Dense Canvas remains a compatibility
 fixture.
 
 **Token migration phases 0–6:** complete for planned scope (proof → Scene → Canvas → UI → dead-path cleanup → Mock inject).
 
-### 5.6 Sparse domain + bounded view (canonical — code wins)
+### 5.6 Sparse domain + selectable topology + bounded view (canonical — code wins)
 
 The live path is intentionally a full replacement of the finite dense runtime:
 
 | Layer | Type | Contents |
 |-------|------|----------|
-| **Domain** | `SparseCellGrid` | signed 64-bit cells in a hash map of non-background 16×16 chunks |
+| **Domain** | `SparseCellGrid` | signed 64-bit cells in a hash map of non-background 16×16 chunks; `0 x 0` selects the infinite non-toroidal domain, while positive chunk dimensions select a finite torus with canonical wrapped cells |
 | **Simulation** | `SimulationRunner` + two `SparseCellGrid`s | one worker generation may be in flight; the main thread reads only the published grid and publishes completions at frame boundaries. Incremental completions apply `SparseGenerationDelta` before the former display grid is reused. Broad completions carry a lightweight replacement marker: the spare advances directly from the immutable published grid and updates its own authoritative nodes in place, avoiding a full snapshot and mirror pass. Overdue whole steps are dropped without a backlog, and edits, persistence, ruleset changes, manual stepping, and shutdown drain first. `SparseCellGrid::advance` retains the transactional totals/frontier/candidate/halo/node-reuse paths described below. |
 | **View** | `CanvasView` | visible dimensions remain diagnostics while sampling uses a globally aligned cache padded by two chunks per side; motion inside it changes only the MVP. Near LOD is one texel/cell; far LOD is an integer density level with immediate coarsening and 80% refinement hysteresis. One-revision changed chunks map to deduplicated exact or overview cache bins; cache exit, revision gaps, resize, palette change, and replacement refill the bounded cache. Active-texel CPU RGB fades snap newly revealed cells. |
 | **GPU** | `CanvasView` + `GameVisual` | one reusable nearest-filtered RGB staging texture and one world-space quad; dirty 16×16-texel tiles merge into at most eight update rectangles or their AABB. Uploads through 64 KiB are direct; larger requests use a non-waiting three-PBO/fence ring with direct fallback. |
@@ -376,7 +376,11 @@ dispatch and indexed by sparse and compatibility dense loops. Production does
 not depend on `CellGrid*`; the old dense `CellGrid`/`Canvas` and their
 toroidal `calcGeneration` entry remain only for compatibility tests during the
 transition. The sparse map has no fixed chunk-count cap and preserves all
-multi-state byte values.
+multi-state byte values. Finite topology is centered on the origin in whole
+chunks, wraps both axes during reads, writes, and neighbor evaluation, and
+rejects mixed zero/positive dimensions. Presentation clips to the centered
+canonical rectangle and leaves camera space outside it background-colored;
+only neighbor evaluation wraps across the rectangle's opposite edges.
 
 Negative chunk coordinates use centralized floor division/modulo. Chunk output
 is sorted by `(chunkY, chunkX)` for deterministic saves and tests. The view
@@ -575,6 +579,8 @@ JSON describes **data**, not executable behavior. Multi-state (Wireworld, Brian'
 3. Double-buffer prevents reading a half-written generation.  
 4. Visual fade is **presentation**, not simulation state.  
 5. Modes in `CellGameModule`: `NORMAL | EDIT | EXIT` (enum + switch; save/load are registered commands, not frame states).
+6. F1 opens the Release-visible `ConfigurationMenu`; while open it owns product
+   input and blocks simulation/editor mutation.
 
 Fixed-tick **mesh transform interpolation** (engine PDF) is **not** required for the CA product.
 
@@ -587,6 +593,18 @@ GLFW callbacks / poll → InputManager → module / controller logic
 ```
 
 **Today:** InputManager holds key/mouse state and contexts; CellGameModule / DebugModule consume it. Not every behavior is extracted into tiny controller classes—acceptable.
+
+`CellGameModule` owns a primitive-composed F1 settings overlay in every build.
+It edits ruleset, world chunk width/height, TPS, simulation speed, fade speed,
+VSync, and fullscreen. Positive dimensions apply finite toroidal topology;
+`0`/`0` or `inf`/`inf` applies infinite topology. Topology changes drain the
+worker and intentionally start a fresh centered world before persisting values.
+Larger high-contrast labels, readable ruleset names, split keyboard help, and a
+selected-setting explanation keep the Release surface legible. Its Exit action
+requests window closure so the App main loop performs normal engine shutdown.
+Animation remains local value state: the overlay eases into place, rows reveal
+in sequence, selection glides, and changed values pulse without adding widgets
+or blocking input.
 
 **D-E2:** InputManager must not depend on Game types.  
 Callbacks should record events/state, not own game policy long-term (CA design PDF — still the direction of travel).
@@ -601,10 +619,11 @@ The Debug-only console separates general tooling from product behavior:
   commands through `CommandRegistry`; registry metadata drives help and Tab
   completion.
 - Registered commands execute from the queue without falling through as unknown.
-- Save always writes version 2 sparse records (magic/version, ruleset, camera,
-  deterministic sorted chunks). Load validates into temporary state, accepts
-  both version 2 and the prior dense format, imports legacy cells centered at
-  the origin, then restores ruleset/camera and rebuilds the bounded view.
+- Save always writes version 3 sparse records (magic/version, ruleset, camera,
+  topology, deterministic sorted canonical chunks). Load validates into
+  temporary state, accepts versions 3 and 2 plus the prior dense format, treats
+  older formats as infinite, imports legacy cells centered at the origin, then
+  restores ruleset/camera and rebuilds the bounded view.
 - `vid_restart` is not advertised: safely recreating an OpenGL context requires a
   complete resource re-enrollment design, so the old no-op now reports that limit.
 - Editing supports measured caret placement, selection, Home/End, Delete,
@@ -690,6 +709,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-C3** | Replace the finite production path with signed-coordinate `SparseCellGrid` chunks plus bounded `CanvasView`; retain dense types only as compatibility fixtures. |
 | **D-C4** | `CanvasView` is a nearest-filtered, world-space quad with exact cell texels at normal zoom and cursor-aligned world-cell editing. |
 | **D-C5** | At far zoom, `CanvasView` uses a revision-gated density overview capped at roughly four screen pixels per texel; this visual budget does not cap sparse simulation chunks. |
+| **D-C6** | Keep `0 x 0` as the infinite sparse world; positive chunk dimensions select a finite torus. Configure it through the Release F1 overlay, reset on topology change, and preserve it in sparse save version 3. |
 
 ### 6.3 Performance (D-P\*)
 
@@ -739,6 +759,7 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-E5** | Freeze IllumoContext; validate at Start; third module → explicit deps. |
 | **D-C1** | Canvas dual role intentional until scale forces split. |
 | **D-C2** | **Refines D-C1:** extract `CellGrid` domain; `Canvas` extends it for view/GPU. |
+| **D-C6** | Configurable infinite or finite toroidal sparse topology, Release F1 configuration, and version 3 topology persistence. |
 | **D-F1** | MacroDefs / Windows.h include toxicity deferred until real pain. |
 
 ---
@@ -777,9 +798,12 @@ From local code review / `docs/current-issues.md` (fix when touching related cod
 ### 8.2 Closed test gaps
 
 Wireworld now has explicit two-head birth and three-head no-birth truth-table
-coverage. File-backed save/load tests cover round trips, ruleset restoration,
-dimension overlap, missing/truncated/invalid files, extension fallback, and
-dialog cancellation. Native dialog UI still needs a platform smoke test.
+coverage. File-backed save/load tests cover version 3 topology round trips,
+version 2 compatibility, ruleset restoration, dimension overlap,
+missing/truncated/invalid files, extension fallback, and dialog cancellation.
+Finite Life/Wireworld seams and Release settings behavior have focused
+headless coverage. Native dialog and live window UI still need platform smoke
+tests.
 
 ### 8.3 Assessment-only risks (structural)
 
@@ -792,7 +816,9 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 - CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; the repository root forwards to the live `Illumo/CMakeLists.txt` entrypoint
 - Runtime configuration is one `envvars.json` beside the executable; CMake seeds
   it from the tracked `Illumo/envvars.json` only when absent, so launch working
-  directories cannot select or overwrite a different configuration.
+  directories cannot select or overwrite a different configuration. The F1
+  product menu updates supported simulation, topology, and display values in
+  both Release and Debug.
 - Docs historically described **R8+palette** while code used **RGB fade** — this consensus file + §5.6 is the resolution; keep LaTeX chapters aligned  
 - ~~Renderer.h constructed GLBackend~~ — **resolved D-R11:** composition root injects `IBackend` via `CreateOpenGLBackend`; `Renderer.h` no longer includes OpenGL types  
 - Hybrid token + immediate Draw path remains for stubs  

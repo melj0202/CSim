@@ -87,6 +87,7 @@ set(ILLUMO_APP_SOURCES
 # implementations while the application links its native platform source.
 set(ILLUMO_HEADLESS_FEATURE_SOURCES
     Source/Game/CellGameModule.cpp
+    Source/Game/ConfigurationMenu.cpp
     Source/Game/SimulationRunner.cpp
     Source/Services/SysCmdLine.cpp
     Source/Rendering/SplashText.cpp
@@ -110,6 +111,8 @@ set(ILLUMO_TEST_SOURCES
     Source/Tests/TestAllocators.cpp
     Source/Tests/TestGameVisual.cpp
     Source/Tests/TestCanvasInf.cpp
+    Source/Tests/TestWorldTopology.cpp
+    Source/Tests/TestConfigurationMenu.cpp
 )
 
 # Settings that truly are common to production and test targets. Application-

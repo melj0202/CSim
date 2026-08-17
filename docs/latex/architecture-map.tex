@@ -145,7 +145,7 @@
     {\scriptsize unique\_ptr services}};
   \node[layer, pkgfill=pkgGame] (mod) at (12.7,-1.2) {%
     \textbf{\rmfamily Modules}\\[3pt]
-    CellGameModule\\DebugModule\\[2pt]
+    CellGameModule\\ConfigurationMenu\\DebugModule\\[2pt]
     {\scriptsize \#ifndef NDEBUG}};
   \node[layer, pkgfill=pkgRules] (dom) at (16.3,-1.2) {%
     \textbf{\rmfamily Domain}\\[3pt]
@@ -326,7 +326,8 @@
   \node[card, pkgfill=pkgGame, minimum width=5.5cm, text width=5.0cm] (udet) at (12.5,-6.0) {%
     \textbf{\rmfamily CellGameModule::Update}\\[3pt]
     ModeString sync\\
-    camera pan/zoom if console closed\\
+    F1 Release settings overlay\\
+    camera pan/zoom if overlays closed\\
     NORMAL / EDIT switch\\
     calcGeneration / edit paint\\
     tickVisual + ExecuteQueue
@@ -476,7 +477,7 @@
   \node[box, pkgfill=pkgGame, minimum width=3.2cm] (cc) at (10.4,-0.9) {CellContext};
   \node[box, pkgfill=pkgGame, minimum width=7.4cm, align=left, text width=6.9cm] (cv) at (18.2,-0.9) {%
     \textbf{SparseCellGrid + CanvasView : Drawable}\\[3pt]
-    signed sparse 16x16 chunks · non-toroidal advance\\
+    signed sparse 16x16 chunks · infinite or finite torus\\
     targetRgb / displayRgb · world-space GameVisual sprite\\
     one reusable RGB texture · CanvasView borrows grid*
   };
@@ -756,7 +757,7 @@
   \node[card, pkgfill=pkgGame, minimum width=5.9cm, minimum height=2.9cm] at (22.05,-1.5) {%
     \textbf{\rmfamily Game}\\[3pt]
     CellGameModule · CellContext \textbf{L}\\
-    SparseCellGrid · CanvasView \textbf{L}\\
+    SparseCellGrid · CanvasView · ConfigurationMenu \textbf{L}\\
     Cursor · DirtyRect \textbf{L}\\
     CellGrid · Canvas \textbf{C}\\
     Brush header \textbf{S}};

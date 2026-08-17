@@ -55,12 +55,16 @@ public:
   void clearCanvas() { clearView(); }
   unsigned char getCanvasPixel(std::int64_t x, std::int64_t y) const
   {
-    return grid == nullptr ? SparseCellGrid::BackgroundState
-                           : grid->getCell(CellAddress{ x, y });
+    const CellAddress address{ x, y };
+    return grid == nullptr || !grid->isCellInWorldBounds(address)
+             ? SparseCellGrid::BackgroundState
+             : grid->getCell(address);
   }
   bool setCanvasPixel(std::int64_t x, std::int64_t y, unsigned char state)
   {
-    return grid != nullptr && grid->setCell(CellAddress{ x, y }, state);
+    const CellAddress address{ x, y };
+    return grid != nullptr && grid->isCellInWorldBounds(address) &&
+           grid->setCell(address, state);
   }
   void syncVisibleRegion();
   void rebuildTargetsFromGrid();

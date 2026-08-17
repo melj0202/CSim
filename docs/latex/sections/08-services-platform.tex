@@ -7,10 +7,13 @@ Cross-cutting facilities used by Engine/Game/Rendering:
   \item \textbf{Logging} --- \symbolref{Logger} (file + terminal; level from env).
   \item \textbf{Config} --- \symbolref{EnvVars} / \symbolref{IEnvVars}
         (defaults filled in \symbolref{Illumo::Init}: canvas size, fps/tps,
-        synchronized presentation via \texttt{vsync}, mode string, \ldots).
+        synchronized presentation via \texttt{vsync}, mode string,
+        \texttt{WorldChunksX}/\texttt{WorldChunksY}, \ldots).
         The production file is \texttt{envvars.json}
         beside the executable, seeded from the tracked default only when absent;
-        it never depends on the launch working directory.
+        it never depends on the launch working directory. The Game-owned F1
+        settings overlay updates the supported topology, timing, ruleset, and
+        display variables in Release and Debug.
   \item \textbf{Input} --- \symbolref{InputManager}, \symbolref{InputContext},
         \symbolref{KeyCode}; action binding used by the game module.
         No Game types (D-E2).

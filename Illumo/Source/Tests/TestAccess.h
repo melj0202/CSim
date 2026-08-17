@@ -70,6 +70,23 @@ public:
   {
     module.wireworldBrush = state;
   }
+
+  static ConfigurationMenu* getConfigurationMenu(CellGameModule& module)
+  {
+    return module.configurationMenu.get();
+  }
+
+  static SimulatorConfiguration currentConfiguration(
+    const CellGameModule& module)
+  {
+    return module.currentConfiguration();
+  }
+
+  static bool applyConfiguration(CellGameModule& module,
+                                 const SimulatorConfiguration& configuration)
+  {
+    return module.applyConfiguration(configuration);
+  }
 };
 
 class InputManagerTestAccess

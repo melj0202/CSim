@@ -20,36 +20,48 @@ publish only at frame boundaries; overdue whole steps are dropped while the
 fractional remainder is retained. Pause/edit, persistence, ruleset changes,
 manual stepping, and shutdown drain first. Status separates requested and
 achieved published TPS and reports rolling 256-sample generation, cache-refill,
-upload-byte, and upload-rectangle p50/p95/max values. Painting and
-simulation operate on signed world coordinates; there is no finite or toroidal
-production canvas.
+upload-byte, and upload-rectangle p50/p95/max values. Painting and simulation
+operate on signed world coordinates. The default topology is infinite and
+non-toroidal; positive chunk dimensions select a finite torus.
 \end{statusbox}
+
+F1 opens a Release-visible, primitive-composed \symbolref{ConfigurationMenu}.
+It configures ruleset, world chunk width/height, TPS, simulation speed, fade
+speed, VSync, and fullscreen. Both dimensions must be positive for a finite
+torus; \texttt{0}/\texttt{0} and \texttt{inf}/\texttt{inf} select the infinite
+canvas. Applying a topology change drains simulation and starts a fresh
+centered world. The overlay uses larger high-contrast labels, readable ruleset
+names, split keyboard instructions, and a short explanation for the selected
+setting. Its Exit action requests window closure and leaves normal engine
+shutdown to the App main loop. A short eased reveal, staggered row fade, gliding
+selection highlight, and value-change pulse are advanced from frame delta time;
+input remains active throughout.
 
 \subsection{Domain console commands and persistence}
 \symbolref{CellGameModule} registers domain commands through
 \symbolref{CommandRegistry}; Services remains free of Game types. Save always
-writes version 2 sparse files with magic/version, ruleset, camera metadata, and
-sorted 16$\times$16 chunk records. Load validates temporary state before
-mutation, accepts both version 2 and the prior dense format, imports legacy
-cells around the origin, restores ruleset/camera metadata, and snaps the
-bounded view. Native picker variants route through the platform
+writes version 3 sparse files with magic/version, ruleset, camera, topology,
+and sorted 16$\times$16 canonical chunk records. Load validates temporary
+state before mutation, accepts versions 3 and 2 plus the prior dense format,
+treats older formats as infinite, imports legacy cells around the origin,
+restores ruleset/camera metadata, and snaps the bounded view. Native picker variants route through the platform
 \symbolref{SaveLoad} API. See D-CLI1 and
 \cref{sec:session-2026-08-04}.
 
 \subsection{CellContext}
 Constructs two \symbolref{SparseCellGrid} buffers and bounded
 \symbolref{CanvasView} from
-env vars (\texttt{CanvasX}, \texttt{CanvasY}) and selects a \symbolref{RuleSet}
-from a mode string
-(\texttt{GAME\_OF\_LIFE}, \texttt{BRIANS\_BRAIN}, \texttt{SEEDS}, \ldots).
-Mode changes from console/env call \texttt{setRuleSet} and
-\texttt{CanvasView::rebuildPalette}.
+env vars (\texttt{CanvasX}, \texttt{CanvasY}, \texttt{WorldChunksX},
+\texttt{WorldChunksY}) and selects a \symbolref{RuleSet} from the configured
+mode name. Mode changes update the ruleset and rebuild the canvas palette.
 
 \subsection{SparseCellGrid (domain) and CanvasView (view --- D-C3)}
 \begin{itemize}
   \item Domain: signed 64-bit cell addresses map through floor division into
         non-background 16$\times$16 byte chunks. Negative coordinates and all
-        multi-state values are preserved; no fixed chunk pool cap exists.
+        multi-state values are preserved. Infinite mode has no fixed chunk pool
+        cap. Finite mode canonicalizes into a centered chunk rectangle and
+        wraps both axes.
   \item Simulation: each chunk carries a compact stored-cell occupancy mask and
         a separate neighbor-counting mask plus cached counts for both masks.
         The authoritative and inactive maps maintain aggregate stored-cell,
@@ -108,8 +120,10 @@ Mode changes from console/env call \texttt{setRuleSet} and
         Aggregate inactive statistics reset once before recycling. Sparse
         candidate results construct directly in acquired node storage, while
         dense halo results retain their complete-array bulk copy. Empty
-        space is implicit and non-toroidal. The revision changes only when cell
-        contents differ.
+        space is implicit. Infinite mode is non-toroidal. Finite mode enrolls
+        canonical wrapped neighbors through the same transition table, so
+        horizontal, vertical, and corner seams are exact for binary and
+        multi-state rules. The revision changes only when cell contents differ.
   \item Publication: a persistent \symbolref{SimulationRunner} exclusively
         mutates the spare grid while the main thread reads the published grid.
         A completion publishes at a frame boundary. Incremental completions
@@ -126,7 +140,11 @@ Mode changes from console/env call \texttt{setRuleSet} and
         Near zoom is one texel per cell; far zoom uses integer density LOD with
         80\% refinement hysteresis. Revision gaps, cache exit, LOD/resize,
         palette changes, and replacement perform a bounded refill. A retained
-        active-texel set fades only colors still changing.
+        active-texel set fades only colors still changing. Finite worlds are
+        drawn only inside their centered canonical rectangle; camera space
+        outside it stays background-colored while opposite-edge simulation
+        neighbors still wrap. Their changes conservatively trigger a bounded
+        refill.
   \item GPU: one reusable nearest-filtered RGB display texture and one
         world-space \symbolref{GameVisual} quad that shares its cell bounds
         with the editor cursor. Dirty 16$\times$16-texel tiles merge into at

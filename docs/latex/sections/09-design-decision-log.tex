@@ -1435,6 +1435,39 @@ direct sparse output, and D-P32 paced presentation.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
+\subsection*{D-C6 --- Configurable infinite or finite toroidal world}
+\begin{decisionbox}[title={D-C6 \quad 2026-08-17}]
+\textbf{Decision:} Keep \texttt{0 x 0} as the existing infinite,
+non-toroidal sparse topology. Treat positive world width and height as a
+finite chunk rectangle whose opposite axes are adjacent; reject mixed
+zero/positive dimensions. Canonicalize public reads and writes and wrapped
+neighbor enrollment into that rectangle. Expose ruleset, chunk dimensions,
+TPS, simulation speed, fade speed, VSync, and fullscreen through a Game-owned
+F1 \symbolref{ConfigurationMenu} compiled in Release and Debug. A topology
+change drains simulation and starts a fresh centered world. Write topology in
+sparse save version 3 while continuing to read version 2 and legacy dense
+files as infinite worlds.\\
+\textbf{Why:} Release builds previously had no supported settings surface, and
+finite world dimensions are meaningful only when their edge semantics are
+explicit. A torus preserves deterministic Moore neighborhoods without adding
+hard-boundary rule exceptions.\\
+\textbf{Consequences:} The optimized infinite sparse paths remain unchanged;
+finite worlds use canonical wrapped candidate enrollment for binary and
+multi-state rules. The bounded view clips presentation to the canonical finite
+rectangle, leaves outside camera space background-colored, and conservatively
+refills after finite-world changes. The menu remains primitive-composed through
+\symbolref{GameVisual}, not a retained widget tree, with high-contrast labels
+and contextual help. The menu Exit action requests window closure through
+\symbolref{IRenderWindow}; the App main loop then performs normal shutdown.
+Transient scalar animation state drives the eased entrance, staggered rows,
+gliding selection, and value pulse without introducing widgets or delaying
+input.
+Version 3 topology, version 2 compatibility, invalid metadata, F1 integration,
+and horizontal/vertical/corner seams have focused headless tests.\\
+\textbf{Refines:} D-C3 sparse production state and D-R20 product UI.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
 \subsection*{D-DOC2 --- Technical documentation and operational guidance}
 \begin{decisionbox}[title={D-DOC2 \quad 2026-08-09}]
 \textbf{Decision:} Keep canonical technical documentation under

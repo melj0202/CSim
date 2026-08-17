@@ -1,5 +1,6 @@
 #pragma once
 #include "CellContext.h"
+#include "ConfigurationMenu.h"
 #include "Cursor.h"
 #include "Engine/IModule.h"
 #include "Foundation/RollingMetric.h"
@@ -49,6 +50,8 @@ private:
   bool consumeCompletedSimulation(bool waitForCompletion);
   void drainSimulation();
   void prepareGridMutation();
+  SimulatorConfiguration currentConfiguration() const;
+  bool applyConfiguration(const SimulatorConfiguration& configuration);
   CellContext* cellContext;
   CellState currentState;
   InputContext inputContext;
@@ -74,5 +77,6 @@ private:
   unsigned char wireworldBrush;
   // Module-owned mode label (EDIT/NORMAL); not a file-scope global.
   std::unique_ptr<SplashText> modeSplash;
+  std::unique_ptr<ConfigurationMenu> configurationMenu;
   Cursor editorCursor;
 };

@@ -92,9 +92,10 @@ local `Transform2D`, normalized pivots, atlas regions/flips, and bounded dynamic
 quad buffers are supported. `SpriteAnimator` is passive and caller-updated.
 
 Product UI is primitive-composed rather than a separate widget system.
-`CommandLine` builds its panel from `GameVisual` fills, outlines, lines, and
-text; `GLString` may add cached panel chrome; FPS and `SplashText` use that
-decorated-label path. `UiTheme` is shared value-only styling. Preserve the
+`CommandLine` and the Release-visible `ConfigurationMenu` build their panels
+from `GameVisual` fills, outlines, lines, and text; `GLString` may add cached
+panel chrome; FPS and `SplashText` use that decorated-label path. `UiTheme` is
+shared value-only styling. Preserve the
 existing drawable owners and Scene layers; do not introduce a retained UI tree
 for this surface.
 
@@ -140,8 +141,10 @@ Canvas truth (verify here before trusting older notes):
   may be outstanding, overdue whole steps are dropped, and state mutations,
   persistence, ruleset changes, manual stepping, and shutdown drain first.
   Status derives achieved TPS from published completions and reports rolling
-  generation latency. The grid is non-toroidal and its revision changes only
-  when cell contents actually change.
+  generation latency. The default `0 x 0` topology is infinite and
+  non-toroidal; positive chunk width and height select a finite torus with
+  canonical wrapped cells. Mixed zero/positive axes are invalid. The grid's
+  revision changes only when cell contents actually change.
 - Production presentation: `CanvasView` separates visible diagnostics from a
   globally aligned cache padded by two 16-cell chunks on every side. Camera
   motion inside it changes only the MVP. Near zoom is one exact nearest-filtered
@@ -154,11 +157,15 @@ Canvas truth (verify here before trusting older notes):
   direct fallback. Re-enrollment and destruction delete GL textures, buffers,
   and fences. A retained active-texel set makes fade/snap work proportional to
   changing colors. It owns one reusable RGB texture plus one world-space quad.
+  Finite worlds draw only their centered canonical rectangle; presentation and
+  editor-facing bounds stay blank outside it even though simulation neighbors
+  wrap across opposite edges.
   `RenderWindow` defaults to monitor-synchronized swapping; persisted `vsync=0`
   remains the explicit uncapped profiling mode. Debug FPS output separates
   paced swap completions from CPU submissions.
-- Persistence always writes sparse version 2 and reads both that format and the
-  prior dense format. Legacy `CellGrid`/`Canvas` remain compatibility fixtures,
+- Persistence always writes sparse version 3 with topology and reads versions
+  3 and 2 plus the prior dense format. Older formats select infinite topology.
+  Legacy `CellGrid`/`Canvas` remain compatibility fixtures,
   not a second production runtime path.
 
 Ruleset truth:
@@ -268,11 +275,12 @@ exact checks and translation units when static analysis is requested.
 - `Scene` is a non-owning ordered list rebuilt each frame, not a scene graph or
   ECS. Rendering resource handles remain backend-neutral and registry-owned.
 - `SparseCellGrid` is the production domain: signed 64-bit coordinates,
-  non-background 16x16 sparse chunks, and non-toroidal evolution.
+  non-background 16x16 sparse chunks, and configurable infinite non-toroidal
+  or finite toroidal evolution.
   `CanvasView` is a bounded world-space presentation. Legacy `CellGrid` and
   `Canvas` remain compatibility fixtures, not a second production path.
-- Save writes preserve sparse format version 2 and loads remain compatible
-  with both version 2 and the legacy dense format unless migration is
+- Save writes preserve sparse format version 3 and loads remain compatible
+  with versions 3 and 2 plus the legacy dense format unless migration is
   explicitly authorized.
 - Ruleset transitions and palettes must remain deterministic. Update factory
   selection, known-mode validation, console help/completion, source lists, and

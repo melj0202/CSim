@@ -2,6 +2,8 @@
  "CanvasX": "80",
  "CanvasY": "60",
  "ModeString": "GAME_OF_LIFE",
+ "WorldChunksX": "0",
+ "WorldChunksY": "0",
  "WinX": "1280",
  "WinY": "720",
  "fps": "60",

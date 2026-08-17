@@ -8,6 +8,8 @@
 #include "Services/Logger.h"
 #include "SparseCellGrid.h"
 #include <cctype>
+#include <cstdint>
+#include <new>
 #include <string>
 #include <vector>
 
@@ -30,6 +32,8 @@ public:
 
     long cx = 80;
     long cy = 60;
+    std::int64_t worldChunkWidth = 0;
+    std::int64_t worldChunkHeight = 0;
     if (envVars) {
       cx = envVars->getVar("CanvasX").valueAsLong;
       cy = envVars->getVar("CanvasY").valueAsLong;
@@ -37,9 +41,21 @@ public:
         cx = 80;
       if (cy < 1)
         cy = 60;
+      worldChunkWidth =
+        static_cast<std::int64_t>(envVars->getVar("WorldChunksX").valueAsLong);
+      worldChunkHeight =
+        static_cast<std::int64_t>(envVars->getVar("WorldChunksY").valueAsLong);
+      if (!SparseCellGrid::isValidTopology(worldChunkWidth, worldChunkHeight)) {
+        Logger::LogError(
+          "Invalid world topology; using infinite canvas (0 x 0 chunks)");
+        worldChunkWidth = 0;
+        worldChunkHeight = 0;
+        envVars->setVar("WorldChunksX", 0);
+        envVars->setVar("WorldChunksY", 0);
+      }
     }
-    grid = new SparseCellGrid();
-    spareGrid = new SparseCellGrid();
+    grid = new SparseCellGrid(worldChunkWidth, worldChunkHeight);
+    spareGrid = new SparseCellGrid(worldChunkWidth, worldChunkHeight);
     canvasView = new CanvasView(static_cast<int>(cx),
                                 static_cast<int>(cy),
                                 grid,
@@ -129,6 +145,48 @@ public:
   CanvasView* getCanvasView() const { return canvasView; }
   SparseCellGrid* getGrid() const { return grid; }
   SparseCellGrid* getSpareGrid() const { return spareGrid; }
+  std::int64_t getWorldChunkWidth() const
+  {
+    return grid == nullptr ? 0 : grid->getWorldChunkWidth();
+  }
+  std::int64_t getWorldChunkHeight() const
+  {
+    return grid == nullptr ? 0 : grid->getWorldChunkHeight();
+  }
+  bool resetWorld(std::int64_t worldChunkWidth, std::int64_t worldChunkHeight)
+  {
+    if (!SparseCellGrid::isValidTopology(worldChunkWidth, worldChunkHeight)) {
+      return false;
+    }
+    SparseCellGrid* replacement =
+      new (std::nothrow) SparseCellGrid(worldChunkWidth, worldChunkHeight);
+    SparseCellGrid* replacementSpare =
+      new (std::nothrow) SparseCellGrid(worldChunkWidth, worldChunkHeight);
+    if (replacement == nullptr || replacementSpare == nullptr) {
+      delete replacement;
+      delete replacementSpare;
+      return false;
+    }
+
+    SparseCellGrid* previous = grid;
+    SparseCellGrid* previousSpare = spareGrid;
+    grid = replacement;
+    spareGrid = replacementSpare;
+    SparseGenerationDelta replacementDelta;
+    replacementDelta.fullReplacement = true;
+    replacementDelta.fromRevision =
+      previous == nullptr ? 0 : previous->getRevision();
+    replacementDelta.toRevision = replacement->getRevision();
+    canvasView->adoptGrid(grid, replacementDelta);
+    delete previous;
+    delete previousSpare;
+
+    if (envVars != nullptr) {
+      envVars->setVar("WorldChunksX", static_cast<long>(worldChunkWidth));
+      envVars->setVar("WorldChunksY", static_cast<long>(worldChunkHeight));
+    }
+    return true;
+  }
   void publishSpareGrid(const SparseGenerationDelta& delta)
   {
     SparseCellGrid* previous = grid;

@@ -138,6 +138,7 @@ public:
   static constexpr unsigned char CountedNeighborState = 0;
   static constexpr int kChunkDim = 16;
   static constexpr int kHaloDim = 18;
+  static constexpr std::int64_t kMaximumWorldChunksPerAxis = 1000000;
   static constexpr std::size_t kChunkCellCount = 16u * 16u;
   using ChunkCells = std::array<unsigned char, kChunkCellCount>;
   using ChunkVisitor =
@@ -146,6 +147,7 @@ public:
     std::function<void(const ChunkAddress&, const ChunkCells*)>;
 
   SparseCellGrid();
+  SparseCellGrid(std::int64_t worldChunkWidth, std::int64_t worldChunkHeight);
   ~SparseCellGrid();
 
   SparseCellGrid(const SparseCellGrid&) = delete;
@@ -177,6 +179,18 @@ public:
   static std::int64_t floorModulo(std::int64_t value, std::int64_t divisor);
   static ChunkAddress chunkAddressForCell(const CellAddress& address);
   static int localIndexForCell(const CellAddress& address);
+  static bool isValidTopology(std::int64_t worldChunkWidth,
+                              std::int64_t worldChunkHeight);
+
+  bool isToroidal() const
+  {
+    return m_worldChunkWidth > 0 && m_worldChunkHeight > 0;
+  }
+  std::int64_t getWorldChunkWidth() const { return m_worldChunkWidth; }
+  std::int64_t getWorldChunkHeight() const { return m_worldChunkHeight; }
+  bool isCellInWorldBounds(const CellAddress& address) const;
+  CellAddress canonicalizeCell(const CellAddress& address) const;
+  ChunkAddress canonicalizeChunk(const ChunkAddress& address) const;
 
   // Test-only override: 0 selects the adaptive production worker count.
   static void setWorkerOverrideForTesting(int workers);
@@ -378,6 +392,8 @@ private:
   bool m_countedChangeCoversStateChange = false;
   mutable std::unique_ptr<ChunkMemoState> m_chunkMemo;
   const SparseCellGrid* m_generationSourceGrid = nullptr;
+  std::int64_t m_worldChunkWidth = 0;
+  std::int64_t m_worldChunkHeight = 0;
 
   static int workerOverride;
   static int cellCandidateOverride;
@@ -469,6 +485,9 @@ private:
   std::size_t estimateCompleteAdvanceWork() const;
   bool advanceChangedFrontier(const RuleSet& ruleSet, bool useCandidateScratch);
   bool advanceImpl(const RuleSet& ruleSet, bool allowFrontier);
+  bool advanceToroidal(const RuleSet& ruleSet);
+  void enrollToroidalCandidate(const CellAddress& address,
+                               bool addNeighborContribution);
   static std::size_t saturatingAdd(std::size_t left, std::size_t right);
   static std::size_t saturatingMultiply(std::size_t left, std::size_t right);
   void beginCandidateIndexGeneration();

@@ -635,8 +635,11 @@ CanvasView::sampleCacheTexel(int x, int y, bool snap)
   float blue = 0.0f;
   for (int sourceY = 0; sourceY < sourceHeight; ++sourceY) {
     for (int sourceX = 0; sourceX < sourceWidth; ++sourceX) {
-      const unsigned char state =
-        grid->getCell(CellAddress{ sourceLeft + sourceX, sourceTop - sourceY });
+      const CellAddress sourceAddress{ sourceLeft + sourceX,
+                                       sourceTop - sourceY };
+      const unsigned char state = grid->isCellInWorldBounds(sourceAddress)
+                                    ? grid->getCell(sourceAddress)
+                                    : SparseCellGrid::BackgroundState;
       const int paletteIndex = static_cast<int>(state) * 3;
       red += static_cast<float>(paletteRgb[paletteIndex + 0]) / 255.0f;
       green += static_cast<float>(paletteRgb[paletteIndex + 1]) / 255.0f;
@@ -711,7 +714,10 @@ bool
 CanvasView::sampleChangedChunks(std::uint64_t previousRevision)
 {
   ZoneScopedN("CanvasView.sampleChangedChunks");
-  if (grid == nullptr) {
+  if (grid == nullptr || grid->isToroidal()) {
+    // A changed canonical torus chunk can appear at several visible aliases.
+    // A complete refill stays bounded by the presentation cache and avoids
+    // missing an alias when the camera spans a wrapped edge.
     return false;
   }
 

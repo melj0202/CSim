@@ -83,6 +83,10 @@ struct CellGameFixture
     env.setVar("tps", 30);
     env.setVar("speedFactor", 1.0);
     env.setVar("cellFadeSpeed", 8.0);
+    env.setVar("WorldChunksX", 0);
+    env.setVar("WorldChunksY", 0);
+    env.setVar("vsync", true);
+    env.setVar("fullscreen", false);
     mock.Initialize();
     module.Start(&context);
     started = CellGameModuleTestAccess::getCellContext(module) != nullptr;
@@ -171,6 +175,10 @@ testStartRegistersGameFeatures()
              fixture.registry.GetCommandCompletions("ruleset").size(),
              7,
              "ruleset completion candidates registered");
+  testTrue(g,
+           CellGameModuleTestAccess::getConfigurationMenu(fixture.module) !=
+             nullptr,
+           "Release-visible configuration menu is constructed at startup");
 
   fixture.scene.ClearDrawables();
   fixture.module.DispatchDrawables(&fixture.scene);
@@ -278,12 +286,15 @@ testSaveLoadRoundTrip()
   CellContext* cellContext =
     CellGameModuleTestAccess::getCellContext(fixture.module);
   CanvasView* canvas = cellContext->getCanvasView();
+  testTrue(g,
+           cellContext->resetWorld(2, 2),
+           "finite topology allocates for round-trip coverage");
   cellContext->setRuleSet("WIREWORLD");
   canvas->clearCanvas();
   canvas->setCanvasPixel(0, 0, WireworldRuleSet::CELL_HEAD);
   canvas->setCanvasPixel(2, 1, WireworldRuleSet::CELL_TAIL);
   canvas->setCanvasPixel(4, 3, WireworldRuleSet::CELL_CONDUCTOR);
-  canvas->setCanvasPixel(-20, 4, WireworldRuleSet::CELL_CONDUCTOR);
+  canvas->setCanvasPixel(-10, 4, WireworldRuleSet::CELL_CONDUCTOR);
   fixture.camera.SetPositionPrecise(123456789.25, -987654321.5);
   fixture.camera.SetZoom(2.5f);
 
@@ -293,6 +304,9 @@ testSaveLoadRoundTrip()
            "valid canvas saves");
   const std::vector<char> firstSave = readFileBytes(savePath);
   canvas->clearCanvas();
+  testTrue(g,
+           cellContext->resetWorld(0, 0),
+           "world can switch back to infinite before loading");
   cellContext->setRuleSet("SEEDS");
   fixture.camera.SetPositionPrecise(1.0, 2.0);
   fixture.camera.SetZoom(1.0f);
@@ -302,6 +316,10 @@ testSaveLoadRoundTrip()
   testTrue(g,
            cellContext->getModeString() == "WIREWORLD",
            "saved ruleset is restored");
+  testTrue(g,
+           cellContext->getWorldChunkWidth() == 2 &&
+             cellContext->getWorldChunkHeight() == 2,
+           "saved finite topology is restored");
   testEqUChar(g,
               canvas->getCanvasPixel(0, 0),
               WireworldRuleSet::CELL_HEAD,
@@ -315,7 +333,7 @@ testSaveLoadRoundTrip()
               WireworldRuleSet::CELL_CONDUCTOR,
               "conductor state round-trips");
   testEqUChar(g,
-              canvas->getCanvasPixel(-20, 4),
+              canvas->getCanvasPixel(-10, 4),
               WireworldRuleSet::CELL_CONDUCTOR,
               "far chunk state round-trips");
   testTrue(g,
@@ -333,8 +351,148 @@ testSaveLoadRoundTrip()
   testTrue(g, firstSave == secondSave, "sparse save output is deterministic");
   testEqSize(g,
              std::filesystem::file_size(savePath),
-             static_cast<std::size_t>(172 + 2 * (16 * 16 + 16)),
+             static_cast<std::size_t>(188 + 2 * (16 * 16 + 16)),
              "save contains the sparse header and two chunk records");
+}
+
+static void
+testSparseV2Compatibility()
+{
+  testSection("CellGameModule: sparse v2 compatibility");
+  CellGameFixture fixture;
+  CellContext* cellContext =
+    CellGameModuleTestAccess::getCellContext(fixture.module);
+  testTrue(
+    g, cellContext->resetWorld(2, 2), "compatibility fixture starts finite");
+
+  const char magic[8] = { 'I', 'L', 'L', 'U', 'M', 'O', '2', '\0' };
+  const std::uint32_t version = 2;
+  char ruleTag[MAX_RULETAG_SIZE] = {};
+  std::memcpy(ruleTag, "SEEDS", 5);
+  const double cameraX = 12.5;
+  const double cameraY = -9.25;
+  const double cameraZoom = 1.75;
+  const std::uint64_t chunkCount = 1;
+  const std::int64_t chunkX = 2;
+  const std::int64_t chunkY = -3;
+  SparseCellGrid::ChunkCells cells;
+  cells.fill(SparseCellGrid::BackgroundState);
+  cells[0] = 0;
+  {
+    std::ofstream output("valid-v2.illumo", std::ios::binary | std::ios::trunc);
+    output.write(magic, sizeof(magic));
+    output.write(reinterpret_cast<const char*>(&version), sizeof(version));
+    output.write(ruleTag, sizeof(ruleTag));
+    output.write(reinterpret_cast<const char*>(&cameraX), sizeof(cameraX));
+    output.write(reinterpret_cast<const char*>(&cameraY), sizeof(cameraY));
+    output.write(reinterpret_cast<const char*>(&cameraZoom),
+                 sizeof(cameraZoom));
+    output.write(reinterpret_cast<const char*>(&chunkCount),
+                 sizeof(chunkCount));
+    output.write(reinterpret_cast<const char*>(&chunkX), sizeof(chunkX));
+    output.write(reinterpret_cast<const char*>(&chunkY), sizeof(chunkY));
+    output.write(reinterpret_cast<const char*>(cells.data()),
+                 static_cast<std::streamsize>(cells.size()));
+  }
+
+  testTrue(g,
+           CellGameModuleTestAccess::load(fixture.module, "valid-v2.illumo"),
+           "version 2 sparse save remains readable");
+  testTrue(g,
+           !cellContext->getGrid()->isToroidal() &&
+             cellContext->getWorldChunkWidth() == 0 &&
+             cellContext->getWorldChunkHeight() == 0,
+           "version 2 loads as the historical infinite topology");
+  testEqUChar(g,
+              cellContext->getGrid()->getCell(CellAddress{ 32, -48 }),
+              0,
+              "version 2 sparse cell is restored");
+  testTrue(g,
+           cellContext->getModeString() == "SEEDS" &&
+             fixture.camera.GetPositionPrecise() ==
+               glm::dvec2(cameraX, cameraY) &&
+             fixture.camera.GetZoom() == static_cast<float>(cameraZoom),
+           "version 2 ruleset and camera are restored");
+}
+
+static void
+testReleaseConfigurationWorkflow()
+{
+  testSection("CellGameModule: Release configuration workflow");
+  CellGameFixture fixture;
+  ConfigurationMenu* menu =
+    CellGameModuleTestAccess::getConfigurationMenu(fixture.module);
+  testTrue(g, menu != nullptr && !menu->isOpen(), "settings start closed");
+
+  InputManagerTestAccess::setAction(
+    fixture.input, KeyCode::F1, InputAction::Press);
+  fixture.module.Update(0.016);
+  testTrue(g, menu != nullptr && menu->isOpen(), "F1 opens settings");
+  InputManagerTestAccess::setAction(
+    fixture.input, KeyCode::F1, InputAction::Release);
+  fixture.scene.ClearDrawables();
+  fixture.module.DispatchDrawables(&fixture.scene);
+  testEqSize(g,
+             fixture.scene.drawableCount(),
+             2u,
+             "open settings add one UI drawable beside the canvas");
+
+  fixture.input.getKeyQueue().push(
+    InputManager::KeyPressEvent{ KeyCode::Escape, InputAction::Press, 0 });
+  fixture.module.Update(0.016);
+  testTrue(g, !menu->isOpen(), "Escape closes settings without applying");
+
+  CellContext* cellContext =
+    CellGameModuleTestAccess::getCellContext(fixture.module);
+  cellContext->getGrid()->setCell(CellAddress{ 77, 88 }, 0);
+  SimulatorConfiguration configuration =
+    CellGameModuleTestAccess::currentConfiguration(fixture.module);
+  configuration.ruleSet = "SEEDS";
+  configuration.worldChunkWidth = 2;
+  configuration.worldChunkHeight = 3;
+  configuration.tps = 48;
+  configuration.speedFactor = 2.0;
+  configuration.fadeSpeed = 4.0;
+  configuration.vsync = false;
+  configuration.fullscreen = true;
+  testTrue(
+    g,
+    CellGameModuleTestAccess::applyConfiguration(fixture.module, configuration),
+    "valid settings apply atomically");
+  testTrue(g,
+           cellContext->getGrid()->isToroidal() &&
+             cellContext->getWorldChunkWidth() == 2 &&
+             cellContext->getWorldChunkHeight() == 3,
+           "positive dimensions create a finite torus");
+  testEqUChar(g,
+              cellContext->getGrid()->getCell(CellAddress{ 77, 88 }),
+              SparseCellGrid::BackgroundState,
+              "topology change starts a fresh world");
+  testTrue(g,
+           cellContext->getModeString() == "SEEDS" &&
+             fixture.env.getVar("ModeString").value == "SEEDS",
+           "ruleset updates runtime and persisted configuration");
+  testTrue(g,
+           fixture.env.getVar("WorldChunksX").valueAsLong == 2 &&
+             fixture.env.getVar("WorldChunksY").valueAsLong == 3 &&
+             fixture.env.getVar("tps").valueAsLong == 48,
+           "world and timing settings persist");
+  testEqInt(g,
+            fixture.window.fullscreenToggleCount,
+            1,
+            "fullscreen applies immediately once");
+
+  menu->open(CellGameModuleTestAccess::currentConfiguration(fixture.module));
+  for (int row = 0; row < 10; ++row) {
+    fixture.input.getKeyQueue().push(
+      InputManager::KeyPressEvent{ KeyCode::Down, InputAction::Press, 0 });
+  }
+  fixture.input.getKeyQueue().push(
+    InputManager::KeyPressEvent{ KeyCode::Enter, InputAction::Press, 0 });
+  fixture.module.Update(0.016);
+  testTrue(g,
+           fixture.window.closeRequested && !menu->isOpen(),
+           "Exit menu action requests normal application shutdown");
 }
 
 static void
@@ -387,6 +545,40 @@ testLoadRejectsInvalidFiles()
               liveContext->getGrid()->getCell(CellAddress{ 77, 88 }),
               0,
               "malformed sparse load does not mutate live state");
+
+  const char sparseMagicV3[8] = { 'I', 'L', 'L', 'U', 'M', 'O', '3', '\0' };
+  const std::uint32_t sparseVersionV3 = 3;
+  const std::int64_t invalidWorldWidth = 0;
+  const std::int64_t invalidWorldHeight = 2;
+  const std::uint64_t noSparseChunks = 0;
+  {
+    std::ofstream output("invalid-v3-topology.illumo",
+                         std::ios::binary | std::ios::trunc);
+    output.write(sparseMagicV3, sizeof(sparseMagicV3));
+    output.write(reinterpret_cast<const char*>(&sparseVersionV3),
+                 sizeof(sparseVersionV3));
+    output.write(sparseTag, sizeof(sparseTag));
+    output.write(reinterpret_cast<const char*>(&sparseCameraX),
+                 sizeof(sparseCameraX));
+    output.write(reinterpret_cast<const char*>(&sparseCameraY),
+                 sizeof(sparseCameraY));
+    output.write(reinterpret_cast<const char*>(&sparseZoom),
+                 sizeof(sparseZoom));
+    output.write(reinterpret_cast<const char*>(&invalidWorldWidth),
+                 sizeof(invalidWorldWidth));
+    output.write(reinterpret_cast<const char*>(&invalidWorldHeight),
+                 sizeof(invalidWorldHeight));
+    output.write(reinterpret_cast<const char*>(&noSparseChunks),
+                 sizeof(noSparseChunks));
+  }
+  testTrue(g,
+           !CellGameModuleTestAccess::load(fixture.module,
+                                           "invalid-v3-topology.illumo"),
+           "mixed finite and infinite topology metadata is rejected");
+  testEqUChar(g,
+              liveContext->getGrid()->getCell(CellAddress{ 77, 88 }),
+              0,
+              "invalid v3 metadata does not mutate live state");
 
   writeSaveFile("unknown-rule.illumo", "NOT_A_RULE", 2, 2, { 1, 1, 1, 1 });
   testTrue(
@@ -787,6 +979,12 @@ registerCellGameModuleTests(IllumoTestRegistry& registry)
   });
   registry.add("Illumo.CellGame.SaveLoadRoundTrip",
                []() { return runCellGameModuleCase(testSaveLoadRoundTrip); });
+  registry.add("Illumo.CellGame.SparseV2Compatibility", []() {
+    return runCellGameModuleCase(testSparseV2Compatibility);
+  });
+  registry.add("Illumo.CellGame.ReleaseConfiguration", []() {
+    return runCellGameModuleCase(testReleaseConfigurationWorkflow);
+  });
   registry.add("Illumo.CellGame.InvalidSaveFiles", []() {
     return runCellGameModuleCase(testLoadRejectsInvalidFiles);
   });

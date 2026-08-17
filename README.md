@@ -45,7 +45,8 @@ dynamic quad buffers, primitive-composed themed UI, and asynchronous
 texture/shader assets. `SparseCellGrid` uses published dual-grid simulation,
 exact retained candidate topology, direct-source parallel preparation and
 evaluation, recycled transactional chunk nodes, adaptive frontier stepping,
-and cached 256x9 transitions. `CanvasView` presents a padded, integer-LOD
+cached 256x9 transitions, and infinite or finite toroidal topology.
+`CanvasView` presents a padded, integer-LOD
 camera cache through a world-space `GameVisual` sprite, with active-texel RGB
 fades and tiled multi-rectangle uploads through a non-waiting PBO ring.
 Headless `IllumoTests` use `MockBackend`. Windows is the supported runtime;
@@ -124,6 +125,7 @@ Visual Studio: open the generated solution from the build directory, or generate
 - **Left mouse** (Edit) — Place living cells
 - **Right mouse** (Edit) — Place dead cells
 - **C** (Edit) — Clear the cell colony
+- **F1** — Open the Release-visible simulator settings menu
 - **Q** / **ESC** — Quit
 - **`** — Toggle the developer console
 - **Console:** **Tab** completes commands, variables, and rulesets; **Left/Right**, **Home/End**, and **Delete** edit in place; hold **Ctrl** with Left/Right or Backspace/Delete for word edits; hold **Shift** while moving to select; **Ctrl+A** selects all
@@ -145,6 +147,19 @@ Presentation is synchronized to the monitor by default (`"vsync": "1"`). Set
 `vsync` to `0` for uncapped profiling; Debug builds also apply `toggle vsync`
 live. The Debug FPS overlay reports frame-paced swap cadence separately from
 CPU submissions so an uncapped submission rate is not presented as display FPS.
+
+The F1 menu configures ruleset, world width/height in 16x16 chunks, TPS,
+simulation speed, fade speed, VSync, and fullscreen in both Debug and Release.
+Positive width and height select a finite torus whose opposite edges are
+adjacent. Enter `0`/`0` or `inf`/`inf` for the infinite canvas; mixed finite and
+infinite axes are rejected. The finite world is drawn once inside its centered
+rectangle; camera space outside it stays blank while simulation still wraps
+across opposite edges. Applying a topology change starts a fresh world. Menu
+labels use larger, high-contrast text, readable ruleset names, and contextual
+help for the selected setting. The final menu action exits through Illumo's
+normal shutdown path; Discard, Escape, and F1 only close the menu. A short eased
+reveal, gliding row highlight, and value-change pulse provide motion without
+delaying input.
 
 ## Developer console commands
 
@@ -182,5 +197,7 @@ in a non-waiting three-PBO/fence ring and fall back to direct upload when all
 slots are busy or mapping fails. Replacements preserve the opaque handle while
 deleting the old GL texture, PBOs, and fences.
 
-Save commands append `.illumo` when no extension is supplied. Loading validates
-the save before changing the canvas and activates the ruleset stored in it.
+Save commands append `.illumo` when no extension is supplied. Version 3 saves
+include world topology as well as ruleset, camera, and sorted sparse chunks.
+Loading validates the save before changing the canvas, reads version 3,
+version 2, and legacy dense files, and activates the stored ruleset.
