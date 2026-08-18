@@ -60,9 +60,58 @@ Third-party software and font acknowledgements, license choices, and the
 source/binary redistribution checklist are in
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-## Build (CMake)
+## Build
 
-From the repository root:
+`build.py` is the convenient front end for the existing CMake build. It uses
+only the Python standard library, prints every command it runs, and leaves all
+CMake files and targets authoritative. From an interactive terminal, open its
+build console with:
+
+```bash
+python build.py
+```
+
+Use the arrow keys to choose `Release`, `Debug`, or `RelWithDebInfo`, toggle
+documentation and Tracy, select build parallelism, and run a focused action.
+The same operations remain available as explicit commands for scripts, CI, or
+anyone who prefers a shell. For example, a Debug build is:
+
+```bash
+python build.py build --config Debug
+```
+
+Common focused workflows are:
+
+```bash
+python build.py build --config Debug --target Illumo --parallel
+python build.py test
+python build.py test --test Illumo.CellGame.SaveLoadRoundTrip
+python build.py run -- -ww 1280 -wh 720
+python build.py run --config Debug --no-build
+python build.py coverage
+python build.py docs
+```
+
+When standard input or output is redirected, running `python build.py` without
+a command performs the normal Release build instead of opening the console.
+That build retains CMake's existing all-target behavior: it builds the
+application and `IllumoTests`, runs every registered test, and builds the PDFs
+when the documentation toolchain is available.
+
+Use `--no-docs` for a build tree that should skip the optional PDF target,
+`--generator` and `--architecture` to select a CMake generator, and repeated
+`--cmake-arg=-DNAME=VALUE` options for an uncommon CMake setting. `--dry-run`
+prints the commands without running them. The orchestrator never deletes a
+build tree; use a separate `--build-dir` when changing to an incompatible
+generator.
+
+The dashboard's **Run existing build** action, or `run --no-build`, launches
+the selected executable immediately and fails clearly if that configuration
+has not been built yet. The normal `run` command still configures and builds
+before launching.
+
+Direct CMake remains fully supported and is the escape hatch for anything the
+front end does not expose:
 
 ```bash
 cmake -S Illumo -B build

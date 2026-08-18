@@ -2,6 +2,41 @@
 \label{sec:build}
 
 \subsection{Configure \& build (Windows)}
+The repository-root \pathref{build.py} program is a standard-library front end
+over the existing CMake targets. It prints the commands it runs and does not
+replace or delete CMake configuration. With Python on \texttt{PATH}, open its
+interactive terminal build console with:
+\begin{lstlisting}[language={}]
+python build.py
+\end{lstlisting}
+
+The arrow keys select the configuration, optional documentation and Tracy,
+parallelism, and an action. The same operations remain explicit commands for
+scripts and CI. For example, a Debug build is:
+\begin{lstlisting}[language={}]
+python build.py build --config Debug
+\end{lstlisting}
+Focused examples are:
+\begin{lstlisting}[language={}]
+python build.py build --config Debug --target Illumo --parallel
+python build.py test
+python build.py test --test Illumo.CellGame.SaveLoadRoundTrip
+python build.py run -- -ww 1280 -wh 720
+\end{lstlisting}
+With redirected standard input or output, omitting the command performs the
+normal Release all-target build instead of opening the console.
+Use \texttt{--no-docs} to opt out of the optional PDF target,
+\texttt{--build-dir} to select another tree, and \texttt{--dry-run} to inspect
+the commands. The program deliberately has no clean command.
+
+The dashboard's \textbf{Run existing build} action, or
+\texttt{run --no-build}, skips configuration and compilation and fails if the
+selected executable does not exist:
+\begin{lstlisting}[language={}]
+python build.py run --config Debug --no-build
+\end{lstlisting}
+The normal \texttt{run} command still builds before launching. Direct CMake
+remains supported:
 \begin{lstlisting}[language={}]
 cmake -S Illumo -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release
@@ -30,6 +65,14 @@ Artifacts:
 \end{itemize}
 
 \subsection{Tests (headless)}
+The Python front end configures and builds \texttt{IllumoTests} before invoking
+CTest, or invokes one exact runner case when \texttt{--test} is supplied:
+\begin{lstlisting}[language={}]
+python build.py test
+python build.py test --list-tests
+python build.py test --test Illumo.CellGame.SaveLoadRoundTrip
+\end{lstlisting}
+The underlying commands remain available:
 \begin{lstlisting}[language={}]
 ctest --test-dir build -C Release -N -L Illumo
 ctest --test-dir build -C Release -L Illumo --output-on-failure
@@ -40,7 +83,13 @@ One runner avoids recompiling shared production sources, but each logical case
 is a separately named CTest process with its own working directory (D-T1). No
 OpenGL context is required (\texttt{MockBackend}).
 
+\clearpage
 \subsection{Coverage (Clang/LLVM)}
+Run the complete coverage workflow with:
+\begin{lstlisting}[language={}]
+python build.py coverage
+\end{lstlisting}
+This composes the following existing configure and target commands:
 \begin{lstlisting}[language={}]
 cmake -S Illumo -B build-coverage -G Ninja \
   -DCMAKE_BUILD_TYPE=Debug \
@@ -56,6 +105,11 @@ dialogs/windows and live OpenGL remain manual smoke-test responsibilities.
 
 \subsection{Documentation PDF}
 From the repository root, run:
+\begin{lstlisting}[language={}]
+python build.py docs
+\end{lstlisting}
+This delegates to the existing PowerShell script, which can also be called
+directly:
 \begin{lstlisting}[language={}]
 .\docs\build.ps1
 \end{lstlisting}
