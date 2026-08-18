@@ -1,0 +1,7 @@
+interface:
+  display_name: "CSim Feature Branch Integration"
+  short_description: "Integrate verified CSim branches through worktrees"
+  default_prompt: "Use $csim-integrate-feature-branch to integrate an explicitly named verified branch through linked CSim worktrees."
+
+policy:
+  allow_implicit_invocation: false

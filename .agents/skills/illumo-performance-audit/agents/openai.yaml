@@ -1,0 +1,4 @@
+interface:
+  display_name: "Illumo Performance Audit"
+  short_description: "Measure and optimize Illumo performance safely"
+  default_prompt: "Use $illumo-performance-audit to measure an Illumo slowdown and propose evidence-backed improvements."

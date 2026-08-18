@@ -93,7 +93,9 @@ __pycache__/
 
 # Local/private configuration and credentials
 .priv/
-.agents/
+.agents/*
+!.agents/skills/
+!.agents/skills/**
 .codex/
 .env
 .env.*

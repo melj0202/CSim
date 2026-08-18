@@ -32,6 +32,7 @@ editing. Route detail to these canonical sources:
 - package ownership maps: `docs/packages/`;
 - coding and dependency policy: `docs/contributing.md`;
 - large-work planning: `.agent/PLANS.md`;
+- repository-scoped Codex skills: `.agents/skills/`;
 - migration scaffolds, retained verbatim for reuse:
   `.agent/reference/PROJECT_AGENTS_TEMPLATE.md` and
   `.agent/reference/MIGRATION_GUIDE.md`.
@@ -347,6 +348,10 @@ Subsystem rules live in:
   `Illumo/Source/Rendering/Primitives/AGENTS.md`.
 
 Child guidance specializes this file and does not weaken it.
+
+Repository skills under `.agents/skills/` apply only to this checkout family.
+Do not copy or install them into a user-level skill directory unless the user
+explicitly requests broader reuse.
 
 ## Maintaining guidance
 

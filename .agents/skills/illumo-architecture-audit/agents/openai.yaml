@@ -1,0 +1,4 @@
+interface:
+  display_name: "Illumo Architecture Audit"
+  short_description: "Audit Illumo architecture against live evidence"
+  default_prompt: "Use $illumo-architecture-audit to inspect the live Illumo architecture and report evidence-backed findings."

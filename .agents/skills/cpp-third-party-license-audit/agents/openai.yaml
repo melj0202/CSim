@@ -1,0 +1,4 @@
+interface:
+  display_name: "C++ Third-Party License Audit"
+  short_description: "Audit dependency licenses and runtime notices"
+  default_prompt: "Use $cpp-third-party-license-audit to inventory this C++ repository's dependencies and verify redistribution notices."

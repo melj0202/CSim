@@ -1,0 +1,4 @@
+interface:
+  display_name: "Illumo Platform Readiness Audit"
+  short_description: "Assess Illumo platform ports without overclaiming"
+  default_prompt: "Use $illumo-platform-readiness-audit to assess an Illumo platform port and produce a native validation checklist."

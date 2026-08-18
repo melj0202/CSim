@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Guidance Migration"
+  short_description: "Migrate repository guidance with policy fidelity"
+  default_prompt: "Use $repository-guidance-migration to migrate repository agent guidance from the supplied policy and templates."

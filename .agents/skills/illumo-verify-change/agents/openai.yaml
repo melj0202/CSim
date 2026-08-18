@@ -1,0 +1,4 @@
+interface:
+  display_name: "Illumo Change Verification"
+  short_description: "Verify Illumo changes with proportional evidence"
+  default_prompt: "Use $illumo-verify-change to select and run proportional verification for the current Illumo changes."

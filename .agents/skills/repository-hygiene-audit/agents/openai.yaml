@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Hygiene Audit"
+  short_description: "Audit tracked files for private and generated residue"
+  default_prompt: "Use $repository-hygiene-audit to inspect this repository for tracked private, generated, or machine-local residue."
