@@ -1,11 +1,7 @@
-//
-// Created by jaskulr on 10/11/24.
-//
-#include "SaveLoad.h"
-#include <gtkmm-3.0/gtkmm.h>
-#include <iostream>
+#include <Illumo/Platform/SaveLoad.h>
 
-// https://stackoverflow.com/questions/11483529/show-gtkfilechooserdialog-without-a-parent-window
+#include <gtkmm-3.0/gtkmm.h>
+
 class FileChooser : public Gtk::FileChooserDialog
 {
 public:
@@ -13,15 +9,13 @@ public:
   {
     FileChooser dialog("Select file", Gtk::FILE_CHOOSER_ACTION_OPEN);
     kit.run(dialog);
-    std::string ret = dialog.chosenFile;
-    return ret;
+    return dialog.chosenFile;
   }
   static std::string getSaveFileName()
   {
     FileChooser dialog("Select file", Gtk::FILE_CHOOSER_ACTION_SAVE);
     kit.run(dialog);
-    std::string ret = dialog.chosenFile;
-    return ret;
+    return dialog.chosenFile;
   }
 
 protected:
@@ -39,7 +33,7 @@ protected:
       sigc::mem_fun(*this, &FileChooser::on_my_response));
   }
 
-  void on_my_response(int response_id)
+  void on_my_response(int)
   {
     chosenFile = get_filename();
     hide();
@@ -48,15 +42,15 @@ protected:
 Gtk::Main FileChooser::kit(false);
 
 std::string
-SaveLoad::GetLoadLocation()
+SaveLoad::GetLoadLocation(const SaveLoadDialogSpec& specification)
 {
-
+  (void)specification;
   return FileChooser::getOpenFileName();
 }
 
 std::string
-SaveLoad::GetSaveLocation()
+SaveLoad::GetSaveLocation(const SaveLoadDialogSpec& specification)
 {
-
+  (void)specification;
   return FileChooser::getSaveFileName();
 }

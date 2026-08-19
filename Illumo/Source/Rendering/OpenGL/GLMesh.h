@@ -1,6 +1,6 @@
 #pragma once
-#include "IMesh.h"
 #include <GL/glew.h>
+#include <Illumo/Rendering/IMesh.h>
 #include <cstring>
 #include <vector>
 

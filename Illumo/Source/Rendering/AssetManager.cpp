@@ -1,8 +1,8 @@
 #define STB_IMAGE_IMPLEMENTATION
-#include "AssetManager.h"
-#include "Renderer.h"
-#include "Services/Logger.h"
 #include "thirdparty/stb/stb_image.h"
+#include <Illumo/Rendering/AssetManager.h>
+#include <Illumo/Rendering/Renderer.h>
+#include <Illumo/Services/Logger.h>
 #include <algorithm>
 #include <cctype>
 #include <fstream>

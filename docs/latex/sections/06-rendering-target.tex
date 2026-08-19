@@ -68,8 +68,8 @@ CommandQueue<RenderCommand>   // tagged union payloads
     v
 IBackend::SubmitCommandQueue
     |
-    +-- GLBackend + GLDevice   (production: CreateOpenGLBackend at Illumo::Init)
-    +-- MockBackend            (tests inject; takeOwnership=false)
+    +-- GLBackend + GLDevice   (private production factory; one fallible init)
+    +-- MockBackend            (Illumo::TestSupport)
 
 Renderer.h depends only on IBackend*; OpenGL types stay under Rendering/OpenGL/.
 \end{lstlisting}
@@ -129,8 +129,8 @@ CanvasView end state (shipped):
   \item Font atlases, UTF-8 measurement/wrapping, clipping, and nine-slice UI.
   \item Chunked tilemaps, sprite culling, and particle emitters.
   \item Multiple cameras, offscreen targets, compositing, and post-processing.
-  \item Standalone renderer extraction only after a second real project proves
-        the public boundary (D-R19).
+  \item The Illumo static library and supported public include tree are shipped;
+        evolve that boundary only from concrete IllumoGame needs (D-E6).
   \item Second real graphics API (only if needed).
   \item GPU color fade without bringing back full-grid float RGB.
   \item Restore Linux/macOS bootstrap compatibility and validate those ports

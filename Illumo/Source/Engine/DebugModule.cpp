@@ -1,11 +1,12 @@
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
 #endif
-#include "DebugModule.h"
-#include "InputManager.h"
-#include "Logger.h"
 #include "Rendering/PresentationTiming.h"
 #include <GLFW/glfw3.h>
+#include <Illumo/Engine/DebugModule.h>
+#include <Illumo/Services/InputManager.h>
+#include <Illumo/Services/Logger.h>
+#include <tracy/Tracy.hpp>
 
 DebugModule::DebugModule()
   : fpsLabel(nullptr)

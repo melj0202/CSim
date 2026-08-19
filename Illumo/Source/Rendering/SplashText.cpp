@@ -1,4 +1,4 @@
-#include "SplashText.h"
+#include <Illumo/Rendering/SplashText.h>
 
 void
 SplashText::Wake()

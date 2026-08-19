@@ -1,7 +1,7 @@
-#include "Logger.h"
-#include "CommandLine.h"
-#include "Foundation/MacroDefs.h"
-#include "Services/IEnvVars.h"
+#include <Illumo/Foundation/MacroDefs.h>
+#include <Illumo/Services/CommandLine.h>
+#include <Illumo/Services/IEnvVars.h>
+#include <Illumo/Services/Logger.h>
 #include <iostream>
 
 Logger* Logger::instance = nullptr;

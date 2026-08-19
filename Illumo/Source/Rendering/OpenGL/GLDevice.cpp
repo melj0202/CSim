@@ -1,5 +1,5 @@
 #include "GLDevice.h"
-#include "Services/Logger.h"
+#include <Illumo/Services/Logger.h>
 
 void
 GLDevice::ApplyPipelineState(const PipelineState& pipelineState)

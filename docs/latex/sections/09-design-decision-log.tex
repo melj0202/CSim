@@ -169,13 +169,16 @@ draw list is only \symbolref{Scene} + \symbolref{Renderer}.
 \textbf{Decision:} Add headless \texttt{MockBackend} implementing
 \symbolref{IBackend}: record \texttt{Create*} and snapshot the command queue
 on \texttt{SubmitCommandQueue}. Originally shipped as CMake target
-\texttt{IllumoRenderTests} / CTest \texttt{MockBackend}; the current canonical
-target and CTest name are \texttt{IllumoTests}, with the old names retained only
-as compatibility aliases. Do \textbf{not} add Vulkan/Metal yet.\\
+\texttt{IllumoRenderTests} / CTest \texttt{MockBackend}; the current library
+runner is \texttt{IllumoTests}, with exact \texttt{Illumo.*} CTest cases. The
+old target and single-test names are no longer retained. Do \textbf{not} add
+Vulkan/Metal yet.\\
 \textbf{Why:} First meaningful automated render test without a GPU context;
 proves token vocabulary and handle plumbing independently of GL.\\
-\textbf{Consequences:} CI can run \texttt{ctest -R IllumoTests}; second real API
-remains future work after more production needs appear.
+\textbf{Consequences:} Library tests use \texttt{Illumo::TestSupport}; workspace
+CI aggregates the library and game runners under the \texttt{IllumoWorkspace}
+label. A second graphics backend remains future work after production needs
+appear.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -183,11 +186,12 @@ remains future work after more production needs appear.
 \begin{decisionbox}[title={D-R8 \quad 2026-07-28, refined 2026-08-07}]
 \textbf{Decision:} \symbolref{Renderer} is backend-neutral: its only constructor
 takes an injected \symbolref{IBackend*} and a \texttt{takeOwnership} flag.
-Production composition (\symbolref{Illumo}\texttt{::Init}) constructs the real
-backend via \texttt{CreateOpenGLBackend} under \pathref{Rendering/OpenGL/} and
-injects it with \texttt{takeOwnership=true}. Tests inject \texttt{MockBackend}
-with \texttt{takeOwnership=false}. \texttt{Renderer.h} must not include or
-construct concrete OpenGL types.\\
+Production library initialization constructs the real backend via
+\texttt{CreateOpenGLBackend} under \pathref{Rendering/OpenGL/}, initializes it
+exactly once, and transfers a \texttt{std::unique\_ptr<IBackend>} into the
+renderer. Tests inject \texttt{MockBackend} through the same ownership
+boundary. \texttt{Renderer.h} must not include or construct concrete OpenGL
+types.\\
 \textbf{Why:} End-to-end drawable $\rightarrow$ enroll/token $\rightarrow$ submit
 without a GPU; second platforms can supply a different \symbolref{IBackend}
 without touching the generic frame-submit surface.\\
@@ -268,8 +272,8 @@ serial. Presentation/fade stays main-thread.\\
 \textbf{Why:} Large dense grids are eval-bound after D-P5; spawn cost makes
 parallel unhelpful on default $80\times 60$.\\
 \textbf{Consequences:} Tests cover serial/parallel identity
-(\texttt{Illumo.Sim.SerialParallelIdentical}); micro-benches under
-\texttt{Illumo.Sim.MicroBench}. Persistent thread pool deferred.
+(\texttt{IllumoGame.Sim.SerialParallelIdentical}); micro-benches under
+\texttt{IllumoGame.Sim.MicroBench}. Persistent thread pool deferred.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -292,9 +296,10 @@ code truth. Canonical: \pathref{docs/architecture-consensus.md}.
 \subsection*{D-E1 --- Module registration lives in App}
 \begin{decisionbox}[title={D-E1 \quad 2026-07-28}]
 \textbf{Decision:} \symbolref{Illumo} does not include or construct
-\symbolref{CellGameModule}. \pathref{App/CellMain.cpp} calls \texttt{Init},
-\texttt{addModule}, then \texttt{StartModules}. Debug module is registered
-from App under \texttt{\#ifndef NDEBUG}.\\
+\symbolref{CellGameModule}. Today,
+\pathref{IllumoGame/Source/App/CellMain.cpp} applies product configuration,
+calls fallible \texttt{initialize}, then registers the required game module and
+the optional Debug module before \texttt{startModules}.\\
 \textbf{Why:} Engine must not depend on Game headers; product composition
 belongs at the application boundary.\\
 \textbf{Consequences:} New products/tests can register different module sets;
@@ -501,7 +506,11 @@ real project proves the required public boundary.\\
 ECS, scene-graph, render-graph, or multi-backend scaffolding.\\
 \textbf{Consequences:} Release composition remains unchanged. Follow-on work is
 font/UI layout, tilemaps/culling/particles, then offscreen composition as actual
-projects require.
+projects require.\\
+\textbf{Status:} Superseded by D-E6. The approved consumer is the repository's
+\texttt{IllumoGame} product, so the extraction records an explicit product
+boundary; it is not evidence of a second independent product and does not
+authorize speculative general-engine work.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -547,7 +556,10 @@ intentional. Canonical tests are \texttt{IllumoTests}, and new saves use the
 \textbf{Why:} The author selected Illumo as the permanent product identity.\\
 \textbf{Consequences:} Live first-party source and documentation use Illumo;
 generated build trees, vendored material, and archived historical artifacts are
-not implementation sources and are not rewritten by this decision.
+not implementation sources and are not rewritten by this decision.\\
+\textbf{Status:} Superseded by D-N2 for executable, product-visible, and test
+identity. The Illumo repository/library/host name and the \texttt{.illumo}
+format identity remain valid.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -630,10 +642,12 @@ uses that same script when TeX is available.
 %----------------------------------------------------------------------------
 \subsection*{D-T1 --- Granular CTest registration and coverage gate}
 \begin{decisionbox}[title={D-T1 \quad 2026-08-04}]
-\textbf{Decision:} Keep one \texttt{IllumoTests} executable for compile
-efficiency, but register each logical behavior as an exact
-\texttt{Illumo.<area>.<case>} CTest entry. CTest runs one filtered case per
-process in an isolated working directory. With
+\textbf{Decision:} Keep two compile-efficient runners: \texttt{IllumoTests}
+for the reusable library and \texttt{IllumoGameTests} for product behavior.
+Register each logical behavior as an exact owner-prefixed
+\texttt{Illumo.<area>.<case>} or \texttt{IllumoGame.<area>.<case>} CTest entry.
+CTest runs one filtered case per process in an isolated working directory and
+aggregates both inventories under \texttt{IllumoWorkspace}. With
 \texttt{ILLUMO\_ENABLE\_COVERAGE=ON}, Clang/LLVM adds the
 \texttt{IllumoCoverage} target and enforces at least 85\% line coverage over
 headless-testable first-party production code.\\
@@ -641,11 +655,12 @@ headless-testable first-party production code.\\
 failed, and a narrow denominator could report a strong percentage while omitting
 game commands, persistence, input, or assets.\\
 \textbf{Consequences:} New behaviors receive separate stable names; file-backed
-tests may run in parallel without sharing working files; tests, vendored/system
-code, MockBackend, and the live OpenGL backend are excluded from the automated
-production denominator. Native dialogs, real-window behavior, and live OpenGL
-still require proportional smoke tests. This supersedes the single-CTest-name
-registration detail in D-R7 without changing the MockBackend decision.
+tests may run in parallel without sharing working files; combined coverage
+merges both runners. Tests, vendored/system code, TestSupport, and the live
+OpenGL backend are excluded from the automated production denominator. Native
+dialogs, real-window behavior, and live OpenGL still require proportional smoke
+tests. This supersedes the single-CTest-name registration detail in D-R7
+without changing the MockBackend decision.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -660,11 +675,12 @@ registration detail in D-R7 without changing the MockBackend decision.
 \subsection*{D-R11 --- Backend constructed at composition root}
 \begin{decisionbox}[title={D-R11 \quad 2026-08-06}]
 \textbf{Decision:} Construct the concrete production backend
-(\symbolref{GLBackend}) in \symbolref{Illumo::Init} and inject it into
-\symbolref{Renderer} as \texttt{std::unique\_ptr<IBackend>}. \symbolref{Renderer}
-must not include or construct OpenGL types. Tests continue to inject
-\symbolref{MockBackend} through the same ownership path (or a non-owning raw
-pointer for stack fixtures).\\
+(\symbolref{GLBackend}) through fallible \symbolref{Illumo::initialize} and
+inject it into \symbolref{Renderer} as \texttt{std::unique\_ptr<IBackend>}.
+The factory constructs only; the host owns the backend's single initialization
+attempt and reports failure without terminating the process. \symbolref{Renderer}
+must not include or construct OpenGL types. Tests inject
+\symbolref{MockBackend} through the same ownership path.\\
 \textbf{Why:} Dependency inversion: \texttt{Renderer $\rightarrow$ IBackend},
 composition root $\rightarrow$ concrete backend. Production and headless test
 architectures become structurally identical.\\
@@ -763,7 +779,7 @@ using linear filtering to hide undersampling.\\
 
 \subsection*{D-R13 --- Single production frame path}
 \begin{decisionbox}[title={D-R13 \quad 2026-08-06}]
-\textbf{Decision:} \symbolref{Illumo::Render} always rebuilds the per-frame
+\textbf{Decision:} \symbolref{Illumo::render} always rebuilds the per-frame
 drawable list and submits tokens through \symbolref{Renderer::RenderScene}.
 Remove the env \texttt{UseTokenProof} product bypass. Keep
 \symbolref{Renderer::RenderProofQuad} for headless token e2e tests only.
@@ -823,7 +839,7 @@ the gain, while unrestricted catch-up makes camera and input visibly stutter.\\
 \textbf{Consequences:} Rule evaluation, persistence ordering, revisions, and
 the bounded presentation path remain deterministic. Small patterns remain
 serial. \texttt{SparseAdvanceStats}, Tracy zones, serial/parallel identity
-tests, and \texttt{Illumo.Sim.SparseMicroBench} make the threshold observable.
+tests, and \texttt{IllumoGame.Sim.SparseMicroBench} make the threshold observable.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------
@@ -1492,6 +1508,77 @@ Long-form architecture, current file maps, rationale, and dated history remain
 under \pathref{docs/}. Generated PDFs remain outputs, not sources.\\
 \textbf{Refines:} D-DOC1's single-tree and single-entrypoint wording without
 rewriting its historical record.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-E6 --- Illumo library and IllumoGame product split}
+\begin{decisionbox}[title={D-E6 \quad 2026-08-18}]
+\textbf{Decision:} Keep one repository but establish sibling CMake projects.
+\texttt{Illumo}/\texttt{Illumo::Illumo} is a static library containing the
+generic host, foundation, reusable services, rendering, generic console/UI,
+assets, and \symbolref{DebugModule}. \texttt{IllumoGameCore} contains cellular
+simulation, rulesets, product configuration, persistence, and game commands.
+\texttt{IllumoGame} owns composition, platform entry/dialogs, the
+\texttt{std::chrono} frame loop, and runtime staging. Supported library headers
+live under \pathref{Illumo/Include/Illumo}; OpenGL implementation headers remain
+private, while \texttt{Illumo::TestSupport} exposes test-only support. Startup
+is fallible, required-module failure rolls back accepted modules, and library
+code does not terminate the process.\\
+\textbf{Why:} The cellular simulator is now a concrete downstream consumer, so
+the reusable boundary can be expressed and compiled without carrying product
+policy into the library.\\
+\textbf{Consequences:} Root \texttt{cmake -S .} is the canonical workspace;
+\texttt{cmake -S Illumo} validates the standalone library. Independent test
+runners aggregate under \texttt{IllumoWorkspace}, and combined LLVM coverage
+retains the 85\% production-line gate. Illumo supplies runtime assets and
+licenses through a staging helper; IllumoGame separately seeds its default
+\texttt{envvars.json}. This does not add an install/export package, shared DLL,
+stable binary ABI, dependency, second repository, or old Illumo executable
+compatibility target.\\
+\textbf{Supersedes:} D-R19's deferred-extraction rule.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-E7 --- Illumo owns the system and platform runtime}
+\begin{decisionbox}[title={D-E7 \quad 2026-08-18}]
+\textbf{Decision:} Illumo owns every non-game runtime concern: process entry,
+native dialogs and SaveLoad contract, logger lifetime, the
+\texttt{std::chrono} loop, module composition, \symbolref{SysCmdLine}, and
+\symbolref{BuildInfo}. IllumoGame production code is limited to
+\pathref{Source/Game} and \pathref{Source/Rulesets}. It exports an
+\symbolref{IllumoApplicationDefinition} with identity, CA CLI/default metadata,
+and a required-module factory. Illumo's entry invokes the generic runner; the
+game supplies dialog labels, while platform code performs native interaction.\\
+\textbf{Why:} Bootstrap, process lifetime, parsing mechanics, and build metadata
+are engine/system responsibilities. Keeping them in the consumer would make
+IllumoGame a second host rather than a game-only module.\\
+\textbf{Consequences:} \texttt{IllumoPlatformEntry} is an engine-owned object
+target linked into the product executable. Illumo remains independent of CA
+types and ruleset validation; it sees only callbacks, option descriptors, and
+\symbolref{IModule}. IllumoGame keeps product policy and the executable identity,
+while supported and scaffold platform implementations live under
+\pathref{Illumo/Source/Platform}.\\
+\textbf{Supersedes:} D-E6 only where D-E6 assigned composition, platform
+entry/dialogs, and the frame loop to IllumoGame. The sibling split, dependency
+direction, test split, runtime staging, and D-N2 product identity remain in
+force.
+\end{decisionbox}
+
+%----------------------------------------------------------------------------
+\subsection*{D-N2 --- IllumoGame is the simulator identity}
+\begin{decisionbox}[title={D-N2 \quad 2026-08-18}]
+\textbf{Decision:} Retain \textbf{Illumo} as the repository, reusable library,
+and runtime-host class name. Use \textbf{IllumoGame} for the cellular-simulator
+executable, window title, CLI help/version output, console branding, product
+text, game test runner, and \texttt{IllumoGame.*} test namespace. Preserve the
+\texttt{.illumo} extension, save magic, and version 3/2/legacy compatibility.\\
+\textbf{Why:} The visible product identity should make the new dependency
+direction unambiguous without needlessly breaking persisted data.\\
+\textbf{Consequences:} There is no executable named \texttt{Illumo}; library
+cases remain \texttt{Illumo.*}, product cases become \texttt{IllumoGame.*}, and
+format-facing compatibility terminology remains Illumo where it denotes the
+existing file contract.\\
+\textbf{Supersedes:} D-N1 for product, executable, and test identity.
 \end{decisionbox}
 
 %----------------------------------------------------------------------------

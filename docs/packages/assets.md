@@ -1,27 +1,13 @@
-# Assets
+# Illumo assets and runtime staging
 
-`Illumo/Assets/` contains first-party runtime files copied beside the
-application. `Assets/RendererDemo/` contains the small Debug showcase atlas and
-its managed contract-compatible sprite shader; fonts retain their existing
-rendering path through `GLString` / `GameVisual`, not a `Source/Assets`
-subsystem.
+Illumo owns `Shader/`, `Assets/RendererDemo`, fonts, notices, third-party
+dependencies, and redistribution licenses. `AssetManager` retains its managed
+file texture/shader cache, one CPU file/decode worker, render-thread GPU pump,
+stable typed handles, Debug timestamp polling, explicit reload, last-good
+fallback, reference counting, and shutdown-before-backend lifetime.
 
-`Rendering/AssetManager.*` owns managed file textures and shaders:
-
-- cache identity is canonical path plus texture loading options (or the shader
-  path pair);
-- acquisition returns a stable typed backend handle and increments an internal
-  reference count on duplicates;
-- a 2x2 checkerboard texture or fallback shader remains bound while the first
-  request is pending or failed;
-- one worker performs file reads and stb image decoding; `pump()` applies GPU
-  create/replacement on the render thread before frame submission;
-- Debug builds poll timestamps every 500 ms and coalesce requests; all builds
-  support explicit reload;
-- a failed reload preserves the last good GPU object and records the error;
-- the final release destroys the resource, and shutdown cancels obsolete jobs
-  and joins the worker before backend destruction.
-
-This managed milestone covers textures and shaders. Dynamic quad meshes remain
-renderer-owned; font atlases, model import, and general 3D mesh assets are not
-part of it.
+The library supplies the runtime-staging implementation that copies those
+files beside a consuming executable. Tracked input changes retrigger staging
+and removed shader or asset files disappear from the staged copy. The
+IllumoGame target supplies its `envvars.json` seed as product data; Illumo's
+copy-if-missing staging logic preserves existing user settings.

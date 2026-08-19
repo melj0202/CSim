@@ -1,10 +1,11 @@
 #pragma once
 
+#include <memory>
+
 class IBackend;
 class IRenderWindow;
 
-// Production composition only: heap-allocate the OpenGL IBackend.
-// Transfer ownership to Renderer with takeOwnership=true, or call Shutdown
-// and delete when finished. Not for headless tests (use MockBackend inject).
-IBackend*
+// Constructs the production backend. Illumo owns its one Initialize call so
+// production and injected factories follow the same fallible contract.
+std::unique_ptr<IBackend>
 CreateOpenGLBackend(IRenderWindow* window);

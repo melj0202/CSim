@@ -1,78 +1,62 @@
 \section{Services, foundation, platform}
 \label{sec:services}
 
-\subsection{Services}
-Cross-cutting facilities used by Engine/Game/Rendering:
+\subsection{Illumo services}
+The library owns reusable cross-cutting facilities:
 \begin{itemize}
-  \item \textbf{Logging} --- \symbolref{Logger} (file + terminal; level from env).
-  \item \textbf{Config} --- \symbolref{EnvVars} / \symbolref{IEnvVars}
-        (defaults filled in \symbolref{Illumo::Init}: canvas size, fps/tps,
-        synchronized presentation via \texttt{vsync}, mode string,
-        \texttt{WorldChunksX}/\texttt{WorldChunksY}, \ldots).
-        The production file is \texttt{envvars.json}
-        beside the executable, seeded from the tracked default only when absent;
-        it never depends on the launch working directory. The Game-owned F1
-        settings overlay updates the supported topology, timing, ruleset, and
-        display variables in Release and Debug.
+  \item \textbf{Logging} --- \symbolref{Logger} with file/terminal sinks and a
+        generic environment-controlled level.
+  \item \textbf{Configuration} --- \symbolref{EnvVars}/\symbolref{IEnvVars}.
+        The host supplies only generic window, presentation, logging, and console
+        defaults. An explicit configuration path avoids working-directory
+        dependence.
   \item \textbf{Input} --- \symbolref{InputManager}, \symbolref{InputContext},
-        \symbolref{KeyCode}; action binding used by the game module.
-        No Game types (D-E2).
-  \item \textbf{CLI} --- \symbolref{CommandLine} owns the token UI and batched
-        geometry. \symbolref{CommandRegistry} owns command metadata and
-        callbacks; \symbolref{SysCmdLine} handles startup options. Help,
-        version, and window/canvas dimensions are applied before window creation.
-        General tooling stays in Services; \symbolref{CellGameModule} registers
-        simulation/canvas/camera/save-load commands with usage, descriptions,
-        and completion candidates. Editing includes selection, word movement and
-        deletion, history, quoted arguments, measured caret placement, command
-        chaining with \texttt{;}, alias macro management (\texttt{alias}/\texttt{unalias}),
-        inline ghost-text auto-suggestions, dynamic parameter hints, and a
-        horizontally scrolling input viewport. The current history draw path
-        truncates each entry to panel width and scrolls by raw history entries;
-        D-UI2's word-wrap and visual-line metrics are not currently
-        implemented. The easy-font batch is sized for 8,000 UI quads. The
-        console is Debug-only product composition
-        (D-B1, D-CLI1, D-UI1--D-UI3).
-  \item \textbf{Allocators} --- pool/arena/debug allocators (experimental /
-        learning surface; not all wired into the hot path).
-  \item \textbf{SaveLoad API} --- pure declarations; OS dialogs implemented
-        per platform.
+        and \symbolref{KeyCode}; no Game types.
+  \item \textbf{Console} --- parameterized \symbolref{CommandLine} branding,
+        generic editing/history/alias/help behavior, generic host commands, and
+        \symbolref{CommandRegistry} metadata/completion.
+  \item \textbf{System command line} --- \symbolref{SysCmdLine} owns
+        help/version, window-dimension parsing, validation, and exit-code
+        mechanics while accepting declarative application options.
+  \item \textbf{Allocators} --- pool, arena, chain, and Debug allocation tools.
 \end{itemize}
+
+\subsection{IllumoGame policy}
+IllumoGame owns \pathref{IllumoGame/envvars.json}, CA defaults (canvas,
+topology, ruleset, TPS, speed, and fade), CA option/help descriptors, and its
+required-module factory. \symbolref{CellGameModule} registers simulation,
+canvas, camera, ruleset, persistence, TPS, speed, and fade commands. The
+Release-visible F1 settings surface updates the same product variables. Generic
+Illumo services neither validate rulesets nor assume a game module exists.
 
 \subsection{Foundation}
-Headers that should stay cheap to include:
-macros (\pathref{MacroDefs.h}), build info, \pathref{MathTypes.h},
-\pathref{ArrayQueue.h}.
+Supported lightweight headers include macros, \pathref{MathTypes.h},
+\pathref{ArrayQueue.h}, \pathref{RollingMetric.h}, and engine-owned
+\pathref{BuildInfo.h}.
 
 \begin{statusbox}
-\pathref{MacroDefs.h} still pulls Windows headers on \texttt{\_WIN32} (for
-\texttt{Sleep} / \texttt{\_\_SLEEP}). That is include-heavy for a widely used
-header. \textbf{Deferred (D-F1):} leave as-is until compile time, name
-collisions, or header hygiene actually hurt; then split platform sleep into a
-narrower header.
+\pathref{MacroDefs.h} still pulls Windows headers on \texttt{\_WIN32} for
+\texttt{Sleep}/\texttt{\_\_SLEEP}. D-F1 defers splitting that dependency until
+measured include cost, collisions, or portability work justifies it.
 \end{statusbox}
 
-\subsection{Platform}
-Thin platform sources:
+\subsection{Illumo platform boundary}
+\pathref{Illumo/Source/Platform/} contains process entry and native persistence
+dialogs behind the public \symbolref{SaveLoad} contract:
 \begin{itemize}
-  \item Windows: \pathref{WinMain.cpp}, \pathref{WinSaveLoad.cpp} ---
-        supported and currently verified.
-  \item Linux: \pathref{\_main.cpp}, \pathref{LinuxSaveLoad.cpp}
-        --- unsupported stale scaffold; the entry references removed shared
-        bootstrap APIs.
-  \item macOS: \pathref{Main.cpp}, \pathref{MacSaveLoad.mm}
-        --- unsupported stale scaffold; the entry references removed APIs and
-        CMake does not enable Objective-C++ for the selected \texttt{.mm} file.
+  \item Windows \pathref{WinMain.cpp}/\pathref{WinSaveLoad.cpp} is supported.
+  \item Linux and macOS sources remain unsupported stale scaffolding.
 \end{itemize}
-
-Contract: bootstrap $\rightarrow$ call \symbolref{CellMain}. Each port also
-implements the native load-location and save-location functions in
-\symbolref{SaveLoad}.
-Source presence and CMake selection do not establish support; Linux/macOS
-require native configure, build, tests, rendering/input, dialogs, and shutdown
+Platform bootstrap calls \symbolref{CreateIllumoApplication} and then the
+engine-owned \symbolref{RunIllumoApplication}. Each platform implements the
+engine-owned \symbolref{SaveLoad} contract; the game supplies only dialog text
+and filename defaults through \symbolref{SaveLoadDialogSpec}. Source presence
+and CMake selection do not establish support: a port still requires native
+configure, build, launch, tests, rendering/input, dialogs, and shutdown
 validation.
 
-\subsection{Third-party}
-Vendored under \pathref{Illumo/thirdparty/}. Policy from \pathref{docs/contributing.md}:
-new third-party deps require review/PR. Existing: GLFW, GLEW, GLM, FreeType,
-JSON, STB, Tracy, image libs, \ldots
+\subsection{Third-party and runtime data}
+Dependencies remain vendored under \pathref{Illumo/thirdparty/}. Illumo owns
+its shaders, fonts, RendererDemo assets, notices, and dependency licenses and
+provides the CMake staging helper. IllumoGame separately seeds its default
+configuration. New dependencies still require the contributing-policy review.

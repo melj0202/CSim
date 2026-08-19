@@ -1,8 +1,8 @@
-#include "GLString.h"
-#include "IRenderWindow.h"
-#include "Logger.h"
-#include "Renderer.h"
 #include "thirdparty/stb/stb_easy_font.h"
+#include <Illumo/Rendering/GLString.h>
+#include <Illumo/Rendering/IRenderWindow.h>
+#include <Illumo/Rendering/Renderer.h>
+#include <Illumo/Services/Logger.h>
 
 GLString::GLString()
   : content("")

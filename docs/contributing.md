@@ -1,4 +1,4 @@
-# Contributing to Illumo
+# Contributing to the Illumo workspace
 
 ## Code style
 
@@ -26,10 +26,17 @@ reviewed.
 
 ## Architecture boundaries
 
-- App owns product composition; `Illumo` owns services and module lifetime.
+- Illumo owns the application runner, process loop, system command-line parser,
+  build metadata, OS entry points, native dialogs, generic services, and module
+  lifetime; it must not depend on Game or Rulesets.
+- IllumoGame owns only CA configuration/CLI metadata, Game, Rulesets, and its
+  required game-module factory.
+- IllumoGame consumes supported headers through `<Illumo/...>`; OpenGL
+  implementation headers and TestSupport are not production API.
 - Game and rules code do not issue raw OpenGL calls.
 - Production rendering uses `RenderCommand` tokens through `IBackend`.
-- Keep `DebugModule` out of Release compilation and composition.
+- Keep `DebugModule` out of Release compilation and register it as optional in
+  Debug; `CellGameModule` is the required product module.
 - Do not introduce an ECS, render graph, generalized scene graph, infinite
   chunks, or a compute backend solely for architectural completeness.
 

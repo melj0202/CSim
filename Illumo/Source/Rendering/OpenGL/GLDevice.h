@@ -6,10 +6,10 @@
 #include "GLMesh.h"
 #include "GLShaderProgram.h"
 #include "GLTexture.h"
-#include "Rendering/CommandQueue.h"
 #include "Rendering/HWInfo.h"
-#include "Rendering/PipelineState.h"
-#include "Rendering/ResourceHandle.h"
+#include <Illumo/Rendering/CommandQueue.h>
+#include <Illumo/Rendering/PipelineState.h>
+#include <Illumo/Rendering/ResourceHandle.h>
 #include <memory>
 #include <string>
 #include <unordered_map>

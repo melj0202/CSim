@@ -1,26 +1,25 @@
-# Engine
+# Illumo Engine
 
-Runtime host and module system:
+The reusable application runner, host, and source-level module contract live in
+Illumo:
 
-- `Illumo` — owns long-lived services and drives the frame loop
-- `IllumoContext` — frozen, non-owning service bag for the two shipped modules
-- `IModule` — module interface (`Start` / `Update` / `DispatchDrawables` /
-  `Exit`); failed `Start` removes the module from the host list
-- `DebugModule` — debug overlay module, compiled and registered only in Debug
+- `IllumoConfig` carries application name, configuration path, and fallible
+  test/factory injection hooks.
+- `Illumo` owns long-lived generic services and drives update/render/shutdown.
+- `IllumoContext` is a frozen, non-owning service bag with no game assumptions.
+- `IModule` retains `Start` / `Update` / `DispatchDrawables` / `Exit`.
+- `DebugModule` is an optional generic renderer/tooling module in Debug builds.
+- `IllumoApplicationDefinition` accepts declarative consumer policy while
+  `RunIllumoApplication` owns logging, CLI, module registration, timing, and
+  process results.
 
-`Illumo::Init` constructs the production `GLBackend` and injects it into
-`Renderer` as `std::unique_ptr<IBackend>` (D-R11). `Illumo::Render` has a single
-production path: clear frame list → module drawables → token submit (D-R13);
-there is no env-gated alternate product frame path. The host never hard-codes
-game modules; product composition belongs to `App/CellMain.cpp`.
+Construction loads generic defaults; `initialize()` creates the window/context,
+constructs and initializes the backend exactly once, and transfers
+`std::unique_ptr<IBackend>` to `Renderer`. Failures are logged and returned; the
+library does not terminate the process.
 
-`RenderWindow` defaults to monitor-synchronized presentation and observes the
-persisted `vsync` value for live transitions to or from uncapped profiling.
-Debug's FPS label distinguishes paced swap completions from CPU submissions
-(D-P32).
-
-`EntityTable`, `ModuleObject`, and the unused scene-graph scaffolding are
-archived under the repository `archive/` tree; they are not part of the live
-engine path.
-
-Game-specific logic belongs in `Game/`, not here.
+Module registrations are required or optional. Optional rejection destroys the
+module immediately. Required failure rolls back all accepted modules in reverse
+order, with exceptions contained so every cleanup is attempted. Illumo invokes
+the consumer-supplied required-module factory through the application
+definition; it never includes or constructs a concrete Game type directly.

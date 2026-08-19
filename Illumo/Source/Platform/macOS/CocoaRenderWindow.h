@@ -16,7 +16,7 @@ public:
   CocoaRenderWindow(const int width,
                     const int height,
                     const std::string& title);
-  ~CocoaRenderWindow() { glfwTerminate(); } // TODO: Add Metal cleanup code
+  ~CocoaRenderWindow() { glfwTerminate(); }
   static void toggleFullscreen() { isFullscreen = !isFullscreen; };
   static GLFWwindow* getWindowInstance() { return window; };
   static void updateWindow();
@@ -36,13 +36,6 @@ private:
 
   static bool getShaderCompileStatus(const int shaderProgram);
 
-  /*
-          These are triangles that cover the screen.
-
-      A texture is mapped on top of these traingles.
-
-      This is where the state of the cell colony will be rendered
-  */
   static const std::array<float, 32> vertices;
   static const std::array<unsigned char, 32> indices;
 };

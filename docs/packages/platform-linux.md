@@ -1,11 +1,7 @@
-# Linux platform scaffold
+# Illumo Linux scaffold
 
-Linux is not currently supported. CMake selects `_main.cpp` and
-`LinuxSaveLoad.cpp`, but the entry includes the removed `ServiceLocator.h` and
-calls obsolete `SysCmdLine` and `CellMain` signatures. These are static source
-findings; no Linux build or runtime validation is claimed.
-
-A future port should forward `argc`/`argv` through the current shared App API,
-keep GTK limited to native dialog adaptation, and pass native configure,
-compile, tests, GLFW/OpenGL interaction, dialog, and shutdown checks before the
-support status changes.
+Linux is not supported. Engine-owned `_main.cpp` and `LinuxSaveLoad.cpp` use
+the shared application and SaveLoad contracts but have not received a native
+configure, build, or runtime validation. A future port must keep GTK limited to
+native dialogs and pass native tests plus GLFW/OpenGL interaction and shutdown
+checks before support is claimed.

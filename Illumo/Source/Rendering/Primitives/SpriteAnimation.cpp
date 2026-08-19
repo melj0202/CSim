@@ -1,4 +1,4 @@
-#include "SpriteAnimation.h"
+#include <Illumo/Rendering/Primitives/SpriteAnimation.h>
 #include <algorithm>
 
 void

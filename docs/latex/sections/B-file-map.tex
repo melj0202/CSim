@@ -1,69 +1,48 @@
 \section{Key file map}
 \label{sec:file-map}
 
-Quick index for chats that need to open the right files. Not exhaustive.
-
 \begin{table}[h]
 \centering
-\small
-\begin{tabularx}{\linewidth}{@{}l X@{}}
+\scriptsize
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.52\linewidth} X@{}}
 \toprule
 \textbf{Path} & \textbf{Why it matters} \\
 \midrule
-\pathref{App/CellMain.*} & App loop + module registration (D-E1) \\
-\pathref{Engine/Illumo.*} & Services host; \texttt{addModule}/\texttt{StartModules}; frame pump \\
-\pathref{Engine/IllumoContext.h} & Service pointer bag \\
-\pathref{Engine/IModule.h} & Module API \\
-\pathref{Engine/DebugModule.*} & Debug overlay module (Debug builds) \\
-\pathref{Game/CellGameModule.*} & Modes, input, sim tick, palette rebuild \\
-\pathref{Game/CellContext.h} & Sparse grid, bounded view + ruleset factory \\
-\pathref{Game/SparseCellGrid.*} & Signed-coordinate 16$\times$16 chunks and halo stepping \\
-\pathref{Game/CanvasView.*} & Bounded sampling, CPU palette/fade, dirty RGB uploads \\
-\pathref{Game/Canvas.*} & Dense compatibility view and legacy-import support \\
-\pathref{Rulesets/RuleSet.*} & Stateless nextState/palette behavior \\
-\pathref{Rulesets/*RuleSet.*} & Concrete CA rules + evalCell colors \\
-\pathref{Rendering/Scene.h} & Drawable list + camera + window (no scene graph) \\
-\pathref{Rendering/Drawable.*} & Token emitter base (no GL ownership) \\
-\pathref{Rendering/RenderCommand.h} & Tagged-union tokens \\
-\pathref{Rendering/CommandQueue.h} & Growable bounded token buffer + metrics \\
-\pathref{Rendering/ResourceHandle*.h} & Typed slot+generation handles and allocator \\
-\pathref{Rendering/AssetManager.*} & Managed texture/shader cache, worker, pump, reload \\
-\pathref{Rendering/IBackend.h} & Backend interface \\
-\pathref{Rendering/Renderer.h} & Backend-neutral enroll, style registry, RenderScene, push helpers \\
-\pathref{Rendering/Primitives/*} & GameVisual, transforms, atlas sprites, animation, UiTheme \\
-\pathref{Rendering/OpenGL/CreateOpenGLBackend.*} & Production OpenGL IBackend factory \\
-\pathref{Rendering/OpenGL/GLBackend.*} & OpenGL backend registries \\
-\pathref{Rendering/OpenGL/GLDevice.*} & Execute queue, bind tracker \\
-\pathref{Rendering/OpenGL/GLTexture.h} & R8/RGB/RGBA + PBO UpdateSubImage \\
-\pathref{Rendering/Mock/MockBackend.h} & Headless IBackend for tests \\
-\pathref{Rendering/GLString.*} & Text tokens, geometry cache, optional panel chrome \\
-\pathref{Rendering/SplashText.*} & Fading themed mode notice \\
-\pathref{Services/CommandLine.*} & Primitive-composed console UI (batched) \\
-\pathref{Services/CommandRegistry.h} & Registered command behavior + help/completion metadata \\
-\pathref{Services/InputManager.*} & Input contexts/actions \\
-\pathref{Services/EnvVars.*} & Runtime config \\
-\pathref{Services/Logger.*} & Logging \\
-\pathref{Services/SaveLoad.h} & Ported dialogs API \\
-\pathref{Platform/Windows/*} & Win main + file dialogs \\
-\pathref{Foundation/MathTypes.h} & GLM aliases (not Math.h!) \\
-\pathref{Tests/TestMain.cpp} & Headless suite entry \\
-\pathref{Illumo/Assets/RendererDemo/*} & Managed Debug atlas and custom sprite shader \\
-\pathref{Rendering/RendererStyles.cpp} & Built-in styles; CanvasView uses the inline Sprite shader \\
-\pathref{Illumo/Shader/canvas\_*.glsl} & File-backed Canvas style; currently no production CanvasView binding \\
-\pathref{Illumo/CMakeLists.txt} & Sources + IllumoTests \\
-\pathref{docs/architecture-consensus.md} & Canonical current architecture and work order \\
-\pathref{docs/latex/illumo.tex} & Canonical prose-book PDF entrypoint \\
-\pathref{docs/latex/architecture-map.tex} & Current chart-only PDF entrypoint \\
-\pathref{AGENTS.md}, \pathref{.agent/} & Operational guidance and planning exceptions (D-DOC2) \\
-\pathref{docs/sessions/*} & Dated implementation and verification records \\
+\path{CMakeLists.txt} & Canonical workspace and aggregate tests/coverage \\
+\path{cmake/IllumoBuild.cmake} & Shared warnings, instrumentation, staging, test discovery \\
+\path{Illumo/CMakeLists.txt} & Static library, TestSupport, library tests, standalone mode \\
+\path{Illumo/Include/Illumo/Engine/Illumo.h} & Public host/config/module-requirement API \\
+\path{Illumo/Include/Illumo/Engine/Application.h} & Declarative application seam and generic runner API \\
+\path{Illumo/Include/Illumo/Engine/IllumoContext.h} & Frozen non-owning service bag \\
+\path{Illumo/Include/Illumo/Engine/IModule.h} & Source-level module contract \\
+\path{Illumo/Source/Engine/Illumo.cpp} & Fallible host initialization, rollback, teardown \\
+\path{Illumo/Source/Engine/Application.cpp} & Logger lifetime, CLI flow, module composition, steady-clock loop \\
+\path{Illumo/Source/Engine/DebugModule.cpp} & Optional Debug renderer/tooling module \\
+\path{Illumo/Include/Illumo/Foundation/BuildInfo.h} & Engine build/version metadata \\
+\path{Illumo/Include/Illumo/Rendering/} & Supported backend-neutral render/token API \\
+\path{Illumo/Source/Rendering/OpenGL/} & Private production backend \\
+\path{Illumo/Include/Illumo/Services/} & Generic config, input, logging, console contracts \\
+\path{Illumo/Source/Services/SysCmdLine.cpp} & System help/version and metadata-driven option parser \\
+\path{Illumo/Source/Platform/} & Engine-owned process entry and native SaveLoad implementations \\
+\path{Illumo/TestSupport/Include/} & Test-only MockBackend and harness API \\
+\path{Illumo/Tests/} & \texttt{Illumo.*} library cases \\
+\path{IllumoGame/CMakeLists.txt} & Product core, executable, tests, runtime seed \\
+\path{IllumoGame/Source/Game/IllumoGameApplication.cpp} & Product identity, CA CLI metadata, required-module factory \\
+\path{IllumoGame/Source/Game/IllumoGameConfig.*} & CA defaults \\
+\path{IllumoGame/Source/Game/CellGameModule.*} & Modes, input, commands, simulation orchestration \\
+\path{IllumoGame/Source/Game/SparseCellGrid.*} & Signed-coordinate sparse domain \\
+\path{IllumoGame/Source/Game/CanvasView.*} & Bounded presentation, fade, dirty upload \\
+\path{IllumoGame/Source/Rulesets/} & Cellular-automata transitions and palettes \\
+\path{IllumoGame/Tests/} & \texttt{IllumoGame.*} product cases \\
+\path{docs/architecture-consensus.md} & Canonical current architecture and decisions \\
+\path{docs/illumo-library-and-illumogame-design.md} & Approved extraction design and outcome \\
+\path{docs/latex/illumo.tex} & Prose-book entry point \\
+\path{docs/latex/architecture-map.tex} & Chart-pack entry point \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \subsection{Archive}
-\begin{itemize}
-  \item \pathref{archive/old-states/} --- previous State pattern experiments.
-  \item \pathref{archive/dead-render/} --- retired immediate GL / RenderQueue paths.
-  \item \pathref{archive/dead-engine/} --- EntityTable, ModuleObject, SceneObject (D-E3/D-E4).
-  \item Analyzer/build junk may also live under \pathref{archive/}; ignore for design.
-\end{itemize}
+\pathref{archive/old-states/}, \pathref{archive/dead-render/}, and
+\pathref{archive/dead-engine/} are retained historical material and are not
+built or treated as current architecture.

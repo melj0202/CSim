@@ -1,5 +1,5 @@
-#include "Camera.h"
-#include "IRenderWindow.h"
+#include <Illumo/Rendering/Camera.h>
+#include <Illumo/Rendering/IRenderWindow.h>
 #include <algorithm>
 
 Camera::Camera(const glm::vec2& initialPos,

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "GL/glew.h"
-#include "ITexture.h"
 #include "TextureUploadPolicy.h"
+#include <Illumo/Rendering/ITexture.h>
 #include <array>
 #include <cstring>
 #include <string>

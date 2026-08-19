@@ -8,7 +8,7 @@ those licenses.
 The full license texts are kept with the corresponding source or asset in this
 repository. A normal CMake build also copies this notice and the license files
 for components used by the application into a `licenses/` directory beside the
-Illumo executable.
+IllumoGame executable.
 
 ## Components used by Illumo
 

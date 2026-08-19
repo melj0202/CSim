@@ -6,8 +6,9 @@
 frame path is acquire/enroll + tokens + submit via
 \symbolref{Renderer}/\symbolref{IBackend}.
 Drawables emit tokens through \texttt{AppendCommands}; GL draw submission is
-confined to \pathref{Rendering/OpenGL/} (plus window bootstrap). Headless
-\pathref{Rendering/Mock/MockBackend.h} powers \texttt{IllumoTests}. CanvasView
+confined to private \pathref{Illumo/Source/Rendering/OpenGL/} (plus window
+bootstrap). Headless \pathref{Illumo/TestSupport/Include/Illumo/Testing/MockBackend.h}
+powers \texttt{IllumoTests}. CanvasView
 presentation is \textbf{a padded camera cache + bounded CPU RGB fade + one RGB
 display texture/quad} with tiled multi-rect uploads (see canonical note in
 \pathref{docs/architecture-consensus.md}).
@@ -19,7 +20,7 @@ No second real GPU API.
   \item Modules call \symbolref{DispatchDrawables} and add \symbolref{DrawableBase*}
         pointers to \symbolref{Scene} \textbf{layers}
         (\texttt{World} CanvasView, \texttt{UI} console/splash, \texttt{Debug} FPS).
-  \item \symbolref{Illumo::Render} pumps completed managed asset work, then
+  \item \symbolref{Illumo::render} pumps completed managed asset work, then
         drives \symbolref{Renderer}:
         \texttt{BeginFrame} $\rightarrow$ \texttt{RenderScene} $\rightarrow$
         \texttt{EndFrame} (swap).
@@ -160,15 +161,12 @@ instead of treating thousands of CPU submissions as displayed frames (D-P32).
 \end{itemize}
 
 \subsection{Tests (headless)}
-Target \texttt{IllumoTests} (alias \texttt{IllumoRenderTests}) is one shared
-binary for compile efficiency, but CTest invokes one exact logical case per
-process (D-T1). The sparse-canvas entries cover mock/Renderer flow, assets,
-rulesets, CellContext, CellGameModule commands and file-backed save/load,
-CanvasView,
-input/services, primitive panel composition, and UI tokens. Each case has an
-isolated working directory; no
-GPU context is required. The Clang/LLVM \texttt{IllumoCoverage} target enforces
-85\% line coverage over headless-testable first-party production code.
+\texttt{IllumoTests} owns reusable rendering/services cases, while
+\texttt{IllumoGameTests} owns CanvasView, ruleset, CellGameModule, simulation,
+and persistence cases. Both are shared binaries for compile efficiency, but
+CTest invokes one exact logical case per isolated process (D-T1). No GPU
+context is required. Combined Clang/LLVM \texttt{IllumoCoverage} enforces 85\%
+line coverage over headless-testable first-party production code.
 
 \subsection{Remaining pain points (non-blocking)}
 \begin{enumerate}

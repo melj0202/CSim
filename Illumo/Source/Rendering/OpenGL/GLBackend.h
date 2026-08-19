@@ -3,11 +3,11 @@
 #include "GLMesh.h"
 #include "GLShaderProgram.h"
 #include "GLTexture.h"
-#include "RenderCommand.h"
-#include "Rendering/IBackend.h"
-#include "Rendering/IRenderWindow.h"
-#include "Rendering/ResourceHandlePool.h"
 #include <GL/glew.h>
+#include <Illumo/Rendering/IBackend.h>
+#include <Illumo/Rendering/IRenderWindow.h>
+#include <Illumo/Rendering/RenderCommand.h>
+#include <Illumo/Rendering/ResourceHandlePool.h>
 #include <memory>
 #include <unordered_map>
 
@@ -30,7 +30,7 @@ public:
   GLBackend(IRenderWindow* window);
   ~GLBackend();
 
-  void Initialize() override;
+  bool Initialize() override;
   void Shutdown() override;
   void BeginFrame() override;
   void EndFrame() override;

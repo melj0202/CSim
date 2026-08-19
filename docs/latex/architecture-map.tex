@@ -1,6 +1,6 @@
 %==============================================================================
-% Illumo --- Architecture Map (chart pack only)
-% Derived from Illumo/Source (headers + call sites), not design prose.
+% Illumo + IllumoGame --- Architecture Map (chart pack only)
+% Derived from the Illumo and IllumoGame source trees, not design prose.
 % Build: docs/build.ps1  ->  docs/output/architecture-map.pdf
 %==============================================================================
 \documentclass[10pt,landscape,a4paper]{article}
@@ -35,7 +35,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
-\fancyfoot[L]{\scriptsize Illumo architecture map $\cdot$ code truth: \texttt{Illumo/Source}}
+\fancyfoot[L]{\scriptsize Illumo workspace architecture map $\cdot$ code truth: \texttt{Illumo} + \texttt{IllumoGame}}
 \fancyfoot[R]{\scriptsize\thepage}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0pt}
@@ -132,23 +132,23 @@
 \ChartBegin
   % Row 1: 7 equal cards, centers at 1.9 + k*3.6
   \node[layer, pkgfill=pkgPlatform] (plat) at (1.9,-1.2) {%
-    \textbf{\rmfamily Platform}\\[3pt]
-    main (WinMain.cpp)\\$\rightarrow$ CellMain\\[2pt]
-    {\scriptsize WinSaveLoad.cpp}};
+    \textbf{\rmfamily Illumo Platform}\\[3pt]
+    main (WinMain.cpp)\\$\rightarrow$ Application\\[2pt]
+    {\scriptsize native SaveLoad}};
   \node[layer, pkgfill=pkgApp] (app) at (5.5,-1.2) {%
-    \textbf{\rmfamily App}\\[3pt]
-    CellMain\\[2pt]
-    {\scriptsize compose modules}\\{\scriptsize while loop}};
+    \textbf{\rmfamily Illumo Application}\\[3pt]
+    RunIllumoApplication\\[2pt]
+    {\scriptsize CLI + modules}\\{\scriptsize chrono loop}};
   \node[layer, pkgfill=pkgEngine] (eng) at (9.1,-1.2) {%
-    \textbf{\rmfamily Engine}\\[3pt]
+    \textbf{\rmfamily Illumo library}\\[3pt]
     Illumo\\IllumoContext\\IModule\\[2pt]
-    {\scriptsize unique\_ptr services}};
+    {\scriptsize services + DebugModule}};
   \node[layer, pkgfill=pkgGame] (mod) at (12.7,-1.2) {%
-    \textbf{\rmfamily Modules}\\[3pt]
-    CellGameModule\\ConfigurationMenu\\DebugModule\\[2pt]
-    {\scriptsize \#ifndef NDEBUG}};
+    \textbf{\rmfamily Product module}\\[3pt]
+    CellGameModule\\ConfigurationMenu\\[2pt]
+    {\scriptsize required at startup}};
   \node[layer, pkgfill=pkgRules] (dom) at (16.3,-1.2) {%
-    \textbf{\rmfamily Domain}\\[3pt]
+    \textbf{\rmfamily IllumoGame domain}\\[3pt]
     SparseCellGrid\\CanvasView\\RuleSet*\\[2pt]
     {\scriptsize owned by CellContext}};
   \node[layer, pkgfill=pkgRender] (rnd) at (19.9,-1.2) {%
@@ -158,7 +158,7 @@
   \node[layer, pkgfill=pkgRender] (be) at (23.5,-1.2) {%
     \textbf{\rmfamily IBackend}\\[3pt]
     GLBackend\\GLDevice\\[2pt]
-    MockBackend\\{\scriptsize Tests only}};
+    MockBackend\\{\scriptsize TestSupport only}};
 
   \draw[owns] (plat) -- (app);
   \draw[owns] (app) -- (eng);
@@ -171,21 +171,20 @@
   \node[box, pkgfill=pkgFound, minimum width=5.2cm, minimum height=2.5cm] (fnd) at (3.5,-4.8) {%
     \textbf{\rmfamily Foundation}\\[4pt]
     MacroDefs · MathTypes\\[2pt]
-    ArrayQueue\\[2pt]
-    BuildInfo};
+    ArrayQueue · RollingMetric};
   \node[box, pkgfill=pkgSvc, minimum width=8.4cm, minimum height=2.5cm] (svc) at (11.0,-4.8) {%
     \textbf{\rmfamily Services (Illumo-owned)}\\[4pt]
     EnvVars · InputManager · CommandLine\\[2pt]
     CommandRegistry · Logger (static)\\[2pt]
-    SaveLoad (static OS entry)};
+    {\scriptsize no CA policy}};
   \node[box, pkgfill=pkgAssets, minimum width=3.8cm, minimum height=2.5cm] (ast) at (18.0,-4.8) {%
     \textbf{\rmfamily Runtime files}\\[4pt]
-    Illumo/Assets\\[2pt]
-    {\scriptsize outside Source}};
+    Illumo Assets + Shader\\[2pt]
+    {\scriptsize Game envvars separately}};
   \node[box, pkgfill=pkgTests, minimum width=4.2cm, minimum height=2.5cm] (tst) at (22.8,-4.8) {%
-    \textbf{\rmfamily Tests}\\[4pt]
-    inject MockBackend\\[2pt]
-    NullRenderWindow};
+    \textbf{\rmfamily Split tests}\\[4pt]
+    IllumoTests + GameTests\\[2pt]
+    MockBackend via TestSupport};
 
   \draw[owns] (eng.south) -- ++(0,-0.7) -| (svc.north);
   \draw[nonown] (eng.south west) ++(0.4,0) -- ++(0,-0.7) -| (fnd.north);
@@ -208,11 +207,11 @@
 
   \node[note, minimum width=25.2cm, minimum height=2.3cm] at (12.7,-9.2) {%
     \textbf{Production flow (code)}\\[4pt]
-    Platform entry $\rightarrow$ CellMain composes Illumo + modules $\rightarrow$
-    Illumo owns services via \texttt{unique\_ptr} $\rightarrow$
+    Illumo platform entry $\rightarrow$ game definition $\rightarrow$ Application runner composes Illumo + modules $\rightarrow$
+    Illumo static library owns generic services via \texttt{unique\_ptr} $\rightarrow$
     modules receive non-owning \texttt{IllumoContext*} $\rightarrow$\\[2pt]
-    domain (SparseCellGrid / CanvasView / RuleSet) $\rightarrow$
-    Scene drawables emit tokens $\rightarrow$ IBackend (GL* production, Mock in tests).
+    IllumoGame domain (SparseCellGrid / CanvasView / RuleSet) $\rightarrow$
+    Scene drawables emit tokens $\rightarrow$ IBackend (private GL* production, Mock in TestSupport).
   };
 \ChartEnd
 
@@ -224,13 +223,13 @@
 \ChartBegin
   % LEFT composition stack (modules side-by-side so impl edges do not cross peers)
   \node[sectitle] at (3.2,0) {Composition};
-  \node[box, pkgfill=pkgApp, minimum width=3.6cm] (cm) at (3.2,-1.0) {CellMain};
+  \node[box, pkgfill=pkgApp, minimum width=3.6cm] (cm) at (3.2,-1.0) {Application runner};
   \node[box, pkgfill=pkgEngine, minimum width=3.6cm] (il) at (3.2,-2.1) {\textbf{Illumo}};
   \node[iface, minimum width=3.6cm] (imod) at (3.2,-3.5) {IModule};
   \node[box, pkgfill=pkgGame, minimum width=3.0cm] (cgm) at (1.4,-4.8) {CellGameModule};
   \node[box, pkgfill=pkgEngine, minimum width=3.0cm] (dbg) at (4.4,-4.8) {DebugModule {\scriptsize !NDEBUG}};
-  \draw[owns] (cm) -- node[right, font=\scriptsize\rmfamily] {new} (il);
-  \draw[owns] (il) -- node[right, font=\scriptsize\rmfamily] {modules[]} (imod);
+  \draw[owns] (cm) -- node[right, font=\scriptsize\rmfamily] {stack owns} (il);
+  \draw[owns] (il) -- node[right, font=\scriptsize\rmfamily] {registered modules} (imod);
   \draw[impl] (cgm.north) -- (imod.south west);
   \draw[impl] (dbg.north) -- (imod.south east);
 
@@ -266,7 +265,7 @@
 
   % IllumoContext
   \node[iface, minimum width=16.8cm, minimum height=1.6cm, align=left] (ctx) at (15.5,-5.4) {%
-    \textbf{\rmfamily IllumoContext} --- raw non-owning pointers filled in \texttt{Init()}\\[3pt]
+    \textbf{\rmfamily IllumoContext} --- raw non-owning pointers frozen by \texttt{initialize()}\\[3pt]
     \texttt{scene* · window* · commandLine* · inputManager* · renderer* ·
     assetManager* · envVars* · camera* · commandRegistry*}
   };
@@ -280,16 +279,16 @@
     Illumo owns services via \texttt{unique\_ptr}.\\[2pt]
     Modules: \texttt{vector\textless unique\_ptr\textless IModule\textgreater\textgreater}.\\[2pt]
     IllumoContext is raw pointers only.\\[2pt]
-    Illumo::Init creates GLBackend through CreateOpenGLBackend,\\
+    A fallible factory constructs GLBackend; Illumo initializes it once,\\
     then transfers it to Renderer as IBackend ownership.
   };
   \node[card, pkgfill=pkgEngine, minimum width=13.8cm, minimum height=3.0cm] (ord) at (19.0,-8.2) {%
-    \textbf{\rmfamily Init() order (Illumo.cpp)}\\[4pt]
+    \textbf{\rmfamily initialize() order (Illumo.cpp)}\\[4pt]
     1 EnvVars · 2 RenderWindow · 3 Camera · 4 GLBackend factory + Renderer\\[1pt]
     5 AssetManager · 6 CommandRegistry · 7 CommandLine\\[1pt]
     8 Logger::setContext · 9 InputManager · 10 Scene\\[1pt]
     11 GLString::setRenderWindow · 12 fill IllumoContext\\[3pt]
-    StartModules: if \texttt{!Start} $\rightarrow$ erase module
+    startModules: optional reject $\rightarrow$ destroy; required reject $\rightarrow$ rollback
   };
 \ChartEnd
 
@@ -297,27 +296,27 @@
 %==============================================================================
 % PAGE 3 --- Frame loop
 %==============================================================================
-\ChartTitle{3 $\cdot$ Frame loop (\texttt{CellMain.cpp} / \texttt{Illumo::Update/Render})}
+\ChartTitle{3 $\cdot$ Illumo application loop (\texttt{Application.cpp} / \texttt{Illumo::update/render})}
 \ChartBegin
   % Three column headers at same y
-  \node[sectitle] at (4.0,0) {Startup (CellMain)};
-  \node[sectitle] at (12.5,0) {Update (Illumo::Update)};
-  \node[sectitle] at (21.0,0) {Render (Illumo::Render)};
+  \node[sectitle] at (4.0,0) {Startup (Application)};
+  \node[sectitle] at (12.5,0) {Update (Illumo::update)};
+  \node[sectitle] at (21.0,0) {Render (Illumo::render)};
 
   % Startup: 9 steps, step 0.95cm
-  \node[stepbox, pkgfill=pkgApp] (s1) at (4.0,-1.0) {Logger::initLogger};
-  \node[stepbox, pkgfill=pkgApp] (s2) at (4.0,-1.95) {new Illumo};
-  \node[stepbox, pkgfill=pkgEngine] (s3) at (4.0,-2.9) {Illumo::Init};
-  \node[stepbox, pkgfill=pkgApp] (s4) at (4.0,-3.85) {addModule(CellGame)};
-  \node[stepbox, pkgfill=pkgApp] (s5) at (4.0,-4.8) {addModule(Debug)};
-  \node[stepbox, pkgfill=pkgEngine] (s6) at (4.0,-5.75) {StartModules};
-  \node[stepbox, pkgfill=pkgApp, line width=1.1pt] (s7) at (4.0,-6.7) {while !ShouldClose};
-  \node[stepbox, pkgfill=pkgEngine] (s8) at (4.0,-7.65) {Shutdown / Exit};
-  \node[stepbox, pkgfill=pkgApp] (s9) at (4.0,-8.6) {delete Illumo};
+  \node[stepbox, pkgfill=pkgEngine] (s1) at (4.0,-1.0) {Logger::initLogger};
+  \node[stepbox, pkgfill=pkgGame] (s2) at (4.0,-1.95) {apply game definition};
+  \node[stepbox, pkgfill=pkgEngine] (s3) at (4.0,-2.9) {Illumo::initialize};
+  \node[stepbox, pkgfill=pkgEngine] (s4) at (4.0,-3.85) {add required CellGame};
+  \node[stepbox, pkgfill=pkgEngine] (s5) at (4.0,-4.8) {add optional Debug};
+  \node[stepbox, pkgfill=pkgEngine] (s6) at (4.0,-5.75) {startModules / rollback};
+  \node[stepbox, pkgfill=pkgEngine, line width=1.1pt] (s7) at (4.0,-6.7) {while !shouldClose};
+  \node[stepbox, pkgfill=pkgEngine] (s8) at (4.0,-7.65) {shutdown};
+  \node[stepbox, pkgfill=pkgEngine] (s9) at (4.0,-8.6) {return exit code};
   \foreach \a/\b in {s1/s2,s2/s3,s3/s4,s4/s5,s5/s6,s6/s7,s7/s8,s8/s9} {\draw[arr] (\a)--(\b);}
 
   % Update: short chain, then detail cards with large gaps (no grow-into-neighbor)
-  \node[stepbox, pkgfill=pkgEngine] (u0) at (12.5,-1.0) {Illumo::Update(dt)};
+  \node[stepbox, pkgfill=pkgEngine] (u0) at (12.5,-1.0) {Illumo::update(dt)};
   \node[stepbox, pkgfill=pkgSvc] (u1) at (12.5,-1.95) {inputManager->update};
   \node[stepbox, pkgfill=pkgRender] (u2) at (12.5,-2.9) {camera->Update};
   \node[stepbox, pkgfill=pkgGame] (u3) at (12.5,-3.85) {modules[i]->Update};
@@ -341,7 +340,7 @@
   \draw[arr] (udet) -- (udeb);
 
   % Render chain: x=20.0 keeps R=22.4; side cards L≥22.9 (gap ≥0.5)
-  \node[stepbox, pkgfill=pkgEngine] (r0) at (20.0,-1.0) {Illumo::Render};
+  \node[stepbox, pkgfill=pkgEngine] (r0) at (20.0,-1.0) {Illumo::render};
   \node[stepbox, pkgfill=pkgRender] (r1) at (20.0,-1.95) {scene->ClearDrawables};
   \node[stepbox, pkgfill=pkgGame] (r2) at (20.0,-2.9) {DispatchDrawables};
   \node[stepbox, pkgfill=pkgRender] (r3) at (20.0,-3.85) {renderer->BeginFrame};
@@ -383,14 +382,14 @@
 %==============================================================================
 % PAGE 4 --- Class map
 %==============================================================================
-\ChartTitle{4 $\cdot$ Class map --- App · Engine · Illumo-owned Services}
+\ChartTitle{4 $\cdot$ Class map --- Illumo library and IllumoGame boundary}
 \ChartBegin
-  \node[sectitle] at (3.4,0) {App / Engine};
+  \node[sectitle] at (3.4,0) {Illumo Application / Game module};
   \node[sectitle] at (11.0,0) {Services (Illumo-owned*)};
   \node[sectitle] at (20.2,0) {Render host (Illumo-owned*)};
 
   % Col A: IllumoContext beside stack; modules side-by-side (no vertical through peers)
-  \node[box, pkgfill=pkgApp, minimum width=3.6cm] (cm) at (3.0,-1.0) {CellMain};
+  \node[box, pkgfill=pkgApp, minimum width=3.6cm] (cm) at (3.0,-1.0) {Application runner};
   \node[box, pkgfill=pkgEngine, minimum width=3.6cm] (il) at (3.0,-2.1) {Illumo};
   \node[iface, minimum width=3.6cm] (imod) at (3.0,-3.4) {IModule};
   \node[box, pkgfill=pkgGame, minimum width=3.0cm] (cgm) at (1.3,-4.7) {CellGameModule};
@@ -423,7 +422,7 @@
   \draw[impl] (cline)--(dwd);
 
   \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (log) at (9.2,-6.9) {Logger (static)};
-  \node[box, pkgfill=pkgSvc, minimum width=3.15cm] (sl) at (12.8,-6.9) {SaveLoad (static)};
+  \node[box, pkgfill=pkgPlatform, minimum width=3.15cm] (sl) at (12.8,-6.9) {SaveLoad contract};
   % Route in gap between service columns (x=11.0) so vertical does not hit CommandRegistry*
   \draw[nonown] (log.east) -- (11.0,-6.9) -- (11.0,-2.1) -- (env.east);
   \draw[nonown] (log.east) -- ++(0.35,0) |- (cline.south);
@@ -454,13 +453,13 @@
 
   % util L=16.8 clears msl R=16.8? use L=17.0 (center 20.8, w=7.6)
   \node[stub, minimum width=7.6cm, align=left, font=\scriptsize\ttfamily] (util) at (20.8,-8.0) {%
-    NOT Illumo members / not host frame path:\\[2pt]
+    Illumo utilities / not host members:\\[2pt]
     ArenaAlloc · ChainedStackAlloc · PoolAlloc\\
-    MallocAlloc · DebugAlloc · SysCmdLine
+    MallocAlloc · DebugAlloc · SysCmdLine · BuildInfo
   };
   \node[note, minimum width=7.6cm, minimum height=1.9cm] at (20.8,-9.8) {%
     \textbf{* = Illumo \texttt{unique\_ptr} member}\\[3pt]
-    Logger / SaveLoad are static entry points.\\
+    Logger is a library static entry point; SaveLoad is engine-owned.\\
     Context / modules receive raw pointers only.
   };
 \ChartEnd
@@ -500,7 +499,7 @@
     unique\_ptr$<$SplashText$>$ modeSplash\\
     {\rmfamily\scriptsize module-owned}
   };
-  \node[box, pkgfill=pkgSvc, minimum width=3.8cm] (sv) at (3.0,-6.9) {SaveLoad};
+  \node[box, pkgfill=pkgPlatform, minimum width=3.8cm] (sv) at (3.0,-6.9) {Illumo SaveLoad API};
   \node[box, pkgfill=pkgGame, minimum width=3.8cm, align=left, font=\scriptsize\ttfamily] (io) at (3.0,-8.1) {%
     SaveCellGame / LoadCellGame\\
     (fstream in module)
@@ -743,19 +742,21 @@
   % Strict 4x3 grid: col 3.15 + 6.3*i, row -1.5 - 3.35*j
   % card 5.9 x 2.9, gap ~0.4cm
   \node[card, pkgfill=pkgPlatform, minimum width=5.9cm, minimum height=2.9cm] at (3.15,-1.5) {%
-    \textbf{\rmfamily Platform}\\[3pt]
-    main $\rightarrow$ CellMain\\
+    \textbf{\rmfamily Illumo Platform}\\[3pt]
+    main $\rightarrow$ Application runner\\
     WinSaveLoad \textbf{L}\\
     Linux/macOS ports \textbf{S}};
   \node[card, pkgfill=pkgApp, minimum width=5.9cm, minimum height=2.9cm] at (9.45,-1.5) {%
-    \textbf{\rmfamily App}\\[3pt]
-    CellMain \textbf{L}};
+    \textbf{\rmfamily Illumo Application}\\[3pt]
+    RunIllumoApplication · SysCmdLine \textbf{L}\\
+    BuildInfo · SaveLoad contract \textbf{L}};
   \node[card, pkgfill=pkgEngine, minimum width=5.9cm, minimum height=2.9cm] at (15.75,-1.5) {%
-    \textbf{\rmfamily Engine}\\[3pt]
+    \textbf{\rmfamily Illumo library Engine}\\[3pt]
     Illumo · IllumoContext \textbf{L}\\
     IModule · DebugModule \textbf{L}};
   \node[card, pkgfill=pkgGame, minimum width=5.9cm, minimum height=2.9cm] at (22.05,-1.5) {%
-    \textbf{\rmfamily Game}\\[3pt]
+    \textbf{\rmfamily IllumoGame Game}\\[3pt]
+    Application definition · defaults \textbf{L}\\
     CellGameModule · CellContext \textbf{L}\\
     SparseCellGrid · CanvasView · ConfigurationMenu \textbf{L}\\
     Cursor · DirtyRect \textbf{L}\\
@@ -763,7 +764,7 @@
     Brush header \textbf{S}};
 
   \node[card, pkgfill=pkgRules, minimum width=5.9cm, minimum height=2.9cm] at (3.15,-4.85) {%
-    \textbf{\rmfamily Rulesets}\\[3pt]
+    \textbf{\rmfamily IllumoGame Rulesets}\\[3pt]
     RuleSet \textbf{L}\\
     GoL Seeds Highlife D\&N \textbf{L}\\
     LWD BrainsBrain Wireworld \textbf{L}\\
@@ -778,7 +779,7 @@
     RenderWindow · IBackend \textbf{L}\\
     RenderPass helpers \textbf{U}};
   \node[card, pkgfill=pkgRender, minimum width=5.9cm, minimum height=2.9cm] at (15.75,-4.85) {%
-    \textbf{\rmfamily OpenGL / Mock}\\[3pt]
+    \textbf{\rmfamily Private OpenGL / TestSupport}\\[3pt]
     GLBackend GLDevice \textbf{L}\\
     GLMesh GLTexture \textbf{L}\\
     GLShaderProgram \textbf{L}\\
@@ -789,24 +790,23 @@
     InputManager InputContext \textbf{L}\\
     KeyCode CommandLine \textbf{L}\\
     CommandRegistry Logger \textbf{L}\\
-    SaveLoad \textbf{L}\\
-    SysCmdLine \textbf{L}\\
+    generic host commands \textbf{L}\\
     allocators \textbf{L/U}};
 
   \node[card, pkgfill=pkgFound, minimum width=5.9cm, minimum height=2.5cm] at (3.15,-7.9) {%
     \textbf{\rmfamily Foundation}\\[3pt]
     MacroDefs MathTypes \textbf{L}\\
-    ArrayQueue \textbf{L}\\
-    BuildInfo};
+    ArrayQueue RollingMetric \textbf{L}};
   \node[card, pkgfill=pkgAssets, minimum width=5.9cm, minimum height=2.5cm] at (9.45,-7.9) {%
     \textbf{\rmfamily Runtime files}\\[3pt]
-    Illumo/Assets (outside Source)\\
-    Handjet font + license};
+    Illumo/Assets + Shader\\
+    notices + dependency licenses\\
+    IllumoGame/envvars.json};
   \node[card, pkgfill=pkgTests, minimum width=5.9cm, minimum height=2.5cm] at (15.75,-7.9) {%
     \textbf{\rmfamily Tests}\\[3pt]
-    IllumoTests \textbf{T}\\
-    MockBackend inject \textbf{T}\\
-    NullRenderWindow \textbf{T}};
+    IllumoTests · IllumoGameTests \textbf{T}\\
+    Illumo::TestSupport \textbf{T}\\
+    public-header consumer smoke \textbf{T}};
   \node[card, fill=black!5, draw=black!38, minimum width=5.9cm, minimum height=2.5cm] at (22.05,-7.9) {%
     \textbf{\rmfamily Tags}\\[3pt]
     \textbf{L} live product path\\
@@ -817,11 +817,11 @@
 
   \node[card, pkgfill=pkgEngine, minimum width=24.8cm, align=left, minimum height=1.7cm] at (12.6,-10.2) {%
     \textbf{\rmfamily Observed dependency direction (production)}\\[3pt]
-    Platform $\rightarrow$ App/CellMain $\rightarrow$ Illumo $\rightarrow$ IModule (CellGame / Debug) $\cdot$
+    Illumo Platform $\rightarrow$ game definition $\rightarrow$ Application runner $\rightarrow$ Illumo host $\rightarrow$ IModule (required CellGame / optional Debug) $\cdot$
     CellGame $\rightarrow$ CellContext $\rightarrow$ SparseCellGrid + CanvasView + RuleSet $\rightarrow$ Renderer tokens\\
     Debug $\rightarrow$ CommandLine + GLString $\cdot$
     Renderer $\rightarrow$ IBackend $\rightarrow$ GL* $\cdot$
-    Tests $\rightarrow$ MockBackend $\cdot$
+    split Tests $\rightarrow$ Illumo::TestSupport/MockBackend $\cdot$
     Rulesets do not call OpenGL
   };
 \ChartEnd

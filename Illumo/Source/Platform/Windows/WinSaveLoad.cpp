@@ -1,55 +1,85 @@
-//
-// Created by gravi on 10/6/2024.
-//
-#include "SaveLoad.h"
+#include <Illumo/Platform/SaveLoad.h>
+
+#include <cstdio>
+#include <string>
 #include <windows.h>
 
-std::string
-SaveLoad::GetLoadLocation()
+static std::string
+buildDialogFilter(const SaveLoadDialogSpec& specification)
 {
-  OPENFILENAMEA ofn;
+  const std::string description = specification.fileDescription.empty()
+                                    ? "Illumo File Format"
+                                    : specification.fileDescription;
+  const std::string pattern = specification.extensionPattern.empty()
+                                ? "*.ILLUMO"
+                                : specification.extensionPattern;
+  std::string filter = description + " (.illumo)";
+  filter.push_back('\0');
+  filter += pattern;
+  filter.push_back('\0');
+  filter.push_back('\0');
+  return filter;
+}
 
-  char szFile[256] = "myCanvas.illumo\0";
-
-  ZeroMemory(&ofn, sizeof(ofn));
-  ofn.lStructSize = sizeof(ofn);
-  ofn.hwndOwner = NULL;
-  ofn.lpstrFile = szFile;
-  ofn.nMaxFile = sizeof(szFile);
-  ofn.lpstrFilter = "Illumo File Format (.illumo)\0*.ILLUMO\0";
-  ofn.nFilterIndex = 1;
-  ofn.lpstrFileTitle = NULL;
-  ofn.nMaxFileTitle = 0;
-  ofn.lpstrInitialDir = NULL;
-  ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-  if (!GetOpenFileNameA(&ofn))
-    return "";
-  else
-    return std::string{ szFile };
+static void
+seedDialogFilename(char* destination,
+                   std::size_t destinationSize,
+                   const SaveLoadDialogSpec& specification)
+{
+  const std::string filename = specification.defaultFilename.empty()
+                                 ? "MyCanvas.illumo"
+                                 : specification.defaultFilename;
+  std::snprintf(destination, destinationSize, "%s", filename.c_str());
 }
 
 std::string
-SaveLoad::GetSaveLocation()
+SaveLoad::GetLoadLocation(const SaveLoadDialogSpec& specification)
 {
   OPENFILENAMEA ofn;
-
-  char szFile[256] = "MyCanvas.illumo\0";
+  char file[256] = {};
+  seedDialogFilename(file, sizeof(file), specification);
+  const std::string filter = buildDialogFilter(specification);
 
   ZeroMemory(&ofn, sizeof(ofn));
   ofn.lStructSize = sizeof(ofn);
   ofn.hwndOwner = NULL;
-  ofn.lpstrFile = szFile;
-  ofn.nMaxFile = sizeof(szFile);
-  ofn.lpstrFilter = "Illumo File Format (.illumo)\0*.ILLUMO";
+  ofn.lpstrFile = file;
+  ofn.nMaxFile = sizeof(file);
+  ofn.lpstrFilter = filter.c_str();
   ofn.nFilterIndex = 1;
   ofn.lpstrFileTitle = NULL;
   ofn.nMaxFileTitle = 0;
   ofn.lpstrInitialDir = NULL;
   ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
-  if (!GetSaveFileNameA(&ofn))
+  if (!GetOpenFileNameA(&ofn)) {
     return "";
-  else
-    return std::string{ szFile };
+  }
+  return std::string{ file };
+}
+
+std::string
+SaveLoad::GetSaveLocation(const SaveLoadDialogSpec& specification)
+{
+  OPENFILENAMEA ofn;
+  char file[256] = {};
+  seedDialogFilename(file, sizeof(file), specification);
+  const std::string filter = buildDialogFilter(specification);
+
+  ZeroMemory(&ofn, sizeof(ofn));
+  ofn.lStructSize = sizeof(ofn);
+  ofn.hwndOwner = NULL;
+  ofn.lpstrFile = file;
+  ofn.nMaxFile = sizeof(file);
+  ofn.lpstrFilter = filter.c_str();
+  ofn.nFilterIndex = 1;
+  ofn.lpstrFileTitle = NULL;
+  ofn.nMaxFileTitle = 0;
+  ofn.lpstrInitialDir = NULL;
+  ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+  if (!GetSaveFileNameA(&ofn)) {
+    return "";
+  }
+  return std::string{ file };
 }

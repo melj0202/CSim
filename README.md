@@ -1,30 +1,36 @@
-# Illumo (Cell Simulator)
+# Illumo workspace
 
-An improved version of a previous Game of Life program (OpenGL / GLFW).
+Illumo is a reusable static C++ host/rendering library. `IllumoGame` is the
+cellular-automata simulator that consumes it in the same repository.
 
 ## Layout
 
 ```
 illumo/
+  CMakeLists.txt         # Canonical Illumo workspace entrypoint
   docs/                 # All first-party documentation and LaTeX sources
     latex/              # Prose-book and chart-pack PDF entrypoints
     packages/           # Source-package maps formerly scattered by code
     sessions/           # Dated implementation and verification records
     history/            # Superseded/original material
-  Illumo/               # Project root (CMake)
-    Source/             # Application source packages
-      App/              # CellMain loop
-      Engine/           # Illumo runtime + modules
-      Game/             # CA game domain
-      Rulesets/         # Cellular automata rules
+  Illumo/               # Standalone static-library project
+    Include/Illumo/     # Supported consumer headers
+    Source/             # Private library implementation
+      Engine/           # Generic host, application runner + module lifetime
       Rendering/        # Graphics / backend interfaces
-      Services/         # Log, input, env, CLI, allocators
-      Foundation/       # Macros and shared helpers
-      Platform/         # OS entry + native save/load
-      Tests/
+      Services/         # Log, input, env, system CLI, allocators
+      Foundation/       # Build metadata, macros and shared helpers
+      Platform/         # OS entry and native save/load dialogs
+    TestSupport/        # MockBackend and shared test-only headers
+    Tests/              # Illumo.* library cases
     Shader/             # GLSL shaders
     Assets/             # Runtime asset files (fonts, …)
     thirdparty/         # Vendored dependencies
+  IllumoGame/           # Simulator product project
+    Source/Game/        # CA domain, config, module factory, editor, persistence
+    Source/Rulesets/    # Cellular-automata rules
+    Tests/              # IllumoGame.* product cases
+    envvars.json        # Product configuration seed
   archive/              # Historical / non-build material
 ```
 
@@ -49,7 +55,8 @@ cached 256x9 transitions, and infinite or finite toroidal topology.
 `CanvasView` presents a padded, integer-LOD
 camera cache through a world-space `GameVisual` sprite, with active-texel RGB
 fades and tiled multi-rectangle uploads through a non-waiting PBO ring.
-Headless `IllumoTests` use `MockBackend`. Windows is the supported runtime;
+Headless `IllumoTests` and `IllumoGameTests` use `Illumo::TestSupport` and
+`MockBackend`. Windows is the supported runtime;
 Linux and macOS retain stale source/CMake scaffolding pending native validation.
 
 **Architecture (single source for later sessions):** [`docs/architecture-consensus.md`](docs/architecture-consensus.md) — unified consensus (purpose, history of old plans, current renderer/sim truth, decisions, bugs, debt, work order).
@@ -62,10 +69,10 @@ source/binary redistribution checklist are in
 
 ## Build
 
-`build.py` is the convenient front end for the existing CMake build. It uses
-only the Python standard library, prints every command it runs, and leaves all
-CMake files and targets authoritative. From an interactive terminal, open its
-build console with:
+`build.py` is the convenient front end for the existing CMake build. It requires
+Python 3.10 or later, uses only the standard library, prints every command it
+runs, and leaves all CMake files and targets authoritative. From an interactive
+terminal, open its build console with:
 
 ```bash
 python build.py
@@ -83,9 +90,10 @@ python build.py build --config Debug
 Common focused workflows are:
 
 ```bash
-python build.py build --config Debug --target Illumo --parallel
+python build.py build --config Debug --target IllumoGame --parallel
 python build.py test
-python build.py test --test Illumo.CellGame.SaveLoadRoundTrip
+python build.py test --list-tests
+python build.py test --test IllumoGame.CellGame.SaveLoadRoundTrip
 python build.py run -- -ww 1280 -wh 720
 python build.py run --config Debug --no-build
 python build.py coverage
@@ -95,15 +103,17 @@ python build.py docs
 When standard input or output is redirected, running `python build.py` without
 a command performs the normal Release build instead of opening the console.
 That build retains CMake's existing all-target behavior: it builds the
-application and `IllumoTests`, runs every registered test, and builds the PDFs
-when the documentation toolchain is available.
+library, `IllumoGame`, both test runners, every registered workspace case, and
+the PDFs when the documentation toolchain is available.
 
 Use `--no-docs` for a build tree that should skip the optional PDF target,
 `--generator` and `--architecture` to select a CMake generator, and repeated
 `--cmake-arg=-DNAME=VALUE` options for an uncommon CMake setting. `--dry-run`
-prints the commands without running them. The orchestrator never deletes a
-build tree; use a separate `--build-dir` when changing to an incompatible
-generator.
+prints the commands without running them. The orchestrator defaults to
+`build-workspace` and coverage defaults to `build-workspace-coverage`, keeping
+the workspace separate from standalone or pre-extraction build trees. It never
+deletes a build tree and rejects a cache created from another source root; use a
+separate `--build-dir` when changing source roots or generators.
 
 The dashboard's **Run existing build** action, or `run --no-build`, launches
 the selected executable immediately and fails clearly if that configuration
@@ -114,46 +124,60 @@ Direct CMake remains fully supported and is the escape hatch for anything the
 front end does not expose:
 
 ```bash
-cmake -S Illumo -B build
+cmake -S . -B build
 cmake --build build --config Release
 ```
 
-The default build builds `IllumoTests` and runs every registered case through
-CTest. The build folder contains the executable binaries
-(`build/Release/Illumo.exe`, `IllumoTests.exe` on multi-config generators).
+The canonical workspace build produces `Illumo`, `IllumoGameCore`,
+`IllumoGame`, `IllumoTests`, `IllumoGameTests`, and the consumer-header smoke
+target. With a Visual Studio generator, the orchestrator's default artifacts
+are under `build-workspace/Illumo/Release/` and
+`build-workspace/IllumoGame/Release/`; the direct CMake example above uses
+`build/` instead.
+
+The library can also configure independently, without IllumoGame:
+
+```bash
+cmake -S Illumo -B build-illumo
+cmake --build build-illumo --config Release
+ctest --test-dir build-illumo -C Release -L Illumo --output-on-failure
+```
 
 When Windows PowerShell and `latexmk` are on `PATH`, the default build also runs
-`IllumoDocs` and writes `docs/output/illumo.pdf`. Disable that optional target
-at configure time with `-DILLUMO_BUILD_DOCUMENTATION=OFF`.
+`IllumoDocs` and writes `docs/output/illumo.pdf` plus
+`docs/output/architecture-map.pdf`. Disable that optional target at configure
+time with `-DILLUMO_BUILD_DOCUMENTATION=OFF`.
 
 Headless tests (no GPU):
 
 ```bash
-ctest --test-dir build -C Release -L Illumo --output-on-failure
-ctest --test-dir build -C Release -N -L Illumo
-# focused: build/Release/IllumoTests.exe --run Illumo.CellGame.SaveLoadRoundTrip
+ctest --test-dir build -C Release -L IllumoWorkspace --output-on-failure
+ctest --test-dir build -C Release -N -L IllumoWorkspace
+# library: build/Illumo/Release/IllumoTests.exe --run Illumo.Host.ConfigurationOwnership
+# game: build/IllumoGame/Release/IllumoGameTests.exe --run IllumoGame.CellGame.SaveLoadRoundTrip
 ```
 
-CTest registers one process-isolated entry per logical case. `IllumoTests.exe`
-is shared only to avoid recompiling the same production sources for every
-case; use
-`IllumoTests.exe --list` to print the exact names. Each case gets its own
-working directory under `build/Testing/Illumo/`.
+CTest registers one process-isolated entry per logical case. Both runners
+support `--list` and exact `--run`; `build.py test` dispatches by the
+`Illumo.*` or `IllumoGame.*` prefix. Each case gets an isolated directory
+under `build/Testing/Illumo/` or `build/Testing/IllumoGame/`.
 
 Clang/LLVM coverage (85% production-line gate and HTML report):
 
 ```bash
-cmake -S Illumo -B build-coverage -G Ninja \
+cmake -S . -B build-coverage -G Ninja \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
   -DILLUMO_BUILD_DOCUMENTATION=OFF -DILLUMO_ENABLE_COVERAGE=ON
 cmake --build build-coverage --target IllumoCoverage
 ```
 
-The report measures headless-testable first-party production code. Tests,
-vendored/system code, `MockBackend`, and the live OpenGL backend are excluded;
+The combined report measures headless-testable first-party code from both
+production targets. Tests, TestSupport, vendored/system code, the concrete live
+window, and the OpenGL backend are excluded;
 native dialogs, window behavior, and live OpenGL still require smoke testing.
-See `Illumo/Source/Tests/README.md` for the exact scope and commands.
+See `Illumo/Tests/README.md` and `IllumoGame/Tests/README.md` for the exact
+scope and commands.
 
 ### Optimized Tracy profiling
 
@@ -161,7 +185,7 @@ Keep the normal Release optimization level while enabling application Tracy
 instrumentation:
 
 ```bash
-cmake -S Illumo -B build-profile -DILLUMO_ENABLE_TRACY=ON -DILLUMO_BUILD_DOCUMENTATION=OFF
+cmake -S . -B build-profile -DILLUMO_ENABLE_TRACY=ON -DILLUMO_BUILD_DOCUMENTATION=OFF
 cmake --build build-profile --config Release
 ```
 
@@ -187,9 +211,9 @@ the tracked defaults there without overwriting an existing local configuration.
 Command-line dimensions override the persisted values:
 
 ```text
-illumo.exe [-ww width] [-wh height] [-cw canvas-width] [-ch canvas-height]
-illumo.exe --help
-illumo.exe --version
+IllumoGame.exe [-ww width] [-wh height] [-cw canvas-width] [-ch canvas-height]
+IllumoGame.exe --help
+IllumoGame.exe --version
 ```
 
 Presentation is synchronized to the monitor by default (`"vsync": "1"`). Set
@@ -206,7 +230,7 @@ rectangle; camera space outside it stays blank while simulation still wraps
 across opposite edges. Applying a topology change starts a fresh world. Menu
 labels use larger, high-contrast text, readable ruleset names, and contextual
 help for the selected setting. The final menu action exits through Illumo's
-normal shutdown path; Discard, Escape, and F1 only close the menu. A short eased
+normal runtime shutdown path; Discard, Escape, and F1 only close the menu. A short eased
 reveal, gliding row highlight, and value-change pulse provide motion without
 delaying input.
 

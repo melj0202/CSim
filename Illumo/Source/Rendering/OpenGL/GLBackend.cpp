@@ -2,41 +2,44 @@
 #include "GLDevice.h"
 #include "GLShaderProgram.h"
 #include "GLTexture.h"
-#include "Logger.h"
-#include <CommandQueue.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <IRenderWindow.h>
-#include <IShaderProgram.h>
-#include <cstdlib>
+#include <Illumo/Rendering/CommandQueue.h>
+#include <Illumo/Rendering/IRenderWindow.h>
+#include <Illumo/Rendering/IShaderProgram.h>
+#include <Illumo/Services/Logger.h>
 #include <cstring>
 #include <string>
 #include <tracy/Tracy.hpp>
 
 GLBackend::GLBackend(IRenderWindow* window)
+  : device(new GLDevice())
+  , commandQueue(new CommandQueue())
+  , window(window)
 {
-  device = new GLDevice();
-  commandQueue = new CommandQueue();
-  this->window = window;
-  Initialize();
 }
 
-GLBackend::~GLBackend() {}
+GLBackend::~GLBackend()
+{
+  Shutdown();
+}
 
-void
+bool
 GLBackend::Initialize()
 {
-  GLenum err = glewInit();
-  Logger::LogTrace("Glew initialized");
+  glewExperimental = true;
+  const GLenum err = glewInit();
   if (GLEW_OK != err) {
     Logger::LogError("Failed to initialize glew");
-    std::exit(-1);
+    return false;
   }
+  Logger::LogTrace("Glew initialized");
   const GLubyte* versionGL = glGetString(GL_VERSION);
   std::string versionStr =
     versionGL ? reinterpret_cast<const char*>(versionGL) : "Unknown";
   std::string fullGLString = "OpenGL Context: " + versionStr;
   Logger::LogInfo(fullGLString.c_str());
+  return true;
 }
 
 void

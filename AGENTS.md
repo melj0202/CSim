@@ -7,10 +7,10 @@ file as an architecture catalog.
 
 ## Project identity and boundaries
 
-Illumo is a C++23 cellular-automata learning sandbox with an engine-shaped
-modular-monolith shell. The supported production path is Windows, GLFW,
-OpenGL, and the sparse infinite canvas. It is not a general-purpose game
-engine.
+This C++23 workspace contains the product-agnostic `Illumo` static library and
+the `IllumoGame` cellular-automata learning sandbox that consumes it. The
+supported product path is Windows, GLFW, OpenGL, and the sparse infinite or
+finite-toroidal canvas. Illumo is not a general-purpose game engine.
 
 Do not introduce an ECS, render graph, generalized scene graph, additional
 graphics backend, compute backend, or broad framework merely for architectural
@@ -185,29 +185,31 @@ Ruleset truth:
   result paths share retained transactional chunk-map node storage; a local
   changed-region path patches the retained prior generation. Dense
   `calcGeneration` support remains only for compatibility tests.
-  Headless benches: `Illumo.Sim.MicroBench`, `Illumo.Sim.SparseMicroBench`.
+  Headless benches: `IllumoGame.Sim.MicroBench`,
+  `IllumoGame.Sim.SparseMicroBench`.
 
 ## Source map
 
 | Concern | Primary files |
 |---|---|
-| Composition and main loop | `Illumo/Source/App/CellMain.cpp` |
-| Host, services, modules | `Illumo/Source/Engine/Illumo.*`, `IModule.h`, `IllumoContext.h` |
-| CA modes and editor | `Illumo/Source/Game/CellGameModule.*`, `CellContext.h` |
-| Domain cell storage | `Illumo/Source/Game/SparseCellGrid.*` |
-| Bounded view, fade, dirty upload | `Illumo/Source/Game/CanvasView.*`, `Illumo/Shader/canvas_*` |
-| Compatibility dense storage | `Illumo/Source/Game/CellGrid.*`, `Canvas.*` |
-| CA behavior | `Illumo/Source/Rulesets/*` (`nextState`/palette) |
-| Renderer and tokens | `Illumo/Source/Rendering/Renderer.h` (IBackend* only), `RenderCommand.h`, `CommandQueue.h` |
-| Resource handles and file assets | `Illumo/Source/Rendering/ResourceHandle*`, `AssetManager.*` |
+| Application runner and main loop | `Illumo/Source/Engine/Application.cpp` |
+| Public library API | `Illumo/Include/Illumo/*` |
+| Host, services, modules | `Illumo/Source/Engine/Illumo.cpp`, public Engine headers |
+| CA modes and editor | `IllumoGame/Source/Game/CellGameModule.*`, `CellContext.h` |
+| Domain cell storage | `IllumoGame/Source/Game/SparseCellGrid.*` |
+| Bounded view, fade, dirty upload | `IllumoGame/Source/Game/CanvasView.*`, `Illumo/Shader/canvas_*` |
+| Compatibility dense storage | `IllumoGame/Source/Game/CellGrid.*`, `Canvas.*` |
+| CA behavior | `IllumoGame/Source/Rulesets/*` (`nextState`/palette) |
+| Renderer and tokens | `Illumo/Include/Illumo/Rendering/*`, `Illumo/Source/Rendering/*` |
+| Resource handles and file assets | `Illumo/Include/Illumo/Rendering/ResourceHandle*`, `Illumo/Source/Rendering/AssetManager.cpp` |
 | 2D primitives and animation | `Illumo/Source/Rendering/Primitives/*` |
 | Debug renderer atlas and shader | `Illumo/Assets/RendererDemo/*` |
 | Production backend factory | `Illumo/Source/Rendering/OpenGL/CreateOpenGLBackend.*` (composed in `Engine/Illumo.cpp`) |
 | Real graphics execution | `Illumo/Source/Rendering/OpenGL/*` |
-| Headless backend | `Illumo/Source/Rendering/Mock/MockBackend.h` |
-| Input, console, env, logging | `Illumo/Source/Services/*` |
+| Headless backend | `Illumo/TestSupport/Include/Illumo/Testing/MockBackend.h` |
+| Input, console, env, logging, system CLI | `Illumo/Source/Services/*` |
 | OS entry and native save/load | `Illumo/Source/Platform/*` |
-| Tests | `Illumo/Source/Tests/*` |
+| Tests | `Illumo/Tests/*`, `IllumoGame/Tests/*` |
 | Canonical architecture | `docs/architecture-consensus.md` |
 | Formal decisions | `docs/latex/sections/09-design-decision-log.tex` |
 
@@ -216,18 +218,20 @@ Ruleset truth:
 Run from the repository root on Windows.
 
 ```powershell
-cmake -S Illumo -B build
+cmake -S . -B build
 cmake --build build --config Release
-ctest --test-dir build -C Release -L Illumo --output-on-failure
+ctest --test-dir build -C Release -L IllumoWorkspace --output-on-failure
 ```
 
 Focused test work:
 
 ```powershell
-cmake --build build --config Release --target IllumoTests
-ctest --test-dir build -C Release -N -L Illumo
-build/Release/IllumoTests.exe --list
-build/Release/IllumoTests.exe --run <exact-test-name>
+cmake --build build --config Release --target IllumoTests IllumoGameTests
+ctest --test-dir build -C Release -N -L IllumoWorkspace
+build/Illumo/Release/IllumoTests.exe --list
+build/IllumoGame/Release/IllumoGameTests.exe --list
+build/Illumo/Release/IllumoTests.exe --run <Illumo.exact-name>
+build/IllumoGame/Release/IllumoGameTests.exe --run <IllumoGame.exact-name>
 ```
 
 Clang/LLVM coverage:
@@ -242,7 +246,7 @@ report. They do not prove that the live OpenGL window, native dialogs, or
 non-Windows ports work. Run a proportional manual smoke test for those paths.
 
 ```powershell
-cmake -S Illumo -B build-coverage -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DILLUMO_BUILD_DOCUMENTATION=OFF -DILLUMO_ENABLE_COVERAGE=ON
+cmake -S . -B build-coverage -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DILLUMO_BUILD_DOCUMENTATION=OFF -DILLUMO_ENABLE_COVERAGE=ON
 cmake --build build-coverage --target IllumoCoverage
 ```
 
@@ -253,8 +257,9 @@ Documentation and formatting:
 clang-format -i <modified-cpp-or-header-files>
 ```
 
-The default build compiles `IllumoTests`, runs every granular `Illumo.*` CTest
-case through `IllumoRunTests`, and builds `IllumoDocs` when PowerShell and
+The default workspace build compiles both runners, runs every granular
+`Illumo.*` and `IllumoGame.*` case through `IllumoRunTests`, and builds
+`IllumoDocs` when PowerShell and
 `latexmk` are available. Headless tests do not prove the live OpenGL window,
 native dialogs, or non-Windows ports. Use Debug or Release GUI smoke tests and
 sanitizers when the affected risk requires them. No repository-wide
@@ -263,10 +268,16 @@ exact checks and translation units when static analysis is requested.
 
 ## Project-wide invariants
 
-- `App` owns product composition. `Engine/Illumo` owns long-lived services and
-  module lifetime; it must not construct product modules.
+- Illumo owns process entry, platform services, BuildInfo, SysCmdLine, logging
+  lifetime, DebugModule composition, and the frame loop. IllumoGame supplies
+  only CA defaults/CLI metadata and its required game-module factory; Illumo
+  must not depend on Game or Rulesets.
 - `IllumoContext` is a non-owning pointer bag frozen after engine startup.
-  Modules whose `Start` returns `false` are removed before update or draw.
+  Failed optional modules remain inactive; a failed required module rolls back
+  every accepted module and fails startup. `CellGameModule` is required and
+  `DebugModule` is optional.
+- Production consumers include only `<Illumo/...>` headers. Test-only support
+  is exposed separately by `Illumo::TestSupport`.
 - Runtime window, input, module, rendering, and OpenGL work is main-thread
   affine unless a documented subsystem contract explicitly provides workers.
 - Game and Rulesets do not issue raw OpenGL calls or depend on OpenGL types.
@@ -334,18 +345,17 @@ A change is complete only when its scope is reviewed for accidental edits and:
 
 Subsystem rules live in:
 
-- `Illumo/Source/App/AGENTS.md`, `Illumo/Source/Engine/AGENTS.md`, and
-  `Illumo/Source/Foundation/AGENTS.md`;
-- `Illumo/Source/Game/AGENTS.md` and `Illumo/Source/Rulesets/AGENTS.md`;
-- `Illumo/Source/Services/AGENTS.md` and `Illumo/Source/Tests/AGENTS.md`;
-- `Illumo/Source/Platform/AGENTS.md` plus
-  `Illumo/Source/Platform/Windows/AGENTS.md`,
-  `Illumo/Source/Platform/Linux/AGENTS.md`, and
-  `Illumo/Source/Platform/macOS/AGENTS.md`;
+- `Illumo/Source/Engine/AGENTS.md`, `Illumo/Source/Foundation/AGENTS.md`, and
+  `Illumo/Source/Platform/AGENTS.md` plus its Windows, Linux, and macOS child
+  guidance;
+- `IllumoGame/Source/Game/AGENTS.md` and
+  `IllumoGame/Source/Rulesets/AGENTS.md`;
+- `Illumo/Source/Services/AGENTS.md`, `Illumo/Tests/AGENTS.md`, and
+  `IllumoGame/Tests/AGENTS.md`;
 - `Illumo/Source/Rendering/AGENTS.md` plus
   `Illumo/Source/Rendering/OpenGL/AGENTS.md`,
-  `Illumo/Source/Rendering/Mock/AGENTS.md`, and
-  `Illumo/Source/Rendering/Primitives/AGENTS.md`.
+  `Illumo/Source/Rendering/Primitives/AGENTS.md`; test-only MockBackend guidance
+  lives in `Illumo/TestSupport/AGENTS.md`.
 
 Child guidance specializes this file and does not weaken it.
 

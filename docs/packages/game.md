@@ -1,4 +1,4 @@
-# Game
+# IllumoGame domain
 
 The live game path is a sparse cellular-automata world with configurable
 infinite or finite toroidal topology plus a bounded presentation view.
@@ -140,7 +140,7 @@ a fresh centered world; other valid settings update the live runtime and the
 persisted environment. The overlay uses larger high-contrast setting text,
 human-readable ruleset names, split control help, and a selected-row
 description. Exit requests window closure through `IRenderWindow`, allowing the
-App loop to perform normal engine shutdown. Frame-delta-driven scalar state
+Illumo application runner to perform normal shutdown. Frame-delta-driven scalar state
 provides an eased reveal, staggered rows, a gliding selection highlight, and a
 short pulse after values change; input remains live during every transition.
 

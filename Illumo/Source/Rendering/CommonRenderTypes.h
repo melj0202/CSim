@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 enum ConstantBufferSlot : uint32_t
 {
   Slot_PerFrame = 0,    // Always slot 0

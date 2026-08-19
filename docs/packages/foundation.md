@@ -1,7 +1,11 @@
-# Foundation
+# Illumo Foundation
 
-Small, dependency-light shared pieces used across packages:
+Dependency-light supported pieces include:
 
 - compiler/platform macros (`MacroDefs`)
-- build metadata (`BuildInfo`)
-- math / container helpers (`MathTypes`, `ArrayQueue`) — note: named `MathTypes.h` so it does not shadow the system `math.h` on case-insensitive Windows
+- engine build/version metadata (`BuildInfo`)
+- math and compact containers (`MathTypes`, `ArrayQueue`, `RollingMetric`)
+
+The math header deliberately avoids the name `Math.h`, which shadows the CRT on
+case-insensitive Windows. `BuildInfo` is an Illumo Foundation contract used by
+the engine-owned system command-line parser.

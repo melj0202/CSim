@@ -1,6 +1,6 @@
 #pragma once
-#include "Rendering/IShaderProgram.h"
 #include <GL/glew.h> // Or your preferred OpenGL loader header
+#include <Illumo/Rendering/IShaderProgram.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>

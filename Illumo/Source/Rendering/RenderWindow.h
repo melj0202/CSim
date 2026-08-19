@@ -1,15 +1,14 @@
 #pragma once
-#include <GL/glew.h>
+#include <Illumo/Rendering/IRenderWindow.h>
+#include <Illumo/Services/IEnvVars.h>
 #include <array>
+#include <memory>
 #include <string>
 
 struct GLFWwindow;
 
-#include "IRenderWindow.h"
-#include "Services/IEnvVars.h"
-
-// GLFW + GLEW window bootstrap. Allowed GL here is limited to context init
-// (viewport on resize, version query). Frame draw goes through Renderer.
+// GLFW window and OpenGL context host. GLEW/backend initialization is owned by
+// the backend factory after a context has been created successfully.
 class RenderWindow : public IRenderWindow
 {
 public:
@@ -37,6 +36,12 @@ public:
   void requestClose() override;
 
 private:
+  friend std::unique_ptr<IRenderWindow> CreateRenderWindow(
+    int width,
+    int height,
+    const std::string& title,
+    IEnvVars* envVars);
+
   std::array<double, 2> mouseCoords;
   GLFWwindow* window;
   IEnvVars* envVars;
@@ -50,7 +55,14 @@ private:
   bool isFullScreen;
   bool vsyncEnabled;
   bool swapIntervalInitialized;
+  bool glfwInitialized;
+  bool initialize();
   void centerWindow();
   void syncPresentationMode();
-  bool getShaderCompileStatus(const unsigned int shaderProgram);
 };
+
+std::unique_ptr<IRenderWindow>
+CreateRenderWindow(int width,
+                   int height,
+                   const std::string& title,
+                   IEnvVars* envVars);

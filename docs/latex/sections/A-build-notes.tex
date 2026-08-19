@@ -1,144 +1,75 @@
+\clearpage
 \section{Build notes}
 \label{sec:build}
 
-\subsection{Configure \& build (Windows)}
-The repository-root \pathref{build.py} program is a standard-library front end
-over the existing CMake targets. It prints the commands it runs and does not
-replace or delete CMake configuration. With Python on \texttt{PATH}, open its
-interactive terminal build console with:
+\subsection{Canonical workspace}
+From the repository root on Windows:
 \begin{lstlisting}[language={}]
-python build.py
-\end{lstlisting}
-
-The arrow keys select the configuration, optional documentation and Tracy,
-parallelism, and an action. The same operations remain explicit commands for
-scripts and CI. For example, a Debug build is:
-\begin{lstlisting}[language={}]
-python build.py build --config Debug
-\end{lstlisting}
-Focused examples are:
-\begin{lstlisting}[language={}]
-python build.py build --config Debug --target Illumo --parallel
-python build.py test
-python build.py test --test Illumo.CellGame.SaveLoadRoundTrip
-python build.py run -- -ww 1280 -wh 720
-\end{lstlisting}
-With redirected standard input or output, omitting the command performs the
-normal Release all-target build instead of opening the console.
-Use \texttt{--no-docs} to opt out of the optional PDF target,
-\texttt{--build-dir} to select another tree, and \texttt{--dry-run} to inspect
-the commands. The program deliberately has no clean command.
-
-The dashboard's \textbf{Run existing build} action, or
-\texttt{run --no-build}, skips configuration and compilation and fails if the
-selected executable does not exist:
-\begin{lstlisting}[language={}]
-python build.py run --config Debug --no-build
-\end{lstlisting}
-The normal \texttt{run} command still builds before launching. Direct CMake
-remains supported:
-\begin{lstlisting}[language={}]
-cmake -S Illumo -B build -G "Visual Studio 17 2022" -A x64
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release
+ctest --test-dir build -C Release -L IllumoWorkspace --output-on-failure
 \end{lstlisting}
+The build produces the static \texttt{Illumo} library,
+\texttt{IllumoGameCore}, \texttt{IllumoGame}, \texttt{IllumoTests},
+\texttt{IllumoGameTests}, and \texttt{IllumoPublicHeaderSmoke}. The aggregate
+\texttt{IllumoRunTests} target refreshes both per-configuration test inventories
+before running the workspace label. There is no compatibility executable named
+\texttt{Illumo}.
 
-The default build compiles the application and \texttt{IllumoTests}, then runs
-every granular \texttt{Illumo} CTest entry through the
-\texttt{IllumoRunTests} target. Use an explicit target only for a focused
-build.
-
-\symbolref{DebugModule} is intentionally absent from Release. CMake adds
-\pathref{Source/Engine/DebugModule.cpp} only for the Debug configuration, and
-\symbolref{CellMain} includes/registers the module only when
-\texttt{NDEBUG} is not defined (D-B1).
-
+The Python front end configures the root workspace and exposes the same flow:
 \begin{lstlisting}[language={}]
-cmake --build build --config Release --target IllumoTests
-\end{lstlisting}
-
-Artifacts:
-\begin{itemize}
-  \item \pathref{build/Release/Illumo.exe}
-  \item \pathref{build/Debug/Illumo.exe}
-  \item \pathref{build/Release/IllumoTests.exe} (convenience CMake target
-        \texttt{IllumoRenderTests} aliases \texttt{IllumoTests})
-\end{itemize}
-
-\subsection{Tests (headless)}
-The Python front end configures and builds \texttt{IllumoTests} before invoking
-CTest, or invokes one exact runner case when \texttt{--test} is supplied:
-\begin{lstlisting}[language={}]
+python build.py build --config Debug --target IllumoGame --parallel
 python build.py test
 python build.py test --list-tests
-python build.py test --test Illumo.CellGame.SaveLoadRoundTrip
+python build.py test --test Illumo.Host.RequiredModuleRollback
+python build.py test --test Illumo.SysCmdLine.WindowDimensionOptions
+python build.py test --test IllumoGame.Config.CanvasCommandLineOptions
+python build.py run -- -ww 1280 -wh 720
 \end{lstlisting}
-The underlying commands remain available:
-\begin{lstlisting}[language={}]
-ctest --test-dir build -C Release -N -L Illumo
-ctest --test-dir build -C Release -L Illumo --output-on-failure
-build/Release/IllumoTests.exe --list
-build/Release/IllumoTests.exe --run Illumo.CellGame.SaveLoadRoundTrip
-\end{lstlisting}
-One runner avoids recompiling shared production sources, but each logical case
-is a separately named CTest process with its own working directory (D-T1). No
-OpenGL context is required (\texttt{MockBackend}).
+Exact runner cases execute in dedicated manual-testing directories so file-backed
+configuration cannot mutate staged runtime data.
 
-\clearpage
-\subsection{Coverage (Clang/LLVM)}
-Run the complete coverage workflow with:
+\subsection{Standalone library}
+The supported library-only build remains independently configurable:
 \begin{lstlisting}[language={}]
-python build.py coverage
+cmake -S Illumo -B build-illumo
+cmake --build build-illumo --config Release
+ctest --test-dir build-illumo -C Release -L Illumo --output-on-failure
 \end{lstlisting}
-This composes the following existing configure and target commands:
+It builds the static library, \texttt{IllumoTests}, and the public-header
+consumer smoke without seeing IllumoGame sources.
+
+\subsection{Tests}
+\texttt{IllumoTests} owns \texttt{Illumo.*}; \texttt{IllumoGameTests} owns
+\texttt{IllumoGame.*}. Both support exact \texttt{--list} and \texttt{--run}.
+CTest runs each case in an isolated working directory and selects a runner path
+for the requested configuration in multi-config build trees. Headless tests do
+not prove live OpenGL pixels, native dialogs, or native window lifecycle.
+
+\subsection{Coverage (Clang/LLVM)}
 \begin{lstlisting}[language={}]
-cmake -S Illumo -B build-coverage -G Ninja \
+cmake -S . -B build-coverage -G Ninja \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
   -DILLUMO_BUILD_DOCUMENTATION=OFF -DILLUMO_ENABLE_COVERAGE=ON
 cmake --build build-coverage --target IllumoCoverage
 \end{lstlisting}
-The target runs every granular test, merges per-process profiles, prints an
-LLVM report, fails below 85\% production line coverage, and writes
-\pathref{build-coverage/coverage-html/index.html}. The denominator excludes
-tests, vendored/system code, MockBackend, and the live OpenGL backend. Platform
-dialogs/windows and live OpenGL remain manual smoke-test responsibilities.
+The workspace target runs both inventories and public-header smoke, merges
+profiles from both instrumented products, writes
+\pathref{build-coverage/coverage-html/index.html}, and enforces the existing
+85\% headless-testable first-party production-line gate. Tests, TestSupport,
+vendored/system code, the concrete live window, and the OpenGL implementation
+are excluded; proportional manual Windows smoke tests cover the live
+graphics/dialog boundary.
 
-\subsection{Documentation PDF}
-From the repository root, run:
-\begin{lstlisting}[language={}]
-python build.py docs
-\end{lstlisting}
-This delegates to the existing PowerShell script, which can also be called
-directly:
-\begin{lstlisting}[language={}]
-.\docs\build.ps1
-\end{lstlisting}
-The script creates \pathref{docs/output/} and builds two artifacts:
-\begin{itemize}
-  \item \texttt{illumo.pdf} from \pathref{docs/latex/illumo.tex};
-  \item \texttt{architecture-map.pdf} from
-        \pathref{docs/latex/architecture-map.tex}.
-\end{itemize}
-On Windows, a normal all-target CMake build invokes the same script through
-\texttt{IllumoDocs} when PowerShell and \texttt{latexmk} were found at configure
-time. To opt out, configure with:
-\begin{lstlisting}[language={}]
--DILLUMO_BUILD_DOCUMENTATION=OFF
-\end{lstlisting}
+\subsection{Runtime staging}
+The Illumo-owned helper copies shaders, assets, notices, and licenses beside
+\texttt{IllumoGame.exe}; tracked changes retrigger staging, and removed assets
+are removed from the staged copy. IllumoGame's \texttt{envvars.json} uses
+copy-if-missing so user runtime settings survive rebuilds.
 
-\subsection{Known setup issues}
-\begin{itemize}
-  \item GLEW is built directly from
-        \pathref{Illumo/thirdparty/glew-2.1.0/src/glew.c}; the upstream
-        optional CMake subtree is not required.
-  \item Debug may enable \texttt{/fsanitize=address}; requires a toolchain that
-        supports MSVC ASan.
-  \item FreeType may warn about missing optional system deps (HarfBuzz, zlib,
-        PNG); build can still succeed with bundled defaults.
-  \item GLSL under \pathref{Illumo/Shader/} is copied beside each application
-        and test executable by a post-build command.
-\end{itemize}
-
-\subsection{House style (CONTRIBUTING)}
-See \pathref{docs/contributing.md}: limited \texttt{auto}, avoid namespaces,
-no recursion, third-party via PR.
+\subsection{Documentation}
+Run \texttt{python build.py docs} or \pathref{docs/build.ps1}. The script builds
+\pathref{docs/output/illumo.pdf} and
+\pathref{docs/output/architecture-map.pdf} from their LaTeX sources. The
+optional \texttt{IllumoDocs} target uses the same script when TeX is available.

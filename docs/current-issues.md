@@ -3,7 +3,7 @@
 This is a review snapshot, not proof that every item remains open. Reproduce or
 inspect an item against the live tree before fixing it.
 
-Last reviewed: 2026-08-06
+Last reviewed: 2026-08-18
 
 ## Open correctness issues
 
@@ -20,21 +20,22 @@ live tree before treating historical notes as still open.
 
 ## Structural risks
 
-- `CommandQueue` fixed capacity 2,048: overflow now logs once per frame and
-  tracks drop counts (D-R12); still not growable.
+- `CommandQueue` reserves 2,048 entries, grows to a configurable 65,536 default
+  ceiling, and tracks rejected/high-water counts; callers must continue to
+  surface rejection rather than assuming unbounded growth.
 - Per-command token payload pointers must remain valid until submission returns.
 - Dense simulation still scans the full grid (O(W×H)); D-P5 single-pass dirty
   AABB + buffer swap and D-P7 optional row-parallel reduce cost but do not
   remove the dense scan. Visual dirty rectangles still gate upload/fade work.
 - `Canvas` still combines view + GPU enroll over `CellGrid` (D-C2); further
   CanvasRenderer extraction is optional.
-- `IllumoContext` remains a frozen non-owning bag for the two shipped modules
-  (D-E5).
+- `IllumoContext` remains a frozen non-owning service bag; adding public service
+  fields is a source-contract change for Illumo consumers (D-E5/D-E6).
 
 ## Resolved during the 2026-08-06 boundary-consolidation pass
 
-- Injected `IBackend` at `Illumo::Init` (`GLBackend` constructed outside
-  `Renderer`); removed OpenGL includes from `Renderer.h` (D-R11).
+- Injected `IBackend` during host initialization (`GLBackend` constructed
+  outside `Renderer`); removed OpenGL includes from `Renderer.h` (D-R11).
 - Command-queue overflow logs once per frame and exposes drop counters (D-R12).
 - Failed `Start` modules are erased by the host; module `Update` /
   `DispatchDrawables` early-return when core state is missing.
@@ -42,7 +43,7 @@ live tree before treating historical notes as still open.
   mouse brush for head/tail/conductor/empty.
 - Scene header documents its role as a per-frame FrameRenderList (name kept).
 - Extracted `CellGrid` domain; rulesets depend only on domain storage (D-C2);
-  domain-without-renderer headless tests (`Illumo.Domain.*`).
+  domain-without-renderer headless tests (`IllumoGame.Domain.*`).
 - Removed `UseTokenProof` product frame bypass; `RenderProofQuad` is test-only
   (D-R13).
 - Mode splash owned by `CellGameModule` (`modeSplash` unique_ptr), not a
@@ -56,7 +57,9 @@ live tree before treating historical notes as still open.
   save/load round-trip, corruption, size-overlap, and command tests.
 - Covered the game module, InputManager, AssetManager, backend-token conversion,
   SysCmdLine, SplashText, environment, logger, and command registry paths.
-- Renamed the live product, targets, tests, runtime title, and saves to Illumo.
+- Renamed the live product, targets, tests, runtime title, and saves to Illumo;
+  D-N2 later superseded that executable/product identity with `IllumoGame`
+  while retaining Illumo for the repository and reusable library.
 - Kept `DebugModule` out of Release compilation and composition.
 - Added advanced console editing, selection, history, completion, measured caret
   placement, horizontal input scrolling, and improved panel visuals.

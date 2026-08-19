@@ -1,6 +1,18 @@
-# App
+# Illumo application runtime
 
-Shared application entry used by the supported Windows bootstrap and intended
-as the convergence point for future ports:
+Illumo owns process-level system behavior:
 
-- `CellMain` — owns the high-level init → update/render loop → shutdown sequence
+- `Illumo/Source/Engine/Application.cpp` initializes logging, applies the
+  consumer's defaults callback, invokes engine `SysCmdLine`, fallibly
+  initializes the host, registers the consumer's required module and optional
+  Debug `DebugModule`, drives the `std::chrono::steady_clock` frame loop,
+  performs shutdown, and returns an explicit process code.
+- `Illumo/Source/Platform/<port>/` supplies the selected entry point and native
+  dialogs.
+- `Illumo/Include/Illumo/Engine/Application.h` is the narrow reverse seam. A
+  consumer defines `CreateIllumoApplication()` and returns only declarative
+  identity, CLI metadata, defaults, and its required module factory.
+
+IllumoGame implements that definition in
+`IllumoGame/Source/Game/IllumoGameApplication.cpp`. It contains game policy but
+no process loop, logger lifetime, platform SDK code, or system parser.

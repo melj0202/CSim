@@ -1,11 +1,10 @@
-#include "CommandLine.h"
-#include "CellMain.h"
-#include "Rendering/IMesh.h"
-#include "Rendering/Primitives/GameVisual.h"
-#include "Rendering/Primitives/UiTheme.h"
-#include "Rendering/Renderer.h"
-#include "Services/Logger.h"
 #include "thirdparty/stb/stb_easy_font.h"
+#include <Illumo/Rendering/IMesh.h>
+#include <Illumo/Rendering/Primitives/GameVisual.h>
+#include <Illumo/Rendering/Primitives/UiTheme.h>
+#include <Illumo/Rendering/Renderer.h>
+#include <Illumo/Services/CommandLine.h>
+#include <Illumo/Services/Logger.h>
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -28,7 +27,6 @@ const BuiltInCommandHelp kBuiltInCommands[] = {
   { "clear", "clear", "Clear console output" },
   { "close", "close", "Close the console" },
   { "echo", "echo <text>", "Print text to the console" },
-  { "fade", "fade [0..1000]", "Show or set cell fade speed" },
   { "fps", "fps [on|off|toggle]", "Show or change the FPS overlay" },
   { "fullscreen",
     "fullscreen [on|off|toggle]",
@@ -36,17 +34,13 @@ const BuiltInCommandHelp kBuiltInCommands[] = {
   { "get", "get <variable>", "Read an environment variable" },
   { "help", "help [command]", "Show commands or detailed help" },
   { "history", "history [filter|clear]", "Search or clear command history" },
-  { "quit", "quit", "Exit Illumo" },
+  { "quit", "quit", "Exit the application" },
   { "repeat", "repeat <count> <command>", "Execute command multiple times" },
   { "set",
     "set <variable> <value>",
     "Create or update an environment variable" },
-  { "speed",
-    "speed [0.01..100]",
-    "Show or set the simulation speed multiplier" },
   { "sysinfo", "sysinfo", "Display system telemetry and statistics" },
   { "toggle", "toggle <variable>", "Toggle a boolean environment variable" },
-  { "tps", "tps [1..1000]", "Show or set simulation ticks per second" },
   { "unalias", "unalias <name>", "Remove a command alias" },
   { "vars", "vars [filter]", "List environment variables, optionally filtered" }
 };
@@ -60,6 +54,17 @@ lowerCopy(const std::string& text)
       static_cast<char>(std::tolower(static_cast<unsigned char>(lowered[i])));
   }
   return lowered;
+}
+
+std::string
+upperCopy(const std::string& text)
+{
+  std::string upper = text;
+  for (std::size_t i = 0; i < upper.size(); ++i) {
+    upper[i] =
+      static_cast<char>(std::toupper(static_cast<unsigned char>(upper[i])));
+  }
+  return upper;
 }
 
 std::string
@@ -85,25 +90,6 @@ parseLongStrict(const std::string& text, long* value)
     std::size_t consumed = 0;
     long parsed = std::stol(text, &consumed);
     if (consumed != text.size()) {
-      return false;
-    }
-    *value = parsed;
-    return true;
-  } catch (...) {
-    return false;
-  }
-}
-
-bool
-parseDoubleStrict(const std::string& text, double* value)
-{
-  if (value == nullptr || text.empty()) {
-    return false;
-  }
-  try {
-    std::size_t consumed = 0;
-    double parsed = std::stod(text, &consumed);
-    if (consumed != text.size() || !std::isfinite(parsed)) {
       return false;
     }
     *value = parsed;
@@ -187,11 +173,13 @@ truncateTextToWidth(const std::string& text, float maxWidth)
 CommandLine::CommandLine(IEnvVars* vars,
                          CommandRegistry* commandRegistry,
                          IRenderWindow* win,
-                         Renderer* rendererIn)
+                         Renderer* rendererIn,
+                         const std::string& applicationNameIn)
   : envVars(vars)
   , window(win)
   , commandRegistry(commandRegistry)
   , renderer(rendererIn)
+  , applicationName(applicationNameIn.empty() ? "Illumo" : applicationNameIn)
   , gpuReady(false)
   , animationProgress(0.0f)
   , lastAnimTime(std::chrono::high_resolution_clock::now())
@@ -226,7 +214,7 @@ CommandLine::CommandLine(IEnvVars* vars,
   tempInput = "";
   completionHint = "";
   history = {
-    { 240, 240, 240, 255, "Illumo Developer Console" },
+    { 240, 240, 240, 255, applicationName + " Developer Console" },
     { 240, 240, 240, 255, "Press ` to toggle, type 'help' for commands" }
   };
 
@@ -1185,7 +1173,7 @@ CommandLine::ExecuteSingleCommand(const std::string& singleCmd,
       }
     }
   } else if (cmd == "sysinfo") {
-    logNormal("=== Illumo System Telemetry ===");
+    logNormal("=== " + applicationName + " System Telemetry ===");
     logNormal("Registered commands: " +
               std::to_string(commandRegistry
                                ? commandRegistry->GetCommandNames().size()
@@ -1201,10 +1189,6 @@ CommandLine::ExecuteSingleCommand(const std::string& singleCmd,
               std::string(envVars && envVars->getVar("showFPS").valueAsBool
                             ? "on"
                             : "off"));
-    logNormal("TPS setting:         " +
-              (envVars ? envVars->getVar("tps").value : "N/A"));
-    logNormal("Fade speed:          " +
-              (envVars ? envVars->getVar("cellFadeSpeed").value : "N/A"));
   } else if (cmd == "help") {
     if (args.empty()) {
       logNormal("Built-in commands:");
@@ -1217,7 +1201,7 @@ CommandLine::ExecuteSingleCommand(const std::string& singleCmd,
         std::vector<std::string> registeredCommands =
           commandRegistry->GetCommandNames();
         if (!registeredCommands.empty()) {
-          logNormal("Simulation commands:");
+          logNormal("Registered commands:");
         }
         for (const std::string& commandName : registeredCommands) {
           std::string usage = commandRegistry->GetCommandUsage(commandName);
@@ -1249,7 +1233,7 @@ CommandLine::ExecuteSingleCommand(const std::string& singleCmd,
     }
   } else if (cmd == "clear") {
     history.clear();
-    AppendString(240, 240, 240, 255, "Illumo Developer Console");
+    AppendString(240, 240, 240, 255, applicationName + " Developer Console");
   } else if (cmd == "echo") {
     logNormal(joinArguments(args, 0));
   } else if (cmd == "get") {
@@ -1306,45 +1290,6 @@ CommandLine::ExecuteSingleCommand(const std::string& singleCmd,
     }
     for (const std::string& line : variableLines) {
       logNormal(line);
-    }
-  } else if (cmd == "tps") {
-    if (args.empty()) {
-      logNormal("tps = " + envVars->getVar("tps").value);
-    } else {
-      long value = 0;
-      if (args.size() != 1 || !parseLongStrict(args[0], &value) || value < 1 ||
-          value > 1000) {
-        logError("tps must be an integer from 1 to 1000");
-      } else {
-        envVars->setVar("tps", value);
-        logSuccess("tps = " + std::to_string(value));
-      }
-    }
-  } else if (cmd == "speed" || cmd == "speedfactor") {
-    if (args.empty()) {
-      logNormal("speedFactor = " + envVars->getVar("speedFactor").value);
-    } else {
-      double value = 0.0;
-      if (args.size() != 1 || !parseDoubleStrict(args[0], &value) ||
-          value < 0.01 || value > 100.0) {
-        logError("speed must be a number from 0.01 to 100");
-      } else {
-        envVars->setVar("speedFactor", args[0]);
-        logSuccess("speedFactor = " + args[0]);
-      }
-    }
-  } else if (cmd == "fade" || cmd == "cellfadespeed") {
-    if (args.empty()) {
-      logNormal("cellFadeSpeed = " + envVars->getVar("cellFadeSpeed").value);
-    } else {
-      double value = 0.0;
-      if (args.size() != 1 || !parseDoubleStrict(args[0], &value) ||
-          value < 0.0 || value > 1000.0) {
-        logError("fade must be a number from 0 to 1000");
-      } else {
-        envVars->setVar("cellFadeSpeed", args[0]);
-        logSuccess("cellFadeSpeed = " + args[0]);
-      }
     }
   } else if (cmd == "fps") {
     const bool currentValue = envVars->getVar("showFPS").valueAsBool;
@@ -2307,10 +2252,12 @@ CommandLine::AppendCommands(Renderer* r)
   }
 
   float headerWidth = panelX1 - panelX0;
-  std::string titleStr =
-    isFloating ? "ILLUMO  /  FLOATING CONSOLE" : "ILLUMO  /  CONSOLE";
+  const std::string upperApplicationName = upperCopy(applicationName);
+  std::string titleStr = isFloating
+                           ? upperApplicationName + "  /  FLOATING CONSOLE"
+                           : upperApplicationName + "  /  CONSOLE";
   if (headerWidth < 380.0f) {
-    titleStr = "ILLUMO";
+    titleStr = upperApplicationName;
   }
   std::string visibleTitle =
     truncateTextToWidth(titleStr, std::max(0.0f, headerWidth - 20.0f));

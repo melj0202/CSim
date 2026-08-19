@@ -95,20 +95,21 @@
 \newcommand{\todoauthor}[1]{\textcolor{orange!70!black}{\textbf{[Author: #1]}}}
 
 \title{%
-  Illumo Design Notes\\
-  \large Architecture, decisions, and performance notes%
+  Illumo and IllumoGame Design Notes\\
+  \large Library architecture, product design, decisions, and performance notes%
 }
 \author{Project author + collaborative development notes}
-\date{Started 2026-07-28 \quad (living document; current-state update 2026-08-09)}
+\date{Started 2026-07-28 \quad (living document; current-state update 2026-08-18)}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-This document is the \textbf{durable design memory} for Illumo (Cell Simulator):
-what the code is doing today, why packages and abstractions exist, and how the
-\textbf{render command / token} path, cellular automata rules, and headless
-tests fit together.
+This document is the \textbf{durable design memory} for the Illumo workspace:
+the reusable static \textbf{Illumo} library and its downstream cellular
+simulator, \textbf{IllumoGame}. It records what the code is doing today, why
+packages and abstractions exist, and how the \textbf{render command / token}
+path, cellular automata rules, and headless tests fit together.
 
 The token migration (Phases 1--6), sparse signed-coordinate simulation,
 bounded world-space CanvasView, adaptive CPU workers, RGB fade, and
@@ -118,7 +119,10 @@ in the ``current state'' sections and the decision log. Sections marked as
 new decisions rather than silently rewriting history. D-DOC2 records the
 current split between canonical technical documentation under
 \pathref{docs/} and scoped operational guidance in
-\pathref{AGENTS.md}/\pathref{.agent/}.
+\pathref{AGENTS.md}/\pathref{.agent/}. D-E6 records the sibling-project split,
+D-E7 places the application runtime and platform layer in Illumo while keeping
+IllumoGame game-only, and D-N2 records the IllumoGame product identity while
+preserving the existing \texttt{.illumo} persistence contract.
 \end{abstract}
 
 \tableofcontents

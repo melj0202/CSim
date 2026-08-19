@@ -1,6 +1,6 @@
-#include "IShaderProgram.h"
-#include "Renderer.h"
-#include "Services/Logger.h"
+#include <Illumo/Rendering/IShaderProgram.h>
+#include <Illumo/Rendering/Renderer.h>
+#include <Illumo/Services/Logger.h>
 
 // Built-in style shader sources and enrollment (D-R14). Owned by Renderer;
 // production drawables only bind styles and emit content tokens.

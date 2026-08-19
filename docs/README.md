@@ -1,6 +1,7 @@
-# Illumo documentation
+# Illumo workspace documentation
 
-This directory is the canonical home for Illumo's first-party technical
+This directory is the canonical home for the Illumo library and IllumoGame
+product's first-party technical
 documentation. Source-package folders contain code plus narrowly scoped
 operational `AGENTS.md` guidance; their former descriptive README files are
 preserved under `packages/`. Root/nested `AGENTS.md` and `.agent/` are the
@@ -63,7 +64,8 @@ The results are `docs/output/illumo.pdf` and
 `docs/output/architecture-map.pdf`. A normal CMake build also invokes this
 script through the `IllumoDocs` target when Windows PowerShell and `latexmk`
 are on `PATH`; turn that off with `-DILLUMO_BUILD_DOCUMENTATION=OFF` at
-configure time. Focused CMake targets such as `IllumoTests` do not require TeX.
+configure time. Focused targets such as `IllumoTests`, `IllumoGameTests`, and
+`IllumoGame` do not require TeX.
 
 A full TeX installation is expected;
 the book uses packages including `tcolorbox`, `booktabs`, `tikz`, `listings`,

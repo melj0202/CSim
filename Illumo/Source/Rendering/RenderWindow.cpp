@@ -1,13 +1,8 @@
 #include "RenderWindow.h"
-#include "CommandLine.h"
-#include "Logger.h"
 #include "PresentationTiming.h"
-#include "Services/IEnvVars.h"
-#include "Services/InputManager.h"
-#include "thirdparty/stb/stb_easy_font.h"
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <chrono>
-#include <iostream>
+#include <Illumo/Services/Logger.h>
 
 void
 windowSizeCallback(GLFWwindow* window, int width, int height) noexcept
@@ -47,11 +42,18 @@ RenderWindow::RenderWindow(const int width,
     envVars ? envVars->getVar("fullscreen").valueAsBool : false;
   this->vsyncEnabled = true;
   this->swapIntervalInitialized = false;
+  this->glfwInitialized = false;
   this->window = nullptr;
+}
 
-  /* Initialize the library */
-  if (!glfwInit())
-    std::exit(-1);
+bool
+RenderWindow::initialize()
+{
+  if (!glfwInit()) {
+    Logger::LogError("Failed to initialize GLFW");
+    return false;
+  }
+  glfwInitialized = true;
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -61,19 +63,25 @@ RenderWindow::RenderWindow(const int width,
   if (isFullScreen) {
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+    if (primaryMonitor == nullptr || mode == nullptr) {
+      Logger::LogError("Failed to query the primary monitor");
+      glfwTerminate();
+      glfwInitialized = false;
+      return false;
+    }
     window = glfwCreateWindow(
-      mode->width, mode->height, title.c_str(), primaryMonitor, nullptr);
+      mode->width, mode->height, windowTitle.c_str(), primaryMonitor, nullptr);
   } else {
-    window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+    window = glfwCreateWindow(
+      windowWidth, windowHeight, windowTitle.c_str(), nullptr, nullptr);
   }
-  Logger::LogTrace("Window created");
   if (!window) {
     Logger::LogError("Failed to create window");
-    std::cerr << "Failed to create window" << std::endl;
-    std::cerr << "Exiting cleanly." << std::endl;
     glfwTerminate();
-    std::exit(-1);
+    glfwInitialized = false;
+    return false;
   }
+  Logger::LogTrace("Window created");
   glfwGetWindowSize(window, &windowWidth, &windowHeight);
   if (envVars) {
     envVars->setVar("WinX", std::to_string(windowWidth));
@@ -90,9 +98,6 @@ RenderWindow::RenderWindow(const int width,
   glfwMakeContextCurrent(window);
   glfwSetWindowUserPointer(window, this);
   glfwSetWindowSizeCallback(window, windowSizeCallback);
-  glewExperimental = true;
-  // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
-
   // Set initial viewport size based on current framebuffer size
   int fbWidth = 0;
   int fbHeight = 0;
@@ -100,20 +105,22 @@ RenderWindow::RenderWindow(const int width,
   glViewport(0, 0, fbWidth, fbHeight);
   Logger::LogTrace("Viewport set");
 
-  /* Loop until the user closes the window */
-  GLenum err = glewInit();
-  Logger::LogTrace("Glew initialized");
-  if (GLEW_OK != err) {
-    Logger::LogError("Failed to initialize glew");
-    std::exit(-1);
-  }
-  const GLubyte* versionGL = glGetString(GL_VERSION);
-  std::string versionStr =
-    versionGL ? reinterpret_cast<const char*>(versionGL) : "Unknown";
-  std::string fullGLString = "OpenGL Context: " + versionStr;
-  Logger::LogInfo(fullGLString.c_str());
   syncPresentationMode();
-  // END WINDOW CREATION
+  return true;
+}
+
+std::unique_ptr<IRenderWindow>
+CreateRenderWindow(int width,
+                   int height,
+                   const std::string& title,
+                   IEnvVars* envVars)
+{
+  std::unique_ptr<RenderWindow> window =
+    std::make_unique<RenderWindow>(width, height, title, envVars);
+  if (!window->initialize()) {
+    return nullptr;
+  }
+  return window;
 }
 
 void
@@ -132,7 +139,7 @@ RenderWindow::syncPresentationMode()
 void
 RenderWindow::updateWindow()
 {
-  // Frame clear/draw/swap is owned by Renderer + Illumo::Render.
+  // Frame clear/draw/swap is owned by Renderer + Illumo::render.
   // Kept as a no-op hook for any legacy call sites.
 }
 
@@ -181,6 +188,9 @@ RenderWindow::reinitializeWindow(const int width,
                                  const int height,
                                  const std::string& title)
 {
+  (void)width;
+  (void)height;
+  (void)title;
   // ServiceLocator::provide<IRenderWindow, RenderWindow>(width, height, title);
 }
 
@@ -251,5 +261,8 @@ RenderWindow::~RenderWindow()
     glfwDestroyWindow(window);
     window = nullptr;
   }
-  glfwTerminate();
+  if (glfwInitialized) {
+    glfwTerminate();
+    glfwInitialized = false;
+  }
 }

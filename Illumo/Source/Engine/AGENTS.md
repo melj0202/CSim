@@ -4,15 +4,21 @@ This file specializes the repository `AGENTS.md` for `Illumo/Source/Engine/`.
 
 ## Scope and boundaries
 
-Engine hosts long-lived services, the render backend, module lifecycle, and
-the per-frame service/module sequence. App chooses product modules; Engine must
-remain independent of Game and Rulesets.
+Engine hosts the generic application runner, long-lived services, the render
+backend, module lifecycle, and the per-frame service/module sequence. A
+consumer-supplied application definition chooses the required product module;
+Engine must remain independent of Game and Rulesets.
 
 - Engine may depend on Foundation, Services, Rendering interfaces, and the
   platform-neutral window abstraction.
 - Concrete OpenGL backend creation is allowed only through the existing
   Rendering factory boundary.
 - Do not include game-domain types or register game commands here.
+- Own logger lifetime, system CLI dispatch, DebugModule composition, process
+  result handling, and the chrono update/render loop in the generic runner.
+- Treat `CreateIllumoApplication` as the narrow reverse seam: the platform
+  entry obtains declarative policy from the consumer without including its
+  types.
 
 ## Required invariants
 
@@ -44,7 +50,7 @@ or make module callbacks concurrent without an authorized architecture change.
 
 - `docs/packages/engine.md`
 - `docs/latex/sections/04-runtime-loop.tex`
-- `Illumo/Source/Tests/TestRuntimeUtilities.cpp` and module integration tests
+- `Illumo/Tests/TestRuntimeUtilities.cpp` and module integration tests
 
 Use MockBackend tests for lifecycle and queue behavior; use a Debug and Release
 startup/shutdown smoke when host, window, backend, or DebugModule composition

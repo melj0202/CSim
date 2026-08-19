@@ -5,37 +5,27 @@ This file specializes the repository `AGENTS.md` for
 
 ## Scope and boundaries
 
-Platform owns OS entry points and native save/load dialogs. Keep it thin: adapt
-process arguments and native UI results to App and Services contracts. Shared
-runtime behavior, simulation, command parsing, rendering policy, and resource
-ownership belong outside Platform.
+Platform is an Illumo system subsystem. It owns OS entry points and native
+save/load dialogs. Entry code obtains a consumer's declarative
+`IllumoApplicationDefinition` and passes it to the engine runner. Native dialog
+code implements the public Illumo platform contract without owning game state
+or persistence parsing.
 
-## Required invariants
-
-- Each entry point forwards the complete argument vector to the shared App
-  contract and maps its result to the platform process exit status.
-- Native dialogs return an explicit success/cancel/failure result without
-  mutating game state. File validation and persistence remain in Game/Services.
-- Dialog buffers, encodings, extensions, filters, parent windows, overwrite
-  behavior, and cancellation must be handled deliberately and tested on the
-  target OS.
-- Keep platform frameworks and headers out of cross-platform interfaces.
-- Do not duplicate or fork the main loop, parser, renderer, or save format by
-  platform.
+- Keep OS headers, frameworks, and handles inside the applicable platform
+  child.
+- Do not include IllumoGame, Game, or Rulesets types.
+- Do not duplicate the main loop, parser, renderer, or save format by platform.
+- Treat dialog cancellation as a normal empty result; selection must not mutate
+  game state.
 
 ## Support status
 
-Windows is the only supported and currently verified platform. Linux and
-macOS are stale scaffolds whose selected source paths do not currently satisfy
-the shared App/Services contracts. Do not claim portability from source
-presence or CMake branches. A port becomes supported only after native
-configure, compile, automated tests, startup/rendering, dialogs, and clean
-shutdown are verified and the documentation is updated.
+Windows is the only supported and currently verified platform. Linux and macOS
+are stale scaffolds. Source presence does not establish support; native
+configure, compile, launch, dialog, render, and shutdown evidence is required.
 
 ## Documentation and verification
 
 Use `docs/packages/platform.md`, the applicable child map, and the portability
 chapter. Native changes require a target-OS build and manual dialog/window
 smoke; static inspection is a limitation, not validation.
-
-Update this file only for durable cross-platform boundaries or support policy.

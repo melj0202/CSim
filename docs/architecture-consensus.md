@@ -1,7 +1,7 @@
 # Illumo — Architecture consensus (unified)
 
 **Status:** Single living document — **authoritative for later sessions**  
-**Last updated:** 2026-08-09
+**Last updated:** 2026-08-18
 
 This file **merges and supersedes** scattered design memory into one coherent story. Read this first; treat external PDFs and old agenda notes as **history** (§2).
 
@@ -14,7 +14,7 @@ This file **merges and supersedes** scattered design memory into one coherent st
 | Grok architecture reviews + local code review | Strengths, bugs, debt |
 | In-repo LaTeX design notes + decision log | Formal decision IDs (D-\*) |
 | `docs/current-issues.md` | Product/correctness punch list |
-| **Current code under `Illumo/Source/`** | **Wins** when anything conflicts |
+| **Current code under `Illumo/` and `IllumoGame/`** | **Wins** when anything conflicts |
 
 **Rule:** If this document and the code disagree, **code wins** until this file is updated in the same change set.
 
@@ -48,7 +48,14 @@ Optional deeper reading (not required to resume work):
 
 ## 0. One-line summary
 
-**Illumo is a cellular-automata learning sandbox in a modular-monolith shell: App owns composition, Illumo owns services, modules drive sim/UI, rendering is enroll-once + token stream (OpenGL + Mock). Production state is a signed-coordinate `SparseCellGrid` with infinite or finite toroidal topology; `CanvasView` presents a bounded camera region with RGB fade and one reusable texture/quad. The composition root injects `IBackend`; the production frame path is module dispatch → tokens; product UI remains primitive-composed. Dense `CellGrid`/`Canvas` remain compatibility fixtures only.**
+**The workspace separates the reusable `Illumo` static library from the
+`IllumoGame` cellular-automata simulator. Illumo owns the generic application
+runner, platform entry/dialogs, BuildInfo, SysCmdLine, host, services,
+rendering, assets, and module lifetime; IllumoGame owns only CA policy,
+configuration metadata, Game, Rulesets, persistence behavior, and its required
+module factory. Production state remains signed-coordinate `SparseCellGrid`; rendering
+remains an enroll-once token stream through `IBackend`; dense
+`CellGrid`/`Canvas` remain compatibility fixtures only.**
 
 ---
 
@@ -94,7 +101,8 @@ Retain arena / stack / pool allocators as learning code and optional utilities. 
 | `ChainedPoolAlloc<T>` | fixed-size free list, up to 4 chunks | Many same-sized objects with stable slots |
 | `MallocAlloc` / `IAllocator` | thin `malloc`/`free` | Baseline interchangeable heap |
 
-Headless coverage lives in `Illumo/Source/Tests/TestAllocators.cpp` (`Illumo.Alloc.*` CTest cases).
+Headless allocator coverage lives in `Illumo/Tests/TestAllocators.cpp`
+(`Illumo.Alloc.*` CTest cases).
 
 Live consumers:
 
@@ -171,8 +179,9 @@ Aspirational **general 2D engine** design (July 2026). Valuable as boundary thin
 
 Agreement across reviews:
 
-- Layered modular monolith is **appropriate**  
-- App owns modules; token path + MockBackend are real strengths  
+- The explicit library/product split is **appropriate**
+- The engine-owned application runner consumes a declarative IllumoGame module
+  factory; token path + MockBackend are real strengths
 - Scene-as-list is correct; dead graph/EntityTable should stay gone  
 - Main risks: native platform gaps and explicit resource/failure handling at
   rendering and service boundaries; the renderer now bounds queue/resource growth explicitly
@@ -182,19 +191,20 @@ Agreement across reviews:
 
 ## 3. Overall assessment
 
-Illumo is a **coherent layered modular monolith**:
+Illumo is a **coherent library consumed by one sibling product**:
 
 ```
-Platform
-  → App/CellMain          (product composition)
-  → Engine/Illumo         (owns services + module list)
-  → Modules               (CellGameModule, DebugModule)
-  → Game + Rulesets       (CA domain / rules)
-  → Rendering             (Scene list, drawables, Renderer, tokens)
-  → IBackend              (GLBackend | MockBackend)
+Illumo Platform/Runner    (entry, system CLI, chrono loop, Debug module)
+  → IllumoGame definition (CA defaults/CLI metadata + module factory)
+  → IllumoGameCore        (Game, Rulesets, persistence policy)
+  → Illumo::Illumo        (generic services + module lifetime)
+  → Illumo Rendering      (Scene, drawables, tokens, OpenGL)
+  → IBackend              (GLBackend | test-only MockBackend)
 ```
 
-It is an **engine-shaped application**, not a cleanly separated “engine product + game product.” That is **intentional at current scale**.
+This is a source and target boundary inside one repository, not an installable
+SDK, DLL ABI, second repository, or authorization for speculative general
+engine work.
 
 **Verdict:** Functional and reasonably testable. Residual risk is mostly **product correctness holes** and **documented debt**, not a need for ECS or a full rewrite.
 
@@ -204,12 +214,12 @@ It is an **engine-shaped application**, not a cleanly separated “engine produc
 
 | Area | Consensus |
 |------|-----------|
-| **App owns composition** | `CellMain`: `Init` → `addModule` → `StartModules` (D-E1). Engine does not construct Game modules. |
+| **Declarative composition seam** | Illumo's runner owns process/system sequencing; `CreateIllumoApplication` supplies CA defaults/CLI data and a required-module factory without creating an Illumo-to-Game dependency (D-E7). |
 | **Module lifecycle** | `Start` / `Update` / `DispatchDrawables` / `Exit` is clear. |
 | **Render split** | Enroll once; emit tokens per frame; backend executes (D-R1–D-R8, D-R10). |
 | **Rulesets** | Strategy hierarchy; pure `nextState` + `evalCell`; double-buffered generation (D-P3). |
 | **Scene model** | Per-frame drawable list only (D-E3, D-E4). |
-| **Tests** | Headless `IllumoTests`: 172 source-registered, granular process-isolated CTest cases spanning rules, infinite/toroidal sparse topology, bounded finite presentation, compatibility canvas, configuration UI, game commands/save-load, input/services, runtime utilities, tokens, and renderer injection; Clang/LLVM production-line gate (D-T1). |
+| **Tests** | Independent `IllumoTests` and `IllumoGameTests` runners, plus consumer-header smoke, exact process-isolated cases, `IllumoWorkspace` aggregation, and combined Clang/LLVM coverage (D-T1). |
 | **Debt hygiene** | Dead experiments under `archive/` rather than half-live. |
 
 ---
@@ -220,24 +230,25 @@ It is an **engine-shaped application**, not a cleanly separated “engine produc
 
 | Package | Role |
 |---------|------|
-| **App/** | Product composition (`CellMain`). |
-| **Engine/** | Host: Illumo, modules, frozen `IllumoContext`. |
-| **Game/** | CA domain + presentation (`SparseCellGrid`, `CanvasView`, `CellGameModule`, `CellContext`); dense Canvas types are compatibility-only. |
-| **Rulesets/** | CA rules (GoL family, Wireworld, …). |
-| **Rendering/** | Reusable 2D front end, managed texture/shader assets, Scene list, tokens, OpenGL, Mock. |
-| **Services/** | Log, env, input, console UI, save/load API, allocators. |
-| **Foundation/** | Macros and math aliases (`MathTypes.h`). |
-| **Platform/** | OS entry + native dialogs. |
+| **Illumo/Source/Engine/** | Generic application runner, host, modules, and frozen `IllumoContext`; supported contracts are under `Illumo/Include/Illumo/Engine`. |
+| **IllumoGame/Source/Game/** | CA definition/config, module factory, domain + presentation (`SparseCellGrid`, `CanvasView`, `CellGameModule`, `CellContext`); dense Canvas types are compatibility-only. |
+| **IllumoGame/Source/Rulesets/** | CA rules (GoL family, Wireworld, …). |
+| **Illumo/Source/Rendering/** | Reusable 2D front end, managed assets, Scene list, tokens, and private OpenGL implementation; supported contracts are under `Illumo/Include/Illumo/Rendering`. |
+| **Illumo/Source/Services/** | Generic log, env, input, system CLI, branded console UI, and allocators. |
+| **Illumo/Source/Foundation/** | BuildInfo, macros, and implementation support; public aliases/utilities are under `Illumo/Include/Illumo/Foundation`. |
+| **Illumo/Source/Platform/** | OS entry, public SaveLoad implementation boundary, and native dialogs. |
 | **`Illumo/Assets/`** | Runtime files outside `Illumo/Source/`; there is no `Source/Assets` package. |
-| **Tests/** | Headless suite. |
+| **Illumo/Tests, IllumoGame/Tests** | Independent library and product suites. |
 
 House style (D-008 / `docs/contributing.md`): avoid `auto`; avoid namespaces (prefer static classes/structs); no recursion; third-party via PR — unless a later decision waives.
 
 ### 5.2 Ownership and lifetime
 
 - **Illumo** owns long-lived services with `unique_ptr` (window, renderer, camera, env, input, scene, command line, …).  
-- **IllumoContext** is a **non-owning** pointer bag for modules (D-E5: frozen for the two shipped modules; validate at `Start`).  
-- **App** decides which modules exist.  
+- **IllumoContext** is a **non-owning** pointer bag frozen as a public source
+  contract (D-E5/D-E6); modules validate their required fields at `Start`.
+- **Illumo's runner** registers DebugModule and invokes the consumer-supplied
+  required-module factory. The factory definition remains in IllumoGame.
 - Do not grow the bag for convenience; a third module with different needs should take **explicit constructor dependencies**.  
 - Prefer explicit references for domain logic over “look up everything from the bag.”
 
@@ -259,25 +270,32 @@ class IModule {
 | DispatchDrawables | Contribute what should draw this frame |
 | Exit | Teardown module-owned state |
 
-Product modules: `CellGameModule` always; `DebugModule` only in Debug. Release
-neither compiles nor registers `DebugModule` (D-B1).
-
-`StartModules` erases a module whose `Start` returns `false`, so only accepted
-modules receive later `Update`, `DispatchDrawables`, and `Exit` calls.
+The application definition supplies `CellGameModule` as the required module;
+the engine runner registers `DebugModule` as optional in Debug. A required
+failure rolls back every accepted module and fails startup; an optional failure
+remains inactive. Startup and rollback exceptions are contained and logged
+(D-B1/D-E7).
 
 ### 5.4 Frame loop (production)
 
 ```
-CellMain
-  → Illumo::Init()                    // services + GLBackend construction
-       backend = make_unique<GLBackend>(window)
-       renderer = make_unique<Renderer>(..., move(backend))
-  → addModule(CellGameModule)
-  → addModule(DebugModule)            // Debug builds
-  → StartModules()                    // erase modules whose Start returns false
+Illumo Platform::main
+  → CreateIllumoApplication()         // IllumoGame declarative definition
+  → RunIllumoApplication(argc, argv)  // engine logger/CLI/loop ownership
+  → Illumo(IllumoConfig{"IllumoGame", config path})
+  → application.applyDefaults()       // IllumoGame CA defaults
+  → SysCmdLine::ParseCommandLine      // engine parser + CA option metadata
+  → Illumo::initialize()              // fallible window/backend factories
+       backend = CreateOpenGLBackend(window)
+       backend->Initialize()          // exactly once, owned by Illumo
+       renderer = Renderer(..., unique_ptr<IBackend>)
+  → application.createRequiredModule() → CellGameModule
+  → addModule(required module, Required)
+  → addModule(DebugModule, Optional)  // engine-owned Debug builds
+  → startModules()                    // rollback on required failure
   loop:
-    Update(dt)   // InputManager → Camera → modules.Update
-    Render()                            // single production path (D-R13)
+    update(dt)   // InputManager → Camera → modules.Update
+    render()                            // single production path (D-R13)
       scene.ClearDrawables()          // Scene = per-frame FrameRenderList (D-E4)
       modules.DispatchDrawables(scene)
       renderer.BeginFrame()
@@ -288,10 +306,11 @@ CellMain
 There is **no** env-gated alternate product frame path. `Renderer::RenderProofQuad`
 remains for headless token e2e tests only.
 
-Startup options are parsed during `Illumo::Init` after persisted environment
-values and defaults are loaded. Supplied window and canvas dimensions override
-those values before the render window is constructed; `--help` and `--version`
-terminate after printing their output.
+Illumo construction loads only generic host defaults. The engine runner invokes
+IllumoGame's CA defaults callback, then its own parser consumes standard window
+flags plus game-provided canvas/help descriptors before host initialization.
+`--help` and `--version` return explicit process results; library code does not
+call `std::exit`.
 
 Typical combined draw order (Scene layers, one main pass): World canvas;
 UI splash + console + editor cursor; Debug FPS (Debug builds via DebugModule).
@@ -334,9 +353,9 @@ IBackend::SubmitCommandQueue
 | **Renderer** | Backend-neutral: owns style table; frame setup; walk layers; submit. Depends only on `IBackend*` (D-R11). |
 | **IBackend** | Allocates typed slot+generation handles; validates create/replace/destroy/query operations; queues and submits. GPU objects live in backend registries. |
 | **AssetManager** | Canonical-path texture/shader cache with reference counts, stable per-request fallback resources (the shader fallback follows the custom 2D binding contract), synchronous or one-worker CPU loading, render-thread `pump`, explicit reload, and Debug timestamp polling. The Debug demo manages both its atlas and sprite shader through this path. |
-| **Composition (Illumo::Init)** | Constructs the production backend via `CreateOpenGLBackend` and injects it into `Renderer` with `takeOwnership=true`; calls `ensureBuiltinStyles()`. |
+| **Composition (`Illumo::initialize`)** | Calls fallible window/backend factories, initializes the backend exactly once, transfers `unique_ptr<IBackend>` to Renderer, and calls `ensureBuiltinStyles()`. |
 | **GLBackend / GLDevice** | Real OpenGL under `Rendering/OpenGL/`: handle registries, execute tokens, PBO texture updates, bind-state tracking, blend-func-on-enable (D-R5). |
-| **MockBackend** | Headless under `Rendering/Mock/`: record creates + command order; injected for tests. |
+| **MockBackend** | Exposed only by `Illumo::TestSupport`: records creates + command order for headless tests. |
 
 **Layers vs passes:** layers are composition buckets on the default framebuffer
 (single clear). They are not multi-target GPU render passes. Unimplemented pass
@@ -601,7 +620,8 @@ VSync, and fullscreen. Positive dimensions apply finite toroidal topology;
 worker and intentionally start a fresh centered world before persisting values.
 Larger high-contrast labels, readable ruleset names, split keyboard help, and a
 selected-setting explanation keep the Release surface legible. Its Exit action
-requests window closure so the App main loop performs normal engine shutdown.
+requests window closure so the Illumo application runner performs normal engine
+shutdown.
 Animation remains local value state: the overlay eases into place, rows reveal
 in sequence, selection glides, and changed values pulse without adding widgets
 or blocking input.
@@ -668,15 +688,16 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-005** | Each CA variant is a `RuleSet` subclass (factory in CellContext; registry later optional). |
 | **D-006** | Modes = `CellState` enum in module (not archived State class hierarchy). |
 | **D-008** | House style: avoid `auto`; no namespaces; no recursion; third-party via PR. |
-| **D-N1** | Adopt Illumo as the project, product, CMake-target, runtime, and save-format name; keep the existing `Illumo` host class. |
-| **D-B1** | `DebugModule` is Debug-build product composition only; Release must neither compile nor register it. |
+| **D-N1** | Historical unified Illumo identity; superseded for product/executable/test identity by D-N2 while retained for the library, repository, host, and `.illumo` format. |
+| **D-N2** | `IllumoGame` is the simulator executable, window, CLI/help/version, console, and product-visible identity. |
+| **D-B1** | `DebugModule` is composed by the engine runner only in Debug; Release must neither compile nor register it. Refined by D-E7. |
 | **D-CLI1** | Services own generic console mechanics; `CellGameModule` registers domain commands and help/completion metadata. |
 | **D-UI1** | Console editing and caret placement use measured text geometry; one enlarged batch must fit a full help page. |
 | **D-UI2** | Console history wraps and scrolls by visual lines using shared mounted/floating layout metrics. |
 | **D-UI3** | Console can be mounted or floating; floating mode supports title-bar drag and corner resize. |
 | **D-DOC1** | Established one first-party documentation tree; refined by D-DOC2. |
 | **D-DOC2** | Canonical technical documentation remains under `docs/`; `illumo.tex` is the prose book and `architecture-map.tex` the chart pack. Root/nested `AGENTS.md` and `.agent/` are operational-guidance exceptions. |
-| **D-T1** | One exact CTest entry per logical behavior; shared filtered runner only for compile efficiency; Clang/LLVM `IllumoCoverage` enforces at least 85% headless-testable production line coverage. |
+| **D-T1** | Independent compile-efficient `IllumoTests` and `IllumoGameTests` runners expose exact cases; `IllumoWorkspace` aggregates them and combined Clang/LLVM coverage enforces at least 85% production line coverage. |
 
 ### 6.2 Rendering (D-R\*)
 
@@ -693,15 +714,15 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 | **D-R8** | Inject `IBackend*` into Renderer always; production composition owns backend via `CreateOpenGLBackend` + ownership transfer; tests inject MockBackend. |
 | **D-R9** | String-named uniforms = debt if a second *real* GPU API appears. |
 | **D-R10** | Production drawables pure-token; hybrid `Draw()` for tests/stubs only. |
-| **D-R11** | Construct concrete backend at composition root (`Illumo::Init` / `CreateOpenGLBackend`); `Renderer` never includes OpenGL types. |
+| **D-R11** | `Illumo::initialize` constructs through `CreateOpenGLBackend`, owns the one fallible backend `Initialize` call, and transfers ownership; `Renderer` never includes OpenGL types. |
 | **D-R12** | Historical fixed-queue policy; superseded by bounded vector growth in D-R16. |
-| **D-R13** | Single production frame path in `Illumo::Render`; `RenderProofQuad` is test-only. |
+| **D-R13** | Single production frame path in `Illumo::render`; `RenderProofQuad` is test-only. |
 | **D-R14** | Scene layers (World/UI/Debug) + Renderer-owned built-in `RenderStyle` table. One main pass; layers ≠ GPU render passes. |
 | **D-R15** | Render primitives (`Shape`/`Sprite`/`Text`) composed on a `GameVisual` host; product drawables embed/compose via GameVisual. |
 | **D-R16** | Typed slot+generation resource/style handles; validated replace/destroy/query; stale operations log and no-op. CommandQueue reserves 2,048, grows, and rejects only at a configurable 65,536 default ceiling. |
 | **D-R17** | AssetManager owns canonical-path texture/shader caching, references, one CPU worker, stable fallbacks, render-thread pump/replacement, explicit reload, and Debug 500 ms timestamp polling. |
 | **D-R18** | Painter-correct 2D stream: parent/local transforms, normalized pivots, atlas regions/flips, stable cross-type draw order, adjacent-only batching, bounded dynamic quad buffers, and caller-updated passive sprite animation. |
-| **D-R19** | Illumo remains a CA application with a reusable 2D renderer, not a general engine. Extract a standalone renderer only after a second real project proves the public boundary. |
+| **D-R19** | Superseded by D-E6: the approved sibling IllumoGame consumer establishes the explicit library boundary without claiming a second independent product or a general engine. |
 | **D-R20** | Product UI is composed from `GameVisual` shapes/text with shared value-only `UiTheme` styling. Keep console, label, and splash behavior in their existing owners; do not introduce a retained widget tree. |
 | **D-007** | Enroll resources outside the per-frame stream (frame queue = bind/draw/update). |
 | **D-WW1** | Wireworld: ruleset-aware seed + sticky head/tail/conductor brush keys. |
@@ -752,11 +773,13 @@ Full formal prose also lives in `docs/latex/sections/09-design-decision-log.tex`
 
 | ID | Decision |
 |----|----------|
-| **D-E1** | Module registration lives in App; Engine knows only `IModule`. |
+| **D-E1** | Historical App-owned module registration; refined by D-E7 while Engine still knows only `IModule`. |
 | **D-E2** | InputManager has no Game types. |
 | **D-E3** | EntityTable archived; cells are not entities. |
 | **D-E4** | Scene is drawable list only (no graph). |
 | **D-E5** | Freeze IllumoContext; validate at Start; third module → explicit deps. |
+| **D-E6** | One repository contains the `Illumo` static library and sibling `IllumoGame` product. Public headers live under `Illumo/Include/Illumo`; no install package, DLL ABI, or second repository is implied. Its App/Platform ownership clause is superseded by D-E7. |
+| **D-E7** | Illumo owns platform entry/dialogs, BuildInfo, SysCmdLine, logging lifetime, DebugModule composition, and the frame loop. IllumoGame contains only CA Game/Rulesets/configuration metadata and its required-module factory. |
 | **D-C1** | Canvas dual role intentional until scale forces split. |
 | **D-C2** | **Refines D-C1:** extract `CellGrid` domain; `Canvas` extends it for view/GPU. |
 | **D-C6** | Configurable infinite or finite toroidal sparse topology, Release F1 configuration, and version 3 topology persistence. |
@@ -791,7 +814,7 @@ From local code review / `docs/current-issues.md` (fix when touching related cod
 
 | # | Severity | Issue |
 |---|----------|--------|
-| 1 | ~~bug~~ | **Resolved 2026-08-06:** `StartModules` erases modules that fail `Start`; `CellGameModule` / `DebugModule` also early-return from `Update` / `DispatchDrawables` when core state is missing. |
+| 1 | ~~bug~~ | **Resolved and strengthened by D-E6:** optional rejection destroys the module immediately; required rejection rolls back accepted modules and fails startup; exceptions are contained. |
 | 2 | ~~bug~~ | **Resolved 2026-08-06:** Wireworld left-paint uses a sticky brush selected with `1`/`H` (head), `2` (empty), `3`/`T` (tail), `4` (conductor); right-click still clears to empty. |
 | 3 | ~~bug~~ | **Resolved 2026-08-06:** Startup seed is ruleset-aware — GoL-family glider for binary rules; Wireworld plants a horizontal conductor with a head+tail electron. |
 
@@ -813,9 +836,11 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
   default ceiling, logs one rejection warning per frame, and exposes high-water
   and rejection counts (D-R16); raw pointer payloads must still stay alive
   until submit
-- CMake source/config duplication was resolved on 2026-08-02 with shared source lists and a common target-configuration helper; the repository root forwards to the live `Illumo/CMakeLists.txt` entrypoint
-- Runtime configuration is one `envvars.json` beside the executable; CMake seeds
-  it from the tracked `Illumo/envvars.json` only when absent, so launch working
+- CMake configuration is centralized through shared target helpers; the
+  repository root is the canonical `IllumoWorkspace` entry point and adds the
+  sibling `Illumo` and `IllumoGame` projects.
+- Runtime configuration is one `envvars.json` beside IllumoGame; CMake seeds
+  it from tracked `IllumoGame/envvars.json` only when absent, so launch working
   directories cannot select or overwrite a different configuration. The F1
   product menu updates supported simulation, topology, and display values in
   both Release and Debug.
@@ -827,7 +852,7 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 - Deferred boundary work (do when it hurts): further CanvasView presentation/
   upload separation, capability-oriented module contexts instead of the frozen bag
   (D-E5), rename `Scene` → `FrameRenderList` only if the name causes real
-  confusion, multi-library CMake split, logger/SaveLoad global removal.
+  confusion, logger global removal, and further capability-oriented contexts.
 
 ### 8.4 Looks fine (do not “fix” as bugs)
 
@@ -882,7 +907,8 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 10. Font atlases, UTF-8 text layout, clipping, and nine-slice UI.
 11. Chunked tilemaps, sprite culling, and particle emitters.
 12. Multiple cameras, offscreen targets, compositing, and post-processing.
-13. Standalone renderer extraction only after a second real project proves the boundary.
+13. Keep the established Illumo public boundary narrow; add install/export or
+    shared-library ABI work only for a real distribution requirement.
 14. Non-string uniforms / second real backend (OpenGL factory already at composition).
 15. Data-driven life-like rule family (JSON birth/survive).
 16. Narrow `IllumoContext` into capability bags only when a third module needs different deps (D-E5).
@@ -898,7 +924,9 @@ From `gpt_illumo_arch_assessment.pdf` and later boundary-consolidation work:
 ## 11. Core design principles (merged)
 
 1. **CA learning sandbox first** — not a general engine product.  
-2. **Ownership explicit** — Illumo owns services; App owns module set; context does not own.  
+2. **Ownership explicit** — Illumo owns system/runtime behavior; IllumoGame owns
+   only CA policy and supplies its module through a declarative factory; context
+   does not own.
 3. **Boundaries over cleverness** — abstract volatility (GLFW, GL, future compute); keep the stable sparse-domain/bounded-view split explicit.
 4. **Sim produces complete state; render observes** — double-buffer; no draw mid-generation.  
 5. **Tokens for draw submission** — enroll once, emit commands, backend executes.  
@@ -944,7 +972,8 @@ Resolved highlights (do not re-open without a new decision ID):
 - CPU color fade → **restored** (RGB display)  
 - Wireworld → implemented  
 - MacroDefs toxicity → D-F1 deferred  
-- Project/product naming → D-N1 (`Illumo`)
+- Library/repository naming → D-N1 (`Illumo`); product identity → D-N2
+  (`IllumoGame`)
 
 ---
 
@@ -967,21 +996,23 @@ Resolved highlights (do not re-open without a new decision ID):
 
 | Concern | Typical location |
 |---------|------------------|
-| Frame loop / composition | `Illumo/Source/App/CellMain.cpp` |
-| Host / services / modules | `Illumo/Source/Engine/Illumo.*` |
-| CA module / modes | `Illumo/Source/Game/CellGameModule.*`, `CellContext.h` |
-| Sparse domain cell storage | `Illumo/Source/Game/SparseCellGrid.*` |
-| Bounded world-space view + fade | `Illumo/Source/Game/CanvasView.*` |
-| Compatibility dense storage | `Illumo/Source/Game/CellGrid.*`, `Illumo/Source/Game/Canvas.*` |
-| Rules | `Illumo/Source/Rulesets/*` |
-| Tokens / Renderer / resources | `Illumo/Source/Rendering/Renderer.h`, `RenderCommand.h`, `CommandQueue.h`, `ResourceHandle*`, `AssetManager.*` |
+| Application runner / frame loop | `Illumo/Source/Engine/Application.cpp` |
+| Game definition / required module factory | `IllumoGame/Source/Game/IllumoGameApplication.cpp` |
+| Public library API | `Illumo/Include/Illumo/*` |
+| Host / services / modules | `Illumo/Source/Engine/Illumo.cpp` plus public Engine headers |
+| CA module / modes | `IllumoGame/Source/Game/CellGameModule.*`, `CellContext.h` |
+| Sparse domain cell storage | `IllumoGame/Source/Game/SparseCellGrid.*` |
+| Bounded world-space view + fade | `IllumoGame/Source/Game/CanvasView.*` |
+| Compatibility dense storage | `IllumoGame/Source/Game/CellGrid.*`, `Canvas.*` |
+| Rules | `IllumoGame/Source/Rulesets/*` |
+| Tokens / Renderer / resources | `Illumo/Include/Illumo/Rendering/*`, `Illumo/Source/Rendering/*` |
 | 2D primitives / animation | `Illumo/Source/Rendering/Primitives/*` |
 | Debug renderer assets | `Illumo/Assets/RendererDemo/*` |
 | GL execute | `Illumo/Source/Rendering/OpenGL/*` |
-| Mock | `Illumo/Source/Rendering/Mock/*` |
-| Console | `Illumo/Source/Services/CommandLine.*` |
+| Mock/test support | `Illumo/TestSupport/Include/Illumo/Testing/*` |
+| Console / system CLI | `Illumo/Source/Services/CommandLine.*`, `SysCmdLine.cpp` |
 | Platform bootstrap/dialogs | `Illumo/Source/Platform/*` |
-| Headless tests | `Illumo/Source/Tests/*` |
+| Headless tests | `Illumo/Tests/*`, `IllumoGame/Tests/*` |
 | Dead experiments | `archive/dead-engine/`, `archive/dead-render/`, `archive/old-states/` |
 
 ### Appendix B — What not to do next

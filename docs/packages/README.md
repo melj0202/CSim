@@ -1,22 +1,22 @@
 # Source-package maps
 
-These files preserve the useful ownership notes that formerly lived as README
-files beside source code. They are documentation, not build inputs.
+These files summarize current ownership across the sibling Illumo and
+IllumoGame projects. They are documentation, not build inputs.
 
 | File | Area |
 |---|---|
-| `source-layout.md` | Entire `Illumo/Source` tree |
-| `app.md` | Product composition and main loop |
-| `engine.md` | Runtime host, context, and modules |
-| `game.md` | Canvas, simulation module, editing, and domain commands |
-| `rendering.md` | Reusable 2D renderer, resources, styles, primitives, and boundaries |
-| `services.md` | Logging, configuration, input, console, and save/load API |
-| `foundation.md` | Dependency-light utilities |
-| `assets.md` | Managed texture/shader loading and first-party runtime files under `Illumo/Assets` (outside `Source`) |
-| `platform.md` | Platform contract and port map |
+| `source-layout.md` | Workspace, library, product, and test trees |
+| `app.md` | Illumo application definition, generic runner, and process loop |
+| `engine.md` | Illumo host, context, modules, and failure semantics |
+| `game.md` | IllumoGame canvas, simulation, editing, and persistence |
+| `rendering.md` | Public renderer boundary and private OpenGL implementation |
+| `services.md` | Generic Illumo services versus IllumoGame policy |
+| `foundation.md` | Dependency-light public utilities |
+| `assets.md` | Illumo runtime files and product configuration staging |
+| `platform.md` | Illumo platform contract and port map |
 | `platform-linux.md` | Linux scaffold status |
 | `platform-macos.md` | macOS scaffold status |
-| `tests.md` | Canonical headless suite |
+| `tests.md` | Split test ownership and aggregate workflow |
 
 The canonical architecture remains `../architecture-consensus.md`. Operational
-rules live in the root and nested `AGENTS.md` hierarchy, not in these maps.
+rules live in the root and nested `AGENTS.md` hierarchy.

@@ -1,22 +1,22 @@
 # Source layout
 
-Platform-independent application code lives here. OS-specific entry points and native helpers are under `Platform/`.
+The repository root is the canonical CMake workspace. `IllumoGame` depends on
+the static `Illumo` library; the library has no Game or Rulesets dependency.
 
-| Package | Role |
-|---------|------|
-| **App/** | Application entry after platform bootstrap (`CellMain`) |
-| **Engine/** | Runtime host: module API, Illumo services/lifecycle, frozen context, Debug-only overlay |
-| **Game/** | Cellular-automata game domain (canvas, game module, editor tools) |
-| **Rulesets/** | CA rule implementations |
-| **Rendering/** | Typed resources, managed texture/shader assets, painter-correct primitives/`GameVisual`, Scene layers, token path, OpenGL, MockBackend |
-| **Services/** | Shared services: logging, env vars, input, CLI (token UI), allocators, save/load API |
-| **Foundation/** | Low-level shared bits: macros, build info, math helpers |
-| **Assets/** | First-party runtime asset data copied beside the executable |
-| **Platform/** | Windows / Linux / macOS ports |
-| **Tests/** | Headless suite (`IllumoTests`): mock backend, rules, canvas, UI tokens |
+| Path | Role |
+|---|---|
+| `Illumo/Include/Illumo/` | Supported public headers consumed as `<Illumo/...>` |
+| `Illumo/Source/Engine/` | Application runner, host, module lifetime, context, Debug module implementation |
+| `Illumo/Source/Foundation/` | Build metadata and generic implementation support |
+| `Illumo/Source/Services/` | Logging, environment, input, SysCmdLine, generic console, allocators |
+| `Illumo/Source/Rendering/` | Renderer plus private window/OpenGL implementation |
+| `Illumo/Source/Platform/` | OS entry points and native save/load dialogs |
+| `Illumo/TestSupport/Include/` | Test-only `Illumo::TestSupport` API |
+| `Illumo/Tests/` | `Illumo.*` library cases |
+| `IllumoGame/Source/Game/` | CA defaults/CLI metadata/module factory, simulation, presentation, editor, persistence |
+| `IllumoGame/Source/Rulesets/` | CA transitions and palettes |
+| `IllumoGame/Tests/` | `IllumoGame.*` product cases |
 
-Runtime fonts and related licensed files live under `Illumo/Assets/`; there is
-no `Illumo/Source/Assets/` package. Historical / abandoned experiments live
-under `archive/` at the repo root and are not part of the build. This file and
-all other first-party package maps live under `docs/packages/`; source
-directories contain implementation plus scoped operational `AGENTS.md` files.
+`Illumo/Shader`, `Illumo/Assets`, notices, dependencies, and licenses remain
+library-owned. `IllumoGame/envvars.json` is product-owned. Historical material
+under `archive/` is not built.

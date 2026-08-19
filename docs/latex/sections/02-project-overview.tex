@@ -1,19 +1,28 @@
 \section{Project overview}
 \label{sec:overview}
 
-\subsection{What Illumo is}
-Illumo is an interactive \textbf{cellular automata} (``cell'') simulator with a
-2D canvas, multiple rule sets (Game of Life, Brian's Brain, Wireworld, \ldots),
-camera navigation, edit/run modes, save/load hooks, and a small in-app command /
-debug surface. Rendering is currently OpenGL via GLFW/GLEW on Windows. Linux
-and macOS retain unsupported source/CMake scaffolding whose entry points do not
-match the current shared bootstrap APIs.
+\subsection{What the workspace contains}
+The repository has two sibling projects with one-way dependency flow.
+\textbf{Illumo} is a static C++ library containing the reusable host,
+application runner, platform layer, foundation, services, rendering, generic
+console/UI, assets, and Debug module.
+\textbf{IllumoGame} is the interactive cellular-automata simulator that consumes
+Illumo through supported \texttt{<Illumo/...>} headers. It owns the canvas,
+rulesets, simulation and persistence policy, product commands, CA defaults, and
+a declarative application definition. It contains no process entry, native
+dialog implementation, logging lifetime, system parser, or frame loop.
+
+IllumoGame supports multiple rule sets (Game of Life, Brian's Brain,
+Wireworld, \ldots), camera navigation, edit/run modes, save/load, and a compact
+in-app command/debug surface. Rendering is OpenGL via GLFW/GLEW on the supported
+Windows path. Linux and macOS retain unsupported scaffolding and are not
+promoted by the project split.
 
 \begin{inferencebox}
-Historically this grew from a simpler GoL program into a mini engine shell
-(``Illumo''): modules, env vars, input contexts, backend interfaces, Tracy hooks.
-The product goal remains a cell simulator; the engine shape is partly for skill
-practice and multi-API future-proofing.
+Illumo remains an engine-shaped library for a concrete product, not a claim of
+being a general-purpose game engine. D-E6 records the explicit boundary and
+keeps broader ECS, render-graph, scene-graph, and multi-backend work out of
+scope until a real need appears.
 \end{inferencebox}
 
 \subsection{High-level system diagram}
@@ -24,36 +33,30 @@ practice and multi-API future-proofing.
   box/.style={draw, rounded corners, align=center, inner sep=6pt, minimum height=1.1cm},
   arr/.style={-{Latex}, thick}
 ]
-  \node[box, fill=blue!8] (plat) {Platform\\entry + SaveLoad};
-  \node[box, fill=blue!8, right=1.1cm of plat] (app) {App\\CellMain};
-  \node[box, fill=green!10, right=1.1cm of app] (eng) {Engine\\Illumo + modules};
-  \node[box, fill=orange!10, below=1.0cm of eng] (game) {Game + Rulesets};
-  \node[box, fill=purple!8, right=1.1cm of eng] (rnd) {Rendering\\tokens / Backend};
-  \node[box, fill=gray!10, below=1.0cm of plat] (svc) {Services + Foundation};
+  \node[box, fill=orange!10] (game) {IllumoGame\\Game + Rulesets\\application definition};
+  \node[box, fill=green!10, right=2.0cm of game] (lib) {Illumo static library\\Application + Platform + Engine\\Foundation + Services + Rendering};
+  \node[box, fill=purple!8, below=1.0cm of lib] (gl) {private OpenGL backend\\Illumo assets + licenses};
+  \node[box, fill=gray!10, below=1.0cm of game] (tests) {IllumoGameTests\\IllumoTests + TestSupport};
 
-  \draw[arr] (plat) -- (app);
-  \draw[arr] (app) -- (eng);
-  \draw[arr] (eng) -- (rnd);
-  \draw[arr] (eng) -- (game);
-  \draw[arr] (svc) -- (eng);
-  \draw[arr] (svc) -- (app);
+  \draw[arr] (game) -- node[above]{\scriptsize \texttt{Illumo::Illumo}} (lib);
+  \draw[arr] (lib) -- (gl);
+  \draw[arr] (tests) -- (game);
+  \draw[arr] (tests) -- (lib);
 \end{tikzpicture}
 \end{center}
 
 \subsection{Runtime one-liner}
-Platform \texttt{main} $\rightarrow$ \symbolref{CellMain} $\rightarrow$ construct
-\symbolref{Illumo} $\rightarrow$ \symbolref{Init} (services + modules) $\rightarrow$
-loop \{\,\symbolref{Update}, \symbolref{Render}\,\} until window close.
+Illumo platform entry $\rightarrow$ \symbolref{CreateIllumoApplication}
+$\rightarrow$ engine-owned \symbolref{RunIllumoApplication} applies supplied
+game defaults and metadata-driven CLI $\rightarrow$ construct and fallibly
+initialize \symbolref{Illumo} $\rightarrow$ register the supplied required game
+module and engine-owned optional Debug module $\rightarrow$ \texttt{std::chrono} loop
+\{\,\symbolref{update}, \symbolref{render}\,\} until window close.
 
 \subsection{Non-goals (current)}
-\begin{openbox}
-Confirm or rewrite. Draft non-goals:
 \begin{itemize}
-  \item Not a general-purpose AAA renderer.
-  \item Not multiplayer / networking.
-  \item Not a full ECS game engine (the unused entity scaffolding is archived,
-        not part of the live path).
-  \item Restoring and validating Linux/macOS support is secondary to the
-        supported Windows path for now.
+  \item No install/export package, shared DLL, or stable binary ABI.
+  \item No general-purpose AAA renderer, full ECS, or speculative framework.
+  \item No multiplayer or networking.
+  \item No claim that Linux or macOS is supported until native validation exists.
 \end{itemize}
-\end{openbox}

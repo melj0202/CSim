@@ -1,37 +1,62 @@
 \section{Runtime loop and modules}
 \label{sec:runtime}
 
-\subsection{CellMain}
-\pathref{App/CellMain.cpp} owns logger init/shutdown and the frame loop:
+\subsection{Illumo application runtime}
+\pathref{Illumo/Source/Engine/Application.cpp} owns logger lifetime, argument
+parsing mechanics, module registration, the frame loop, and the explicit
+process exit code. IllumoGame supplies only declarative game metadata and
+callbacks through \symbolref{IllumoApplicationDefinition}:
 \begin{lstlisting}
-// conceptual
-Logger::initLogger();
-Illumo* illumo = new Illumo(argc, argv);
-illumo->Init();
-while (!illumo->ShouldClose()) {
-  double dt = /* glfw time delta */;
-  illumo->Update(dt);
-  illumo->Render();
+int RunIllumoApplication(int argc, char** argv,
+                         IllumoApplicationDefinition application) {
+  LoggerLifetime logger;
+  Illumo illumo(/* application name + environment path */);
+  application.applyDefaults(&illumo.environment());
+  if (SysCmdLine::ParseCommandLine(argc, argv, &illumo.environment(),
+                                   application.commandLine).shouldExit())
+    return /* requested exit code */;
+  if (!illumo.initialize()) return 1;
+  illumo.addModule(application.createRequiredModule(), Required);
+  illumo.addModule(make_unique<DebugModule>(), Optional); // Debug only
+  if (!illumo.startModules()) return 1;
+  while (!illumo.shouldClose()) {
+    illumo.update(/* steady_clock delta */);
+    illumo.render();
+  }
+  illumo.shutdown();
+  return 0;
 }
-illumo->Shutdown();
 \end{lstlisting}
+The engine-owned platform entry obtains the game definition from
+\symbolref{CreateIllumoApplication} and invokes this runner. No loop decision
+depends directly on GLFW. Help/version and validation may return before
+graphics initialization.
 
-\subsection{Illumo as composition root}
-\symbolref{Illumo} owns the long-lived services (\symbolref{EnvVars},
-\symbolref{RenderWindow}, \symbolref{Camera}, \symbolref{Renderer},
-\symbolref{AssetManager}, \symbolref{CommandRegistry}, \symbolref{CommandLine},
-\symbolref{InputManager}, \symbolref{Scene}) and a vector of
-\symbolref{IModule} instances.
+The definition in
+\pathref{IllumoGame/Source/Game/IllumoGameApplication.cpp} names the product,
+describes its CA options/help, supplies its defaults callback, and returns a
+required \symbolref{CellGameModule}. It does not perform system work.
 
-\symbolref{IllumoContext} is a \textbf{raw-pointer bag} into those services,
-passed into modules at \symbolref{Start}. Ownership stays on \symbolref{Illumo}.
+\subsection{Illumo host ownership}
+\symbolref{Illumo} owns the long-lived generic services
+(\symbolref{EnvVars}, \symbolref{RenderWindow}, \symbolref{Camera},
+\symbolref{Renderer}, \symbolref{AssetManager}, \symbolref{CommandRegistry},
+\symbolref{CommandLine}, \symbolref{InputManager}, \symbolref{Scene}) and its
+registered modules. \symbolref{IllumoConfig} carries only the application name,
+configuration-file path, and injectable factories.
 
-\begin{inferencebox}
-Pattern: composition root + service locator-ish context struct (not a full
-service locator library). Modules are closer to subsystems than ECS systems.
-\end{inferencebox}
+Construction loads generic host defaults. The runner then invokes IllumoGame's
+CA-default callback and feeds its option descriptors to engine-owned
+\symbolref{SysCmdLine} before fallible initialization. The window and backend
+factories report failure; Illumo owns exactly one backend initialization attempt
+and transfers the resulting \texttt{std::unique\_ptr<IBackend>} to the renderer.
+Library code logs and returns failures rather than calling \texttt{std::exit}.
 
-\subsection{IModule contract}
+\symbolref{IllumoContext} is a non-owning pointer bag frozen after successful
+host initialization and passed to modules at \symbolref{Start}. It contains no
+game validation helpers or product assumptions.
+
+\subsection{IModule contract and failure policy}
 \begin{lstlisting}
 class IModule {
 public:
@@ -43,58 +68,38 @@ public:
 \end{lstlisting}
 
 \begin{itemize}
-  \item \textbf{Start} --- bind inputs and allocate game state; return
-        \texttt{false} if required context or initialization is unavailable.
-  \item \textbf{Update} --- simulation / input.
-  \item \textbf{DispatchDrawables} --- contribute what should draw this frame.
-  \item \textbf{Exit} --- teardown module-owned state.
+  \item \textbf{Start} binds services and allocates module state.
+  \item \textbf{Update} advances simulation and input behavior.
+  \item \textbf{DispatchDrawables} contributes this frame's non-owning draw list.
+  \item \textbf{Exit} releases module-owned state.
 \end{itemize}
 
-\symbolref{Illumo::StartModules} erases a module whose \texttt{Start} returns
-false. Only successfully started modules receive later \texttt{Update},
-\texttt{DispatchDrawables}, and \texttt{Exit} calls.
-
-Registered modules today (from \symbolref{CellMain} product composition):
-\begin{itemize}
-  \item \symbolref{CellGameModule} (always)
-  \item \symbolref{DebugModule} (Debug configuration only; D-B1)
-\end{itemize}
-
-\begin{decisionbox}[title={D-E1 module registration}]
-\pathref{Engine/Illumo.h} knows only \symbolref{IModule}.
-\pathref{App/CellMain.cpp} constructs \symbolref{Illumo}, calls \texttt{Init},
-registers \symbolref{CellGameModule} (and \symbolref{DebugModule} in Debug),
-then \texttt{StartModules()}. Engine does not include Game headers.
-\end{decisionbox}
-
-\begin{decisionbox}[title={D-B1 Release boundary}]
-\symbolref{DebugModule} is guarded twice: CMake compiles its implementation
-only for Debug, and \symbolref{CellMain} includes/registers it only when
-\texttt{NDEBUG} is absent. Release may share generic command/logging sources but
-must not contain or construct the Debug module.
-\end{decisionbox}
+Each registration is \texttt{Required} or \texttt{Optional}. A rejected optional
+module is destroyed immediately and never receives update/draw/exit. Required
+startup failure rolls back all accepted modules in reverse order and fails
+startup. Exceptions from Start or Exit are contained, logged, and do not stop
+remaining rollback attempts. The engine runner registers the game-supplied
+\symbolref{CellGameModule} as required and engine-owned Debug-build
+\symbolref{DebugModule} as optional.
 
 \subsection{Frame flow (conceptual)}
 \begin{center}
 \begin{tikzpicture}[
   font=\scriptsize,
   node distance=0.55cm,
-  % Do not name this style ``step'' --- it clashes with TikZ's /tikz/step key.
   flowstep/.style={draw, rounded corners, align=center, fill=blue!6, minimum width=4.2cm},
   arr/.style={-{Latex}}
 ]
   \node[flowstep] (1) {InputManager::update};
   \node[flowstep, below=of 1] (2) {Camera::Update};
-  \node[flowstep, below=of 2] (3) {foreach module: Update(dt)};
-  \node[flowstep, below=of 3] (4) {Scene clear + modules DispatchDrawables};
+  \node[flowstep, below=of 2] (3) {started modules: Update(dt)};
+  \node[flowstep, below=of 3] (4) {Scene clear + DispatchDrawables};
   \node[flowstep, below=of 4] (5) {Renderer::RenderScene (tokens + submit)};
   \node[flowstep, below=of 5] (6) {IBackend::EndFrame (swap)};
   \foreach \a/\b in {1/2,2/3,3/4,4/5,5/6} \draw[arr] (\a) -- (\b);
 \end{tikzpicture}
 \end{center}
 
-\symbolref{RenderWindow} defaults to a GLFW swap interval of one. The persisted
-\texttt{vsync} value can switch synchronized presentation off for uncapped
-profiling and is observed at the frame boundary so Debug's generic environment
-commands can change it live. The Debug overlay reports paced swap completions
-separately from CPU frame submissions (D-P32).
+\symbolref{RenderWindow} defaults to swap interval one. Persisted
+\texttt{vsync=0} selects uncapped profiling, while Debug metrics distinguish
+paced swap completions from CPU submissions.

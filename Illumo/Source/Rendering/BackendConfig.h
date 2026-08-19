@@ -1,5 +1,9 @@
 #pragma once
 
+#include <Illumo/Services/EnvVars.h>
+
+#include <string>
+
 enum class BackendDef
 {
   OPENGL,

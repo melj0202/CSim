@@ -1,36 +1,21 @@
-# Services
+# Illumo Services
 
-Cross-cutting application services:
+The static library owns generic logging, environment variables, input, command
+registry/console editing, and allocators. `CommandLine` receives its branding
+from the application name and owns only generic help, editing, history, alias,
+environment, window/presentation, and quit behavior. It renders through
+`GameVisual` and the value-only `UiTheme`.
 
-- logging
-- environment / config vars
-- input
-- command line / command registry
-- custom allocators (`ArenaAlloc`, `ChainedStackAlloc`, `ChainedPoolAlloc`,
-  `MallocAlloc` / `IAllocator`) with `Illumo.Alloc.*` tests; used for console
-  parse/dispatch (`CommandLine`), frame scratch (`Renderer`), and other
-  bounded transient work. Sparse simulation storage uses the standard hash
-  map and does not depend on the old fixed pool cap.
-- platform-neutral `SaveLoad` API (implementations live under `Platform/`)
+Illumo generic defaults cover window dimensions, fullscreen, VSync, FPS display,
+and log level. An explicit configuration path keeps runtime and file-backed tests
+independent of the launch directory.
 
-`Logger` is best-effort output to its available file and console sinks; its
-logging calls do not provide a success/failure result for callers to handle.
+Illumo owns `SysCmdLine` parser mechanics, window flags, help/version dispatch,
+and exit results. Its public parser configuration accepts CA option/help data
+without introducing Game types. Illumo also owns the public `SaveLoad` dialog
+contract; concrete native implementations live in Platform.
 
-`EnvVars` loads and saves the production configuration beside the executable,
-not in the process working directory. CMake seeds that location from
-`Illumo/envvars.json` only when no local configuration exists; explicit paths
-keep file-backed tests isolated.
-
-`CommandLine` owns general console commands and validated environment settings.
-Token drawing composes `GameVisual` shapes and text using the shared value-only
-`UiTheme`; it is placed on the Scene `UI` layer by `DebugModule`.
-Product modules add domain commands through `CommandRegistry`, including usage,
-description, and completion metadata. `CellGameModule` therefore owns simulation,
-canvas, camera, ruleset, and save/load commands without introducing Game types
-into Services. The console editor uses measured caret/selection geometry, a
-horizontal input viewport, multi-command chaining with `;`, alias macro management
-(`alias`/`unalias`), inline ghost-text auto-suggestions, dynamic parameter syntax hints,
-and restrained primitive-composed panel styling. The current draw path truncates each
-history entry to the panel width and scrolls by raw history entries; the
-word-wrap/visual-line behavior recorded in D-UI2 is not currently implemented.
-The single easy-font batch has capacity for 8,000 UI quads.
+IllumoGame owns CA defaults and `envvars.json`, TPS, speed, fade, ruleset,
+canvas, simulation, camera, persistence commands, canvas CLI descriptors, and
+dialog labels/default filenames. `CellGameModule` registers domain commands
+through `CommandRegistry` and calls SaveLoad without containing native code.

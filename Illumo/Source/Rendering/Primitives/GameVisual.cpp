@@ -1,9 +1,9 @@
-#include "GameVisual.h"
-#include "Rendering/Camera.h"
-#include "Rendering/IMesh.h"
-#include "Rendering/Renderer.h"
-#include "Services/Logger.h"
 #include "thirdparty/stb/stb_easy_font.h"
+#include <Illumo/Rendering/Camera.h>
+#include <Illumo/Rendering/IMesh.h>
+#include <Illumo/Rendering/Primitives/GameVisual.h>
+#include <Illumo/Rendering/Renderer.h>
+#include <Illumo/Services/Logger.h>
 #include <algorithm>
 #include <array>
 #include <cmath>

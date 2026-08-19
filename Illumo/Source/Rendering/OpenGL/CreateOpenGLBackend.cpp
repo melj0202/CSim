@@ -1,8 +1,8 @@
 #include "CreateOpenGLBackend.h"
 #include "GLBackend.h"
 
-IBackend*
+std::unique_ptr<IBackend>
 CreateOpenGLBackend(IRenderWindow* window)
 {
-  return new GLBackend(window);
+  return std::make_unique<GLBackend>(window);
 }

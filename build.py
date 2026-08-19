@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convenient front end for Illumo's CMake build and verification commands."""
+"""Front end for the Illumo library and IllumoGame workspace."""
 
 from __future__ import annotations
 
@@ -15,9 +15,10 @@ from typing import Sequence
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parent
-SOURCE_DIRECTORY = REPOSITORY_ROOT / "Illumo"
-DEFAULT_BUILD_DIRECTORY = Path("build")
-DEFAULT_COVERAGE_DIRECTORY = Path("build-coverage")
+SOURCE_DIRECTORY = REPOSITORY_ROOT
+DEFAULT_BUILD_DIRECTORY = Path("build-workspace")
+DEFAULT_COVERAGE_DIRECTORY = Path("build-workspace-coverage")
+PUBLIC_HEADER_SMOKE_TEST = "Illumo.PublicHeaders.ConsumerSmoke"
 
 ANSI_RESET = "\x1b[0m"
 ANSI_BOLD = "\x1b[1m"
@@ -50,7 +51,7 @@ DASHBOARD_ITEMS = (
     ("action", "Build everything", "build"),
     ("action", "Build application", "application"),
     ("action", "Run headless tests", "test"),
-    ("action", "Build and run Illumo", "run"),
+    ("action", "Build and run IllumoGame", "run"),
     ("action", "Run existing build", "launch"),
     ("action", "Build documentation", "docs"),
     ("action", "Run LLVM coverage", "coverage"),
@@ -58,8 +59,8 @@ DASHBOARD_ITEMS = (
 )
 DASHBOARD_DESCRIPTIONS = {
     "build": "application, tests, and optional PDFs",
-    "application": "focused Illumo target",
-    "test": "all isolated CTest cases",
+    "application": "focused IllumoGame target",
+    "test": "both isolated test runners",
     "run": "build, then launch",
     "launch": "skip configure and build",
     "docs": "illumo.pdf and architecture-map.pdf",
@@ -218,7 +219,7 @@ def render_dashboard(
         )
 
     border(glyphs["top_left"], glyphs["horizontal"], glyphs["top_right"])
-    content("ILLUMO BUILD CONSOLE", ANSI_BOLD + ANSI_CYAN, "center")
+    content("ILLUMO WORKSPACE BUILD CONSOLE", ANSI_BOLD + ANSI_CYAN, "center")
     content(
         "CMake orchestration without the ceremony",
         ANSI_DIM,
@@ -381,7 +382,7 @@ def dashboard_action_arguments(
             "build",
             *dashboard_common_arguments(state),
             "--target",
-            "Illumo",
+            "IllumoGame",
         ]
     if action == "test":
         return ["test", *dashboard_common_arguments(state)]
@@ -522,6 +523,44 @@ def resolve_build_directory(value: Path) -> Path:
     return (REPOSITORY_ROOT / value).resolve()
 
 
+def cached_source_directory(build_directory: Path) -> Path | None:
+    cache_file = build_directory / "CMakeCache.txt"
+    if not cache_file.is_file():
+        return None
+
+    prefix = "CMAKE_HOME_DIRECTORY:INTERNAL="
+    try:
+        cache_lines = cache_file.read_text(
+            encoding="utf-8", errors="replace"
+        ).splitlines()
+    except OSError as error:
+        raise BuildError(f"Could not read {cache_file}: {error}") from error
+
+    for line in cache_lines:
+        if line.startswith(prefix):
+            return Path(line[len(prefix) :]).resolve()
+    return None
+
+
+def validate_workspace_build_directory(build_directory: Path) -> None:
+    cached_source = cached_source_directory(build_directory)
+    if cached_source is None:
+        return
+
+    expected_source = SOURCE_DIRECTORY.resolve()
+    if os.path.normcase(str(cached_source)) == os.path.normcase(
+        str(expected_source)
+    ):
+        return
+
+    raise BuildError(
+        f"Build tree '{build_directory}' belongs to source "
+        f"'{cached_source}', but this orchestrator configures "
+        f"'{expected_source}'. Choose a different --build-dir; the existing "
+        "tree was left untouched."
+    )
+
+
 def add_common_build_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--config",
@@ -534,7 +573,10 @@ def add_common_build_arguments(parser: argparse.ArgumentParser) -> None:
         type=Path,
         default=DEFAULT_BUILD_DIRECTORY,
         metavar="PATH",
-        help="build tree, relative to the repository root by default",
+        help=(
+            "build tree, relative to the repository root by default "
+            "(default: build-workspace)"
+        ),
     )
     parser.add_argument("--generator", help="CMake generator passed with -G")
     parser.add_argument(
@@ -578,8 +620,8 @@ def add_common_build_arguments(parser: argparse.ArgumentParser) -> None:
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Configure, build, test, run, and measure Illumo through its "
-            "existing CMake targets. Running without a command opens the "
+            "Configure, build, test, run, and measure the Illumo workspace. "
+            "Running without a command opens the "
             "interactive build console in a terminal."
         )
     )
@@ -613,16 +655,16 @@ def create_parser() -> argparse.ArgumentParser:
     )
     test_mode = test_parser.add_mutually_exclusive_group()
     test_mode.add_argument(
-        "--test", metavar="NAME", help="run one exact IllumoTests case"
+        "--test", metavar="NAME", help="run one exact test from either runner"
     )
     test_mode.add_argument(
         "--list-tests",
         action="store_true",
-        help="list exact IllumoTests case names",
+        help="list exact Illumo.* and IllumoGame.* case names",
     )
 
     run_parser = subparsers.add_parser(
-        "run", parents=[common], help="build and launch Illumo"
+        "run", parents=[common], help="build and launch IllumoGame"
     )
     run_parser.add_argument(
         "--no-build",
@@ -632,7 +674,7 @@ def create_parser() -> argparse.ArgumentParser:
     run_parser.add_argument(
         "app_arguments",
         nargs=argparse.REMAINDER,
-        help="arguments after -- are passed to Illumo",
+        help="arguments after -- are passed to IllumoGame",
     )
 
     coverage_parser = subparsers.add_parser(
@@ -643,7 +685,7 @@ def create_parser() -> argparse.ArgumentParser:
         type=Path,
         default=DEFAULT_COVERAGE_DIRECTORY,
         metavar="PATH",
-        help="coverage build tree (default: build-coverage)",
+        help="coverage build tree (default: build-workspace-coverage)",
     )
     coverage_parser.add_argument(
         "--parallel",
@@ -757,6 +799,9 @@ def build_command(
 
 def configure(arguments: argparse.Namespace, runner: CommandRunner) -> str:
     cmake = existing_tool("cmake", runner.dry_run)
+    validate_workspace_build_directory(
+        resolve_build_directory(arguments.build_dir)
+    )
     runner.run(configure_command(arguments, cmake))
     return cmake
 
@@ -768,17 +813,30 @@ def executable_path(
     dry_run: bool,
 ) -> Path:
     suffix = ".exe" if os.name == "nt" else ""
+    project_directory = "IllumoGame" if name.startswith("IllumoGame") else "Illumo"
     candidates = (
-        build_directory / configuration / f"{name}{suffix}",
-        build_directory / f"{name}{suffix}",
+        build_directory / project_directory / configuration / f"{name}{suffix}",
+        build_directory / project_directory / f"{name}{suffix}",
     )
+    if dry_run:
+        return candidates[0]
     for candidate in candidates:
         if candidate.is_file():
             return candidate
-    if dry_run:
-        return candidates[0]
     rendered = " or ".join(str(candidate) for candidate in candidates)
     raise BuildError(f"Expected executable was not produced at {rendered}")
+
+
+def exact_test_target(test_name: str) -> str:
+    if test_name == PUBLIC_HEADER_SMOKE_TEST:
+        return "IllumoPublicHeaderSmoke"
+    if test_name.startswith("IllumoGame."):
+        return "IllumoGameTests"
+    if test_name.startswith("Illumo."):
+        return "IllumoTests"
+    raise BuildError(
+        "Exact tests must start with 'Illumo.' or 'IllumoGame.'."
+    )
 
 
 def run_configure(arguments: argparse.Namespace) -> None:
@@ -794,24 +852,62 @@ def run_build(arguments: argparse.Namespace) -> None:
 
 def run_tests(arguments: argparse.Namespace) -> None:
     runner = CommandRunner(arguments.dry_run)
+    exact_target = (
+        exact_test_target(arguments.test) if arguments.test else None
+    )
     cmake = configure(arguments, runner)
-    runner.run(build_command(arguments, cmake, "IllumoTests"))
-
     build_directory = resolve_build_directory(arguments.build_dir)
-    if arguments.test or arguments.list_tests:
+
+    if arguments.test:
+        target = exact_target
+        if target is None:
+            raise BuildError("Exact test target was not resolved.")
+        runner.run(build_command(arguments, cmake, target))
         test_binary = executable_path(
             build_directory,
             arguments.config,
-            "IllumoTests",
+            target,
             runner.dry_run,
         )
-        test_command = [str(test_binary)]
-        if arguments.list_tests:
-            test_command.append("--list")
-        else:
-            test_command.extend(("--run", arguments.test))
-        runner.run(test_command, test_binary.parent)
+        safe_case_name = "".join(
+            character
+            if character.isalnum() or character in (".", "-", "_")
+            else "_"
+            for character in arguments.test
+        )
+        case_directory = (
+            build_directory / "Testing" / "Manual" / target / safe_case_name
+        )
+        if not runner.dry_run:
+            case_directory.mkdir(parents=True, exist_ok=True)
+        test_command = (str(test_binary),)
+        if target != "IllumoPublicHeaderSmoke":
+            test_command = (str(test_binary), "--run", arguments.test)
+        runner.run(test_command, case_directory)
         return
+
+    if arguments.list_tests:
+        for target in ("IllumoTests", "IllumoGameTests"):
+            runner.run(build_command(arguments, cmake, target))
+            test_binary = executable_path(
+                build_directory,
+                arguments.config,
+                target,
+                runner.dry_run,
+            )
+            runner.run((str(test_binary), "--list"), test_binary.parent)
+        runner.run(
+            build_command(arguments, cmake, "IllumoPublicHeaderSmoke")
+        )
+        print(PUBLIC_HEADER_SMOKE_TEST, flush=True)
+        return
+
+    for target in (
+        "IllumoTestsDiscover",
+        "IllumoGameTestsDiscover",
+        "IllumoPublicHeaderSmoke",
+    ):
+        runner.run(build_command(arguments, cmake, target))
 
     ctest = existing_tool("ctest", runner.dry_run)
     runner.run(
@@ -822,7 +918,7 @@ def run_tests(arguments: argparse.Namespace) -> None:
             "-C",
             arguments.config,
             "-L",
-            "Illumo",
+            "IllumoWorkspace",
             "--output-on-failure",
         )
     )
@@ -832,13 +928,15 @@ def run_application(arguments: argparse.Namespace) -> None:
     runner = CommandRunner(arguments.dry_run)
     if not arguments.no_build:
         cmake = configure(arguments, runner)
-        runner.run(build_command(arguments, cmake, "Illumo"))
+        runner.run(build_command(arguments, cmake, "IllumoGame"))
 
     build_directory = resolve_build_directory(arguments.build_dir)
+    if arguments.no_build:
+        validate_workspace_build_directory(build_directory)
     application = executable_path(
         build_directory,
         arguments.config,
-        "Illumo",
+        "IllumoGame",
         runner.dry_run,
     )
     app_arguments = list(arguments.app_arguments)
@@ -851,6 +949,7 @@ def run_coverage(arguments: argparse.Namespace) -> None:
     runner = CommandRunner(arguments.dry_run)
     cmake = existing_tool("cmake", runner.dry_run)
     build_directory = resolve_build_directory(arguments.build_dir)
+    validate_workspace_build_directory(build_directory)
     configure_coverage = [
         cmake,
         "-S",

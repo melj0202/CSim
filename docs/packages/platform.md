@@ -1,15 +1,17 @@
-# Platform
+# Illumo Platform
 
-OS-specific entry points and native implementations.
+OS entry points and native persistence dialogs are engine-owned under
+`Illumo/Source/Platform`. Public dialog data/contracts live under
+`Illumo/Include/Illumo/Platform`.
 
-| Port | Entry | Current status |
-|------|--------|----------------|
-| `Windows/` | `WinMain.cpp` | Supported production path; native dialogs in `WinSaveLoad.cpp` |
-| `Linux/` | `_main.cpp` | Unsupported stale scaffold; entry references removed APIs and does not compile against the current shared bootstrap |
-| `macOS/` | `Main.cpp` | Unsupported stale scaffold; entry references removed APIs and Objective-C++ is not enabled for `MacSaveLoad.mm` |
+| Port | Entry | Status |
+|---|---|---|
+| Windows | `Windows/WinMain.cpp` | Supported; native dialogs in `WinSaveLoad.cpp` |
+| Linux | `Linux/_main.cpp` | Unsupported stale scaffold |
+| macOS | `macOS/Main.cpp` | Unsupported stale scaffold |
 
-Platform code should stay thin: bootstrap the process, implement `SaveLoad`, then call `App/CellMain`.
-
-Shared game/engine code does not belong here. Source presence and a CMake
-branch are not support evidence: a port requires a native configure/build,
-tests, startup/render interaction, dialogs, and clean shutdown.
+Entry code obtains the consumer's `IllumoApplicationDefinition` and calls the
+generic Illumo runner. Dialog implementations accept game-owned labels and
+defaults as data; they do not include Game types or parse save files. Source
+presence does not establish support: each port requires native build, tests,
+live rendering/input, dialogs, and clean shutdown.

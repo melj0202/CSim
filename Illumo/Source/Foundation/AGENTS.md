@@ -6,8 +6,8 @@ This file specializes the repository `AGENTS.md` for
 ## Scope and boundaries
 
 Foundation contains small dependency-light value types, platform/compiler
-macros, and common helpers. It may be used by any first-party subsystem, so its
-dependency direction must remain downward and narrow.
+macros, build metadata, and common helpers. It may be used by any first-party
+subsystem, so its dependency direction must remain downward and narrow.
 
 - Do not depend on App, Engine, Game, Rulesets, Services, or Rendering.
 - Prefer the C++ standard library over new macros or global state.

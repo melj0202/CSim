@@ -1,5 +1,5 @@
-#include "InputManager.h"
-#include "Services/Logger.h"
+#include <Illumo/Services/InputManager.h>
+#include <Illumo/Services/Logger.h>
 
 #ifdef TRACY_ENABLE
 #include "tracy/Tracy.hpp"
